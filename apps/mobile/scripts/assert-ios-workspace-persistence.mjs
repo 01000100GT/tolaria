@@ -4,6 +4,7 @@
 import { spawnSync } from 'node:child_process'
 import { waitForNativeProof } from './native-ios-proof-logs.mjs'
 import { assertNativeQaOpenUrl } from '../src/qa/nativeQaUrls.ts'
+import { captureNativeMetroLog } from '../src/qa/nativeMetroProofLog.ts'
 import {
   assertNativeWorkspacePersistenceProofs,
   formatNativeWorkspacePersistenceFailures,
@@ -25,6 +26,7 @@ Options:
   --device <udid>   Simulator UDID. Defaults to MOBILE_QA_SIMULATOR_UDID, then the booted iPad.
   --last <duration> log show window when no URL is opened. Defaults to ${defaultLogWindow}.
   --open-url <url>  Open an Expo native URL before collecting logs.
+  --metro-log <path> Read only newly appended Metro output instead of iOS system logs.
   --phone           Prefer a booted iPhone simulator when --device is not provided.
   --wait <ms>       Delay after opening a URL before collecting logs. Defaults to 6500.
   --help            Show this help.
@@ -36,6 +38,7 @@ function readConfig(args) {
     device: readOption(args, '--device', process.env.MOBILE_QA_SIMULATOR_UDID),
     help: args.includes('--help'),
     last: readOption(args, '--last', defaultLogWindow),
+    metroLog: readOption(args, '--metro-log', undefined),
     openUrl: readOption(args, '--open-url', undefined),
     phone: args.includes('--phone'),
     waitMs: Number(readOption(args, '--wait', '6500')),
@@ -135,12 +138,13 @@ async function main() {
   }
 
   const device = selectDevice(config.device, config.phone)
+  const readMetroLog = captureNativeMetroLog(config.metroLog)
   const logStart = config.openUrl ? simulatorLogTimestamp(new Date(Date.now() - 1000)) : undefined
   if (config.openUrl) await openProbeUrl(device, config.openUrl, config.waitMs)
 
   const { failures } = await waitForNativeProof({
     assertProofs: assertNativeWorkspacePersistenceProofs,
-    collectLogs: () => collectSimulatorLogs(device, {
+    collectLogs: () => config.metroLog ? readMetroLog() : collectSimulatorLogs(device, {
       last: config.last,
       start: logStart,
     }),

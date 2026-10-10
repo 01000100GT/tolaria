@@ -28,6 +28,35 @@
 
 ## Scope
 
+### Native development-build proof collection follow-through
+
+- The rebuilt Debug iPad app emitted all 42 workspace persistence checks to
+  Metro, not iOS system logs. The old command therefore failed to collect proof;
+  that failure was not treated as a product pass. An independent parse of the
+  fresh session established the checks before changing the collector.
+- `assert-ios-workspace-persistence.mjs` now accepts `--metro-log`. Its host-only
+  reader captures file identity and byte offset before launch, reads at most
+  2 MiB of subsequent output, and rejects replacement or detected truncation.
+  Selecting Metro never falls back to potentially older system-log evidence.
+  The corrected command passes against the freshly rebuilt native app.
+- Five filesystem tests pass. A deliberate stale-output mutation makes the
+  freshness test fail; the correct implementation was restored and retested.
+  The first attempted test command used the wrong working directory and found
+  no tests; it is not recorded as a TDD red result.
+- Existing script CodeScene 10.0 -> 10.0; both new helper/test files 10.0.
+  Three per-file Opengrep scans completed with zero findings at every severity,
+  successful invocations, no skipped target, and no partial analysis. The
+  script's baseline also had zero findings. Staged CLI delta and normal mobile
+  hooks remain required before commit/push.
+- Exact code manifest: `apps/mobile/scripts/assert-ios-workspace-persistence.mjs`,
+  `apps/mobile/src/qa/nativeMetroProofLog.ts`, and
+  `apps/mobile/src/qa/nativeMetroProofLog.test.ts`. Same temporary storage-QA
+  exception; no new dependency or ADR. Abstraction inventory updated.
+- Localization: no UI copy changes. PostHog: no event needed for host-only QA.
+  This is not a replacement for native UI interaction or for verifying the log
+  collection paths of other legacy probes. A separate table-command probe did
+  not produce proof in this run and remains unverified, not passed.
+
 Protect text-note and local configuration saves in the standalone iOS app with
 atomic replacement and a persistent recovery record. Recover before indexing,
 reading, editing, or syncing. Preserve the recovery record and reject replay if

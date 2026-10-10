@@ -31,6 +31,12 @@ entry points acquire one loopback TCP port before creating fixtures or touching
 the simulator, reject overlapping runs, and release it in `finally`. Connections
 receive no data; process exit also releases the OS-owned lease. Other native QA
 entry points must still be scheduled sequentially; this is not an app data lock.
+`nativeMetroProofLog.ts` is a host-only, bounded reader for development-build
+proofs that React Native sends to Metro instead of iOS system logs. The workspace
+persistence command accepts `--metro-log` and captures its byte boundary before
+launching the app, rejects file replacement/truncation, and never falls back to
+older system logs when this source is selected. Other legacy log-based probes
+still require separate collection-path verification.
 `gitRuntime.native.ts` supplies missing digest support through Expo Crypto, while
 `gitDigest.ts` preserves existing runtime APIs and byte-view boundaries. Git uses
 one library-owned cache per sync operation, released afterwards (ADR 0200).
