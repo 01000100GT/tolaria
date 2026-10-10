@@ -142,6 +142,12 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
 
 ## Evidence log
 
+- Text-batch engine: a version-two journal retains every member of a published
+  text-only plan. All 59 Foundation tests pass, including recovery from partial
+  replacement and conflicts. The current iPad build retains single-save and
+  structural recovery behavior. Repository integration/native multi-note proof
+  are the next checkpoint; mixed structural plans remain outside this guarantee.
+
 - Metadata path follow-through rejects normalization aliases and credentialed
   file authorities before accessing the filesystem. All 52 Foundation tests and
   the current-source standalone 6,000-file Git probe pass. Total 217,713 ms versus

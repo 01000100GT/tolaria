@@ -192,6 +192,12 @@ new preconditions, so replay cannot overwrite later edits or delete recreated
 entries (ADR 0206). A move plus its subsequent backlink rewrites is not yet one transaction.
 Expo Go and Android still require their own equivalent persistence implementation.
 
+The native text engine also supports a version-two journal containing an entire
+text-only batch (ADR 0207). It preflights all prior digests and retains the plan
+when an external edit prevents replay. Single-save journals and receipts remain
+backward readable. Repository bulk-write integration is the next checkpoint;
+mixed structural plans are not covered by this batch guarantee.
+
 The same iOS module exposes an optional, single-call Git metadata reader anchored
 to the app sandbox. It returns fresh stat fields without caching file state;
 Expo continues to own byte IO. Rapid-edit staging and checkout recovery remain

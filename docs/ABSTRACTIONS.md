@@ -68,6 +68,13 @@ indexes and cached raw note content. Old standalone binaries fail closed rather
 than silently falling back to a non-atomic writer. Expo Go/Android do not yet
 provide this native guarantee. See ADR 0203.
 
+`WorkspaceTextRecord` owns version-two text batches and completion fingerprints,
+including decoding of version-one single-save records. `WorkspaceTextRecovery`
+publishes the whole plan, checks every precondition, and replaces members under
+coordination before acknowledging the batch. Conflicts retain unfinished intent;
+this is roll-forward recovery, not atomic visibility across external writers.
+The native engine is available for repository integration (ADR 0207).
+
 `nativeWorkspaceMutation.ts` retains a native UUID across failed attempts for
 both text and entry bridges. `saveWorkspaceText` requires that ID; completed
 receipts contain only a path/content digest and are consulted before acquiring

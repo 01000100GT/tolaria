@@ -4,21 +4,6 @@ import Foundation
 enum WorkspaceTextWriteStage { case prepared, published, replaced }
 enum WorkspaceTextRecoveryError: Error { case invalidRecord, checkoutPending, missingRoot }
 
-private struct PendingWorkspaceText: Codable {
-  let version: Int
-  let path: String
-  let before: String?
-  let content: Data
-  let identifier: String?
-}
-
-private struct CompletedWorkspaceText: Codable {
-  let version: Int
-  let identifier: String
-  let path: String
-  let digest: String
-}
-
 struct WorkspaceTextRecovery {
   let root: URL
   let journal: URL
@@ -26,23 +11,27 @@ struct WorkspaceTextRecovery {
   var receipt: URL { journal.appendingPathExtension("completed") }
 
   func write(_ path: String, content: String, identifier: String = UUID().uuidString) throws {
+    try writeBatch([.init(path: path, content: content)], identifier: identifier)
+  }
+
+  func writeBatch(_ changes: [WorkspaceTextChange], identifier: String) throws {
     workspaceMutationLock.lock()
     defer { workspaceMutationLock.unlock() }
     _ = try recover()
     try requireWorkspaceMutationRoot(root)
-    if try completed(path, content: content, identifier: identifier) { return }
-    try withDestination(path) { destination in
-      let pending = PendingWorkspaceText(
-        version: 1, path: path, before: try existingDigest(destination), content: Data(content.utf8), identifier: identifier
-      )
-      try afterStage(.prepared)
-      try FileManager.default.createDirectory(at: journal.deletingLastPathComponent(), withIntermediateDirectories: true)
-      try JSONEncoder().encode(pending).write(to: journal, options: .atomic)
-      try afterStage(.published)
-      try replace(pending, destination: destination)
-      try afterStage(.replaced)
-      try recordCompletion(pending)
+    try validateTextBatchPaths(changes.map(\.path))
+    if try completed(changes, identifier: identifier) { return }
+    let entries = try changes.map { change in
+      try withDestination(change.path) { destination in
+        PendingWorkspaceText(path: change.path, before: try existingDigest(destination), content: Data(change.content.utf8))
+      }
     }
+    let pending = WorkspaceTextRecord(identifier: identifier, entries: entries)
+    try afterStage(.prepared)
+    try FileManager.default.createDirectory(at: journal.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try JSONEncoder().encode(pending).write(to: journal, options: .atomic)
+    try afterStage(.published)
+    try complete(pending, afterReplace: { try afterStage(.replaced) })
   }
 
   @discardableResult
@@ -51,32 +40,39 @@ struct WorkspaceTextRecovery {
     defer { workspaceMutationLock.unlock() }
     let recoveredEntry = try entryRecovery.recover()
     guard let data = try existingData(journal) else { return recoveredEntry }
-    let pending = try JSONDecoder().decode(PendingWorkspaceText.self, from: data)
-    guard pending.version == 1 else { throw WorkspaceTextRecoveryError.invalidRecord }
+    let pending = try WorkspaceTextRecord.read(data)
     try requireWorkspaceMutationRoot(root)
-    try withDestination(pending.path) { destination in
-      try replace(pending, destination: destination)
-      try recordCompletion(pending)
-    }
+    try validateTextBatchPaths(pending.entries.map(\.path))
+    try complete(pending)
     return true
   }
 
-  private func completed(_ path: String, content: String, identifier: String) throws -> Bool {
+  private func completed(_ changes: [WorkspaceTextChange], identifier: String) throws -> Bool {
     guard let data = try existingData(receipt) else { return false }
-    let completed = try JSONDecoder().decode(CompletedWorkspaceText.self, from: data)
-    guard completed.version == 1 else { throw WorkspaceTextRecoveryError.invalidRecord }
+    let completed = try CompletedWorkspaceText.read(data)
     guard completed.identifier == identifier else { return false }
-    guard completed.path == path, completed.digest == textRecoveryDigest(Data(content.utf8)) else {
+    guard completed.entries == changes.map(\.fingerprint) else {
       throw WorkspaceTextRecoveryError.invalidRecord
     }
     return true
   }
 
-  private func recordCompletion(_ pending: PendingWorkspaceText) throws {
+  private func complete(_ pending: WorkspaceTextRecord, afterReplace: () throws -> Void = {}) throws {
+    // Check the whole plan before changing its first member; recheck each write
+    // under coordination so an intervening external edit still fails closed.
+    for entry in pending.entries {
+      try withDestination(entry.path) { try requireExpected(entry, destination: $0) }
+    }
+    for entry in pending.entries {
+      try withDestination(entry.path) { try replace(entry, destination: $0) }
+      try afterReplace()
+    }
+    try recordCompletion(pending)
+  }
+
+  private func recordCompletion(_ pending: WorkspaceTextRecord) throws {
     if let identifier = pending.identifier {
-      let completed = CompletedWorkspaceText(
-        version: 1, identifier: identifier, path: pending.path, digest: textRecoveryDigest(pending.content)
-      )
+      let completed = CompletedWorkspaceText(identifier: identifier, entries: pending.entries.map(\.fingerprint))
       try JSONEncoder().encode(completed).write(to: receipt, options: .atomic)
     }
     try FileManager.default.removeItem(at: journal)
@@ -91,6 +87,13 @@ struct WorkspaceTextRecovery {
     try pending.content.write(to: destination, options: .atomic)
   }
 
+  private func requireExpected(_ pending: PendingWorkspaceText, destination: URL) throws {
+    let current = try existingDigest(destination)
+    guard current == pending.before || current == textRecoveryDigest(pending.content) else {
+      throw WorkspaceFileError.externalChange
+    }
+  }
+
   var entryRecovery: WorkspaceEntryRecovery {
     WorkspaceEntryRecovery(root: root, journal: journal.appendingPathExtension("entry"))
   }
@@ -102,19 +105,19 @@ struct WorkspaceTextRecovery {
     try entryRecovery.perform(change)
   }
 
-  private func withDestination(_ path: String, action: @escaping (URL) throws -> Void) throws {
+  private func withDestination<T>(_ path: String, action: @escaping (URL) throws -> T) throws -> T {
     let destination = try workspaceFileURL(root: root, path: path)
     var coordinationError: NSError?
-    var result: Result<Void, Error>?
+    var result: Result<T, Error>?
     NSFileCoordinator().coordinate(writingItemAt: destination, options: .forReplacing, error: &coordinationError) { url in
       result = Result {
         _ = try workspaceFileURL(root: root, path: path)
-        try action(url)
+        return try action(url)
       }
     }
     if let coordinationError { throw coordinationError }
     guard let result else { throw WorkspaceFileError.coordinationFailed }
-    try result.get()
+    return try result.get()
   }
 }
 

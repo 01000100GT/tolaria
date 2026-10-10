@@ -101,6 +101,37 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Text-batch engine checkpoint
+
+- The native text engine now journals a complete ordered text plan before its
+  first replacement. Preflight checks all members; replay never forces away an
+  external edit. Version-one records/receipts remain readable. This checkpoint
+  provides the engine; repository routing and its native batch proof follow.
+- TDD began with a missing batch API and then reproduced an ancestor-overlap
+  ordering bug. All 59 Foundation tests pass, including partial replacement,
+  external conflicts, receipt-publication failure, retry identity, and legacy
+  compatibility. Native rebuild, existing cross-launch text/entry recovery, and
+  conflict blocking pass with the new format.
+- CodeScene before/after: the existing engine stays 10.0; both new scorable
+  files reach 10.0; Package.swift has no scorable code and zero findings. The
+  four-file staged CLI delta returns `no-issues-found`. The two existing files'
+  baseline scans and all four final Opengrep 1.26.0 scans have zero findings at
+  every severity, successful invocations, no skipped target, and no partial
+  analysis. The branch manifest currently contains 758 tracked changed paths;
+  only the four code paths below belong to this checkpoint.
+- Same owner-approved storage/recovery analyzer exception, expiry, and
+  compensating checks. Remote Codacy parity is not established. No full desktop
+  or Rust coverage run, no UI copy changes, and no analytics event for this
+  internal correctness change. ADR 0207 and architecture/abstraction docs added.
+  Original Laputa and demo fixtures remain untouched.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/Package.swift` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecovery.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecord.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceTextBatchTests.swift` | New | 10.0 | 0 |
+
 ## Managed metadata path validation
 
 - Profiling showed filesystem reachability calls inside Foundation path
