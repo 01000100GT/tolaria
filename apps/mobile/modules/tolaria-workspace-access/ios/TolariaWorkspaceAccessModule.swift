@@ -52,6 +52,12 @@ public class TolariaWorkspaceAccessModule: Module {
       return try managedWorkspaceText(uri).recover()
     }
 
+    Function("createWorkspaceOperationId") { () -> String in UUID().uuidString }
+
+    AsyncFunction("changeWorkspaceEntry") { (uri: String, path: String, toPath: String?, directory: Bool, identifier: String) throws in
+      try managedWorkspaceText(uri).changeEntry(.init(path: path, toPath: toPath, directory: directory, identifier: identifier))
+    }
+
     AsyncFunction("importWorkspace") { (uri: String) throws -> [String: String]? in
       return try self.importWorkspace(uri)
     }
@@ -65,6 +71,10 @@ public class TolariaWorkspaceAccessModule: Module {
     }
 
     #if DEBUG
+    AsyncFunction("runEntryRecoveryProbe") { (phase: String) throws -> [String: Any] in
+      return try runWorkspaceEntryNativeProof(phase)
+    }
+
     AsyncFunction("runTextRecoveryProbe") { (phase: String) throws -> [String: Any] in
       return try runWorkspaceTextRecoveryNativeProof(phase)
     }

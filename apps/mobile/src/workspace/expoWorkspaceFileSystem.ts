@@ -8,6 +8,7 @@ import { normalizedWorkspaceRelativePath, type WorkspaceFileSystem } from './fil
 import { requireWorkspaceWritePath } from './workspaceWriteValidation'
 import { assertGitCheckoutComplete } from './git/gitCheckoutGuard'
 import { recoverNativeWorkspaceText, writeNativeWorkspaceText } from './workspaceTextRecovery'
+import { changeNativeWorkspaceEntry } from './workspaceEntryRecovery'
 
 type ExpoFileSystemModule = {
   Directory: typeof Directory
@@ -17,7 +18,6 @@ type ExpoFileSystemModule = {
 type DirectoryName = string
 type RelativeVaultPath = string
 type RootUri = string
-type MovableWorkspaceEntry = Directory | File
 
 declare const require: (moduleName: string) => ExpoFileSystemModule
 
@@ -35,21 +35,25 @@ export const expoWorkspaceFileSystem: WorkspaceFileSystem = {
   },
   deleteDirectory: (rootUri, relativePath) => {
     const normalizedPath = requireWorkspaceWritePath(relativePath)
+    const nativeChange = changeNativeWorkspaceEntry(rootUri, { path: normalizedPath, directory: true })
+    if (nativeChange) return nativeChange
 
     const directory = workspaceDirectory(expoFileSystem(), rootUri, normalizedPath)
     if (directory.exists) directory.delete()
   },
   deleteTextFile: (rootUri, relativePath) => {
     const normalizedPath = requireWorkspaceWritePath(relativePath)
+    const nativeChange = changeNativeWorkspaceEntry(rootUri, { path: normalizedPath, directory: false })
+    if (nativeChange) return nativeChange
 
     const file = workspaceFile(expoFileSystem(), rootUri, normalizedPath)
     if (file.exists) file.delete()
   },
   moveDirectory: (rootUri, fromRelativePath, toRelativePath) => {
-    moveWorkspaceEntry(rootUri, fromRelativePath, toRelativePath, workspaceDirectory)
+    return moveWorkspaceEntry(rootUri, fromRelativePath, toRelativePath, true)
   },
   moveTextFile: (rootUri, fromRelativePath, toRelativePath) => {
-    moveWorkspaceEntry(rootUri, fromRelativePath, toRelativePath, workspaceFile)
+    return moveWorkspaceEntry(rootUri, fromRelativePath, toRelativePath, false)
   },
   readVaultConfig: (rootUri) => {
     const file = vaultConfigFile(expoFileSystem(), rootUri)
@@ -110,12 +114,15 @@ function moveWorkspaceEntry(
   rootUri: RootUri,
   fromRelativePath: RelativeVaultPath,
   toRelativePath: RelativeVaultPath,
-  entryForPath: (module: ExpoFileSystemModule, rootUri: RootUri, relativePath: RelativeVaultPath) => MovableWorkspaceEntry,
+  directory: boolean,
 ) {
   const fromPath = requireWorkspaceWritePath(fromRelativePath)
   const toPath = requireWorkspaceWritePath(toRelativePath)
+  const nativeChange = changeNativeWorkspaceEntry(rootUri, { path: fromPath, toPath, directory })
+  if (nativeChange) return nativeChange
 
   const module = expoFileSystem()
+  const entryForPath = directory ? workspaceDirectory : workspaceFile
   const source = entryForPath(module, rootUri, fromPath)
   const destination = entryForPath(module, rootUri, toPath)
   if (!source.exists) throw new Error('workspaceMoveSourceMissing')

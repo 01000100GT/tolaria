@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { startGitTestServer } from '../src/workspace/git/gitTestServer.ts'
 
 const root = await mkdtemp(join(tmpdir(), 'tolaria-write-recovery-'))
-const device = process.argv[2] ?? 'booted'
+const device = process.argv.slice(2).find((argument) => !argument.startsWith('--')) ?? 'booted'
 const bundleId = 'com.tolaria.mobile.dev'
 let awaitingProof
 let timer
@@ -42,7 +42,10 @@ async function runPhase(phase) {
 }
 
 try {
-  for (const phase of ['prepare', 'recover', 'prepare-conflict', 'conflict', 'cleanup']) await runPhase(phase)
+  const phases = process.argv.includes('--entries')
+    ? ['entry-prepare-move', 'entry-move', 'entry-prepare-delete', 'entry-delete', 'entry-prepare-conflict', 'entry-conflict']
+    : ['prepare', 'recover', 'prepare-conflict', 'conflict', 'cleanup']
+  for (const phase of phases) await runPhase(phase)
 } finally {
   clearTimeout(timer)
   awaitingProof = undefined

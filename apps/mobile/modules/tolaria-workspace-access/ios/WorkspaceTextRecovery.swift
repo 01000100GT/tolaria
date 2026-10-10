@@ -11,19 +11,16 @@ private struct PendingWorkspaceText: Codable {
   let content: Data
 }
 
-// Indexing can run off the JS thread. Keep publication/replay exclusive with saves.
-private let workspaceTextLock = NSRecursiveLock()
-
 struct WorkspaceTextRecovery {
   let root: URL
   let journal: URL
   var afterStage: (WorkspaceTextWriteStage) throws -> Void = { _ in }
 
   func write(_ path: String, content: String) throws {
-    workspaceTextLock.lock()
-    defer { workspaceTextLock.unlock() }
+    workspaceMutationLock.lock()
+    defer { workspaceMutationLock.unlock() }
     _ = try recover()
-    try requireReadyRoot()
+    try requireWorkspaceMutationRoot(root)
     try withDestination(path) { destination in
       let pending = PendingWorkspaceText(
         version: 1, path: path, before: try existingDigest(destination), content: Data(content.utf8)
@@ -40,12 +37,13 @@ struct WorkspaceTextRecovery {
 
   @discardableResult
   func recover() throws -> Bool {
-    workspaceTextLock.lock()
-    defer { workspaceTextLock.unlock() }
-    guard let data = try existingData(journal) else { return false }
+    workspaceMutationLock.lock()
+    defer { workspaceMutationLock.unlock() }
+    let recoveredEntry = try entryRecovery.recover()
+    guard let data = try existingData(journal) else { return recoveredEntry }
     let pending = try JSONDecoder().decode(PendingWorkspaceText.self, from: data)
     guard pending.version == 1 else { throw WorkspaceTextRecoveryError.invalidRecord }
-    try requireReadyRoot()
+    try requireWorkspaceMutationRoot(root)
     try withDestination(pending.path) { destination in
       try replace(pending, destination: destination)
       try FileManager.default.removeItem(at: journal)
@@ -62,14 +60,15 @@ struct WorkspaceTextRecovery {
     try pending.content.write(to: destination, options: .atomic)
   }
 
-  private func requireReadyRoot() throws {
-    let values = try root.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-    guard values.isDirectory == true, values.isSymbolicLink != true else {
-      throw WorkspaceTextRecoveryError.missingRoot
-    }
-    if FileManager.default.fileExists(atPath: root.appendingPathComponent(".git/tolaria-checkout.json").path) {
-      throw WorkspaceTextRecoveryError.checkoutPending
-    }
+  var entryRecovery: WorkspaceEntryRecovery {
+    WorkspaceEntryRecovery(root: root, journal: journal.appendingPathExtension("entry"))
+  }
+
+  func changeEntry(_ change: WorkspaceEntryChange) throws {
+    workspaceMutationLock.lock()
+    defer { workspaceMutationLock.unlock() }
+    _ = try recover()
+    try entryRecovery.perform(change)
   }
 
   private func withDestination(_ path: String, action: @escaping (URL) throws -> Void) throws {

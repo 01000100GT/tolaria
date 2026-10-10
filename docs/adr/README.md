@@ -249,3 +249,4 @@ proposed → active → superseded
 | [0190](0190-explicit-session-scoped-ios-vault-selection.md) | Explicit session-scoped iOS vault selection | superseded -> [0191](0191-durable-ios-vault-bookmarks.md) |
 | [0191](0191-durable-ios-vault-bookmarks.md) | Durable iOS vault bookmarks | active |
 | [0203](0203-recoverable-ios-editor-text-saves.md) | Recoverable standalone iOS text saves | active |
+| [0204](0204-recoverable-ios-entry-mutations.md) | Recoverable standalone iOS moves and deletions | active |

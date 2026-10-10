@@ -3,6 +3,7 @@ import { createFileSystemWorkspaceRepository } from '../workspace/fileSystemWork
 import { expoWorkspaceFileSystem } from '../workspace/expoWorkspaceFileSystem'
 import { withSavedWorkspace } from '../workspace/git/workspaceWriteQueue'
 import { postNativeQaEvent, setNativeQaSinkUrl } from './nativeQaSink'
+import { nativeEntryRecoveryChecks } from './nativeEntryRecoveryProbe'
 
 type Inspection = { rootUri: string; content: string; pending: boolean; privateJournal: boolean }
 type NativePhase = 'prepare' | 'prepare-conflict' | 'inspect' | 'cleanup'
@@ -19,7 +20,9 @@ export async function runNativeWriteRecoveryProbe(endpoint: string, phase: strin
   try {
     const module = requireOptionalNativeModule<ProbeModule>('TolariaWorkspaceAccess')
     if (!module?.runTextRecoveryProbe) throw new Error('nativeTextRecoveryUnavailable')
-    const checks = await runPhase(module, recoveryPhase(phase))
+    const checks = phase.startsWith('entry-')
+      ? await nativeEntryRecoveryChecks(phase)
+      : await runPhase(module, recoveryPhase(phase))
     postNativeQaEvent({ phase, passed: Object.values(checks).every(Boolean), checks })
   } catch (error) {
     postNativeQaEvent({ phase, passed: false, error: error instanceof Error ? error.message : 'unknown' })

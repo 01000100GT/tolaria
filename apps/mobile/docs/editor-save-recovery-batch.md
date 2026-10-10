@@ -40,6 +40,12 @@ yet reached the save boundary. Expo Go cannot load custom native storage code.
 
 ## Text-save verification record
 
+Text-save checkpoint committed and pushed as `f6f5f8cce` with normal mobile hooks.
+Post-push CodeScene project state remains Hotspot 10.0 / Average
+9.991289335928062. The CLI staged delta inspected all 19 code files and reported
+`no-issues-found`. The original temporary exception remains limited to this
+storage/recovery follow-through; it is not authorization to waive release gates.
+
 - TDD: observed missing native recovery type/bridge and two stale-index regression
   failures before implementation. Final scoped mobile suite: 1,200 tests in 193
   files; TypeScript and project ESLint pass. Swift: 29 real-filesystem tests pass.
@@ -94,3 +100,55 @@ yet reached the save boundary. Expo Go cannot load custom native storage code.
 | `apps/mobile/src/workspace/git/workspaceWriteRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
+
+## Structural recovery follow-through
+
+- Same approved storage/recovery scope and exception expiry. Existing files'
+  baseline reviews/scans are unchanged from the verified text-save checkpoint:
+  10.0 / zero findings (Package.swift unscorable). No gate was lowered or skipped.
+- Native entry operations now publish durable intent and use exclusive atomic
+  rename. Deletions first quarantine a whole tree outside the vault. A bounded
+  completion receipt and native-generated operation UUID make queue retries
+  identifiable after read-side replay, without treating a new command as a retry.
+- TDD reproduced missing structural recovery, two missing-source retry failures,
+  and a new-command/old-receipt ambiguity before fixes. Final Foundation suite:
+  43 tests passed. Targeted JavaScript repository/queue/bridge checks: 21 passed.
+  TypeScript and project ESLint pass.
+- The current-source standalone iPad build passed six cross-launch entry phases:
+  published move, recovered move with binary/frontmatter/index preservation,
+  quarantined deletion, recovered deletion, prepared external edit, and blocked
+  replay/sync preserving the source and journal. No browser result is substituted.
+- CodeScene: all scorable touched/new files 10.0; Package.swift has no scorable
+  code and zero findings. The staged CLI delta checked all 17 files and returned
+  `no-issues-found`. Refactoring consolidated duplicate fault tests and separated
+  probe dispatch; no production behavior was weakened to satisfy the gate.
+- Scoped security scans: 17 individual Opengrep 1.26.0 scans with all existing
+  rules and test ignores disabled. Every SARIF result/invocation and verbose
+  skip/error report was inspected. All completed with zero findings at every
+  severity, no skipped target, and no partial analysis. The entry engine was
+  rescanned after its final UUID change. Remote Codacy remains unavailable.
+- Native interactive CUA inspection was attempted, but the Mac is locked.
+  No unlock was attempted; the native cross-launch automation remains usable.
+- Localization: no UI copy changes. PostHog: no event needed for internal
+  persistence correctness. ADR 0204 and architecture/abstraction docs updated.
+  This is still not multi-file transaction recovery or release approval.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceEntryFingerprint.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceEntryNativeProof.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceEntryRecovery.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceMutationCoordination.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceEntryRecoverySafetyTests.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceEntryRecoveryTests.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceEntryRetryTests.swift` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeEntryRecoveryProbe.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceEntryRecovery.test.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceEntryRecovery.ts` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/Package.swift` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/TolariaWorkspaceAccessModule.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecovery.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/scripts/assert-ios-write-recovery.mjs` | Existing | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeWriteRecoveryProbe.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/expoWorkspaceFileSystem.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/nativeWorkspaceAccess.ts` | Existing | 10.0 | 0 |

@@ -8,7 +8,8 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   and restart tests, including the standalone iPad filesystem. Incomplete checkout
   cannot be edited or checkpointed as new user content. Standalone iOS text saves
   now have atomic publication and restart recovery, with external-edit exclusion.
-  Moves/deletions and multi-file transactions still need equivalent protection.
+  Standalone moves/deletions also have replay and atomic relocation; complete
+  multi-file write plans still need transaction recovery.
 - Current-source standalone iPad app rebuilt and installed. Native touch tests
   cover panel transitions, contextual formatting menus, and repeated rotation
   while preserving the selected note. Native WYSIWYG persistence plus 117 layout
@@ -66,7 +67,8 @@ custom native-module changes require a rebuilt development app, separately.
 - [x] Recover interrupted Git checkout before reopening or checkpointing.
 - [ ] Reduce measured large-vault sync cost without missing rapid edits.
 - [x] Restart recovery for published standalone iOS text saves.
-- [ ] Deletion/move recovery and incremental startup.
+- [x] Restart recovery for standalone iOS file/folder moves and deletions.
+- [ ] Whole write-plan recovery and incremental startup.
 - [x] Contextual native formatting toolbar with measured touch targets.
 - [ ] Tablet properties/forms touch polish.
 - [x] Native tablet rotation preserves the selected note and readable editor width.
@@ -139,6 +141,12 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
   updated. Only disposable fixture notes were used in the rotation test.
 
 ## Evidence log
+
+- Structural recovery: 43 Foundation tests and six standalone iPad cross-launch
+  phases pass. Folder moves retain binary/frontmatter data; interrupted deletion
+  has no partial visible tree; external changes block replay and Git. UUID-based
+  completion receipts fix read-recovery followed by queue retry. All 17 code
+  files pass the CLI delta and scoped security scan; see the recovery batch record.
 
 - Text-save batch: 1,200 scoped mobile tests, 29 Swift filesystem tests, current
   standalone build, cross-launch recovery/conflict probe, normal native Git

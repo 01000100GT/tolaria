@@ -184,7 +184,10 @@ Standalone iOS editor text saves use the existing workspace module's asynchronou
 atomic writer (ADR 0203). A private, versioned recovery record is published before
 replacement; restart recovery precedes indexing, reads, and Git synchronization.
 Unexpected destination changes retain the pending draft and fail closed. This
-protects published text saves, not unsent keystrokes or multi-file folder mutations.
+protects published text saves, not unsent keystrokes. Structural entry operations
+use the same recovery boundary: exclusive rename for moves, private quarantine
+before deletion cleanup, and UUID completion receipts for safe queue retries
+(ADR 0204). A move plus its subsequent backlink rewrites is not yet one transaction.
 Expo Go and Android still require their own equivalent persistence implementation.
 
 The mobile app lives in `apps/mobile` as a separate Expo React Native workspace package. It is intentionally not a port of the desktop React DOM component tree. Desktop components, CSS variables, and panel semantics are treated as the reference contract, while mobile uses native primitives and fixture-driven screens. During the mobile UI foundation phase, the app is pinned to Expo SDK 54 so physical iPad review can run through Expo Go while the native development-build toolchain remains optional.

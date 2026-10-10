@@ -66,6 +66,15 @@ between journal publication and recovery, then repeats with an external edit.
 Its native DEBUG probe uses only a dedicated cache fixture and the regular
 repository/read/write/sync barriers. It is separate from browser visual QA.
 
+`WorkspaceEntryRecovery` adds recoverable file/folder moves and deletions at the
+same boundary. It fingerprints the source, publishes intent, and exclusively
+renames to the destination or a private deletion quarantine. A bounded completion
+receipt identifies queue retries by native UUID; `workspaceEntryRecovery.ts`
+retains that identifier only while the operation is failed/in flight. Reads and
+Git also replay structural intent, while external changes block replay. The
+`--entries` native proof checks actual app restarts. This is not yet a transaction
+over a move and every subsequent backlink rewrite. See ADR 0204.
+
 ## Native Provider File Foundation
 
 `modules/tolaria-workspace-access/ios/CoordinatedWorkspaceFile.swift` wraps scoped,
