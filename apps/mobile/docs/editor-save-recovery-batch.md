@@ -1,6 +1,14 @@
 # Editor save recovery batch
 
-## Temporary analyzer exception
+## Temporary analyzer exception: closing checkpoint
+
+This exception ends with the successful verified push of this documentation
+checkpoint on October 10. No further code changes are authorized under it.
+The historical approval and batch evidence below are retained for audit, not as
+an ongoing waiver. Codacy dashboard/parity and the unavailable MCP safeguard
+remain release blockers; the compensating checks did not establish those passes.
+Any subsequent UI, authentication, or storage batch requires restored analyzer
+access or a new explicitly scoped owner approval.
 
 - Approved by repository owner Luca in this task: "yes you can" (2026-10-10).
 - Scope: this mobile editor-save recovery batch only, not release approval or a
@@ -26,9 +34,7 @@
   10.0 and 9.99. Existing scorable files start at 10.0; Package.swift has no
   scorable code and zero findings.
 
-## Scope
-
-### Native development-build proof collection follow-through
+## Native development-build proof collection follow-through
 
 - The rebuilt Debug iPad app emitted all 42 workspace persistence checks to
   Metro, not iOS system logs. The old command therefore failed to collect proof;
@@ -56,6 +62,8 @@
   This is not a replacement for native UI interaction or for verifying the log
   collection paths of other legacy probes. A separate table-command probe did
   not produce proof in this run and remains unverified, not passed.
+
+## Scope
 
 Protect text-note and local configuration saves in the standalone iOS app with
 atomic replacement and a persistent recovery record. Recover before indexing,
@@ -226,12 +234,20 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | Baseline | 95,409 | 16,565 / 16,645 | 34,302 / 27,892 | 9,112 |
 | Initial 8 ms yielding | 159,032 | 28,255 / 28,661 | 54,072 / 48,038 | 412 |
 | 16 ms + native-IO reset | 99,075 | 16,948 / 18,070 | 35,280 / 28,769 | 692 |
+| Baseline repeat | 97,457 | 17,807 / 17,571 | 34,609 / 27,464 | 9,881 |
+| Final repeat | 97,572 | 16,936 / 17,564 | 35,183 / 27,883 | 715 |
 
 - The refined version keeps throughput close to baseline while removing the
   observed multi-second stalls. It still recorded 28 callbacks at least 50 ms
-  late, so this is not a smoothness, FPS, or release-performance sign-off. Single
-  simulator runs do not establish device budgets; long individual library/native
-  operations are not preempted. The initial variant's large slowdown was rejected.
+  late (29 in the repeat), so this is not a smoothness, FPS, or release-performance
+  sign-off. Two runs per retained variant do not establish device budgets; long
+  individual library/native operations are not preempted. The initial variant's
+  large slowdown was rejected.
+- The two-run mean is 96,433 ms baseline versus 98,324 ms final, about 2% more
+  total work time. Worst observed timer delays are 9.1-9.9 seconds versus
+  692-715 ms. Repeats ran sequentially with Metro, exports, and test builds stopped.
+  Both repeats passed the complete integrity/recovery checks and read the
+  original 6,036-file app-local copy without reporting note contents.
 - All variants passed binary/deletion/checkout-recovery checks and restored the
   6,036-file app-local vault. The refined version also passes native WYSIWYG
   persistence and 117 measured layout assertions. Native dependencies were unchanged;

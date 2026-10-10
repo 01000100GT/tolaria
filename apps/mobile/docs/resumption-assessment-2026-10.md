@@ -14,16 +14,20 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   cover panel transitions, contextual formatting menus, and repeated rotation
   while preserving the selected note. Native WYSIWYG persistence plus 117 layout
   metrics, and the all-panels fixture's 181 metrics pass with the compact toolbar.
-- The latest completed mobile gates pass 1,253 tests across 203 files; 59 Swift
+- The latest completed mobile gates pass 1,262 tests across 205 files; 59 Swift
   filesystem tests passed in the native storage batch. No full desktop suite ran.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
   6,036-file Laputa copy, not the original vault.
 - Not launch-ready: the optimized 6,000-file fixture takes 29-35 seconds for
   manual pull/push. Cooperative scheduling reduced the observed worst JS stall
-  from 9.1 seconds to 692 ms, but this is still not a release budget. Linked
+  from 9.1-9.9 seconds to 692-715 ms across two runs per variant, but this is
+  still not a release budget. Linked
   original folders, configured/live GitHub
   authentication, Android device QA, and October-main integration remain open.
+- A subsequent native form diagnostic fails: the software keyboard covers the
+  Create View footer. This is a confirmed remaining UI defect, not covered by
+  the passing shell/toolbar/rotation checks above.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
 
@@ -69,6 +73,112 @@ conflict can therefore reject asynchronously without a user-facing retry/recover
 state; the render error boundary does not cover that promise. The save/read guards
 protect bytes but do not finish the UX. Track this for the UI/controller batch;
 do not silently substitute empty content or remove the conflict guard.
+
+### Next batch acceptance checks
+
+1. Fix keyboard-aware form sizing first (native reproduction below), then finish
+   the recovery UX using existing Tolaria components. A rejected selected-
+   note read must leave the draft intact, expose a recovery action, and never
+   fall through to an editable empty note. A failed sync must distinguish local
+   save failure, unavailable network/authentication, and divergent history.
+   Prove retry and vault switching in the native app after injected failures;
+   checking the filesystem guards alone is not sufficient.
+2. Exercise the complete ingest-to-sync path. Configure the public GitHub client
+   ID, then verify device authorization, cancellation, private clone, restart,
+   local edit, remote edit, and manual sync without exposing credentials or note
+   content in logs. Until this is configured and tested, public/disposable Git
+   round trips are not evidence that private-account onboarding is ready.
+   Include stalled-response coverage: `githubRequest.ts` currently clears its
+   30-second timer after response headers, before `response.json()` completes.
+   The authorization/repository-list body therefore lacks that deadline; keep
+   cancellation and timeout active through body consumption in the auth batch.
+3. Connect the existing provider-file foundation to live-folder selection only
+   after revision-aware reads/writes, bookmark restoration, external changes,
+   dirty-editor conflicts, and coordinated structural mutations are covered.
+   Test an actual iCloud/provider folder on a device. The current importer makes
+   an app-local copy; Android still needs its own SAF permission/storage adapter.
+4. Continue tablet UX verification: table insertion/row/column editing, property
+   forms with the keyboard open, focus restoration, interrupted drags, split-
+   screen, and VoiceOver. Require native measured bounds plus human-style taps
+   and drags. Fix the table-command proof's missing result before counting it as
+   coverage; the standalone formatting-menu pass does not verify table mutations.
+5. Integrate current desktop main in a dedicated checkpoint before expanding
+   parity. The inspected remote main is `ec8a3c219`; it has 176 commits absent
+   from this mobile branch at this checkpoint. Consolidate desktop-owned tokens
+   instead of adding another copied expected-value table, and rerun the native
+   numeric/UI contract after integration. This session did not perform that rebase.
+   A non-mutating `git merge-tree` assessment reports 28 conflicting paths:
+   21 locale catalogs, localization lock, package/workspace manifests and lock,
+   ignore rules, the ADR index, and `noteListHelpers.ts`. Preserve the native
+   SDK's dependency constraints and the extracted shared sorting behavior while
+   incorporating main's newer fixes; resolving markers alone is not validation.
+
+Each implementation batch should keep its own small verified commits and scoped
+checks, then end at an explicit device-review checkpoint. Preserve the current
+native fixtures and actual-device distinction; no browser-only acceptance.
+
+### Final native checkpoint, October 10
+
+- Current JavaScript (including full tag preservation) was bundled with Expo
+  `--dev false` and compiled with Hermes `-O`. The verified optimized native
+  executable was reused unchanged; this is not a second full native rebuild.
+- With Metro stopped, native WYSIWYG persistence and 117 measured layout checks
+  pass; the separate all-panels fixture passes 181 metrics. The three native
+  XCUITest cases pass with zero failures (85.1 seconds),
+  covering contextual formatting, continuous panels, and repeated rotation.
+  A portrait test attachment was visually inspected as supplementary evidence.
+- A separate fresh Debug rebuild passes all 42 native workspace persistence
+  checks through the corrected fresh-only Metro log collector. Five new reader
+  tests pass; a stale-log mutation fails its regression test as intended.
+- The final scoped mobile push passes lint, TypeScript, 1,262 tests, web export,
+  and project CodeScene Hotspot 10.0 / Average 9.991289335928062. Web export is
+  a build gate, not a substitute for any of the native checks above.
+- Repeated optimized 6,000-file runs reproduce both performance and integrity:
+  baseline 97,457 ms / 9,881 ms maximum JS delay, final 97,572 ms / 715 ms.
+  Two-run means including the earlier pair are 96,433 ms versus 98,324 ms.
+  This does not establish animation FPS or physical-device release budgets.
+- Physical-device/Android QA, hardware keyboard delivery, full production
+  coverage, and remote Codacy parity remain unverified. The host was locked;
+  native automation was usable, but interactive host computer-use was not.
+- The final simulator launch is the standalone native app on the real app-local
+  Laputa copy, with Metro stopped. The original `~/Laputa` and both demo fixture
+  directories are clean. No original-vault note was changed or pushed.
+- Release record: this assessment and `editor-save-recovery-batch.md` contain
+  the chronological manifests, analyzer results, native evidence, ADR references,
+  and remaining limitations. This is a verified experimental-branch checkpoint,
+  not release approval; the temporary storage analyzer exception closes with
+  its final documentation push and does not cover the next UI/auth batch.
+
+### Confirmed keyboard occlusion, not fixed
+
+Native XCUITest opens `actionSheet=createView` on the optimized iPad app, taps
+`workspace-create-view-name-input`, types a name, and checks the real keyboard and
+Create button frames. The first run included iOS keyboard onboarding; a repeat
+visually confirmed the normal software keyboard and reproduced the same failure.
+
+- App bounds: 1376 x 1032 points. Sheet: x=368, y=60.5, width=640, height=880.
+- Input: x=385, y=148, width=606, height=33. The 16-point inner padding plus
+  one-point border and the 640-point sheet width match the source contract.
+- Keyboard top: y=585.875. Create button: y=888..924, height=36,
+  `isHittable=false`. The native assertion that the button ends above the keyboard
+  fails. This is not inferred solely from a screenshot.
+- `MobileWorkspaceActionSheet.tsx` sizes long forms from window height and uses
+  an absolute overlay without keyboard avoidance. Its existing CodeScene score
+  is 10.0. The correction should use the app's keyboard-avoidance convention,
+  constrain the sheet to available height, and retain a scrollable body and
+  reachable footer; validate both long and short forms, rotation, and dismissal.
+- Source contracts also permit 30-point property choices and 32-34-point filter/
+  suggestion rows. Audit their actual touch regions before claiming tablet
+  accessibility; do not enlarge desktop-derived visual tokens indiscriminately.
+- No production UI file was changed: the unavailable required Codacy dashboard
+  and MCP safeguard need restored access or a separately approved UI-batch
+  exception. The storage-only exception was not expanded automatically.
+- Diagnostic source, native failure logs, accessibility hierarchy, screenshots,
+  and recordings are retained under
+  `/Volumes/Jupiter/Cache/tolaria-mobile-qa-2026-10-10/`, notably
+  `TabletFormDiagnosticTests.swift` and
+  `final-form-diagnostic-normal-keyboard.xcresult`. This disposable diagnostic is
+  separate from the three passing repository-native tests, not a passing release gate.
 
 ## Recovered baseline
 
