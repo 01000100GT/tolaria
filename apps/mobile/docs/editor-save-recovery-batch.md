@@ -101,6 +101,46 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Git filesystem metadata follow-through
+
+Within the approved workspace-filesystem follow-through, replace repeated Expo
+attribute lookups with an optional native stat capability. No metadata/content
+cache, dependency, UI, save-barrier, or rapid-edit correctness change was added.
+The analyzer exception above remains temporary and is not release approval.
+
+- Native TDD: missing metadata reader, then a real `/var` alias failure, before
+  the sandbox-descriptor fix. Foundation: 47 tests passed. Three new adapter
+  checks plus existing adapter/rapid-edit checks: seven tests passed.
+- Current-source standalone iPad build and small Git round trip pass. Identical
+  6,000-file fixture: before/after total 309,756/215,668 ms; push
+  79,310/64,774 ms; pull 73,596/47,825 ms. Binary/deletion preservation and
+  interrupted-checkout recovery pass. Debug host-load variance remains; these
+  timings are not a release budget and sync is still too slow.
+- Project CodeScene remains Hotspot 10.0 / Average 9.991289335928062. All eight
+  scorable files remain/reach 10.0; Package.swift is unscorable with zero findings.
+  Staged CLI delta checked all nine code files and returned `no-issues-found`.
+- Nine individual Opengrep 1.26.0 scans completed with zero results at every
+  severity. Each SARIF invocation and verbose skip/partial-analysis report was
+  inspected. All existing files started at zero; every new file also has zero.
+  Project ESLint and TypeScript pass. Codacy dashboard/parity remain unavailable,
+  not zero. The merge-base manifest has 753 paths; this batch's scope is below.
+- Localization: no UI copy changes. PostHog: no event needed for internal
+  filesystem performance. ADR 0205 and architecture/abstraction docs updated.
+  No original vault or demo fixture changes. Native interactive CUA remains
+  unavailable while the Mac is locked; native instrumented tests were used.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/Package.swift` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/ManagedWorkspaceText.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/TolariaWorkspaceAccessModule.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/nativeWorkspaceAccess.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/expoGitFileSystem.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/ManagedWorkspacePath.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceGitMetadata.swift` | New | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceGitMetadataTests.swift` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/expoGitMetadata.test.ts` | New | 10.0 | 0 |
+
 ## Structural recovery follow-through
 
 - Same approved storage/recovery scope and exception expiry. Existing files'

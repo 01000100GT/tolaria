@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import type * as ExpoFileSystem from 'expo-file-system'
+import { optionalNativeWorkspaceAccessModule } from '../nativeWorkspaceAccess'
 import { gitFileUri, gitFsError } from './gitFileSystemPaths'
 
 type NativeGitFile = Pick<ExpoFileSystem.File, 'bytes' | 'write' | 'delete' | 'info'>
@@ -10,6 +11,14 @@ type FileSystemModule = {
 }
 type GitPath = string
 type FileUri = string
+type GitEntryInfo = {
+  exists: boolean
+  isDirectory?: boolean | null
+  size?: number
+  modificationTime?: number
+  creationTime?: number
+}
+type ReadEntryInfo = (uri: FileUri) => GitEntryInfo
 declare function require(name: 'expo-file-system'): FileSystemModule
 declare function require(name: 'expo-file-system/legacy'): { readDirectoryAsync: (uri: string) => Promise<string[]> }
 
@@ -17,36 +26,41 @@ export function createExpoGitFileSystem(
   rootUri: FileUri,
   module: FileSystemModule = require('expo-file-system'),
   readDirectory = require('expo-file-system/legacy').readDirectoryAsync,
+  nativeInfo: ReadEntryInfo | undefined = optionalNativeWorkspaceAccessModule()?.gitEntryInfo,
 ) {
+  const readInfo: ReadEntryInfo = nativeInfo ?? module.Paths.info
   const uri = cachedHandle((path: GitPath) => gitFileUri(rootUri, path))
   const file = cachedHandle((path: GitPath) => new module.File(uri(path)))
   const directory = cachedHandle((path: GitPath) => new module.Directory(uri(path)))
-  const stat = async (path: GitPath) => gitStat(module, uri(path), () => file(path))
+  const stat = async (path: GitPath) => {
+    const info = readInfo(uri(path))
+    return gitStat(info, () => nativeInfo ? info : file(path).info())
+  }
   return {
     promises: {
       readFile: async (path: GitPath, options?: string | { encoding?: string }) => {
-        requireEntry(module, uri(path), false)
+        requireEntry(readInfo, uri(path), false)
         const bytes = Buffer.from(await file(path).bytes())
         return options === 'utf8' || (typeof options === 'object' && options.encoding === 'utf8')
           ? bytes.toString('utf8') : bytes
       },
       writeFile: async (path: GitPath, content: string | Uint8Array) => {
-        requireParent(module, uri(path))
+        requireParent(readInfo, uri(path))
         // Expo's JSI converter requires a plain Uint8Array, not a Buffer subclass.
         file(path).write(typeof content === 'string' ? content : new Uint8Array(content))
       },
-      unlink: async (path: GitPath) => { requireEntry(module, uri(path), false); file(path).delete() },
+      unlink: async (path: GitPath) => { requireEntry(readInfo, uri(path), false); file(path).delete() },
       readdir: async (path: GitPath) => {
-        requireEntry(module, uri(path), true)
+        requireEntry(readInfo, uri(path), true)
         return readDirectory(uri(path))
       },
       mkdir: async (path: GitPath) => {
-        if (module.Paths.info(uri(path)).exists) throw gitFsError('EEXIST')
-        requireParent(module, uri(path))
+        if (readInfo(uri(path)).exists) throw gitFsError('EEXIST')
+        requireParent(readInfo, uri(path))
         directory(path).create()
       },
       rmdir: async (path: GitPath) => {
-        requireEntry(module, uri(path), true)
+        requireEntry(readInfo, uri(path), true)
         if ((await readDirectory(uri(path))).length) throw gitFsError('ENOTEMPTY')
         directory(path).delete()
       },
@@ -58,22 +72,21 @@ export function createExpoGitFileSystem(
   }
 }
 
-function requireParent(module: FileSystemModule, uri: FileUri) {
+function requireParent(readInfo: ReadEntryInfo, uri: FileUri) {
   const parent = uri.slice(0, uri.replace(/\/$/u, '').lastIndexOf('/'))
-  requireEntry(module, parent, true)
+  requireEntry(readInfo, parent, true)
 }
 
-function requireEntry(module: FileSystemModule, uri: FileUri, directory: boolean) {
-  const info = module.Paths.info(uri)
+function requireEntry(readInfo: ReadEntryInfo, uri: FileUri, directory: boolean) {
+  const info = readInfo(uri)
   if (!info.exists) throw gitFsError('ENOENT')
   if (info.isDirectory !== directory) throw gitFsError(directory ? 'ENOTDIR' : 'EISDIR')
 }
 
-function gitStat(module: FileSystemModule, uri: FileUri, file: () => NativeGitFile) {
-  const info = module.Paths.info(uri)
+function gitStat(info: GitEntryInfo, readMetadata: () => Omit<GitEntryInfo, 'exists'>) {
   if (!info.exists) throw gitFsError('ENOENT')
   const isDirectory = Boolean(info.isDirectory)
-  const metadata = isDirectory ? null : file().info()
+  const metadata = isDirectory ? null : readMetadata()
   return {
     isDirectory: () => isDirectory,
     isFile: () => !isDirectory,

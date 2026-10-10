@@ -40,9 +40,14 @@ private struct WorkspacePickerContext {
 
 public class TolariaWorkspaceAccessModule: Module {
   private var pickerContext: WorkspacePickerContext?
+  private let gitMetadata = Result { try WorkspaceGitMetadata() }
 
   public func definition() -> ModuleDefinition {
     Name("TolariaWorkspaceAccess")
+
+    Function("gitEntryInfo") { (uri: String) throws -> [String: Any] in
+      return try self.gitMetadata.get().info(uri)
+    }
 
     AsyncFunction("writeWorkspaceText") { (uri: String, path: String, content: String) throws in
       try managedWorkspaceText(uri).write(path, content: content)

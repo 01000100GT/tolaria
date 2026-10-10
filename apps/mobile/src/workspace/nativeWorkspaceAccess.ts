@@ -1,6 +1,9 @@
 import type { WorkspaceFileIndex } from './fileSystemWorkspaceRepository'
 
 export type NativeWorkspaceAccessModule = {
+  gitEntryInfo?: (uri: string) => {
+    exists: boolean; isDirectory?: boolean; size?: number; modificationTime?: number; creationTime?: number
+  }
   createWorkspaceOperationId?: () => string
   changeWorkspaceEntry?: (root: string, path: string, toPath: string | null, directory: boolean, identifier: string) => Promise<void>
   writeWorkspaceText?: (root: string, path: string, content: string) => Promise<void>

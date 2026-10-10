@@ -19,7 +19,7 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
   6,036-file Laputa copy, not the original vault.
-- Not launch-ready: a 6,000-file debug fixture still takes 68-75 seconds
+- Not launch-ready: a 6,000-file debug fixture still takes 48-65 seconds
   for manual push or pull. Linked original folders, configured/live GitHub
   authentication, Android device QA, and October-main integration remain open.
 - The table and evidence below are chronological, starting with the recovered
@@ -141,6 +141,15 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
   updated. Only disposable fixture notes were used in the rotation test.
 
 ## Evidence log
+
+- Single-call native metadata: the same 6,000-file Git fixture passed before
+  and after the adapter change. Baseline clone times were 67,859/86,065 ms,
+  push 79,310 ms, pull 73,596 ms, total 309,756 ms. New times were
+  40,324/60,842 ms, push 64,774 ms, pull 47,825 ms, total 215,668 ms.
+  These are single debug-simulator runs with host-load variance, not release
+  budgets. Binary/deletion/checkout recovery checks remain green. Fresh metadata,
+  timestamp changes, managed path boundaries, and symlink rejection have focused
+  coverage; the Foundation suite passes 47 tests. See ADR 0205.
 
 - Structural recovery: 43 Foundation tests and six standalone iPad cross-launch
   phases pass. Folder moves retain binary/frontmatter data; interrupted deletion

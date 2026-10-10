@@ -24,6 +24,9 @@ clone/push/pull timings; routine checks retain the fast two-note fixture.
 one library-owned cache per sync operation, released afterwards (ADR 0200).
 The Expo adapter separately reuses bounded path handles without caching contents
 or metadata; directory enumeration returns names without allocating child handles.
+Standalone iOS additionally uses `WorkspaceGitMetadata` through `gitEntryInfo`
+for one fresh sandbox-relative stat lookup, including symlink rejection. The
+optional capability leaves Expo Go and Android on the existing path (ADR 0205).
 Checkpoints explicitly stage content before comparing the matrix, protecting
 same-length rapid edits that the library's coarse timestamp shortcut misses.
 This requires a content scan; the measured large-vault sync cost remains a
