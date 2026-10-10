@@ -19,8 +19,10 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
   6,036-file Laputa copy, not the original vault.
-- Not launch-ready: the optimized 6,000-file fixture takes 28-34 seconds for
-  manual pull/push and exposes a 9.1-second JavaScript stall. Linked original folders, configured/live GitHub
+- Not launch-ready: the optimized 6,000-file fixture takes 29-35 seconds for
+  manual pull/push. Cooperative scheduling reduced the observed worst JS stall
+  from 9.1 seconds to 692 ms, but this is still not a release budget. Linked
+  original folders, configured/live GitHub
   authentication, Android device QA, and October-main integration remain open.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
@@ -178,6 +180,13 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
   updated. Only disposable fixture notes were used in the rotation test.
 
 ## Evidence log
+
+- Cooperative Git scheduling: after rejecting an 8 ms variant's 159-second total,
+  the 16 ms/native-IO-reset variant takes 99,075 ms versus 95,409 ms baseline, with
+  maximum JS timer delay 692 ms versus 9,112 ms. Both retain native data-integrity
+  checks. All 70 Git tests and native WYSIWYG persistence/117 layout metrics pass.
+  These are single optimized simulator runs, not physical-device budgets. See
+  ADR 0209 and the exact per-file storage-batch record.
 
 - Optimized native baseline (Metro stopped, production Hermes bundle): the
   6,000-file fixture passes, with 16.6/16.6-second clones, 34.3-second push and

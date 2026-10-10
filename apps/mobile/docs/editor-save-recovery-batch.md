@@ -101,6 +101,58 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Cooperative Git responsiveness
+
+- Synchronous Expo metadata/mutations now use a small per-instance task runner;
+  the Git library's awaited progress callback uses the same policy. Sixteen-
+  millisecond slices yield through a timer, concurrent resumptions recheck the
+  budget, and genuine asynchronous native reads renew it without an extra timer.
+  No metadata cache, weaker rapid-edit staging, or new persistence queue was added.
+- TDD first reproduced six adapter scheduling failures, then a concurrent burst
+  incorrectly doing all work after one timer, then missing native-IO budget reset.
+  All 70 Git tests pass, including same-length rapid edits, real HTTP round trips,
+  divergence, failed writes, and fresh metadata. TypeScript and project ESLint pass.
+- Optimized native fixture results (6,000 files, Metro stopped):
+
+| Variant | Git work ms | Clone 1 / 2 ms | Push / pull ms | Max JS timer delay ms |
+| --- | --- | --- | --- | --- |
+| Baseline | 95,409 | 16,565 / 16,645 | 34,302 / 27,892 | 9,112 |
+| Initial 8 ms yielding | 159,032 | 28,255 / 28,661 | 54,072 / 48,038 | 412 |
+| 16 ms + native-IO reset | 99,075 | 16,948 / 18,070 | 35,280 / 28,769 | 692 |
+
+- The refined version keeps throughput close to baseline while removing the
+  observed multi-second stalls. It still recorded 28 callbacks at least 50 ms
+  late, so this is not a smoothness, FPS, or release-performance sign-off. Single
+  simulator runs do not establish device budgets; long individual library/native
+  operations are not preempted. The initial variant's large slowdown was rejected.
+- All variants passed binary/deletion/checkout-recovery checks and restored the
+  6,036-file app-local vault. The refined version also passes native WYSIWYG
+  persistence and 117 measured layout assertions. Native dependencies were unchanged;
+  the final iteration reused the verified optimized executable (matching SHA-256)
+  with a fresh Expo `--dev false` bundle compiled by Hermes `-O`.
+- The same installed optimized app passed all three native XCUITest cases:
+  contextual formatting controls, eight continuous panel transitions with
+  vertical-scroll arbitration, and repeated rotation preserving the selected
+  note and readable editor. The 61.6-second run had zero failures; Metro was off.
+- Both existing files began at CodeScene 10.0 and zero scoped findings. All five
+  final code files are 10.0; CLI staged delta reports five checked files and
+  `no-issues-found`. Five explicit Opengrep 1.26.0 scans each completed 399 relevant
+  rules on exactly one file, with successful SARIF invocations, zero findings at
+  every severity, no target omission, and no partial analysis. A new test's dynamic
+  method lookup was replaced with typed callbacks and rescanned; no rule was silenced.
+- This stays within the approved temporary storage/QA analyzer exception. Codacy
+  dashboard parity remains unavailable, not zero. ADR 0209 and abstraction docs
+  updated; no UI copy, no analytics event for internal scheduling, and no full
+  desktop/Rust coverage run. Original Laputa and demo fixtures are unchanged.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/src/workspace/git/expoGitFileSystem.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/gitRemote.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/gitTaskRunner.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/gitTaskRunner.test.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/git/expoGitScheduling.test.ts` | New | 10.0 | 0 |
+
 ## Optimized native storage QA checkpoint
 
 - ADR 0208 adds an explicit local `TOLARIA_QA` compilation capability, never a

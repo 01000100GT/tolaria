@@ -38,6 +38,14 @@ optional capability leaves Expo Go and Android on the existing path (ADR 0205).
 decoded URI components without filesystem normalization, rejects dot/empty
 segments and file authorities with credentials or ports, and leaves symlink
 rejection to the descriptor-relative stat. No file state is cached.
+`gitTaskRunner.ts` supplies a per-instance cooperative task boundary for synchronous
+Expo metadata/mutation calls and awaited Git progress callbacks. Requests share
+one pending timer after a sixteen-millisecond budget; each synchronous operation
+runs immediately after rechecking that budget, including concurrent resumptions.
+Completed asynchronous native byte/directory reads renew the budget without an
+extra timer because they already return control through the native event loop.
+This is not a new mutation queue or a latency guarantee for individual
+large operations (ADR 0209).
 Checkpoints explicitly stage content before comparing the matrix, protecting
 same-length rapid edits that the library's coarse timestamp shortcut misses.
 This requires a content scan; the measured large-vault sync cost remains a

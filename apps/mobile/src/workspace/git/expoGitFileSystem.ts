@@ -2,6 +2,7 @@ import { Buffer } from 'buffer'
 import type * as ExpoFileSystem from 'expo-file-system'
 import { optionalNativeWorkspaceAccessModule } from '../nativeWorkspaceAccess'
 import { gitFileUri, gitFsError } from './gitFileSystemPaths'
+import { createGitTaskRunner } from './gitTaskRunner'
 
 type NativeGitFile = Pick<ExpoFileSystem.File, 'bytes' | 'write' | 'delete' | 'info'>
 type FileSystemModule = {
@@ -29,39 +30,43 @@ export function createExpoGitFileSystem(
   nativeInfo: ReadEntryInfo | undefined = optionalNativeWorkspaceAccessModule()?.gitEntryInfo,
 ) {
   const readInfo: ReadEntryInfo = nativeInfo ?? module.Paths.info
+  const { run, readNative } = createGitTaskRunner()
   const uri = cachedHandle((path: GitPath) => gitFileUri(rootUri, path))
   const file = cachedHandle((path: GitPath) => new module.File(uri(path)))
   const directory = cachedHandle((path: GitPath) => new module.Directory(uri(path)))
-  const stat = async (path: GitPath) => {
+  const stat = (path: GitPath) => run(() => {
     const info = readInfo(uri(path))
     return gitStat(info, () => nativeInfo ? info : file(path).info())
-  }
+  })
   return {
     promises: {
       readFile: async (path: GitPath, options?: string | { encoding?: string }) => {
         requireEntry(readInfo, uri(path), false)
-        const bytes = Buffer.from(await file(path).bytes())
+        const bytes = Buffer.from(await readNative(() => file(path).bytes()))
         return options === 'utf8' || (typeof options === 'object' && options.encoding === 'utf8')
           ? bytes.toString('utf8') : bytes
       },
-      writeFile: async (path: GitPath, content: string | Uint8Array) => {
+      writeFile: (path: GitPath, content: string | Uint8Array) => run(() => {
         requireParent(readInfo, uri(path))
         // Expo's JSI converter requires a plain Uint8Array, not a Buffer subclass.
         file(path).write(typeof content === 'string' ? content : new Uint8Array(content))
-      },
-      unlink: async (path: GitPath) => { requireEntry(readInfo, uri(path), false); file(path).delete() },
+      }),
+      unlink: (path: GitPath) => run(() => {
+        requireEntry(readInfo, uri(path), false)
+        file(path).delete()
+      }),
       readdir: async (path: GitPath) => {
         requireEntry(readInfo, uri(path), true)
-        return readDirectory(uri(path))
+        return readNative(() => readDirectory(uri(path)))
       },
-      mkdir: async (path: GitPath) => {
+      mkdir: (path: GitPath) => run(() => {
         if (readInfo(uri(path)).exists) throw gitFsError('EEXIST')
         requireParent(readInfo, uri(path))
         directory(path).create()
-      },
+      }),
       rmdir: async (path: GitPath) => {
         requireEntry(readInfo, uri(path), true)
-        if ((await readDirectory(uri(path))).length) throw gitFsError('ENOTEMPTY')
+        if ((await readNative(() => readDirectory(uri(path)))).length) throw gitFsError('ENOTEMPTY')
         directory(path).delete()
       },
       stat,

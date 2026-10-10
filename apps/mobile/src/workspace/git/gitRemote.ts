@@ -2,6 +2,7 @@ import git, { type HttpClient } from 'isomorphic-git'
 import { createGitVault, githubRepositoryUrl, type GitAuthor, type GitVaultContext } from './gitVault'
 import { withWorkspaceOperation } from './workspaceOperationQueue'
 import { withSavedWorkspace } from './workspaceWriteQueue'
+import { createGitTaskRunner } from './gitTaskRunner'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
 export type GitRemoteOptions = GitVaultContext & {
@@ -56,11 +57,13 @@ function emitPhase(options: GitRemoteOptions, phase: GitSyncPhase) {
 }
 
 function transport({ fs, dir, http, token, cache }: GitRemoteOptions, repositoryUrl: string) {
+  const { run } = createGitTaskRunner()
   return {
     fs,
     dir,
     http,
     cache,
+    onProgress: () => run(() => undefined),
     onAuth: (url: string) => {
       if (githubRepositoryUrl(url) !== repositoryUrl || !token) return { cancel: true as const }
       return { username: 'x-access-token', password: token }
