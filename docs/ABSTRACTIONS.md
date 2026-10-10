@@ -64,6 +64,13 @@ indexes and cached raw note content. Old standalone binaries fail closed rather
 than silently falling back to a non-atomic writer. Expo Go/Android do not yet
 provide this native guarantee. See ADR 0203.
 
+`nativeWorkspaceMutation.ts` retains a native UUID across failed attempts for
+both text and entry bridges. `saveWorkspaceText` requires that ID; completed
+receipts contain only a path/content digest and are consulted before acquiring
+new file preconditions. An exact retry cannot overwrite a later edit, resurrect
+a deletion, or act on a recreated entry. Receipts are bounded under the existing
+per-root serialized queue, not a general command ledger. See ADR 0206.
+
 `assert-ios-write-recovery.mjs` terminates/relaunches the standalone simulator app
 between journal publication and recovery, then repeats with an external edit.
 Its native DEBUG probe uses only a dedicated cache fixture and the regular

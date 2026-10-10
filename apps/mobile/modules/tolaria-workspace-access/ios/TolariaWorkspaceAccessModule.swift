@@ -49,8 +49,8 @@ public class TolariaWorkspaceAccessModule: Module {
       return try self.gitMetadata.get().info(uri)
     }
 
-    AsyncFunction("writeWorkspaceText") { (uri: String, path: String, content: String) throws in
-      try managedWorkspaceText(uri).write(path, content: content)
+    AsyncFunction("saveWorkspaceText") { (uri: String, path: String, content: String, identifier: String) throws in
+      try managedWorkspaceText(uri).write(path, content: content, identifier: identifier)
     }
 
     Function("recoverWorkspaceText") { (uri: String) throws -> Bool in

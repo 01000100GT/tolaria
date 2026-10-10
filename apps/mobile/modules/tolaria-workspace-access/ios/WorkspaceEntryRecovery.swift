@@ -28,10 +28,11 @@ struct WorkspaceEntryRecovery {
     defer { workspaceMutationLock.unlock() }
     _ = try recover()
     try requireWorkspaceMutationRoot(root)
+    if try completed(change) { return }
     let source = try workspaceFileURL(root: root, path: change.path)
     let destination = try destinationFor(change)
     guard let before = try workspaceEntryFingerprint(source) else {
-      try requireCompletedChange(change)
+      if change.toPath != nil { throw CocoaError(.fileReadNoSuchFile) }
       return
     }
     guard before.directory == change.directory else { throw WorkspaceFileError.invalidPath }
@@ -91,11 +92,13 @@ struct WorkspaceEntryRecovery {
     return try workspaceFileURL(root: root, path: path)
   }
 
-  private func requireCompletedChange(_ change: WorkspaceEntryChange) throws {
-    if change.toPath == nil { return }
-    guard FileManager.default.fileExists(atPath: receipt.path) else { throw CocoaError(.fileReadNoSuchFile) }
+  private func completed(_ change: WorkspaceEntryChange) throws -> Bool {
+    guard FileManager.default.fileExists(atPath: receipt.path) else { return false }
     let completed = try JSONDecoder().decode(PendingWorkspaceEntry.self, from: Data(contentsOf: receipt))
-    guard completed.version == 1, completed.change == change else { throw CocoaError(.fileReadNoSuchFile) }
+    guard completed.version == 1 else { throw WorkspaceTextRecoveryError.invalidRecord }
+    guard completed.change.identifier == change.identifier else { return false }
+    guard completed.change == change else { throw WorkspaceTextRecoveryError.invalidRecord }
+    return true
   }
 
   private func cleanRemovedEntry() throws {

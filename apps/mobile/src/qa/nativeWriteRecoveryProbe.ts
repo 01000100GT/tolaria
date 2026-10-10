@@ -6,10 +6,13 @@ import { postNativeQaEvent, setNativeQaSinkUrl } from './nativeQaSink'
 import { nativeEntryRecoveryChecks } from './nativeEntryRecoveryProbe'
 
 type Inspection = { rootUri: string; content: string; pending: boolean; privateJournal: boolean }
-type NativePhase = 'prepare' | 'prepare-conflict' | 'inspect' | 'cleanup'
+type NativePhase = 'prepare' | 'prepare-conflict' | 'inspect' | 'cleanup' | 'edit-completed'
 type VerificationPhase = 'recover' | 'conflict'
-type ProbePhase = Exclude<NativePhase, 'inspect'> | VerificationPhase
-type ProbeModule = { runTextRecoveryProbe: (phase: NativePhase) => Promise<Inspection> }
+type ProbePhase = Exclude<NativePhase, 'inspect' | 'edit-completed'> | VerificationPhase
+type ProbeModule = {
+  runTextRecoveryProbe: (phase: NativePhase) => Promise<Inspection>
+  saveWorkspaceText: (root: string, path: string, content: string, identifier: string) => Promise<void>
+}
 let running = false
 
 /** Cross-launch fixtures are confined to the native module's dedicated QA cache. */
@@ -70,10 +73,14 @@ async function verifyRecovery(module: ProbeModule, before: Inspection) {
   const repository = createFileSystemWorkspaceRepository(expoWorkspaceFileSystem)
   const snapshot = repository.readSnapshot(staleRequest(before.rootUri))
   const after = await module.runTextRecoveryProbe('inspect')
+  await module.runTextRecoveryProbe('edit-completed')
+  await module.saveWorkspaceText(before.rootUri, 'note.md', after.content, 'native-text-recovery-qa')
+  const retried = await module.runTextRecoveryProbe('inspect')
   const checks = {
     staleIndexDiscarded: snapshot.notes[0]?.title === 'Recovered',
     completeFrontmatter: after.content === '---\ncustom: retained\n---\n# Recovered\n',
     journalCleared: !after.pending,
+    completedRetryPreservesLaterEdit: retried.content === '# Later external edit\n' && !retried.pending,
   }
   await module.runTextRecoveryProbe('cleanup')
   return checks

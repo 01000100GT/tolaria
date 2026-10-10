@@ -6,7 +6,7 @@ export type NativeWorkspaceAccessModule = {
   }
   createWorkspaceOperationId?: () => string
   changeWorkspaceEntry?: (root: string, path: string, toPath: string | null, directory: boolean, identifier: string) => Promise<void>
-  writeWorkspaceText?: (root: string, path: string, content: string) => Promise<void>
+  saveWorkspaceText?: (root: string, path: string, content: string, identifier: string) => Promise<void>
   recoverWorkspaceText?: (root: string) => boolean
   importWorkspace: (uri: string) => Promise<NativeWorkspaceBridgeRecord | null>
   pickAndImportWorkspace?: () => Promise<NativeWorkspaceBridgeRecord | null>

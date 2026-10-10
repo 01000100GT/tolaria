@@ -2,6 +2,7 @@
 import Foundation
 
 private enum TextRecoveryProbeFailure: Error { case interrupted, didNotInterrupt, invalidPhase }
+private let textRecoveryProbeIdentifier = "native-text-recovery-qa"
 
 func runWorkspaceTextRecoveryNativeProof(_ phase: String) throws -> [String: Any] {
   let cache = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -11,6 +12,8 @@ func runWorkspaceTextRecoveryNativeProof(_ phase: String) throws -> [String: Any
   case "prepare", "prepare-conflict":
     try prepareTextRecoveryProof(writer, conflict: phase == "prepare-conflict")
   case "inspect": break
+  case "edit-completed":
+    try Data("# Later external edit\n".utf8).write(to: root.appendingPathComponent("note.md"), options: .atomic)
   case "cleanup":
     try clearTextRecoveryProof(writer)
     return ["cleaned": true]
@@ -34,14 +37,14 @@ private func prepareTextRecoveryProof(_ writer: WorkspaceTextRecovery, conflict:
     if stage == .published { throw TextRecoveryProbeFailure.interrupted }
   }
   do {
-    try interrupted.write("note.md", content: "---\ncustom: retained\n---\n# Recovered\n")
+    try interrupted.write("note.md", content: "---\ncustom: retained\n---\n# Recovered\n", identifier: textRecoveryProbeIdentifier)
     throw TextRecoveryProbeFailure.didNotInterrupt
   } catch TextRecoveryProbeFailure.interrupted { /* Simulate termination after journal publication. */ }
   if conflict { try Data("# External edit\n".utf8).write(to: destination, options: .atomic) }
 }
 
 private func clearTextRecoveryProof(_ writer: WorkspaceTextRecovery) throws {
-  for url in [writer.journal, writer.root] {
+  for url in [writer.journal, writer.receipt, writer.root] {
     if FileManager.default.fileExists(atPath: url.path) { try FileManager.default.removeItem(at: url) }
   }
 }

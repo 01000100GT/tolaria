@@ -187,7 +187,9 @@ Unexpected destination changes retain the pending draft and fail closed. This
 protects published text saves, not unsent keystrokes. Structural entry operations
 use the same recovery boundary: exclusive rename for moves, private quarantine
 before deletion cleanup, and UUID completion receipts for safe queue retries
-(ADR 0204). A move plus its subsequent backlink rewrites is not yet one transaction.
+(ADR 0204). Text and entry retries consult completion receipts before capturing
+new preconditions, so replay cannot overwrite later edits or delete recreated
+entries (ADR 0206). A move plus its subsequent backlink rewrites is not yet one transaction.
 Expo Go and Android still require their own equivalent persistence implementation.
 
 The same iOS module exposes an optional, single-call Git metadata reader anchored

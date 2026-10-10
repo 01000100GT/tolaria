@@ -1,7 +1,9 @@
 import { optionalNativeWorkspaceAccessModule } from './nativeWorkspaceAccess'
+import { runNativeWorkspaceMutation } from './nativeWorkspaceMutation'
 
 type NativeTextRecovery = {
-  writeWorkspaceText?: (root: string, path: string, content: string) => Promise<void>
+  createWorkspaceOperationId?: () => string
+  saveWorkspaceText?: (root: string, path: string, content: string, identifier: string) => Promise<void>
   recoverWorkspaceText?: (root: string) => boolean
 }
 
@@ -10,8 +12,11 @@ export function writeNativeWorkspaceText(
   module: NativeTextRecovery | null = optionalNativeWorkspaceAccessModule(),
 ): Promise<void> | null {
   if (!module) return null
-  if (!module.writeWorkspaceText) throw new Error('nativeTextRecoveryUnavailable')
-  return module.writeWorkspaceText(root, path, content)
+  if (!module.saveWorkspaceText || !module.createWorkspaceOperationId) throw new Error('nativeTextRecoveryUnavailable')
+  const key = JSON.stringify(['text', root, path, content])
+  const perform = module.saveWorkspaceText
+  return runNativeWorkspaceMutation(module, key, module.createWorkspaceOperationId,
+    (identifier) => perform(root, path, content, identifier))
 }
 
 export function recoverNativeWorkspaceText(

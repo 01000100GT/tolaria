@@ -101,6 +101,45 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Completed mutation retry follow-through
+
+- Same approved storage/recovery exception, scope and expiry; no release waiver.
+  Existing scorable files started and finished at 10.0. The text and entry
+  bridge wrappers have no scorable code and zero findings after consolidation.
+  The two new scorable files reach 10.0. CLI staged delta checked all 12 code
+  files and returned `no-issues-found`.
+- TDD reproduced a completed deletion removing a recreated file and a recovered
+  save overwriting a later external edit. Foundation: 51 tests pass. Focused
+  text/entry bridge, repository, and save-queue tests: 16 pass. Project ESLint and
+  TypeScript pass. The full desktop/Rust coverage suite was not run.
+- Current-source standalone iPad build passed. Cross-launch text recovery now
+  verifies that retrying a completed save preserves a later edit. Entry move,
+  deletion, binary/frontmatter preservation, and conflict blocking also pass.
+  Native WYSIWYG persistence and 117 numeric layout metrics pass.
+- All 12 individual Opengrep scans completed with zero findings at every
+  severity, successful invocations, no skipped target, and no partial analysis.
+  Existing-file baseline findings were also zero. Project CodeScene remains
+  Hotspot 10.0 / Average 9.991289335928062. Dashboard analyzer parity remains
+  unavailable, not zero; the approved compensating checks are unchanged.
+- ADR 0206 and architecture/abstraction/assessment docs updated. No UI copy
+  changes or new PostHog event: this corrects internal retry semantics. Demo
+  fixtures and the original Laputa vault remain untouched.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecovery.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceEntryRecovery.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecoveryNativeProof.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceEntryRetryTests.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceTextRecovery.ts` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceEntryRecovery.ts` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/src/qa/nativeWriteRecoveryProbe.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/TolariaWorkspaceAccessModule.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/nativeWorkspaceAccess.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceTextRetryTests.swift` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/nativeWorkspaceMutation.ts` | New | 10.0 | 0 |
+
 ## Git filesystem metadata follow-through
 
 Within the approved workspace-filesystem follow-through, replace repeated Expo

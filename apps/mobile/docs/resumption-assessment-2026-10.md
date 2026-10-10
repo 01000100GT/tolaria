@@ -142,6 +142,13 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
 
 ## Evidence log
 
+- Native retry regression: actual filesystem tests reproduced a completed
+  deletion removing a recreated file and a recovered text save overwriting a
+  later edit. UUID receipts are now checked before reading fresh preconditions.
+  The Foundation suite passes 51 tests; 16 focused bridge/repository tests pass.
+  The current-source iPad restart proof also preserves the later external edit
+  when the completed save is retried. See ADR 0206 and the batch evidence record.
+
 - Single-call native metadata: the same 6,000-file Git fixture passed before
   and after the adapter change. Baseline clone times were 67,859/86,065 ms,
   push 79,310 ms, pull 73,596 ms, total 309,756 ms. New times were

@@ -9,21 +9,31 @@ private struct PendingWorkspaceText: Codable {
   let path: String
   let before: String?
   let content: Data
+  let identifier: String?
+}
+
+private struct CompletedWorkspaceText: Codable {
+  let version: Int
+  let identifier: String
+  let path: String
+  let digest: String
 }
 
 struct WorkspaceTextRecovery {
   let root: URL
   let journal: URL
   var afterStage: (WorkspaceTextWriteStage) throws -> Void = { _ in }
+  var receipt: URL { journal.appendingPathExtension("completed") }
 
-  func write(_ path: String, content: String) throws {
+  func write(_ path: String, content: String, identifier: String = UUID().uuidString) throws {
     workspaceMutationLock.lock()
     defer { workspaceMutationLock.unlock() }
     _ = try recover()
     try requireWorkspaceMutationRoot(root)
+    if try completed(path, content: content, identifier: identifier) { return }
     try withDestination(path) { destination in
       let pending = PendingWorkspaceText(
-        version: 1, path: path, before: try existingDigest(destination), content: Data(content.utf8)
+        version: 1, path: path, before: try existingDigest(destination), content: Data(content.utf8), identifier: identifier
       )
       try afterStage(.prepared)
       try FileManager.default.createDirectory(at: journal.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -31,7 +41,7 @@ struct WorkspaceTextRecovery {
       try afterStage(.published)
       try replace(pending, destination: destination)
       try afterStage(.replaced)
-      try FileManager.default.removeItem(at: journal)
+      try recordCompletion(pending)
     }
   }
 
@@ -46,9 +56,30 @@ struct WorkspaceTextRecovery {
     try requireWorkspaceMutationRoot(root)
     try withDestination(pending.path) { destination in
       try replace(pending, destination: destination)
-      try FileManager.default.removeItem(at: journal)
+      try recordCompletion(pending)
     }
     return true
+  }
+
+  private func completed(_ path: String, content: String, identifier: String) throws -> Bool {
+    guard let data = try existingData(receipt) else { return false }
+    let completed = try JSONDecoder().decode(CompletedWorkspaceText.self, from: data)
+    guard completed.version == 1 else { throw WorkspaceTextRecoveryError.invalidRecord }
+    guard completed.identifier == identifier else { return false }
+    guard completed.path == path, completed.digest == textRecoveryDigest(Data(content.utf8)) else {
+      throw WorkspaceTextRecoveryError.invalidRecord
+    }
+    return true
+  }
+
+  private func recordCompletion(_ pending: PendingWorkspaceText) throws {
+    if let identifier = pending.identifier {
+      let completed = CompletedWorkspaceText(
+        version: 1, identifier: identifier, path: pending.path, digest: textRecoveryDigest(pending.content)
+      )
+      try JSONEncoder().encode(completed).write(to: receipt, options: .atomic)
+    }
+    try FileManager.default.removeItem(at: journal)
   }
 
   private func replace(_ pending: PendingWorkspaceText, destination: URL) throws {
