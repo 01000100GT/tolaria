@@ -101,6 +101,32 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Complete tag preservation
+
+- Removed the eight-tag cap from both vault snapshot parsing and editable-note
+  re-derivation. These are data contracts, not list presentation. Previously the
+  properties form received only eight tags and wrote that truncated list back,
+  silently deleting later tags when the user added another value.
+- Four regressions failed before the fix: initial/summary loading, lazy hydration,
+  body-edit metadata, and the actual property-form value conversion/write plan.
+  All 79 focused tests now pass. A quoted comma-containing twelfth tag, all prior
+  values, unrelated frontmatter, and body bytes survive the form round trip.
+  Existing list-specific presentation limits were not changed.
+- Existing files start/finish at CodeScene 10.0; the new regression file is 10.0.
+  Three-file staged delta reports `no-issues-found`; TypeScript and project ESLint
+  pass. Three individual Opengrep scans complete with zero findings at every
+  severity, successful invocations, and no target skips or partial analysis.
+  Existing scoped baselines were also zero. Remote Codacy remains unavailable.
+- This remains frontmatter read/write correctness under the documented temporary
+  editor-save exception. No UI copy, analytics, or new dependency; no ADR needed.
+  Original vault and demo fixtures are unchanged.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/src/workspace/localVaultSnapshot.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/mobileEditableNote.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/mobileTagPreservation.test.ts` | New | 10.0 | 0 |
+
 ## Persisted note metadata refactor
 
 - The frontmatter round-trip audit found the workspace edit orchestrator at

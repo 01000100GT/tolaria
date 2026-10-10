@@ -14,7 +14,7 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   cover panel transitions, contextual formatting menus, and repeated rotation
   while preserving the selected note. Native WYSIWYG persistence plus 117 layout
   metrics, and the all-panels fixture's 181 metrics pass with the compact toolbar.
-- The latest completed mobile gates pass 1,249 tests across 202 files; 59 Swift
+- The latest completed mobile gates pass 1,253 tests across 203 files; 59 Swift
   filesystem tests passed in the native storage batch. No full desktop suite ran.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
@@ -56,6 +56,12 @@ expected values and mobile constants are still duplicated. Consolidating the
 desktop-owned contract remains open, as do newer desktop behavior differences.
 
 ### Remaining hydration error handling
+
+The frontmatter audit also reproduced and fixed silent loss of tags after the
+eighth value when editing the tags property. Initial snapshots and subsequent
+hydration/editing now retain every tag; the actual form conversion/write-plan
+round trip has regression coverage. The edit orchestrator was first refactored
+from CodeScene 8.28 to 10.0 without changing behavior.
 
 `useHydrateSelectedNote` in `useTabletWorkspaceController.ts` attaches a success
 handler to `readNoteContent` without a rejection handler. A storage recovery

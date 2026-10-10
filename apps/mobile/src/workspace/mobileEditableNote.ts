@@ -53,7 +53,7 @@ export function deriveEditableNote({
       rawContent,
       status: frontmatterScalar(document.frontmatter, ['Status', 'status']) ?? '',
       snippet: localVaultSnippet(document.body),
-      tags: frontmatterList(document.frontmatter, ['tags', 'Tags']).slice(0, 8),
+      tags: frontmatterList(document.frontmatter, ['tags', 'Tags']),
       title: deriveLocalVaultTitle({
         body: document.body,
         fallbackTitle: frontmatterScalar(document.frontmatter, ['title']),

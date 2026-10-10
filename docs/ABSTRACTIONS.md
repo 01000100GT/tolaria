@@ -81,6 +81,9 @@ forces away unexpected edits. See ADR 0201 and the native Git recovery probe.
 editable note's metadata and preview blocks. Workspace edit orchestration imports
 that pure conversion instead of maintaining its parsing helpers inline. Alias
 precedence, scalar-array conversion, and original raw Markdown remain unchanged.
+Both initial snapshots and edited/hydrated metadata retain the complete tag list.
+Presentation limits belong to list components, never the persisted-data model or
+the property form's editable value.
 
 `WorkspaceTextRecovery` atomically publishes a pending text save outside the vault,
 replaces the destination, and removes the record last. Replay checks the previous

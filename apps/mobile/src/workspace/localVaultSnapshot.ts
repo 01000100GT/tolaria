@@ -303,7 +303,7 @@ function parseMarkdownVaultEntry(file: LocalVaultFile, fileKind: MobileFileKind)
     rawContent: file.content,
     relationships: frontmatterRelationships(document.frontmatter),
     status: frontmatterScalar(document.frontmatter, ['Status', 'status']) ?? '',
-    tags: frontmatterList(document.frontmatter, ['tags', 'Tags']).slice(0, 8),
+    tags: frontmatterList(document.frontmatter, ['tags', 'Tags']),
     title,
     type,
     typeDefinition: typeDefinitionFromFrontmatter(document.frontmatter),
