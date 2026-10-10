@@ -9,7 +9,7 @@ The machine-readable coverage source lives in `src/ui/mobileParityInventory.ts`.
 | Mobile file | Desktop source | Parity target |
 | --- | --- | --- |
 | `src/ui/tokens.ts` | `src/index.css`, `src/theme.json` | Mirror light theme colors: sidebar `#F7F6F3`, text `#37352F`, secondary/muted text `#787774`, faint text `#B4B4B4`, borders `#E9E9E7` and `#D9D9D6`, selected `#E8F4FE`, accent blue `#155DFF`, and desktop type accent keys. |
-| `src/ui/tokens.ts` | `src/theme.json` | Mirror editor scale: body 15/1.5, H1 32/700/1.2 with a bottom separator, H2 27/600, H3/H4 20/600, table 14, inline code 14 with 4/2 padding, task checkbox 18, horizontal rule 24px vertical margin, and blockquote secondary italic with blue left border. |
+| `src/ui/tokens.ts` | `src/theme.json` | Mirror editor scale: body 15/1.5, H1 32/700/1.2 with a bottom separator, H2 27/600, H3 20/600, H4 17/600, table 14, inline code 14 with 4/2 padding, task checkbox 18, horizontal rule 24px vertical margin, and blockquote secondary italic with blue left border. |
 
 ## Shared Wrappers
 

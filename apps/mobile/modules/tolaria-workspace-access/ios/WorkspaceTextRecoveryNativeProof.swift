@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || TOLARIA_QA
 import Foundation
 
 private enum TextRecoveryProbeFailure: Error { case interrupted, didNotInterrupt, invalidPhase }

@@ -8,19 +8,19 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   and restart tests, including the standalone iPad filesystem. Incomplete checkout
   cannot be edited or checkpointed as new user content. Standalone iOS text saves
   now have atomic publication and restart recovery, with external-edit exclusion.
-  Standalone moves/deletions also have replay and atomic relocation; complete
-  multi-file write plans still need transaction recovery.
+  Standalone moves/deletions also have replay and atomic relocation. Text-only
+  multi-file plans have roll-forward recovery; mixed structural plans still do not.
 - Current-source standalone iPad app rebuilt and installed. Native touch tests
   cover panel transitions, contextual formatting menus, and repeated rotation
   while preserving the selected note. Native WYSIWYG persistence plus 117 layout
   metrics, and the all-panels fixture's 181 metrics pass with the compact toolbar.
-- Scoped mobile gates pass 1,185 tests across 189 files; 17 Swift filesystem
-  tests passed in the native storage batch. No full desktop suite was run.
+- The latest completed mobile gates pass 1,224 tests across 198 files; 59 Swift
+  filesystem tests passed in the native storage batch. No full desktop suite ran.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
   6,036-file Laputa copy, not the original vault.
-- Not launch-ready: a 6,000-file debug fixture still takes 48-65 seconds
-  for manual push or pull. Linked original folders, configured/live GitHub
+- Not launch-ready: the optimized 6,000-file fixture takes 28-34 seconds for
+  manual pull/push and exposes a 9.1-second JavaScript stall. Linked original folders, configured/live GitHub
   authentication, Android device QA, and October-main integration remain open.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
@@ -36,6 +36,31 @@ two-member receipt from the actual repository path, not only a direct engine cal
 Mixed move/backlink plans and keystrokes not yet submitted remain outside this
 guarantee. Focused tests, native build, and the 12-file quality gates pass under
 the same documented temporary analyzer exception.
+
+### Read-only desktop contract spot check, October 10
+
+Compared `origin/main` at `ec8a3c21942bfb43a2f65eec6fcdcf18f6d95b23`
+with `apps/mobile/src/ui/desktopParity.ts`. Sidebar item padding is 6 points
+vertically / 12 left / 16 right (8 right with count); group headers use 8 vertical
+/ 12 left / 14 right (8 with count). Folder indentation remains 25 points. Note
+rows use 14 vertical / 16 horizontal, with 13 left plus a 3-point typed selection
+border. Those inspected values match the desktop sources in `sidebarStyles.ts`,
+`folderTreeLayout.ts`, and `NoteItem.tsx`. H4 is 17 points, not the inventory's
+previous 20-point description; mobile code already has the correct value.
+
+This is a limited source comparison, not a new screenshot approval or complete
+October desktop parity. Numeric native layout checks protect rendering, but the
+expected values and mobile constants are still duplicated. Consolidating the
+desktop-owned contract remains open, as do newer desktop behavior differences.
+
+### Remaining hydration error handling
+
+`useHydrateSelectedNote` in `useTabletWorkspaceController.ts` attaches a success
+handler to `readNoteContent` without a rejection handler. A storage recovery
+conflict can therefore reject asynchronously without a user-facing retry/recovery
+state; the render error boundary does not cover that promise. The save/read guards
+protect bytes but do not finish the UX. Track this for the UI/controller batch;
+do not silently substitute empty content or remove the conflict guard.
 
 ## Recovered baseline
 
@@ -153,6 +178,13 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
   updated. Only disposable fixture notes were used in the rotation test.
 
 ## Evidence log
+
+- Optimized native baseline (Metro stopped, production Hermes bundle): the
+  6,000-file fixture passes, with 16.6/16.6-second clones, 34.3-second push and
+  27.9-second pull. Maximum timer scheduling delay is 9,112 ms, not acceptable
+  responsiveness. Native single/entry/batch recovery also passes. Ordinary
+  Release's linked native binary excludes the opt-in storage probe API. See
+  ADR 0208 and the storage batch record; these are simulator measurements.
 
 - Text-batch engine: a version-two journal retains every member of a published
   text-only plan. All 59 Foundation tests pass, including recovery from partial

@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { Linking } from 'react-native'
+import { requireOptionalNativeModule } from 'expo'
+import { nativeStorageQaEnabled } from './nativeStorageQaCapability'
 
 export function useNativeGitProbe() {
   useEffect(() => {
-    if (!__DEV__) return
+    if (!storageProbeAvailable()) return
     const run = async (url: string | null) => {
       if (!url) return
       try {
@@ -25,6 +27,11 @@ export function useNativeGitProbe() {
     void Linking.getInitialURL().then(run).catch(() => undefined)
     return () => subscription.remove()
   }, [])
+}
+
+function storageProbeAvailable() {
+  const module = requireOptionalNativeModule<{ nativeStorageQAEnabled?: boolean }>('TolariaWorkspaceAccess')
+  return nativeStorageQaEnabled(__DEV__, module?.nativeStorageQAEnabled)
 }
 
 function isLoopbackEndpoint(endpoint: string) {

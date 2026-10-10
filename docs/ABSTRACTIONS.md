@@ -19,6 +19,13 @@ iCloud synchronizer and must not label local disk writes as remote synchronizati
 Expo's filesystem on the booted iOS simulator, using disposable repositories only.
 Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in large-vault fixture and separate
 clone/push/pull timings; routine checks retain the fast two-note fixture.
+`measureEventLoopDelay.ts` measures timer scheduling delay across the round trip,
+including a blocked tail, and always removes its timer. This is not an animation
+FPS measurement. `nativeStorageQaCapability.ts` accepts development mode or the
+exact native boolean exposed only by `DEBUG` / `TOLARIA_QA` builds. Optimized QA
+uses an embedded production bundle; ordinary Release cannot enable these probes
+through a URL parameter (ADR 0208). Proof delivery reuses the loopback-only
+collector with redirects rejected and credentials omitted.
 `gitRuntime.native.ts` supplies missing digest support through Expo Crypto, while
 `gitDigest.ts` preserves existing runtime APIs and byte-view boundaries. Git uses
 one library-owned cache per sync operation, released afterwards (ADR 0200).
@@ -96,7 +103,7 @@ per-root serialized queue, not a general command ledger. See ADR 0206.
 
 `assert-ios-write-recovery.mjs` terminates/relaunches the standalone simulator app
 between journal publication and recovery, then repeats with an external edit.
-Its native DEBUG probe uses only a dedicated cache fixture and the regular
+Its native Debug / opt-in optimized QA probe uses only a dedicated cache fixture and the regular
 repository/read/write/sync barriers. It is separate from browser visual QA.
 
 `WorkspaceEntryRecovery` adds recoverable file/folder moves and deletions at the

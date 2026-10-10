@@ -8,6 +8,8 @@ import { gitVirtualRoot } from '../workspace/git/gitFileSystemPaths'
 import { assertNativeWorkspaceWriteErrors } from './nativeWorkspaceWriteErrors'
 import { nativeVaultReadBenchmark } from './nativeVaultReadBenchmark'
 import { assertNativeGitRecovery } from './nativeGitRecoveryProbe'
+import { measureEventLoopDelay } from './measureEventLoopDelay'
+import { postNativeQaEvent, setNativeQaSinkUrl } from './nativeQaSink'
 
 let running = false
 
@@ -23,12 +25,12 @@ export async function runNativeGitProbe(endpoint: string) {
     const nativeDigestVerified = await verifyNativeDigest()
     const nativeFiles = await nativeFileAccessProof()
     const checkoutRecovery = await assertNativeGitRecovery(root)
-    const proof = await roundTrip(root, endpoint)
+    const { result: proof, eventLoop } = await measureEventLoopDelay(() => roundTrip(root, endpoint))
     const elapsedMs = Date.now() - started
     const restoredVault = nativeFiles ? await nativeVaultReadBenchmark() : null
-    await publishProof(endpoint, { ...proof, nativeFiles, nativeDigestVerified, checkoutRecovery, restoredVault, elapsedMs })
+    publishProof(endpoint, { ...proof, eventLoop, nativeFiles, nativeDigestVerified, checkoutRecovery, restoredVault, elapsedMs })
   } catch (error) {
-    await publishProof(endpoint, { error: error instanceof Error ? error.message : 'unknown', stack: error instanceof Error ? error.stack : null, passed: false })
+    publishProof(endpoint, { error: error instanceof Error ? error.message : 'unknown', stack: error instanceof Error ? error.stack : null, passed: false })
   } finally {
     if (root.exists) root.delete()
     running = false
@@ -93,7 +95,8 @@ async function roundTrip(root: Directory, endpoint: string) {
   return { passed, binaryPreserved, deletionPreserved, pushed: pushed.kind, pulled: pulled.kind, timings }
 }
 
-async function publishProof(endpoint: string, proof: Record<string, unknown>) {
+function publishProof(endpoint: string, proof: Record<string, unknown>) {
   console.info('TOLARIA_NATIVE_GIT_PROOF', JSON.stringify(proof))
-  await fetch(`${endpoint}/proof`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(proof) })
+  setNativeQaSinkUrl(new URL('/proof', endpoint).toString())
+  postNativeQaEvent(proof)
 }

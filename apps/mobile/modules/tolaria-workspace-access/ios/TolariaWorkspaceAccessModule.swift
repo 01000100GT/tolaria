@@ -83,7 +83,9 @@ public class TolariaWorkspaceAccessModule: Module {
       return try self.restoreWorkspace()
     }
 
-    #if DEBUG
+    #if DEBUG || TOLARIA_QA
+    Constant("nativeStorageQAEnabled") { true }
+
     AsyncFunction("runEntryRecoveryProbe") { (phase: String) throws -> [String: Any] in
       return try runWorkspaceEntryNativeProof(phase)
     }

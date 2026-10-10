@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || TOLARIA_QA
 import Foundation
 
 func runWorkspaceFileNativeProof() throws -> [String: Bool] {

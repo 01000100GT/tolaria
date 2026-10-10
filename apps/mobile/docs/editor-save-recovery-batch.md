@@ -101,6 +101,54 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Optimized native storage QA checkpoint
+
+- ADR 0208 adds an explicit local `TOLARIA_QA` compilation capability, never a
+  default Release flag. The optimized standalone build uses `--dev false` and
+  Hermes `-O`; Metro was stopped during its proofs. The separately linked ordinary
+  Release executable and module archive contain none of `nativeStorageQAEnabled`,
+  `runTextRecoveryProbe`, `runEntryRecoveryProbe`, or `runFileAccessProbe`; the
+  flagged executable contains all four. JavaScript also requires the exact native
+  boolean outside development mode.
+- Native text, entry, and text-batch cross-launch recovery pass in optimized code,
+  including frontmatter, completed retries, and external-conflict exclusion. An
+  accidentally overlapped text/entry run was discarded and both probes were
+  repeated sequentially; only the successful rerun logs count as evidence.
+- The optimized 6,000-file Git fixture passes binary/deletion/checkout-recovery
+  checks: clones 16,565/16,645 ms, push 34,302 ms, pull 27,892 ms. Git work took
+  95,409 ms (97,023 ms including preceding storage checks). Timer sampling found
+  16 callbacks at least 50 ms late, with maximum JavaScript delay 9,112 ms. This
+  fails the responsiveness goal despite passing data-integrity checks. It is not
+  a native animation FPS measurement or physical-device performance budget.
+- Capability and timer regression tests began red, then 15 focused tests passed
+  including the existing collector checks. TypeScript and project ESLint pass.
+  All ten scorable files remain/reach 10.0; staged CLI delta checked all ten and
+  reported `no-issues-found`. Baselines were captured for all six existing files.
+- Ten individual Opengrep 1.26.0 scans completed successfully, with every result,
+  invocation, skipped-target report and partial-analysis report inspected. Nine
+  files have zero findings at every severity. `runNativeGitProbe.ts` goes from
+  one High plus one Medium to one existing Medium: shared loopback collector use
+  removes the raw-fetch diagnostic; the unchanged SHA-1 empty-digest vector tests
+  Git compatibility, not security hashing. Its fingerprint is unchanged. No new
+  finding, suppression, or ignored target was introduced. New files have zero.
+- Same temporary owner-approved storage/QA analyzer exception; remote Codacy
+  parity remains unavailable. No UI copy, new analytics event, or full desktop/
+  Rust coverage run. Architecture, abstraction and assessment docs updated.
+  Original Laputa and demo fixtures remain untouched. Exact code manifest:
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/ios/TolariaWorkspaceAccessModule.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecoveryNativeProof.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceEntryNativeProof.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceFileNativeProof.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeGitProbe.native.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeStorageQaCapability.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeStorageQaCapability.test.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/runNativeGitProbe.ts` | Existing | 10.0 | 1 existing Medium (was 1 High + 1 Medium) |
+| `apps/mobile/src/qa/measureEventLoopDelay.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/measureEventLoopDelay.test.ts` | New | 10.0 | 0 |
+
 ## Nonblocking note-read ordering
 
 - Repository note reads now await the existing per-vault operation queue before
