@@ -5,8 +5,8 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { startGitTestServer } from '../src/workspace/git/gitTestServer.ts'
+import { withNativeSimulatorLease } from '../src/qa/nativeSimulatorLease.ts'
 
-const root = await mkdtemp(join(tmpdir(), 'tolaria-write-recovery-'))
 const device = process.argv.slice(2).find((argument) => !argument.startsWith('--')) ?? 'booted'
 const bundleId = 'com.tolaria.mobile.dev'
 let awaitingProof
@@ -19,13 +19,15 @@ async function collectProof(request, response) {
   awaitingProof?.(JSON.parse(Buffer.concat(chunks).toString()))
 }
 
-const server = await startGitTestServer(root, (request, response) => {
-  if (request.url !== '/proof') return false
-  void collectProof(request, response).catch((error) => awaitingProof?.({ passed: false, error: error.message }))
-  return true
-})
+function startCollector(root) {
+  return startGitTestServer(root, (request, response) => {
+    if (request.url !== '/proof') return false
+    void collectProof(request, response).catch((error) => awaitingProof?.({ passed: false, error: error.message }))
+    return true
+  })
+}
 
-async function runPhase(phase) {
+async function runPhase(phase, collectorUrl) {
   const proof = new Promise((resolve, reject) => {
     awaitingProof = resolve
     timer = setTimeout(() => reject(new Error(`Native recovery phase timed out: ${phase}`)), 120_000)
@@ -33,7 +35,7 @@ async function runPhase(phase) {
   try {
     execFileSync('xcrun', ['simctl', 'terminate', device, bundleId], { stdio: 'pipe' })
   } catch { /* A first launch has no running process to terminate. */ }
-  const query = new URLSearchParams({ source: 'fixture', gitProbe: server.url, writeRecoveryProbe: phase, qaRun: phase })
+  const query = new URLSearchParams({ source: 'fixture', gitProbe: collectorUrl, writeRecoveryProbe: phase, qaRun: phase })
   execFileSync('xcrun', ['simctl', 'openurl', device, `tolaria:///?${query}`])
   const result = await proof
   clearTimeout(timer)
@@ -49,11 +51,18 @@ function recoveryPhases() {
   return ['prepare', 'recover', 'prepare-conflict', 'conflict', 'cleanup']
 }
 
-try {
-  for (const phase of recoveryPhases()) await runPhase(phase)
-} finally {
-  clearTimeout(timer)
-  awaitingProof = undefined
-  await server.close()
-  await rm(root, { recursive: true, force: true })
+async function runProbe() {
+  const root = await mkdtemp(join(tmpdir(), 'tolaria-write-recovery-'))
+  let server
+  try {
+    server = await startCollector(root)
+    for (const phase of recoveryPhases()) await runPhase(phase, server.url)
+  } finally {
+    clearTimeout(timer)
+    awaitingProof = undefined
+    await server?.close()
+    await rm(root, { recursive: true, force: true })
+  }
 }
+
+await withNativeSimulatorLease(runProbe)

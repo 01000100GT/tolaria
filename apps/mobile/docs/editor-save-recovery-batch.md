@@ -101,6 +101,33 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Native storage probe exclusion
+
+- Added host-only loopback exclusion to the two storage QA entry points. A second
+  run fails before fixture creation or simulator termination. No stale lockfile,
+  process killing, app runtime dependency, or product behavior was introduced.
+- TDD: the missing helper failed first; four behavioral tests now cover exclusion,
+  successful reuse, failure cleanup, and closing connections without serving data.
+  Both actual scripts were rejected while a lease was held, and the simulator's
+  app PID remained unchanged. Sequential native batch restart/conflict recovery
+  and the small Git round trip then passed, restoring the 6,036-file app-local
+  vault. Other native scripts are not yet guarded and must remain sequential.
+- Existing scripts began at CodeScene 10.0 and zero scoped findings. Both scripts
+  and both new files finish at 10.0. Project ESLint and TypeScript pass. Four
+  explicit Opengrep scans completed with zero findings at every severity,
+  successful SARIF invocations, one target each, and no skips or partial analysis.
+  CLI staged delta checks all four files. This uses the same limited analyzer
+  exception; remote Codacy remains unavailable, not passed.
+- No UI copy changes; no PostHog event for test infrastructure; no ADR needed.
+  Abstraction docs updated. Original vault and demo fixtures remain untouched.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/scripts/assert-native-git.mjs` | Existing | 10.0 | 0 |
+| `apps/mobile/scripts/assert-ios-write-recovery.mjs` | Existing | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeSimulatorLease.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeSimulatorLease.test.ts` | New | 10.0 | 0 |
+
 ## Cooperative Git responsiveness
 
 - Synchronous Expo metadata/mutations now use a small per-instance task runner;

@@ -26,6 +26,11 @@ exact native boolean exposed only by `DEBUG` / `TOLARIA_QA` builds. Optimized QA
 uses an embedded production bundle; ordinary Release cannot enable these probes
 through a URL parameter (ADR 0208). Proof delivery reuses the loopback-only
 collector with redirects rejected and credentials omitted.
+`nativeSimulatorLease.ts` is host-only QA infrastructure. The Git and write-recovery
+entry points acquire one loopback TCP port before creating fixtures or touching
+the simulator, reject overlapping runs, and release it in `finally`. Connections
+receive no data; process exit also releases the OS-owned lease. Other native QA
+entry points must still be scheduled sequentially; this is not an app data lock.
 `gitRuntime.native.ts` supplies missing digest support through Expo Crypto, while
 `gitDigest.ts` preserves existing runtime APIs and byte-view boundaries. Git uses
 one library-owned cache per sync operation, released afterwards (ADR 0200).

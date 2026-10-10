@@ -14,7 +14,7 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   cover panel transitions, contextual formatting menus, and repeated rotation
   while preserving the selected note. Native WYSIWYG persistence plus 117 layout
   metrics, and the all-panels fixture's 181 metrics pass with the compact toolbar.
-- The latest completed mobile gates pass 1,224 tests across 198 files; 59 Swift
+- The latest completed mobile gates pass 1,249 tests across 202 files; 59 Swift
   filesystem tests passed in the native storage batch. No full desktop suite ran.
 - Public GitHub cloning, persisted vault selection, and real native Git
   push/pull against a disposable server work. The simulator uses an isolated
