@@ -101,6 +101,28 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Nonblocking note-read ordering
+
+- Repository note reads now await the existing per-vault operation queue before
+  entering synchronous native recovery. The prior implementation immediately
+  entered recovery while the same vault's native save could still hold its lock.
+  Snapshot reads remain synchronous; no general nonblocking-IO claim is made.
+- TDD reproduced two ordering failures. All 26 focused repository tests pass,
+  covering active saves, active Git, other-root independence, failed operations,
+  cached-content exclusion, and batch persistence. TypeScript passes; native
+  WYSIWYG persistence and 117 numeric layout metrics pass on the current binary.
+- Existing repository CodeScene remains 10.0; the new test file is 10.0. Staged
+  CLI delta checks both files and returns `no-issues-found`. Baseline and both
+  final individual Opengrep 1.26.0 scans have zero findings at every severity,
+  successful invocations, no skipped target, and no partial analysis.
+- Exact manifest: existing
+  `apps/mobile/src/workspace/fileSystemWorkspaceRepository.ts`; new
+  `apps/mobile/src/workspace/fileSystemWorkspaceReadBarrier.test.ts`.
+  The branch merge-base manifest contains 764 tracked changed paths. These two
+  files remain inside the approved storage/recovery exception, not a Codacy
+  dashboard sign-off. No UI copy/events, new ADR, or full desktop/Rust coverage
+  run; abstraction docs updated. Original Laputa and demo fixtures unchanged.
+
 ## Repository text-batch integration
 
 - Entirely text-based multi-write plans now use the standalone native batch

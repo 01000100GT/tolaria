@@ -3,6 +3,7 @@ import type { MobileNote, MobileVaultConfig, MobileWorkspaceSnapshot } from './m
 import type { MobileWorkspaceWrite } from './mobileWorkspaceEditing'
 import type { ReadOnlyWorkspaceRepository, ReadOnlyWorkspaceRequest } from './readOnlyWorkspaceRepository'
 import { persistWorkspaceOperations } from './git/workspaceWriteQueue'
+import { withWorkspaceOperation } from './git/workspaceOperationQueue'
 import { workspaceTextBatch, type WorkspaceTextBatchWriter } from './workspaceTextBatch'
 import { normalizedWorkspaceRelativePath, requireWorkspaceWritePath, validateWorkspaceWrites } from './workspaceWriteValidation'
 export { normalizedWorkspaceRelativePath } from './workspaceWriteValidation'
@@ -43,13 +44,8 @@ export function createFileSystemWorkspaceRepository(fileSystem: WorkspaceFileSys
     },
     readNoteContent: async (note, request) => {
       const rootUri = workspaceRootUri(request)
-      const recovered = rootUri ? fileSystem.recoverPendingWrites?.(rootUri) : false
-      if (note.rawContent !== undefined && !recovered) return note.rawContent
-
-      const relativePath = noteRelativePath(note)
-      if (!rootUri || !relativePath) return null
-
-      return fileSystem.readTextFile(rootUri, relativePath)
+      if (!rootUri) return note.rawContent ?? null
+      return withWorkspaceOperation(rootUri, async () => readWorkspaceNote(fileSystem, rootUri, note))
     },
     readSnapshot: (request) => {
       const rootUri = workspaceRootUri(request)
@@ -67,6 +63,13 @@ export function createFileSystemWorkspaceRepository(fileSystem: WorkspaceFileSys
       })
     },
   }
+}
+
+function readWorkspaceNote(fileSystem: WorkspaceFileSystem, root: string, note: MobileNote) {
+  const recovered = fileSystem.recoverPendingWrites?.(root)
+  if (note.rawContent !== undefined && !recovered) return note.rawContent
+  const relativePath = noteRelativePath(note)
+  return relativePath ? fileSystem.readTextFile(root, relativePath) : null
 }
 
 function workspaceWriteOperations(fileSystem: WorkspaceFileSystem, root: string, writes: MobileWorkspaceWrite[]) {

@@ -68,6 +68,13 @@ indexes and cached raw note content. Old standalone binaries fail closed rather
 than silently falling back to a non-atomic writer. Expo Go/Android do not yet
 provide this native guarantee. See ADR 0203.
 
+Asynchronous repository note reads join the existing per-root operation queue
+before calling synchronous native recovery. Opening a note therefore waits for
+that vault's active save/Git work without entering a blocking native lock from
+JavaScript. Cached bytes are still rejected after recovery or an external
+conflict. Snapshot reads remain a synchronous lifecycle boundary; this does not
+claim that every filesystem read is nonblocking.
+
 `WorkspaceTextRecord` owns version-two text batches and completion fingerprints,
 including decoding of version-one single-save records. `WorkspaceTextRecovery`
 publishes the whole plan, checks every precondition, and replaces members under
