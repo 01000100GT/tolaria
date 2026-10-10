@@ -7,7 +7,7 @@ import {
 import { normalizedWorkspaceRelativePath, type WorkspaceFileSystem } from './fileSystemWorkspaceRepository'
 import { requireWorkspaceWritePath } from './workspaceWriteValidation'
 import { assertGitCheckoutComplete } from './git/gitCheckoutGuard'
-import { recoverNativeWorkspaceText, writeNativeWorkspaceText } from './workspaceTextRecovery'
+import { nativeWorkspaceTextBatchWriter, recoverNativeWorkspaceText, writeNativeWorkspaceText } from './workspaceTextRecovery'
 import { changeNativeWorkspaceEntry } from './workspaceEntryRecovery'
 
 type ExpoFileSystemModule = {
@@ -24,6 +24,7 @@ declare const require: (moduleName: string) => ExpoFileSystemModule
 let expoFileSystemModule: ExpoFileSystemModule | null = null
 
 export const expoWorkspaceFileSystem: WorkspaceFileSystem = {
+  get writeTextBatch() { return nativeWorkspaceTextBatchWriter() },
   recoverPendingWrites: (rootUri) => {
     assertGitCheckoutComplete(expoFileSystem(), rootUri)
     return recoverNativeWorkspaceText(rootUri)

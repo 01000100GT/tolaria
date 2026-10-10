@@ -53,6 +53,14 @@ public class TolariaWorkspaceAccessModule: Module {
       try managedWorkspaceText(uri).write(path, content: content, identifier: identifier)
     }
 
+    AsyncFunction("saveWorkspaceTexts") { (uri: String, changes: [[String: String]], identifier: String) throws in
+      let entries = try changes.map { change -> WorkspaceTextChange in
+        guard let path = change["path"], let content = change["content"] else { throw WorkspaceFileError.invalidPath }
+        return WorkspaceTextChange(path: path, content: content)
+      }
+      try managedWorkspaceText(uri).writeBatch(entries, identifier: identifier)
+    }
+
     Function("recoverWorkspaceText") { (uri: String) throws -> Bool in
       return try managedWorkspaceText(uri).recover()
     }

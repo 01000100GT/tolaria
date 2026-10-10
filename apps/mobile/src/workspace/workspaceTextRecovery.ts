@@ -1,10 +1,25 @@
 import { optionalNativeWorkspaceAccessModule } from './nativeWorkspaceAccess'
 import { runNativeWorkspaceMutation } from './nativeWorkspaceMutation'
+import type { WorkspaceTextBatchWriter, WorkspaceTextChange } from './workspaceTextBatch'
 
 type NativeTextRecovery = {
   createWorkspaceOperationId?: () => string
   saveWorkspaceText?: (root: string, path: string, content: string, identifier: string) => Promise<void>
+  saveWorkspaceTexts?: (root: string, changes: WorkspaceTextChange[], identifier: string) => Promise<void>
   recoverWorkspaceText?: (root: string) => boolean
+}
+
+export function nativeWorkspaceTextBatchWriter(
+  module: NativeTextRecovery | null = optionalNativeWorkspaceAccessModule(),
+): WorkspaceTextBatchWriter | undefined {
+  if (!module) return undefined
+  return (root, changes) => {
+    if (!module.saveWorkspaceTexts || !module.createWorkspaceOperationId) throw new Error('nativeTextRecoveryUnavailable')
+    const key = JSON.stringify(['text-batch', root, changes])
+    const perform = module.saveWorkspaceTexts
+    return runNativeWorkspaceMutation(module, key, module.createWorkspaceOperationId,
+      (identifier) => perform(root, changes, identifier))
+  }
 }
 
 export function writeNativeWorkspaceText(

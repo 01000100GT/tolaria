@@ -3,6 +3,7 @@ import type { MobileNote, MobileVaultConfig, MobileWorkspaceSnapshot } from './m
 import type { MobileWorkspaceWrite } from './mobileWorkspaceEditing'
 import type { ReadOnlyWorkspaceRepository, ReadOnlyWorkspaceRequest } from './readOnlyWorkspaceRepository'
 import { persistWorkspaceOperations } from './git/workspaceWriteQueue'
+import { workspaceTextBatch, type WorkspaceTextBatchWriter } from './workspaceTextBatch'
 import { normalizedWorkspaceRelativePath, requireWorkspaceWritePath, validateWorkspaceWrites } from './workspaceWriteValidation'
 export { normalizedWorkspaceRelativePath } from './workspaceWriteValidation'
 
@@ -21,6 +22,7 @@ export type WorkspaceFileSystem = {
   readVaultFiles: (rootUri: string) => LocalVaultFile[]
   writeVaultConfig?: (rootUri: string, config: MobileVaultConfig) => WorkspaceMutation
   writeTextFile: (rootUri: string, relativePath: string, content: string) => WorkspaceMutation
+  writeTextBatch?: WorkspaceTextBatchWriter
 }
 
 export type WorkspaceFileIndex = {
@@ -36,7 +38,8 @@ export function createFileSystemWorkspaceRepository(fileSystem: WorkspaceFileSys
       if (!rootUri) throw new Error('workspaceNotSelected')
       validateWorkspaceWrites(writes)
 
-      await persistWorkspaceOperations(rootUri, writes.map((write) => () => persistWorkspaceWrite(fileSystem, rootUri, write)))
+      const operations = workspaceWriteOperations(fileSystem, rootUri, writes)
+      await persistWorkspaceOperations(rootUri, operations)
     },
     readNoteContent: async (note, request) => {
       const rootUri = workspaceRootUri(request)
@@ -64,6 +67,13 @@ export function createFileSystemWorkspaceRepository(fileSystem: WorkspaceFileSys
       })
     },
   }
+}
+
+function workspaceWriteOperations(fileSystem: WorkspaceFileSystem, root: string, writes: MobileWorkspaceWrite[]) {
+  const batchWriter = fileSystem.writeTextBatch
+  const batch = batchWriter && workspaceTextBatch(writes)
+  if (batch) return [() => batchWriter(root, batch)]
+  return writes.map((write) => () => persistWorkspaceWrite(fileSystem, root, write))
 }
 
 function recoveredWorkspaceIndex(fileSystem: WorkspaceFileSystem, root: string, request?: ReadOnlyWorkspaceRequest) {

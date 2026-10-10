@@ -41,11 +41,16 @@ async function runPhase(phase) {
   console.log(JSON.stringify(result))
 }
 
+function recoveryPhases() {
+  if (process.argv.includes('--batch')) return ['batch-prepare', 'batch-recover', 'batch-prepare-conflict', 'batch-conflict']
+  if (process.argv.includes('--entries')) {
+    return ['entry-prepare-move', 'entry-move', 'entry-prepare-delete', 'entry-delete', 'entry-prepare-conflict', 'entry-conflict']
+  }
+  return ['prepare', 'recover', 'prepare-conflict', 'conflict', 'cleanup']
+}
+
 try {
-  const phases = process.argv.includes('--entries')
-    ? ['entry-prepare-move', 'entry-move', 'entry-prepare-delete', 'entry-delete', 'entry-prepare-conflict', 'entry-conflict']
-    : ['prepare', 'recover', 'prepare-conflict', 'conflict', 'cleanup']
-  for (const phase of phases) await runPhase(phase)
+  for (const phase of recoveryPhases()) await runPhase(phase)
 } finally {
   clearTimeout(timer)
   awaitingProof = undefined

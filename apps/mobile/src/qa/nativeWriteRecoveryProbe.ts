@@ -4,6 +4,7 @@ import { expoWorkspaceFileSystem } from '../workspace/expoWorkspaceFileSystem'
 import { withSavedWorkspace } from '../workspace/git/workspaceWriteQueue'
 import { postNativeQaEvent, setNativeQaSinkUrl } from './nativeQaSink'
 import { nativeEntryRecoveryChecks } from './nativeEntryRecoveryProbe'
+import { nativeBatchRecoveryChecks } from './nativeBatchRecoveryProbe'
 
 type Inspection = { rootUri: string; content: string; pending: boolean; privateJournal: boolean }
 type NativePhase = 'prepare' | 'prepare-conflict' | 'inspect' | 'cleanup' | 'edit-completed'
@@ -23,15 +24,19 @@ export async function runNativeWriteRecoveryProbe(endpoint: string, phase: strin
   try {
     const module = requireOptionalNativeModule<ProbeModule>('TolariaWorkspaceAccess')
     if (!module?.runTextRecoveryProbe) throw new Error('nativeTextRecoveryUnavailable')
-    const checks = phase.startsWith('entry-')
-      ? await nativeEntryRecoveryChecks(phase)
-      : await runPhase(module, recoveryPhase(phase))
+    const checks = await recoveryChecks(module, phase)
     postNativeQaEvent({ phase, passed: Object.values(checks).every(Boolean), checks })
   } catch (error) {
     postNativeQaEvent({ phase, passed: false, error: error instanceof Error ? error.message : 'unknown' })
   } finally {
     running = false
   }
+}
+
+function recoveryChecks(module: ProbeModule, phase: string) {
+  if (phase.startsWith('entry-')) return nativeEntryRecoveryChecks(phase)
+  if (phase.startsWith('batch-')) return nativeBatchRecoveryChecks(phase)
+  return runPhase(module, recoveryPhase(phase))
 }
 
 function recoveryPhase(value: string): ProbePhase {

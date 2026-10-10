@@ -195,8 +195,10 @@ Expo Go and Android still require their own equivalent persistence implementatio
 The native text engine also supports a version-two journal containing an entire
 text-only batch (ADR 0207). It preflights all prior digests and retains the plan
 when an external edit prevents replay. Single-save journals and receipts remain
-backward readable. Repository bulk-write integration is the next checkpoint;
-mixed structural plans are not covered by this batch guarantee.
+backward readable. The repository routes entirely text-based multi-write plans
+through the native batch capability, coalescing repeated paths to their final
+content. Single saves, mixed structural plans, and runtimes without that
+capability retain their existing individual-operation queue boundaries.
 
 The same iOS module exposes an optional, single-call Git metadata reader anchored
 to the app sandbox. It returns fresh stat fields without caching file state;

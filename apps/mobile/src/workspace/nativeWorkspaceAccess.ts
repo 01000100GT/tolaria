@@ -1,4 +1,5 @@
 import type { WorkspaceFileIndex } from './fileSystemWorkspaceRepository'
+import type { WorkspaceTextChange } from './workspaceTextBatch'
 
 export type NativeWorkspaceAccessModule = {
   gitEntryInfo?: (uri: string) => {
@@ -7,6 +8,7 @@ export type NativeWorkspaceAccessModule = {
   createWorkspaceOperationId?: () => string
   changeWorkspaceEntry?: (root: string, path: string, toPath: string | null, directory: boolean, identifier: string) => Promise<void>
   saveWorkspaceText?: (root: string, path: string, content: string, identifier: string) => Promise<void>
+  saveWorkspaceTexts?: (root: string, changes: WorkspaceTextChange[], identifier: string) => Promise<void>
   recoverWorkspaceText?: (root: string) => boolean
   importWorkspace: (uri: string) => Promise<NativeWorkspaceBridgeRecord | null>
   pickAndImportWorkspace?: () => Promise<NativeWorkspaceBridgeRecord | null>

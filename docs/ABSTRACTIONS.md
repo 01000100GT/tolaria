@@ -73,7 +73,12 @@ including decoding of version-one single-save records. `WorkspaceTextRecovery`
 publishes the whole plan, checks every precondition, and replaces members under
 coordination before acknowledging the batch. Conflicts retain unfinished intent;
 this is roll-forward recovery, not atomic visibility across external writers.
-The native engine is available for repository integration (ADR 0207).
+`workspaceTextBatch.ts` converts entirely text-based repository plans to the
+optional `saveWorkspaceTexts` capability, preserving final content for repeated
+paths. Unsupported runtimes retain individually queued writes; they never retry
+a whole JavaScript loop of already-completed writes. The `--batch` native proof
+checks cross-launch partial replacement, conflict exclusion, and the repository's
+actual two-member completion receipt (ADR 0207).
 
 `nativeWorkspaceMutation.ts` retains a native UUID across failed attempts for
 both text and entry bridges. `saveWorkspaceText` requires that ID; completed

@@ -25,6 +25,18 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
 
+### Repository text-batch follow-through
+
+The native journal is now connected to entirely text-based multi-write plans,
+including repeated-path coalescing. Unsupported runtimes retain individual queue
+retries. The standalone iPad was terminated between the first replacement and
+recovery; all intended note bytes/frontmatter recovered, while an external edit
+blocked read/write/Git without losing the pending plan. The proof also verifies a
+two-member receipt from the actual repository path, not only a direct engine call.
+Mixed move/backlink plans and keystrokes not yet submitted remain outside this
+guarantee. Focused tests, native build, and the 12-file quality gates pass under
+the same documented temporary analyzer exception.
+
 ## Recovered baseline
 
 The task reopened at detached June commit `ca79c12ff`. The maintained August

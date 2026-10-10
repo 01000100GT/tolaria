@@ -101,6 +101,46 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Repository text-batch integration
+
+- Entirely text-based multi-write plans now use the standalone native batch
+  capability. Repeated paths retain final content; mixed structural plans and
+  ordinary single saves keep their existing boundaries. Runtimes without the
+  native module keep individually queued writes, never a replayable JS loop.
+- TDD: seven expected failures preceded implementation; 28 focused repository
+  and bridge tests now pass. TypeScript and project ESLint pass. The current-source
+  iPad build passes the four-phase cross-launch batch proof: partial replacement,
+  all-member recovery/frontmatter, stale-index invalidation, actual repository
+  routing (two-member receipt), and external-edit exclusion from reads/writes/Git.
+  Native WYSIWYG persistence and its 117 numeric layout measurements also pass.
+- Existing file baselines were captured before edits: CodeScene 10.0 (thin text
+  bridge unscorable/zero), individual Opengrep 1.26.0 scans zero at every severity.
+  Final 12-file reviews preserve those scores; the new QA dispatch was simplified
+  to reach 10.0. Staged CLI delta: 12 eligible files, `no-issues-found`.
+- Each final Opengrep scan completed successfully with zero Critical/High/Medium/
+  Minor/Info/unclassified findings, no skipped target or partial analysis. This
+  remains the explicitly approved storage/recovery compensation, not Codacy
+  dashboard/analyzer parity or release approval. The merge-base manifest contains
+  763 tracked changed paths; this checkpoint is limited to the 12 code paths below.
+- No UI copy changes, no analytics event for internal persistence correctness,
+  no full desktop/Rust coverage run. ADR 0207 applies; architecture/abstraction
+  inventories updated. Demo fixture dirt is empty; original Laputa is untouched.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/ios/TolariaWorkspaceAccessModule.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceTextRecoveryNativeProof.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/nativeWorkspaceAccess.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceTextRecovery.ts` | Existing | No scorable code / 0 findings | 0 |
+| `apps/mobile/src/workspace/expoWorkspaceFileSystem.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/fileSystemWorkspaceRepository.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeWriteRecoveryProbe.ts` | Existing | 10.0 | 0 |
+| `apps/mobile/scripts/assert-ios-write-recovery.mjs` | Existing | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceTextBatch.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/fileSystemWorkspaceBatch.test.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/workspace/workspaceTextBatchRecovery.test.ts` | New | 10.0 | 0 |
+| `apps/mobile/src/qa/nativeBatchRecoveryProbe.ts` | New | 10.0 | 0 |
+
 ## Text-batch engine checkpoint
 
 - The native text engine now journals a complete ordered text plan before its
