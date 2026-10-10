@@ -27,6 +27,10 @@ or metadata; directory enumeration returns names without allocating child handle
 Standalone iOS additionally uses `WorkspaceGitMetadata` through `gitEntryInfo`
 for one fresh sandbox-relative stat lookup, including symlink rejection. The
 optional capability leaves Expo Go and Android on the existing path (ADR 0205).
+`ManagedWorkspacePath` keeps only the trusted container prefix. It validates
+decoded URI components without filesystem normalization, rejects dot/empty
+segments and file authorities with credentials or ports, and leaves symlink
+rejection to the descriptor-relative stat. No file state is cached.
 Checkpoints explicitly stage content before comparing the matrix, protecting
 same-length rapid edits that the library's coarse timestamp shortcut misses.
 This requires a content scan; the measured large-vault sync cost remains a

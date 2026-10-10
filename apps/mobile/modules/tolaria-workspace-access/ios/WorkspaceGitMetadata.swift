@@ -2,11 +2,11 @@ import Darwin
 import Foundation
 
 final class WorkspaceGitMetadata {
-  let home: URL
+  private let paths: ManagedWorkspacePath
   private let descriptor: Int32
 
   init(home: URL = URL(fileURLWithPath: NSHomeDirectory())) throws {
-    self.home = home
+    paths = ManagedWorkspacePath(home: home)
     // The trusted home may use Apple's /var alias; vault-relative paths may not.
     descriptor = open(home.path, O_RDONLY | O_DIRECTORY | O_CLOEXEC)
     guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
@@ -15,7 +15,7 @@ final class WorkspaceGitMetadata {
   deinit { close(descriptor) }
 
   func info(_ uri: String) throws -> [String: Any] {
-    let relative = try managedWorkspaceRelativePath(uri, home: home)
+    let relative = try paths.relativePath(uri)
     var metadata = stat()
     guard fstatat(descriptor, relative, &metadata, AT_SYMLINK_NOFOLLOW_ANY) == 0 else {
       let code = errno

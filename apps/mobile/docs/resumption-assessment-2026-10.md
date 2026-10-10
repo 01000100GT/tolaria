@@ -142,6 +142,12 @@ conflict editing, multi-vault use, and phone polish are not first-launch prerequ
 
 ## Evidence log
 
+- Metadata path follow-through rejects normalization aliases and credentialed
+  file authorities before accessing the filesystem. All 52 Foundation tests and
+  the current-source standalone 6,000-file Git probe pass. Total 217,713 ms versus
+  the prior 215,668 ms is effectively unchanged, not another proven speedup.
+  CodeScene remains 10.0 for all three files; scoped scans have zero findings.
+
 - Native retry regression: actual filesystem tests reproduced a completed
   deletion removing a recreated file and a recovered text save overwriting a
   later edit. UUID receipts are now checked before reading fresh preconditions.

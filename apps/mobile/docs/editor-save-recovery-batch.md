@@ -101,6 +101,35 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Managed metadata path validation
+
+- Profiling showed filesystem reachability calls inside Foundation path
+  normalization on every native metadata request. The path boundary now caches
+  only the trusted home prefix and validates URI components lexically. The
+  descriptor-relative stat still rejects symlinks; no file metadata is cached.
+- TDD caught seven normalization/authority acceptance cases before the fix.
+  All 52 Foundation filesystem tests now pass. The three existing code files
+  below started and finished at CodeScene 10.0. The staged CLI delta checked all
+  three files and returned `no-issues-found`.
+- Current-source native build and the 6,000-file Git round trip pass, including
+  binary/deletion preservation, interrupted checkout, and restoration of the
+  6,036-file app-local vault. Total 217,713 ms versus 215,668 ms previously is
+  effectively unchanged; this does not establish an additional speedup. The
+  direct filesystem validation remains useful without a performance claim.
+- Each file's before/after Opengrep 1.26.0 scan completed with zero findings at
+  every severity. SARIF invocations and verbose logs show no omitted target or
+  partial analysis. Remote Codacy parity remains unavailable under the existing
+  owner-approved, temporary storage/filesystem exception.
+- No UI copy, analytics event, dependency, persisted format, or new ADR. This is
+  an internal path-validation correction and performance follow-through to
+  ADR 0205. The abstraction inventory is updated; original vaults are untouched.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/modules/tolaria-workspace-access/ios/ManagedWorkspacePath.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/ios/WorkspaceGitMetadata.swift` | Existing | 10.0 | 0 |
+| `apps/mobile/modules/tolaria-workspace-access/tests/WorkspaceGitMetadataTests.swift` | Existing | 10.0 | 0 |
+
 ## Completed mutation retry follow-through
 
 - Same approved storage/recovery exception, scope and expiry; no release waiver.

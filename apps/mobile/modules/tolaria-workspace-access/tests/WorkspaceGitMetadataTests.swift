@@ -65,6 +65,20 @@ final class WorkspaceGitMetadataTests: XCTestCase {
       XCTAssertThrowsError(try reader.info(home.absoluteString))
     }
   }
+
+  func testRejectsPathNormalizationAliasesAndFileAuthorities() throws {
+    try withGitMetadataFixture { home, root in
+      let reader = try WorkspaceGitMetadata(home: home)
+      try Data("retained".utf8).write(to: root.appendingPathComponent("note.md"))
+      for suffix in ["/./note.md", "/../Vault/note.md", "//note.md", "/%2E%2E/Vault/note.md"] {
+        XCTAssertThrowsError(try reader.info(root.absoluteString + suffix), suffix)
+      }
+      for authority in ["user@localhost", "user:secret@localhost", "localhost:1234"] {
+        XCTAssertThrowsError(try reader.info("file://" + authority + root.path + "/note.md"), authority)
+      }
+      XCTAssertEqual(try reader.info("file://localhost" + root.path + "/note.md")["size"] as? Int64, 8)
+    }
+  }
 }
 
 func withGitMetadataFixture(_ test: (URL, URL) throws -> Void) throws {
