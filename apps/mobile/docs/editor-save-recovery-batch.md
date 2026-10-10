@@ -101,6 +101,31 @@ storage/recovery follow-through; it is not authorization to waive release gates.
 | `apps/mobile/src/workspace/workspaceTextRecovery.test.ts` | New | 10.0 | 0 |
 | `apps/mobile/src/workspace/workspaceTextRecovery.ts` | New | No scorable code / 0 findings | 0 |
 
+## Persisted note metadata refactor
+
+- The frontmatter round-trip audit found the workspace edit orchestrator at
+  CodeScene 8.28. Before changing tag behavior, extracted its pure Markdown-to-note
+  conversion and field lookup into `mobileEditableNote.ts`. No property, title,
+  relationship, or write-plan behavior changes in this checkpoint.
+- The same 40 focused editing/hydration/frontmatter tests pass before and after.
+  Project TypeScript and ESLint pass. Existing orchestrator: 8.28 -> 10.0; new
+  metadata module: 10.0. Staged CodeScene delta reports only fixed findings:
+  module size, function count, and duplicated scalar lookup. No regressions.
+- Two final individual scoped scans complete successfully without omissions or
+  partial analysis. The new file has zero findings. The orchestrator retains its
+  three baseline warnings with unchanged fingerprints: two typed internal edit
+  dispatch lookups and a regex whose query is escaped before interpolation.
+  These unchanged paths accept internal edit discriminants/literal query text,
+  not executable remote code. No new finding at any severity and no suppression.
+- This frontmatter read/write-contract work is part of the temporary editor-save
+  batch, not a broader UI or release exception. Remote Codacy remains unavailable.
+  No UI copy or analytics changes; abstraction docs updated; no ADR needed.
+
+| Exact code path | Batch status | Final CodeScene | Scoped Opengrep findings |
+| --- | --- | --- | --- |
+| `apps/mobile/src/workspace/mobileWorkspaceEditing.ts` | Existing | 8.28 -> 10.0 | 3 unchanged warnings |
+| `apps/mobile/src/workspace/mobileEditableNote.ts` | New | 10.0 | 0 |
+
 ## Native storage probe exclusion
 
 - Added host-only loopback exclusion to the two storage QA entry points. A second

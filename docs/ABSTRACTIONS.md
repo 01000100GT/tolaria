@@ -77,6 +77,11 @@ forces away unexpected edits. See ADR 0201 and the native Git recovery probe.
 
 ## Native Text Save Recovery
 
+`mobileEditableNote.ts` owns conversion from persisted Markdown/frontmatter to an
+editable note's metadata and preview blocks. Workspace edit orchestration imports
+that pure conversion instead of maintaining its parsing helpers inline. Alias
+precedence, scalar-array conversion, and original raw Markdown remain unchanged.
+
 `WorkspaceTextRecovery` atomically publishes a pending text save outside the vault,
 replaces the destination, and removes the record last. Replay checks the previous
 or intended SHA-256 digest; conflicts retain both versions and prevent further

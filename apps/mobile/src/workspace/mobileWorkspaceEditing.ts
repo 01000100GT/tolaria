@@ -1,31 +1,21 @@
 import {
-  frontmatterFlag,
-  frontmatterList,
-  frontmatterProperties,
+  cleanTypeName, deriveEditableNote, humanizeKey, normalizedFrontmatterKey,
+  type DerivedNote, type EditableNoteInput,
+} from './mobileEditableNote'
+import {
   frontmatterRelationships,
-  frontmatterScalar,
   parseLocalVaultDocument,
   serializeLocalVaultFrontmatterKey,
   serializeLocalVaultFrontmatterScalar,
   type LocalVaultFrontmatter,
-  type LocalVaultFrontmatterScalar,
   type LocalVaultFrontmatterValue,
 } from './localVaultFrontmatter'
-import {
-  deriveLocalVaultTitle,
-  localVaultEditorBlocks,
-  localVaultEditorBullets,
-  localVaultLinkCount,
-  localVaultOutgoingLinks,
-  localVaultSnippet,
-} from './localVaultMarkdown'
 import type {
   MobileAllNotesFileVisibility,
   MobileCreateNoteDefaults,
   MobileNote,
   MobilePropertyDisplayMode,
   MobileNoteWidth,
-  MobileProperty,
   MobilePropertyValue,
   MobileRelationship,
   MobileRelationshipValue,
@@ -61,7 +51,6 @@ import {
 } from './mobileNotePaths'
 import {
   movedNoteWikilinkRewrite,
-  noteFilename,
   noteWritePath,
 } from './mobileWorkspacePathRewrites'
 import {
@@ -75,7 +64,6 @@ import {
   rewriteMobileTypeDefinitionWikilinks,
 } from './mobileTypeDefinitionPathRewrites'
 import { writeMobileFrontmatterValue } from './mobileFrontmatterWrites'
-import { normalizeMobileNoteWidth } from './mobileNoteWidth'
 import {
   mobileRelationshipRefValue,
   preservedMobileSourceFrontmatterMetadata,
@@ -98,7 +86,6 @@ import type { MobileTypeDefinitionPatch } from './mobileTypeDefinitions'
 import { applyMobileTypeEdit } from './mobileWorkspaceTypeEditing'
 import { applyMobileRestorationEdit } from './mobileWorkspaceRestoration'
 import { moveMobileFavorite } from './mobileWorkspaceFavoriteOrdering'
-import { mobileWorkspaceTypeTone } from './mobileWorkspaceTypeTone'
 import {
   selectedMobileEditorBlocks,
   selectedMobileEditorBullets,
@@ -114,7 +101,6 @@ import {
   relationshipKindForKey,
 } from '../../../../src/utils/relationshipKeys'
 
-type EditableNoteInput = MobileNote & { rawContent: string }
 type FrontmatterKey = string
 type MarkdownContent = string
 type TextFileContent = string
@@ -196,11 +182,6 @@ export { normalizedDisplayProperties } from './mobileVaultConfig'
 export type MobileWorkspaceEditResult = {
   snapshot: MobileWorkspaceSnapshot
   writes: MobileWorkspaceWrite[]
-}
-
-type DerivedNote = {
-  note: MobileNote
-  rawRelationships: Record<string, WikilinkRef[]>
 }
 
 type MobileNoteEditContext = {
@@ -1148,54 +1129,6 @@ function saveNoteWrites(
   }]
 }
 
-function deriveEditableNote({
-  fallback,
-  rawContent,
-  typeDefinitions,
-}: {
-  fallback: EditableNoteInput
-  rawContent: MarkdownContent
-  typeDefinitions?: MobileTypeDefinitions
-}): DerivedNote {
-  const document = parseLocalVaultDocument(rawContent)
-  const filename = noteFilename(noteWritePath(fallback))
-  const type = cleanTypeName(frontmatterScalar(document.frontmatter, ['type', 'Is A', 'is_a']) ?? fallback.type)
-  const blocks = localVaultEditorBlocks(document.body)
-  const properties = mobileProperties(frontmatterProperties(document.frontmatter))
-
-  return {
-    note: {
-      ...fallback,
-      aliases: frontmatterList(document.frontmatter, ['aliases', 'Aliases']),
-      archived: frontmatterFlag(document.frontmatter, ['_archived', 'archived']),
-      editorBlocks: blocks,
-      editorBullets: localVaultEditorBullets(blocks),
-      favorite: frontmatterFlag(document.frontmatter, ['_favorite', 'favorite']),
-      favoriteIndex: frontmatterNumber(document.frontmatter, ['_favorite_index', 'favorite_index', 'favorite index']),
-      icon: frontmatterText(document.frontmatter, ['_icon', 'icon']),
-      links: localVaultLinkCount(document.body),
-      modified: '0m ago',
-      noteWidth: normalizeMobileNoteWidth(frontmatterScalar(document.frontmatter, ['_width', 'width'])),
-      organized: frontmatterFlag(document.frontmatter, ['_organized']),
-      outgoingLinks: localVaultOutgoingLinks(document.body),
-      path: fallback.path ?? fallback.id,
-      properties,
-      rawContent,
-      status: frontmatterScalar(document.frontmatter, ['Status', 'status']) ?? '',
-      snippet: localVaultSnippet(document.body),
-      tags: frontmatterList(document.frontmatter, ['tags', 'Tags']).slice(0, 8),
-      title: deriveLocalVaultTitle({
-        body: document.body,
-        fallbackTitle: frontmatterScalar(document.frontmatter, ['title']),
-        filename,
-      }),
-      type,
-      typeTone: mobileWorkspaceTypeTone(type, typeDefinitions, fallback.typeTone),
-    },
-    rawRelationships: frontmatterRelationships(document.frontmatter),
-  }
-}
-
 function withEditableContent(note: MobileNote): EditableNoteInput {
   return {
     ...note,
@@ -1354,29 +1287,6 @@ function wikilinkTarget(value: WikilinkRef): WikilinkTarget {
   return parseMobileWikilink(value)?.target ?? value.trim()
 }
 
-function mobileProperties(properties: Record<string, LocalVaultFrontmatterValue>): MobileProperty[] {
-  return Object.entries(properties).map(([key, value]) => ({
-    key,
-    label: humanizeKey(key),
-    value: mobilePropertyValue(value),
-  }))
-}
-
-function mobilePropertyValue(value: LocalVaultFrontmatterValue): MobilePropertyValue {
-  if (Array.isArray(value)) return value.flatMap(scalarPropertyArrayItem)
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
-  return ''
-}
-
-function scalarPropertyArrayItem(value: LocalVaultFrontmatterScalar): string[] {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return [String(value)]
-  return []
-}
-
-function cleanTypeName(value: string): string {
-  return wikilinkTarget(value).replace(/\.md$/, '')
-}
-
 function wikilinkSearchText(note: MobileNote): string {
   return [note.title, note.type, note.path ?? '', ...(note.aliases ?? []), note.tags.join(' ')].join(' ').toLowerCase()
 }
@@ -1393,53 +1303,6 @@ function slugifyTitle(title: NoteTitle): string {
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '') || 'untitled'
-}
-
-function humanizeKey(key: FrontmatterKey): string {
-  return key
-    .replaceAll('_', ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-}
-
-function normalizedFrontmatterKey(key: FrontmatterKey): string {
-  return key.trim().toLowerCase().replace(/\s+/g, '_')
-}
-
-function frontmatterText(
-  frontmatter: LocalVaultFrontmatter,
-  keys: readonly FrontmatterKey[],
-): string | null {
-  for (const key of keys) {
-    const value = frontmatterValueForKey(frontmatter, key)
-    if (typeof value === 'string' && value.trim()) return value.trim()
-  }
-
-  return null
-}
-
-function frontmatterNumber(
-  frontmatter: LocalVaultFrontmatter,
-  keys: readonly FrontmatterKey[],
-): number | null {
-  for (const key of keys) {
-    const value = frontmatterValueForKey(frontmatter, key)
-    if (typeof value === 'number' && Number.isFinite(value)) return value
-  }
-
-  return null
-}
-
-function frontmatterValueForKey(
-  frontmatter: LocalVaultFrontmatter,
-  key: FrontmatterKey,
-): LocalVaultFrontmatterValue | undefined {
-  const exactValue = frontmatter[key]
-  if (exactValue !== undefined) return exactValue
-
-  const normalizedKey = normalizedFrontmatterKey(key)
-  return Object.entries(frontmatter).find(([candidateKey]) => (
-    normalizedFrontmatterKey(candidateKey) === normalizedKey
-  ))?.[1]
 }
 
 function absoluteDate(timestamp: number): string {
