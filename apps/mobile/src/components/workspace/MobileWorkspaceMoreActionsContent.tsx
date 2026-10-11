@@ -1,12 +1,14 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
-import type { ReactNode } from 'react'
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { useState, type ReactNode } from 'react'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { FilePlus, LinkSimple, ListBullets, Star } from 'phosphor-react-native'
 import { Text } from '../ui/text'
+import { Button } from '../ui/button'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileChip } from '../../ui/MobileChip'
+import { MobileButton } from '../../ui/MobileButton'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
@@ -15,22 +17,49 @@ import { MobileSourceBlockMoreActions } from './MobileSourceBlockMoreActions'
 import { MobileTableMoreActions } from './MobileTableMoreActions'
 import { MobileWhiteboardMoreActions } from './MobileWhiteboardMoreActions'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
-import { NoteMoreActionRows } from './MobileNoteMoreActions'
-import { isMobileMarkdownActionNote } from './MobileNoteMoreActionsModel'
+import { NoteMoreActionRows, type NoteActionGroup } from './MobileNoteMoreActions'
+import { isMobileMarkdownActionNote, isMobileTextLikeActionNote } from './MobileNoteMoreActionsModel'
 import { chipTone } from './mobileWorkspaceTone'
 
 export function MoreActionsContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
+  const [selectedGroup, setSelectedGroup] = useState<NoteActionGroup>('note')
   const { selectedNote } = props
   if (!selectedNote) return <MoreActionsScroll />
+  const groups = noteActionGroups(selectedNote)
+  const group = groups.includes(selectedGroup) ? selectedGroup : 'file'
 
   return (
-    <MoreActionsScroll>
-      <SelectedNoteSummary note={selectedNote} typeDefinitions={props.typeDefinitions} />
-      <SelectedNoteActionRows note={selectedNote} props={props} />
-      {isMobileMarkdownActionNote(selectedNote) ? <MarkdownNoteMoreActionRows note={selectedNote} props={props} /> : null}
-      <DeepLinkActionRow onClose={props.onClose} onCopyDeepLink={props.onCopyDeepLink} />
-    </MoreActionsScroll>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <SelectedNoteSummary note={selectedNote} typeDefinitions={props.typeDefinitions} />
+        <View accessibilityRole="tablist" style={styles.groups}>
+          {groups.map((value) => <MobileButton
+            accessibilityRole="tab"
+            accessibilityState={{ selected: group === value }}
+            key={value}
+            label={mobileText(groupLabelKeys[value])}
+            onPress={() => setSelectedGroup(value)}
+            style={styles.group}
+            testID={`workspace-action-group-${value}`}
+            variant={group === value ? 'secondary' : 'ghost'}
+          />)}
+        </View>
+      </View>
+      <MoreActionsScroll key={group}>
+        <SelectedNoteActionRows group={group} note={selectedNote} props={props} />
+        {isMobileMarkdownActionNote(selectedNote) ? <MarkdownNoteMoreActionRows group={group} note={selectedNote} props={props} /> : null}
+        {group === 'file' ? <DeepLinkActionRow onClose={props.onClose} onCopyDeepLink={props.onCopyDeepLink} /> : null}
+      </MoreActionsScroll>
+    </View>
   )
+}
+
+const groupLabelKeys = { note: 'menu.note', edit: 'menu.edit', file: 'menu.file' } as const
+
+function noteActionGroups(note: MobileNote): NoteActionGroup[] {
+  if (isMobileMarkdownActionNote(note)) return ['note', 'edit', 'file']
+  return isMobileTextLikeActionNote(note) ? ['edit', 'file'] : ['file']
 }
 
 function MoreActionsScroll({ children }: { children?: ReactNode }) {
@@ -43,14 +72,17 @@ function MoreActionsScroll({ children }: { children?: ReactNode }) {
 }
 
 function SelectedNoteActionRows({
+  group,
   note,
   props,
 }: {
+  group: NoteActionGroup
   note: MobileNote
   props: MobileWorkspaceActionSheetProps
 }) {
   return (
     <NoteMoreActionRows
+      group={group}
       note={note}
       canRedoWorkspaceEdit={props.canRedoWorkspaceEdit}
       canUndoWorkspaceEdit={props.canUndoWorkspaceEdit}
@@ -79,13 +111,25 @@ function SelectedNoteActionRows({
 }
 
 function MarkdownNoteMoreActionRows({
+  group,
   note,
   props,
 }: {
+  group: NoteActionGroup
   note: MobileNote
   props: MobileWorkspaceActionSheetProps
 }) {
   const { mobileColors } = useMobileStyles(createThemeStyles)
+  if (group === 'note') return null
+  if (group === 'file') return <MoreActionRow
+    icon={<FilePlus color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
+    label={mobileText('command.note.exportPdf')}
+    testID="workspace-action-export-pdf"
+    onPress={() => {
+      props.onExportNoteAsPdf()
+      props.onClose()
+    }}
+  />
   return (
     <>
       <MoreActionRow
@@ -114,15 +158,6 @@ function MarkdownNoteMoreActionRows({
         note={note}
         onClose={props.onClose}
         onUpdateNoteContent={props.onUpdateNoteContent}
-      />
-      <MoreActionRow
-        icon={<FilePlus color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
-        label={mobileText('command.note.exportPdf')}
-        testID="workspace-action-export-pdf"
-        onPress={() => {
-          props.onExportNoteAsPdf()
-          props.onClose()
-        }}
       />
     </>
   )
@@ -180,12 +215,12 @@ function MoreActionRow({
 }) {
   const { styles } = useMobileStyles(createThemeStyles)
   return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [styles.actionRow, pressed ? styles.actionRowPressed : null]} testID={testID} onPress={onPress}>
+    <Button accessibilityLabel={label} variant="ghost" style={styles.actionRow} testID={testID} onPress={onPress}>
       <View style={styles.actionRowContent}>
         <View style={styles.actionIcon}>{icon}</View>
         <Text numberOfLines={1} style={styles.actionText}>{label}</Text>
       </View>
-    </Pressable>
+    </Button>
   )
 }
 
@@ -197,6 +232,8 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       alignItems: 'center',
     },
     actionRow: {
+      minHeight: 44,
+      justifyContent: 'center',
       minWidth: 0,
       alignSelf: 'stretch',
       width: '100%',
@@ -206,12 +243,10 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
     },
     actionRowContent: {
       minWidth: 0,
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: mobileSpace.sm,
-    },
-    actionRowPressed: {
-      backgroundColor: mobileColors.control,
     },
     actionText: {
       minWidth: 0,
@@ -221,8 +256,26 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       fontSize: mobileType.body,
     },
     content: {
-      gap: mobileSpace.md,
+      gap: mobileSpace.xs,
       padding: mobileSpace.md,
+    },
+    container: {
+      flexShrink: 1,
+      minHeight: 0,
+    },
+    header: {
+      paddingHorizontal: mobileSpace.md,
+      paddingTop: mobileSpace.md,
+      gap: mobileSpace.sm,
+    },
+    groups: {
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    group: {
+      flex: 1,
+      minWidth: 0,
+      minHeight: 44,
     },
     scrollArea: {
       flexShrink: 1,

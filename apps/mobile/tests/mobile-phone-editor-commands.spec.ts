@@ -171,6 +171,7 @@ async function assertRenderedPhoneMarkdown(page: Page) {
 
 async function openPhoneTableOfContents(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-edit').click()
   await page.getByTestId('workspace-action-table-of-contents').click()
   await expect(page.getByTestId('table-of-contents-panel')).toBeVisible()
   await expect(page.getByTestId('table-of-contents-row-toc-title')).toContainText('Phone Editor Commands')

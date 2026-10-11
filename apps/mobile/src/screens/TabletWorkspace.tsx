@@ -551,6 +551,7 @@ type TabletEditorPanelHostProps = Pick<
   | 'initialEditorEditingMode'
   | 'layoutProbe'
   | 'onOpenMoreActions'
+  | 'onOpenTableOfContents'
   | 'onTableOfContentsScrollProof'
   | 'onToggleFavorite'
   | 'onUpdateNoteContent'
@@ -595,6 +596,7 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     notes: props.suggestionNotes,
     onNavigateWikilink: props.onNavigateWikilink,
     onOpenMoreActions: props.onOpenMoreActions,
+    onOpenTableOfContents: props.onOpenTableOfContents,
     onRegisterEditorCommands: props.onRegisterEditorCommands,
     onTableOfContentsScrollProof: props.onTableOfContentsScrollProof,
     onToggleFavorite: props.onToggleFavorite,

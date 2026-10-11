@@ -19,6 +19,7 @@ import {
   customizeProcedureTypeSection,
 } from './mobile-type-section-flows'
 import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
+import { expectSourceContainsSnippet } from './mobile-note-content-assertions'
 
 const mobileClipboardAttemptsGlobalKey = '__TOLARIA_MOBILE_CLIPBOARD_ATTEMPTS__'
 
@@ -91,6 +92,7 @@ test.describe('mobile UI lab interactions', () => {
 
     await expect(editorScrollTop(page)).resolves.toBe(0)
     await page.getByTestId('editor-more-action').click()
+    await page.getByTestId('workspace-action-group-edit').click()
     await page.getByTestId('workspace-action-table-of-contents').click()
     await expect(page.getByTestId('table-of-contents-row-toc-heading-0')).toContainText('Target Section')
     await page.getByTestId('table-of-contents-row-toc-heading-0').click()
@@ -281,7 +283,7 @@ async function searchAndSelectRelease(page: PageLike) {
 
 async function toggleFavorite(page: PageLike) {
   await page.getByTestId('editor-favorite-action').click()
-  await expect(page.getByLabel('Remove from Favorites')).toBeVisible()
+  await expect(page.getByTestId('editor-favorite-action')).toHaveAccessibleName('Remove from Favorites')
 }
 
 async function retargetSelectedRelease(page: PageLike) {
@@ -366,6 +368,7 @@ async function addTypedProperties(page: PageLike) {
 
 async function moveAndRenameSelectedRelease(page: PageLike) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await expect(page.getByTestId('workspace-action-move-note-folder')).toBeVisible()
   await page.getByTestId('workspace-action-move-note-folder').click()
   await expect(page.getByTestId('workspace-move-folder-input')).toBeVisible()
@@ -379,6 +382,7 @@ async function moveAndRenameSelectedRelease(page: PageLike) {
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
 
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-rename-file').click()
   await expect(page.getByTestId('workspace-rename-file-input')).toHaveValue('v2026-05-02')
   const renameSaveButton = page.getByTestId('workspace-action-sheet-renameNoteFile').getByRole('button', { name: 'Save' })
@@ -395,12 +399,14 @@ async function moveAndRenameSelectedRelease(page: PageLike) {
 async function renameSelectedFileToTitle(page: PageLike) {
   await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Workflow Orchestration Essay')
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await expect(page.getByTestId('workspace-action-rename-file-to-title')).toBeVisible()
   await page.getByTestId('workspace-action-rename-file-to-title').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await expect(page.getByTestId('note-row-workflow-orchestration')).toBeVisible()
 
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-copy-deep-link').click()
   await expect(page.evaluate((key) => {
     const attempts = (window as unknown as Record<string, unknown>)[key]
@@ -427,6 +433,7 @@ async function setAndRemoveSelectedNoteIcon(page: PageLike) {
 
 async function assertSelectedReleaseDeepLink(page: PageLike) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-copy-deep-link').click()
   await expect(page.evaluate((key) => {
     const attempts = (window as unknown as Record<string, unknown>)[key]
@@ -436,6 +443,7 @@ async function assertSelectedReleaseDeepLink(page: PageLike) {
 
 async function assertSelectedReleasePdfExport(page: PageLike) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-export-pdf').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await expect(page.evaluate((key) => {
@@ -948,6 +956,7 @@ async function editRawFrontmatterContract(page: PageLike) {
 async function archiveAndUnarchiveSelectedNote(page: PageLike) {
   await page.getByTestId('editor-more-action').click()
   await expect(page.getByText('Archive Note')).toBeVisible()
+  await page.getByTestId('workspace-action-group-file').click()
   await expect(page.getByText('Copy deep link to current item')).toBeVisible()
   await page.getByTestId('workspace-action-copy-deep-link').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
@@ -1127,7 +1136,7 @@ async function assertHiddenNoteHydrationAndWrite(page: PageLike, state: LocalVau
   await page.getByTestId('workspace-search-input').fill(hiddenNote.path)
   await page.getByTestId(`workspace-search-result-${hiddenNote.id}`).click()
   await expectSelectedChromeTitle(page, hiddenNote.title)
-  await expect(page.getByTestId('editor-markdown-input')).toHaveValue(looseRawSnippetRegExp(hiddenNote.snippet))
+  await expectSourceContainsSnippet(page, hiddenNote.snippet)
 
   await page.getByTestId('editor-markdown-input').fill(`# ${hiddenNote.title}\n\nMobile hydration write check.\n`)
   await page.waitForTimeout(300)
@@ -1150,16 +1159,6 @@ async function ensureMarkdownInput(page: PageLike) {
   await page.getByTestId('editor-source-action').click()
   await expect(input).toBeVisible()
   return input
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
-}
-
-function looseRawSnippetRegExp(value: string) {
-  const words = value.match(/[\p{L}\p{N}]+/gu) ?? []
-  const meaningfulWords = words.slice(0, 6)
-  return new RegExp(meaningfulWords.map(escapeRegExp).join('.*'), 'iu')
 }
 
 async function assertTypeNavigationBudget(page: PageLike, state: LocalVaultSnapshotState) {

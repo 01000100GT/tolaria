@@ -378,6 +378,7 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileNoteListPanel` | Note-list toolbar, rows, chips, and empty state |
 | `MobileCommandPalette` / `mobileCommandPalette.ts` | Desktop-ID-preserving mobile command search over existing workspace callbacks, including selected-note file utilities and retargeting; uses the shared keyboard-aware viewport with a constrained results scroller |
 | `MobileQuickOpenSheet` | Ephemeral all-notes quick-open query, keyboard result selection, and direct title-less note creation without mutating the current note-list filter |
+| `MobileWorkspaceMoreActionsContent` | Keeps Note/Edit/File category controls fixed above scrollable action groups; reuses controller callbacks without duplicating mutation state. Markdown defaults to Note, other files to File; binary entries do not expose editing actions |
 | `MobileWorkspaceActionSheet` | Search, create, property, relationship, and more-action sheets |
 | `TabletEditorPanel` | Editor rendering plus full raw markdown/frontmatter editing with wikilink suggestions |
 | `MobileWysiwygMarkdownEditor` | Native TenTap editor wrapper, custom bridge registration, markdown hydration/serialization, and editor command registration |

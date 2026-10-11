@@ -18,6 +18,7 @@ final class TabletPreparedNoteActionTests: XCTestCase {
     app.buttons.matching(identifier: "note-list-bulk-delete").firstMatch.tap()
     waitUntil { !row.exists }
     app.buttons.matching(identifier: "editor-more-action").firstMatch.tap()
+    element(app, "workspace-action-group-edit").tap()
     let undo = app.buttons.matching(identifier: "workspace-action-undo-edit").firstMatch
     XCTAssertTrue(undo.waitForExistence(timeout: 5))
     undo.tap()

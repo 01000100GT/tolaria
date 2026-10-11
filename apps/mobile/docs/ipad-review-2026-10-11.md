@@ -48,7 +48,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 10 | Breadcrumbs use the note's configured type icon and color | Implemented; native typed icon verified |
 | 11 | Favorite and other local actions respond without avoidable delay | Bounded flag edits and lazy settings suggestions implemented; native model timings recorded |
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
-| 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Alignment verified natively; overflow reduction pending |
+| 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Implemented Note/Edit/File groups and direct tablet outline action; native menu/Undo geometry checks pass |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Implemented; native Standard/Larger numeric geometry, persistence and rotation pass |
 | 15 | Explain and verify local Git and remote sync behavior | Native disposable-remote probe passes; explicit manual commit verified on disk |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
@@ -380,3 +380,40 @@ measurements, commits and remaining limitations as each batch completes.
   ABSTRACTIONS and native QA documentation are updated; no ADR is needed.
   Manual source hardware-arrow verification remains outstanding while the Mac
   is locked; software-keyboard success is not substituted for that check.
+
+### Grouped note actions
+
+- More actions now opens Note, Edit and File categories rather than one long
+  mixed list. Categories and note summary remain fixed while commands scroll.
+  Non-Markdown entries expose only applicable groups. Tablet breadcrumbs expose
+  the existing outline command directly; phones retain the smaller toolbar.
+- Native measurement caught an 18.5-point menu row despite its declared padding.
+  Reusing the existing RNR Button with explicit native layout fixes the actual
+  row. Group buttons and command rows measure at least 44 points. Flattened
+  wrapper styles also preserve these dimensions in React Native Web; tab roles
+  and selected state are exposed correctly to accessibility.
+- `overflow-ipad-final-persist.xcresult` passes the grouped menu, direct outline,
+  favorite Undo and on-disk unopened-note delete/Undo/relaunch checks. The
+  restored file retains its complete body and custom frontmatter. The disposable
+  fixture is in the app sandbox, never the user's Laputa vault.
+- `overflow-phone-actions.xcresult` passes the grouped menu and favorite Undo on
+  iPhone. Screenshots were inspected alongside measured geometry. A separate
+  phone-create regression was discovered: new notes select in the list without
+  opening the editor; it remains the next fix, not a passing workflow.
+- The affected browser lane initially passed 41 checks. Four failures were
+  corrected in focused reruns: desktop contexts now use mouse long-press, and
+  the favorite assertion identifies the breadcrumb control rather than matching
+  hidden swipe actions. The 20-check rerun passes; after extracting a safe
+  content assertion, all 17 applicable workspace interaction checks pass again.
+- All 28 code paths and classifications are in `overflow-final-manifest.json`.
+  Every scorable file starts/remains at CodeScene 10; the type-only file remains
+  unscorable with no findings. Staged delta checks all 28 with no issues. All 136
+  expected local analyzer runs complete with zero findings/errors and matching
+  file hashes. The existing dynamic-regex finding in the interaction test is
+  removed, from one Critical to zero. Cloud verification remains unavailable.
+- Mobile lint and typecheck pass. Existing translated labels are reused, so no
+  UI copy changed. PostHog: no event needed for reorganizing existing commands.
+  Native QA and ABSTRACTIONS documentation are updated; no ADR is needed.
+  Demo-vault directories remain clean. The simulator's disposable Spotlight
+  index was retained on Jupiter to recover local disk space without deleting
+  app documents or user vault data.

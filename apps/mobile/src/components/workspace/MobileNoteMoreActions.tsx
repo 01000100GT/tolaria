@@ -2,7 +2,7 @@ import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import {
   ArchiveIcon,
   ArrowClockwise,
@@ -24,6 +24,7 @@ import {
   Trash,
 } from 'phosphor-react-native'
 import { Text } from '../ui/text'
+import { Button } from '../ui/button'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 
@@ -33,7 +34,10 @@ import {
   isMobileTextLikeActionNote,
 } from './MobileNoteMoreActionsModel'
 
+export type NoteActionGroup = 'note' | 'edit' | 'file'
+
 type NoteMoreActionRowsProps = {
+  group: NoteActionGroup
   canRedoWorkspaceEdit: boolean
   canUndoWorkspaceEdit: boolean
   note: MobileNote
@@ -63,23 +67,23 @@ export function NoteMoreActionRows(props: NoteMoreActionRowsProps) {
   const { note } = props
   if (!isMobileMarkdownActionNote(note)) return <NonMarkdownFileActionRows {...props} />
 
-  const wideNote = note.noteWidth === 'wide'
+  if (props.group === 'edit') return <><NoteEditorActionRows {...props} /><NoteHistoryActionRows {...props} /></>
+  if (props.group === 'file') return <NoteFileActionRows {...props} />
 
   return (
     <>
       <NoteStateActionRows {...props} />
-      <NoteEditorActionRows {...props} />
       <NoteNavigationActionRows {...props} />
-      <NoteHistoryActionRows {...props} />
       <NoteIconActionRows {...props} />
-      <NoteFileActionRows {...props} />
-      <NoteWidthActionRow noteWide={wideNote} onClose={props.onClose} onToggleNoteWidth={props.onToggleNoteWidth} />
+      <NoteTypeActionRow onOpenChangeNoteType={props.onOpenChangeNoteType} />
+      <NoteWidthActionRow noteWide={note.noteWidth === 'wide'} onClose={props.onClose} onToggleNoteWidth={props.onToggleNoteWidth} />
       <DeleteActionRow onClose={props.onClose} onDeleteNote={props.onDeleteNote} />
     </>
   )
 }
 
 function NonMarkdownFileActionRows({
+  group,
   note,
   onClose,
   onCopyFilePath,
@@ -89,22 +93,17 @@ function NonMarkdownFileActionRows({
   onOpenFindInNote,
   onOpenReplaceInNote,
   onRevealFile,
-}: Pick<NoteMoreActionRowsProps, 'note' | 'onClose' | 'onCopyFilePath' | 'onDeleteNote' | 'onEnterNeighborhood' | 'onOpenFileInDefaultApp' | 'onOpenFindInNote' | 'onOpenReplaceInNote' | 'onRevealFile'>) {
+}: Pick<NoteMoreActionRowsProps, 'group' | 'note' | 'onClose' | 'onCopyFilePath' | 'onDeleteNote' | 'onEnterNeighborhood' | 'onOpenFileInDefaultApp' | 'onOpenFindInNote' | 'onOpenReplaceInNote' | 'onRevealFile'>) {
   const { mobileColors } = useMobileStyles(createThemeStyles)
+  if (group === 'edit') return <NoteEditorActionRows onOpenFindInNote={onOpenFindInNote} onOpenReplaceInNote={onOpenReplaceInNote} />
   return (
     <>
       {isMobileTextLikeActionNote(note) ? (
-        <>
-          <NoteEditorActionRows
-            onOpenFindInNote={onOpenFindInNote}
-            onOpenReplaceInNote={onOpenReplaceInNote}
-          />
-          <NoteNavigationActionRows
-            note={note}
-            onClose={onClose}
-            onEnterNeighborhood={onEnterNeighborhood}
-          />
-        </>
+        <NoteNavigationActionRows
+          note={note}
+          onClose={onClose}
+          onEnterNeighborhood={onEnterNeighborhood}
+        />
       ) : null}
       <NotePathActionRows
         onClose={onClose}
@@ -295,7 +294,6 @@ function NoteIconActionRows({
 function NoteFileActionRows({
   onClose,
   onCopyFilePath,
-  onOpenChangeNoteType,
   onOpenMoveNoteToFolder,
   onOpenRenameNoteFile,
   onRevealFile,
@@ -303,7 +301,6 @@ function NoteFileActionRows({
 }: {
   onClose: () => void
   onCopyFilePath: () => void
-  onOpenChangeNoteType: () => void
   onOpenMoveNoteToFolder: () => void
   onOpenRenameNoteFile: () => void
   onRevealFile: () => void
@@ -312,12 +309,6 @@ function NoteFileActionRows({
   const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
-      <ActionRow
-        icon={<Tag color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
-        label={mobileText('command.note.changeType')}
-        testID="workspace-action-change-note-type"
-        onPress={onOpenChangeNoteType}
-      />
       <ActionRow
         icon={<PencilSimple color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
         label={mobileText('editor.filename.rename')}
@@ -346,6 +337,16 @@ function NoteFileActionRows({
       />
     </>
   )
+}
+
+function NoteTypeActionRow({ onOpenChangeNoteType }: Pick<NoteMoreActionRowsProps, 'onOpenChangeNoteType'>) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
+  return <ActionRow
+    icon={<Tag color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
+    label={mobileText('command.note.changeType')}
+    testID="workspace-action-change-note-type"
+    onPress={onOpenChangeNoteType}
+  />
 }
 
 function NotePathActionRows({
@@ -465,12 +466,12 @@ function ActionRow({
 }) {
   const { styles } = useMobileStyles(createThemeStyles)
   return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [styles.actionRow, pressed ? styles.actionRowPressed : null]} testID={testID} onPress={onPress}>
+    <Button accessibilityLabel={label} variant="ghost" style={styles.actionRow} testID={testID} onPress={onPress}>
       <View style={styles.actionRowContent}>
         <View style={styles.actionIcon}>{icon}</View>
         <Text numberOfLines={1} style={[styles.actionText, destructive ? styles.actionTextDestructive : null]}>{label}</Text>
       </View>
-    </Pressable>
+    </Button>
   )
 }
 
@@ -482,6 +483,8 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       alignItems: 'center',
     },
     actionRow: {
+      minHeight: 44,
+      justifyContent: 'center',
       minWidth: 0,
       alignSelf: 'stretch',
       width: '100%',
@@ -491,12 +494,10 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
     },
     actionRowContent: {
       minWidth: 0,
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: mobileSpace.sm,
-    },
-    actionRowPressed: {
-      backgroundColor: mobileColors.control,
     },
     actionText: {
       minWidth: 0,

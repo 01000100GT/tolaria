@@ -8,6 +8,7 @@ test.describe('mobile note file path actions', () => {
 
     await page.goto('/')
     await page.getByTestId('editor-more-action').click()
+    await page.getByTestId('workspace-action-group-file').click()
     await expect(page.getByText('Copy file path')).toBeVisible()
     await page.getByTestId('workspace-action-copy-file-path').click()
 

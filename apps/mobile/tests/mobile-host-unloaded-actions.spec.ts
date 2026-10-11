@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { workspaceScenarioForId } from '../src/fixtures/workspaceFixtures'
-import { longPressTestId } from './mobile-phone-test-gestures'
+import { longPressMouseTestId } from './mobile-phone-test-gestures'
 import type { MobileWorkspaceWrite } from '../src/workspace/mobileWorkspaceEditing'
 
 const targetId = 'open-source-project'
@@ -24,7 +24,7 @@ test.beforeEach(async ({ page }, info) => {
 })
 
 test('@smoke loads an unselected note before bulk archive', async ({ page }) => {
-  await longPressTestId(page, `note-row-${targetId}`)
+  await longPressMouseTestId(page, `note-row-${targetId}`)
   await page.getByTestId('note-list-bulk-archive').click()
   await expect.poll(() => writes(page)).toContainEqual(expect.objectContaining({
     kind: 'saveNote', path: targetPath, content: expect.stringContaining('Original full body for Undo.'),
@@ -33,10 +33,11 @@ test('@smoke loads an unselected note before bulk archive', async ({ page }) => 
 })
 
 test('@smoke delete and Undo restore the entire previously unloaded file', async ({ page }) => {
-  await longPressTestId(page, `note-row-${targetId}`)
+  await longPressMouseTestId(page, `note-row-${targetId}`)
   await page.getByTestId('note-list-bulk-delete').click()
   await expect.poll(() => writes(page)).toContainEqual({ kind: 'deleteNote', path: targetPath })
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-edit').click()
   await page.getByTestId('workspace-action-undo-edit').click()
   await expect.poll(() => writes(page)).toContainEqual({ kind: 'createNote', path: targetPath, content: targetContent })
   await expect(page.getByTestId(`note-row-${targetId}`)).toBeVisible()
@@ -47,7 +48,7 @@ test('@smoke a failed bulk read is visible and retry uses recovered file content
     const contents = Reflect.get(window, '__TOLARIA_MOBILE_WORKSPACE_NOTE_CONTENTS__')
     Reflect.deleteProperty(contents, path)
   }, targetPath)
-  await longPressTestId(page, `note-row-${targetId}`)
+  await longPressMouseTestId(page, `note-row-${targetId}`)
   await page.getByTestId('note-list-bulk-archive').click()
   await expect(page.getByTestId('workspace-edit-retry')).toBeVisible()
   expect(await writes(page)).toEqual([])

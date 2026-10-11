@@ -27,6 +27,7 @@ test.describe('phone note utility actions', () => {
     await page.getByTestId('note-row-workflow-orchestration').click()
     await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
     await page.getByTestId('editor-more-action').click()
+    await page.getByTestId('workspace-action-group-file').click()
     await page.getByTestId('workspace-action-copy-file-path').click()
 
     await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
@@ -45,6 +46,7 @@ test.describe('phone note utility actions', () => {
     await page.getByTestId('note-row-workflow-orchestration').click()
     await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
     await page.getByTestId('editor-more-action').click()
+    await page.getByTestId('workspace-action-group-file').click()
     await page.getByTestId('workspace-action-reveal-file').click()
 
     await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()

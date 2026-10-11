@@ -1,5 +1,5 @@
 import { useMobileStyles, useMobileColors, useMobileMetrics } from '../ui/theme/useMobileTheme'
-import { Code, DotsThree, SidebarSimple, Star } from 'phosphor-react-native'
+import { Code, DotsThree, ListBullets, SidebarSimple, Star } from 'phosphor-react-native'
 import {
   ScrollView,
   View,
@@ -57,6 +57,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     notes,
     onNavigateWikilink,
     onOpenMoreActions,
+    onOpenTableOfContents,
     onRegisterEditorCommands,
     onTableOfContentsScrollProof,
     onToggleProperties,
@@ -134,6 +135,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         leading={leading}
         note={note}
         onOpenMoreActions={onOpenMoreActions}
+        onOpenTableOfContents={onOpenTableOfContents}
         onToggleProperties={onToggleProperties}
         onToggleSourceMode={toggleSourceMode}
         onToggleFavorite={onToggleFavorite}
@@ -253,6 +255,7 @@ function EditorToolbar({
   leading,
   note,
   onOpenMoreActions,
+  onOpenTableOfContents,
   onToggleProperties,
   onToggleSourceMode,
   onToggleFavorite,
@@ -274,6 +277,7 @@ function EditorToolbar({
         fileMode={fileMode}
         note={note}
         onOpenMoreActions={onOpenMoreActions}
+        onOpenTableOfContents={onOpenTableOfContents}
         onToggleProperties={onToggleProperties}
         onToggleFavorite={onToggleFavorite}
         onToggleSourceMode={onToggleSourceMode}
@@ -343,6 +347,7 @@ function MarkdownToolbarActions({
   editingMode,
   note,
   onOpenMoreActions,
+  onOpenTableOfContents,
   onToggleProperties,
   onToggleFavorite,
   onToggleSourceMode,
@@ -376,6 +381,13 @@ function MarkdownToolbarActions({
           size={desktopToolbarActionParity.iconSize}
         />
       </MobileIconButton>
+      {onOpenTableOfContents ? <MobileIconButton
+        accessibilityLabel={mobileText('editor.toolbar.openTableOfContents')}
+        testID="editor-table-of-contents-action"
+        onPress={onOpenTableOfContents}
+      >
+        <ListBullets color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
+      </MobileIconButton> : null}
       <MobileIconButton
         accessibilityLabel={mobileText('editor.toolbar.moreActions')}
         testID="editor-more-action"

@@ -8,6 +8,7 @@ test.describe('mobile note reveal actions', () => {
 
     await page.goto('/')
     await page.getByTestId('editor-more-action').click()
+    await page.getByTestId('workspace-action-group-file').click()
     await expect(page.getByText('Reveal in Finder')).toBeVisible()
     await page.getByTestId('workspace-action-reveal-file').click()
 

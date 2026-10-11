@@ -36,6 +36,7 @@ async function writeWhiteboardFence(page: Page) {
 
 async function editWhiteboardFence(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-edit').click()
   await page.getByTestId('workspace-action-edit-whiteboard').click()
   await expect(page.getByTestId('workspace-whiteboard-editor')).toBeVisible()
   await expect(page.getByTestId('workspace-whiteboard-height-input')).toHaveValue('520')

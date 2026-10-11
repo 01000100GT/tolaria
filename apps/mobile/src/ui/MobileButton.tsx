@@ -13,7 +13,7 @@ type MobileButtonTone = 'default' | 'danger'
 
 type MobileButtonProps = {
   accessibilityLabel?: string
-  accessibilityRole?: ButtonProps['accessibilityRole']
+  accessibilityRole?: ButtonProps['role']
   accessibilityState?: ButtonProps['accessibilityState']
   density?: MobileButtonDensity
   disabled?: boolean
@@ -55,13 +55,17 @@ export function MobileButton(props: MobileButtonProps) {
   return (
     <Button
       accessibilityLabel={accessibilityLabel ?? label}
-      accessibilityRole={accessibilityRole}
+      role={accessibilityRole ?? 'button'}
       accessibilityState={accessibilityState}
+      aria-selected={accessibilityState?.selected}
+      aria-checked={accessibilityState?.checked}
+      aria-expanded={accessibilityState?.expanded}
+      aria-busy={accessibilityState?.busy}
       className={cn(buttonDensityClassNames[density], buttonClassNames[variant])}
       disabled={disabled}
       onPress={onPress}
       size="sm"
-      style={buttonStyle}
+      style={StyleSheet.flatten(buttonStyle)}
       testID={testID}
       variant={buttonVariant}
     >

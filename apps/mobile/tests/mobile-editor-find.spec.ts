@@ -52,4 +52,5 @@ async function openMoreActions(page: Page) {
   await expect(page.getByTestId('workspace-action-sheet')).toHaveCount(0)
   await page.getByTestId('editor-more-action').click()
   await expect(page.getByTestId('workspace-action-sheet-moreActions')).toBeVisible()
+  await page.getByTestId('workspace-action-group-edit').click()
 }

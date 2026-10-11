@@ -36,6 +36,7 @@ async function writeMarkdownTable(page: Page) {
 
 async function editMarkdownTable(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-edit').click()
   await page.getByTestId('workspace-action-edit-table').click()
   await expect(page.getByTestId('workspace-table-editor')).toBeVisible()
   await expect(page.getByTestId('workspace-table-header-input-0')).toHaveValue('Surface')

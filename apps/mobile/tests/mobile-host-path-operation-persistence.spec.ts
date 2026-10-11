@@ -81,6 +81,7 @@ async function createHostNoteInFolder(page: Page) {
 
 async function moveHostNoteToTolariaFolder(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-move-note-folder').click()
   await page.getByTestId('workspace-move-folder-input').fill('Tolaria')
   await page.getByTestId('workspace-move-folder-suggestion-tolaria-mobile-ui').click()

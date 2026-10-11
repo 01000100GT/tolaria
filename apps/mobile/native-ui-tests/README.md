@@ -52,6 +52,11 @@ the syntax layer must lay out the entire document and follow real input scrollin
 It also verifies formatting controls stay above the software keyboard through
 rotation. Screenshots supplement numeric frame checks to catch clipped text.
 
+`TabletNoteActionGroupTests` checks Note/Edit/File switching, actual 44-point
+touch targets, Undo through the Edit group, and the tablet's direct outline
+button. On iPhone, run the group and Undo tests only; the outline remains in Edit
+to avoid crowding the phone toolbar. All edits use the disposable fixture.
+
 `TabletCommandPaletteKeyboardTests` checks the palette's full bounds against the
 software keyboard in both orientations, preserves its 540-point tablet width,
 and types and selects a real navigation command after rotation. A continuous

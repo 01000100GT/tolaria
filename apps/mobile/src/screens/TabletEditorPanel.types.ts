@@ -30,6 +30,7 @@ export type TabletEditorPanelProps = {
   notes: MobileNote[]
   onNavigateWikilink: (target: string) => void
   onOpenMoreActions: () => void
+  onOpenTableOfContents?: () => void
   onRegisterEditorCommands?: RegisterMobileEditorCommands
   onTableOfContentsScrollProof?: (proof: NativeTableOfContentsProof) => void
   onToggleProperties?: () => void
@@ -59,6 +60,7 @@ export type EditorToolbarProps = {
   leading?: ReactNode
   note: MobileNote
   onOpenMoreActions: () => void
+  onOpenTableOfContents?: () => void
   onToggleProperties?: () => void
   onToggleSourceMode: () => void
   onToggleFavorite: () => void

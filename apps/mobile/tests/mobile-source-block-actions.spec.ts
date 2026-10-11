@@ -73,6 +73,7 @@ async function editMathBlock(page: Page) {
 
 async function openSourceBlockEditor(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-edit').click()
   await page.getByTestId('workspace-action-edit-source-block').click()
   await expect(page.getByTestId('workspace-source-block-editor')).toBeVisible()
 }

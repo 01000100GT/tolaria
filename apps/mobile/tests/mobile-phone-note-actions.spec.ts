@@ -107,6 +107,7 @@ async function setAndRemovePhoneNoteIcon(page: Page) {
 
 async function moveAndRenamePhoneNote(page: Page) {
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-move-note-folder').click()
   await expect(page.getByTestId('workspace-move-folder-input')).toBeVisible()
   await page.getByTestId('workspace-move-folder-input').fill('Tolaria')
@@ -115,6 +116,7 @@ async function moveAndRenamePhoneNote(page: Page) {
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
 
   await page.getByTestId('editor-more-action').click()
+  await page.getByTestId('workspace-action-group-file').click()
   await page.getByTestId('workspace-action-rename-file').click()
   await expect(page.getByTestId('workspace-rename-file-input')).toHaveValue('phone-action-source')
   await page.getByTestId('workspace-rename-file-input').fill('phone-action-renamed')
