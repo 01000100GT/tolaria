@@ -309,6 +309,12 @@ Focused block type changes share the same block-type catalog in `src/utils/richE
 
 The React Native app in `apps/mobile` has its own UI abstraction layer. Mobile screens should compose Tolaria-native primitives from `apps/mobile/src/ui` instead of directly styling raw React Native controls in feature screens.
 
+`MobileAnalyticsProvider` applies persisted, default-off consent to a typed
+allowlist of swipe, settings and Git-request events. The PostHog capture transport
+uses ephemeral session identifiers, no document/repository metadata, bounded
+requests and immediate opt-out cancellation. It is inert without a configured
+public project key; see ADR 0214.
+
 `MobileThemeProvider` resolves installation appearance preferences and publishes
 desktop-derived palettes to both NativeWind/RNR and explicit native styles.
 `useMobileColors` supplies semantic roles; `useMobileStyles` memoizes a component's

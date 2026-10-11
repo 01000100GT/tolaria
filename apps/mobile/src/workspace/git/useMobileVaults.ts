@@ -14,6 +14,7 @@ import { createGitVault, type GitAuthor } from './gitVault'
 import { withSavedWorkspace } from './workspaceWriteQueue'
 import { useMobileSettings } from '../../settings/useMobileSettings'
 import { useMobileAutoGit } from './useMobileAutoGit'
+import { useMobileAnalytics } from '../../analytics/useMobileAnalytics'
 
 export type VaultSyncState = 'local' | 'pending' | 'committed' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | null
@@ -24,6 +25,7 @@ export function useMobileVaults() {
   const catalog = useManagedVaultCatalog()
   const account = useGitHubAccount()
   const preferences = useMobileSettings()
+  const analytics = useMobileAnalytics()
   const [editors] = useState(createWorkspaceSyncEditors)
   const [override, setOverride] = useState<ActiveVault | null>(null)
   const active = override ?? catalog.restored ?? { selection: catalog.error ? null : local.selection, git: null }
@@ -52,9 +54,10 @@ export function useMobileVaults() {
     setOpened(false)
   }
 
-  const perform = async (task: VaultTask, present = true) => {
+  const perform = async (task: VaultTask, present = true, operation?: 'commit' | 'sync' | 'autoSync') => {
     if (running.current || restorePending) return
     running.current = true
+    if (operation && active.git) analytics.capture({ name: 'mobile_git_operation_requested', operation })
     editors.setBlocked(true)
     setBusy(true)
     if (present) setOpened(true)
@@ -121,7 +124,7 @@ export function useMobileVaults() {
     setStatus(result.kind)
     return result.workspaceChanged ? null : 'unchanged' as const
   }
-  const sync = () => perform(() => syncTask(preferences.settings.autoGit))
+  const sync = () => perform(() => syncTask(preferences.settings.autoGit), true, 'sync')
   const commit = (message: string, push = false) => perform(async () => {
     if (!active.git) return 'cancelled'
     setPhase('checkpoint')
@@ -130,13 +133,13 @@ export function useMobileVaults() {
     setLastCommitId(result.oid.slice(0, 8))
     setStatus('committed')
     return push ? syncTask(false) : 'unchanged'
-  })
+  }, true, 'commit')
 
   useMobileAutoGit({
     blocked: busy || opened || preferences.opened || restorePending || status === 'diverged', editors,
     enabled: preferences.ready && preferences.settings.autoGit && Boolean(active.git),
     rootUri: active.selection?.vaultRootUri,
-    sync: () => perform(() => syncTask(true), false),
+    sync: () => perform(() => syncTask(true), false, 'autoSync'),
   })
 
   return {

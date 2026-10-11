@@ -4,9 +4,11 @@ import { MobileButton } from '../ui/MobileButton'
 import { mobileText } from '../i18n/mobileText'
 import { useMobileColors } from '../ui/theme/useMobileTheme'
 import { useMobileSettings } from './useMobileSettings'
+import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
 
 export function MobileAppearanceSettings() {
   const preferences = useMobileSettings()
+  const analytics = useMobileAnalytics()
   const colors = useMobileColors()
   const disabled = !preferences.ready || preferences.saving
   return <View style={styles.section}>
@@ -21,7 +23,9 @@ export function MobileAppearanceSettings() {
         variant={preferences.settings.theme === theme ? 'secondary' : 'ghost'}
         style={styles.option}
         testID={`settings-theme-${theme}`}
-        onPress={() => { void preferences.update({ theme }) }}
+        onPress={() => { void preferences.update({ theme }).then(saved => {
+          if (saved) analytics.capture({ name: 'mobile_setting_changed', setting: 'theme' })
+        }) }}
       />)}
     </View>
   </View>

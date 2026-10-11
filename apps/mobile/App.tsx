@@ -9,12 +9,15 @@ import { useMobileTheme } from './src/ui/theme/useMobileTheme'
 import { useNativeGitProbe } from './src/qa/nativeGitProbe'
 import { MobileVaultProvider } from './src/workspace/MobileVaultProvider'
 import { MobileSettingsProvider } from './src/settings/MobileSettingsProvider'
+import { MobileAnalyticsProvider } from './src/analytics/MobileAnalyticsProvider'
 
 export function App() {
   useNativeGitProbe()
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <MobileSettingsProvider><MobileThemeProvider><AppSurface /></MobileThemeProvider></MobileSettingsProvider>
+      <MobileSettingsProvider>
+        <MobileAnalyticsProvider><MobileThemeProvider><AppSurface /></MobileThemeProvider></MobileAnalyticsProvider>
+      </MobileSettingsProvider>
     </GestureHandlerRootView>
   )
 }

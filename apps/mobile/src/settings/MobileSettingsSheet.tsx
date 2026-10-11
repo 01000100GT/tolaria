@@ -11,10 +11,13 @@ import { mobileSpace } from '../ui/tokens'
 import { mobileText } from '../i18n/mobileText'
 import { useMobileSettings } from './useMobileSettings'
 import { MobileAppearanceSettings } from './MobileAppearanceSettings'
+import { MobilePrivacySettings } from './MobilePrivacySettings'
+import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
 
 export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean }) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const preferences = useMobileSettings()
+  const analytics = useMobileAnalytics()
   const disabled = !preferences.ready || preferences.saving
   return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={preferences.close}>
     <View style={styles.backdrop}>
@@ -31,9 +34,13 @@ export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean })
           <Text style={styles.heading}>{mobileText('settings.autogit.title')}</Text>
           <View style={styles.row}>
             <Text style={styles.label}>{mobileText('settings.autogit.enable')}</Text>
-            <Switch checked={preferences.settings.autoGit} disabled={disabled || !gitAvailable} accessibilityLabel={mobileText('settings.autogit.enable')} onCheckedChange={(autoGit) => { void preferences.update({ autoGit }) }} testID="settings-auto-git" />
+            <Switch checked={preferences.settings.autoGit} disabled={disabled || !gitAvailable} accessibilityLabel={mobileText('settings.autogit.enable')}
+              onCheckedChange={(autoGit) => { void preferences.update({ autoGit }).then(saved => {
+                if (saved) analytics.capture({ name: 'mobile_setting_changed', setting: 'autoGit' })
+              }) }} testID="settings-auto-git" />
           </View>
           <Text style={styles.detail}>{mobileText(gitAvailable ? 'mobile.settings.autoGitForeground' : 'mobile.vaults.localOnly')}</Text>
+          <MobilePrivacySettings />
         </ScrollView>
       </MobilePanel>
     </View>

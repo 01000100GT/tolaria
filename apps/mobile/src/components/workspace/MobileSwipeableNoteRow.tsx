@@ -8,6 +8,7 @@ import { runOnJS, useSharedValue } from 'react-native-reanimated'
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import { MobileNoteSwipeActions } from './MobileNoteSwipeActions'
 import { fullSwipeNoteAction, type MobileNoteSwipeAction } from './mobileNoteSwipe'
+import { useMobileAnalytics } from '../../analytics/useMobileAnalytics'
 
 export type MobileNoteRowActions = {
   onArchive: (noteIds: string[], archived: boolean) => void
@@ -29,6 +30,7 @@ export function MobileSwipeableNoteRow(props: Props) {
 
 function SwipeableNoteRow({ actions, children, note }: Props & { actions: MobileNoteRowActions }) {
   const mobileColors = useMobileColors()
+  const analytics = useMobileAnalytics()
   const swipeable = useRef<SwipeableMethods>(null)
   const width = useSharedValue(0)
   const perform = useCallback((action: MobileNoteSwipeAction | 'delete') => {
@@ -36,7 +38,8 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
     if (action === 'favorite') actions.onToggleFavorite(note.id)
     if (action === 'archive') actions.onArchive([note.id], !note.archived)
     if (action === 'delete') actions.onDelete([note.id])
-  }, [actions, note.id, note.archived])
+    analytics.capture({ name: 'mobile_note_swipe_used', action })
+  }, [actions, analytics, note.id, note.archived])
   // Swipeable owns dragging/snapping. This simultaneous observer only commits a full swipe on release.
   const fullSwipe = useMemo(() => Gesture.Pan()
     .activeOffsetX([-16, 16])

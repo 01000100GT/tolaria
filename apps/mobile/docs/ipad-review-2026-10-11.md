@@ -53,7 +53,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 15 | Explain and verify local Git and remote sync behavior | Native disposable-remote probe passes; explicit manual commit verified on disk |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Implemented; native manual commit/settings persistence pass; automatic remote UI QA pending |
-| 18 | Essential settings chosen from an audit of desktop settings | Git and appearance settings implemented; scale/privacy implementation pending |
+| 18 | Essential settings chosen from an audit of desktop settings | Git, appearance and opt-in privacy settings implemented; UI density control pending |
 | 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
 | 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Implemented; native pixel, persistence, inspector/dialog and source-editor checks pass |
 
@@ -268,3 +268,35 @@ measurements, commits and remaining limitations as each batch completes.
   leaving Tolaria; Cancel closes authorization. No login was completed and no
   repository was contacted. The initial fixture-source attempt lacked vault
   management; the passing check uses the disposable app-local vault instead.
+
+### Consent-bound usage events
+
+- Settings exposes the existing localized usage-analytics switch, off by default.
+  With consent and an explicitly configured public PostHog project key, typed
+  events record note swipe actions, successful appearance/AutoGit preference
+  changes and Git operation requests. No document text, paths, note identifiers,
+  repository names, commit messages, credentials or raw errors are accepted.
+- Events are `mobile_note_swipe_used`, `mobile_setting_changed` and
+  `mobile_git_operation_requested`. The latter measures attempts, not claimed
+  sync success. Identifiers are ephemeral per consented session; person profiles
+  and GeoIP are disabled. Opt-out immediately aborts pending requests, with no
+  disk queue or retry loop. Unconfigured builds perform no analytics requests.
+- Eight focused tests protect consent, explicit metadata projection, bounded
+  requests, timeout, opt-out cancellation, endpoint validation and transport
+  failures. The combined settings/analytics suite has seventeen passing tests.
+  Native privacy QA failed before the control existed and passes after rebuilding:
+  default off, opt-in, terminate/relaunch, persisted on, revoke. QA has no project
+  key, so exercising the switch does not transmit events.
+- ADR 0214 and ABSTRACTIONS document this boundary. Localization: no new UI copy;
+  existing translated labels are reused. Existing code baselines are the prior
+  theme final records plus `analytics-vault-baseline` for `useMobileVaults.ts`.
+  The exact batch manifest is `analytics-manifest.txt`; per-file final evidence
+  ends in `-analytics-after`. All fourteen files score CodeScene 10 with no
+  findings, and the staged delta is clean. All sixty-six expected per-file local
+  analyzer runs complete with zero findings at every severity and no errors.
+- Keyboard QA remains explicitly incomplete: the source Up test did not move
+  the caret. A control test also failed to move Left in an ordinary folder-name
+  input (`ABCD!` instead of `ABC!D`). These experiments are retained in external
+  QA evidence, not counted as passing regressions or as proof of an editor bug.
+  Manual hardware-keyboard confirmation is still required when computer-use
+  access is available. The previously verified rich-editor Up result stands.
