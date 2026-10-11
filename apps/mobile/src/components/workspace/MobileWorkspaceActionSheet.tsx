@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { useEffect, type ReactNode } from 'react'
+import { Keyboard, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 import { ArrowSquareOut, CheckCircle, ClipboardText, FilePlus, FolderOpen, Trash } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
@@ -7,6 +7,7 @@ import { MobileButton } from '../../ui/MobileButton'
 import { MobileChip } from '../../ui/MobileChip'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
+import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileEditorBlock, MobileNote, MobileSidebarIcon, MobileTone, MobileTypeDefinitions, MobileViewFilterGroup } from '../../workspace/mobileWorkspaceModel'
@@ -288,6 +289,9 @@ type SuggestionInputActionConfig = {
 type RetargetNoteAction = 'changeType' | 'moveFolder'
 
 export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProps) {
+  useEffect(() => {
+    if (props.action !== 'search') Keyboard.dismiss()
+  }, [props.action])
   const { height: windowHeight } = useWindowDimensions()
   const longFormSheetHeight = mobileActionSheetLongFormHeight(windowHeight)
   const longFormSheetStyle = usesLongFormSheet(props.action)
@@ -295,25 +299,29 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
     : null
 
   return (
-    <View style={styles.overlay} testID="workspace-action-sheet">
+    <MobileKeyboardAvoidingView style={styles.overlay} testID="workspace-action-sheet">
       <Pressable accessibilityLabel={mobileText('common.cancel')} style={styles.backdrop} testID="workspace-action-sheet-backdrop" onPress={props.onClose} />
-      <MobilePanel
-        style={[sheetStyles.sheet, longFormSheetStyle]}
-        testID={`workspace-action-sheet-${props.action}`}
-      >
-        <MobileToolbar testID="workspace-action-sheet-toolbar">
-          <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
-          <MobileToolbarSpacer />
-          <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
-        </MobileToolbar>
-        <ActionContent {...props} />
-      </MobilePanel>
-    </View>
+      <View style={styles.sheetContainer} pointerEvents="box-none">
+        <MobilePanel
+          accessibilityViewIsModal
+          style={[sheetStyles.sheet, longFormSheetStyle]}
+          testID={`workspace-action-sheet-${props.action}`}
+        >
+          <MobileToolbar testID="workspace-action-sheet-toolbar">
+            <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
+            <MobileToolbarSpacer />
+            <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
+          </MobileToolbar>
+          <ActionContent {...props} />
+        </MobilePanel>
+      </View>
+    </MobileKeyboardAvoidingView>
   )
 }
 
 function ActionContent(props: MobileWorkspaceActionSheetProps) {
-  return actionContentByAction[props.action](props)
+  const Content = Object.hasOwn(actionContentByAction, props.action) ? actionContentByAction[props.action] : null
+  return Content ? <Content {...props} /> : null
 }
 
 function usesLongFormSheet(action: MobileWorkspaceAction) {
@@ -1102,31 +1110,33 @@ function SheetFooter({ children, pinned = false }: { children: ReactNode; pinned
 
 function actionTitle(action: MobileWorkspaceAction, propertyName: string) {
   if (action === 'editProperty' && propertyName.trim()) return propertyName.trim()
-  return actionTitleByAction[action]()
+  if (!Object.hasOwn(actionTitleByAction, action)) return ''
+  const title = mobileText(actionTitleByAction[action])
+  return action === 'addRelationship' ? title.replace(/^\+\s*/, '') : title
 }
 
-const actionTitleByAction: Record<MobileWorkspaceAction, () => string> = {
-  addProperty: () => mobileText('inspector.properties.addProperty'),
-  addRelationship: () => mobileText('inspector.relationship.addRelationship').replace(/^\+\s*/, ''),
-  changeNoteType: () => mobileText('command.note.changeType'),
-  createFolder: () => mobileText('sidebar.action.createFolder'),
-  createType: () => mobileText('sidebar.action.createType'),
-  createView: () => mobileText('viewDialog.title.create'),
-  editFolder: () => mobileText('sidebar.action.renameFolder'),
-  editFavorite: () => mobileText('sidebar.group.favorites'),
-  editProperty: () => mobileText('inspector.title.properties'),
-  editPrimaryListProperties: () => mobileText('noteList.properties.customizeColumns'),
-  editTypeSection: () => mobileText('sidebar.section.name'),
-  editTypeVisibility: () => mobileText('sidebar.section.showInSidebar'),
-  editView: () => mobileText('viewDialog.title.edit'),
-  findInNote: () => mobileText('command.note.findInNote'),
-  moreActions: () => mobileText('editor.toolbar.moreActions'),
-  moveNoteToFolder: () => mobileText('command.note.moveToFolder'),
-  renameNoteFile: () => mobileText('editor.filename.rename'),
-  replaceInNote: () => mobileText('command.note.replaceInNote'),
-  search: () => mobileText('noteList.searchAction'),
-  setNoteIcon: () => mobileText('command.note.setIcon'),
-  tableOfContents: () => mobileText('tableOfContents.title'),
+const actionTitleByAction: Record<MobileWorkspaceAction, Parameters<typeof mobileText>[0]> = {
+  addProperty: 'inspector.properties.addProperty',
+  addRelationship: 'inspector.relationship.addRelationship',
+  changeNoteType: 'command.note.changeType',
+  createFolder: 'sidebar.action.createFolder',
+  createType: 'sidebar.action.createType',
+  createView: 'viewDialog.title.create',
+  editFolder: 'sidebar.action.renameFolder',
+  editFavorite: 'sidebar.group.favorites',
+  editProperty: 'inspector.title.properties',
+  editPrimaryListProperties: 'noteList.properties.customizeColumns',
+  editTypeSection: 'sidebar.section.name',
+  editTypeVisibility: 'sidebar.section.showInSidebar',
+  editView: 'viewDialog.title.edit',
+  findInNote: 'command.note.findInNote',
+  moreActions: 'editor.toolbar.moreActions',
+  moveNoteToFolder: 'command.note.moveToFolder',
+  renameNoteFile: 'editor.filename.rename',
+  replaceInNote: 'command.note.replaceInNote',
+  search: 'noteList.searchAction',
+  setNoteIcon: 'command.note.setIcon',
+  tableOfContents: 'tableOfContents.title',
 }
 
 const styles = StyleSheet.create({
@@ -1154,12 +1164,16 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    elevation: 1000,
+    zIndex: 1000,
+  },
+  sheetContainer: {
+    flex: 1,
+    minHeight: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 1000,
     paddingHorizontal: mobileActionSheetLayoutContract.overlayPaddingHorizontal,
     paddingVertical: mobileActionSheetLayoutContract.overlayPaddingVertical,
-    zIndex: 1000,
   },
   scrollArea: {
     flexShrink: 1,
@@ -1241,6 +1255,8 @@ const styles = StyleSheet.create({
 
 const sheetStyles = StyleSheet.create({
   sheet: {
+    flexShrink: 1,
+    minHeight: 0,
     maxHeight: mobileActionSheetLayoutContract.sheetMaxHeight,
     maxWidth: mobileActionSheetLayoutContract.sheetMaxWidth,
     width: '100%',

@@ -29,3 +29,15 @@ This is an interaction-correctness check, **not** a frame-rate, interruption,
 text-selection, physical-device, Android, or large-vault performance certification.
 Use the existing layout/persistence probes alongside it, and measure performance
 on representative data in a release build before launch.
+
+`TabletKeyboardTests` covers long workspace forms, short folder forms, and native
+WYSIWYG formatting with a real software keyboard, including rotation while it
+remains open and opening a form from an already-focused WYSIWYG editor. It checks actual screen-coordinate button/keyboard bounds and
+hittability, not web layout or a synthetic keyboard inset. Enable the simulator's
+software keyboard; a hardware-keyboard accessory bar alone deliberately fails the
+test. Forms are cancelled and editor changes stay in the isolated fixture.
+
+For a standalone build with an embedded current-source bundle, Metro is not
+required: generate the project with `create-project.rb` and run `xcodebuild test`
+against the installed bundle. Retain the `.xcresult`, and identify the tested
+source/bundle in the batch evidence. Do not count a browser capture as this test.

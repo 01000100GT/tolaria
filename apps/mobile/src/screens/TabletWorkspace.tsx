@@ -20,7 +20,7 @@ import { mobileColors } from '../ui/tokens'
 import { desktopPanelParity } from '../ui/desktopParity'
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { mobileText } from '../i18n/mobileText'
-import { useMobileEditorCommandRegistry, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
+import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
 import { buildMobileCommandPaletteCommands } from '../workspace/mobileCommandPalette'
 import { useMobileWorkspaceKeyboardShortcuts } from '../workspace/mobileWorkspaceKeyboardShortcuts'
@@ -176,6 +176,7 @@ function TabletWorkspaceChrome(props: TabletWorkspaceChromeProps) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(initialCommandPaletteOpen)
   const [tableOfContentsTarget, setTableOfContentsTarget] = useState<TabletTableOfContentsTargetRequest | null>(null)
   const editorCommandRegistry = useMobileEditorCommandRegistry()
+  useMobileEditorOverlayFocus(Boolean(props.openAction) || commandPaletteOpen, editorCommandRegistry.commands)
   const gestures = useTabletPanelGestures({
     compactTablet,
     defaultPropertiesVisible,

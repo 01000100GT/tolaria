@@ -266,6 +266,7 @@ Current primitives:
 | `MobileIconButton` | Toolbar and compact icon actions |
 | `MobileTextInput` | Tolaria-styled text entry over the local RNR-style input primitive |
 | `MobilePanel` / `MobileToolbar` | Sidebar, note-list, editor, and properties structure |
+| `MobileKeyboardAvoidingView` | React Native keyboard avoidance for nested surfaces, using measured screen origin rather than guessed safe-area/header offsets |
 | `MobileListRow` | Dense note-list rows with selected state, metadata, and chips |
 | `MobileChip` | Type, tag, and relationship labels |
 | `MobilePropertyRow` | Properties panel label/value rows |
@@ -283,7 +284,7 @@ Workspace surfaces now sit one level above those primitives:
 | `mobileTypeDefinitionSchema.ts` | Mobile form conversion for Type document instance schema/default fields |
 | `mobileVaultConfig.ts` | Mobile vault-path-local config normalization for primary All Notes/Inbox display properties |
 | `mobileWikilinkAutocomplete.ts` | Cursor-aware mobile wikilink query detection, canonical target insertion, and desktop-style suggestion matching across title, aliases, filename, type, tags, and path |
-| `mobileEditorCommands.ts` | Active editor command registry that lets tablet/phone command palettes dispatch selection-sensitive editor actions without importing editor internals |
+| `mobileEditorCommands.ts` | Active editor command registry for tablet/phone selection-sensitive actions and overlay focus handoff; stable forwarders call the latest registered editor without importing its internals |
 | `mobileInlineMath.ts` | Shared desktop-compatible inline math parser for mobile hydration, input transforms, and save serialization |
 | `src/utils/externalUrl.ts` | Shared dependency-free external URL normalizer used by desktop link opening and mobile WYSIWYG link editing |
 | `MobileWysiwygMathHtml.ts` | Mobile KaTeX MathML rendering helper for native TenTap inline math nodes |

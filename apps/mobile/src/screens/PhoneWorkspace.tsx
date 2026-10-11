@@ -16,7 +16,7 @@ import { probeProps, useMobileLayoutProbe, type MobileLayoutProbe } from '../qa/
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { mobileColors, mobileSpace } from '../ui/tokens'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
-import { useMobileEditorCommandRegistry, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
+import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
 import { useMobileWorkspaceKeyboardShortcuts } from '../workspace/mobileWorkspaceKeyboardShortcuts'
 import type { MobileNote, MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
@@ -150,6 +150,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
     openSidebar: navigation.openSidebar,
     phoneState,
   })
+  useMobileEditorOverlayFocus(Boolean(controller.openAction) || commandPalette.visible, editorCommandRegistry.commands)
   useMobileWorkspaceKeyboardShortcuts({
     nativeNoteNavigationEnabled: phoneState === 'list',
     onCreateNote: controller.onOpenCreateNote,
@@ -477,6 +478,7 @@ function usePhoneCommandPalette({
     commands,
     element: visible ? <MobileCommandPalette commands={commands} onClose={close} /> : null,
     open,
+    visible,
   }
 }
 

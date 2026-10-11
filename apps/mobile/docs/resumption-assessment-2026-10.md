@@ -25,9 +25,12 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   still not a release budget. Linked
   original folders, configured/live GitHub
   authentication, Android device QA, and October-main integration remain open.
-- A subsequent native form diagnostic fails: the software keyboard covers the
-  Create View footer. This is a confirmed remaining UI defect, not covered by
-  the passing shell/toolbar/rotation checks above.
+- October 11 keyboard follow-through fixes the reproduced Create View footer
+  obstruction, short-form rotation, and editor formatting placement. Eight
+  native interaction tests pass, including opening a form from an already-
+  focused WYSIWYG editor. See `tablet-keyboard-recovery-batch.md` for the exact
+  scope, numerical checks, and temporary analyzer exception. This does not
+  establish keyboard correctness for every other overlay or for Android.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
 

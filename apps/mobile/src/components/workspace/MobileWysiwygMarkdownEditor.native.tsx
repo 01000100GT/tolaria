@@ -1,6 +1,7 @@
 import { type EditorBridge, RichText, TenTapStartKit, useEditorBridge } from '@10play/tentap-editor'
 import { type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { type MobileLayoutProbe, probeProps } from '../../qa/mobileLayoutProbe'
 import type { NativeTableOfContentsProof } from '../../qa/nativeTableOfContentsProbe'
 import {
@@ -324,12 +325,13 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
     pickerState,
   })
   useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
+    blur: () => editor.blur(),
     pastePlainText: actions.handlePastePlainText,
     save: flushEditorDocument,
   })
 
   return (
-    <View
+    <MobileKeyboardAvoidingView
       {...probeProps(layoutProbe, 'editor.wysiwyg.form')}
       style={nativeEditorStyles.container}
       testID="editor-wysiwyg-form"
@@ -342,9 +344,8 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
         testID="editor-wysiwyg-input"
         onLoadEnd={injectEditorCss}
       />
-      <KeyboardAvoidingView
+      <View
         {...probeProps(layoutProbe, 'editor.wysiwyg.toolbarHost')}
-        behavior="padding"
         style={nativeEditorStyles.toolbarHost}
       >
         <MobileWysiwygFormattingToolbar
@@ -354,7 +355,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
           metricId="editor.wysiwyg.toolbar"
           onFormat={actions.handleFormat}
         />
-      </KeyboardAvoidingView>
+      </View>
       <NativeWysiwygPickerOverlay
         actions={actions}
         notes={notes}
@@ -368,7 +369,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
         externalLinkState={externalLinkState}
         onClose={onCloseExternalLinkSheet}
       />
-    </View>
+    </MobileKeyboardAvoidingView>
   )
 }
 
@@ -643,7 +644,8 @@ function useNativeTentapEditorBridge({
   })
 
   const editor = useEditorBridge({
-    avoidIosKeyboard: true,
+    // The native viewport shrinks above the keyboard; do not inset the document twice.
+    avoidIosKeyboard: false,
     bridgeExtensions: mobileTenTapBridgeExtensions,
     customSource: mobileWysiwygTentapEditorHtml,
     initialContent,
@@ -1126,10 +1128,6 @@ const nativeEditorStyles = StyleSheet.create({
     backgroundColor: mobileColors.editor,
   },
   toolbarHost: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: mobileColors.editor,
     borderTopColor: mobileColors.border,
     borderTopWidth: StyleSheet.hairlineWidth,

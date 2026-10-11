@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export type MobileEditorCommands = {
+  blur?: () => void
   pastePlainText?: () => void
   save?: () => void
   toggleRawEditor?: () => void
@@ -8,6 +9,7 @@ export type MobileEditorCommands = {
 
 export type RegisterMobileEditorCommands = (commands: MobileEditorCommands) => () => void
 type MobileEditorCommandCapabilities = {
+  blur: boolean
   pastePlainText: boolean
   save: boolean
   toggleRawEditor: boolean
@@ -16,20 +18,17 @@ type MobileEditorCommandCapabilities = {
 const emptyEditorCommands: MobileEditorCommands = {}
 type MobileEditorCommandRegistration = {
   commands: MobileEditorCommands
-  token: number
 }
 
 export function useMobileEditorCommandRegistry() {
-  const nextTokenRef = useRef(1)
   const [registrations, setRegistrations] = useState<MobileEditorCommandRegistration[]>([])
 
   const register = useCallback<RegisterMobileEditorCommands>((commands) => {
-    const token = nextTokenRef.current
-    nextTokenRef.current += 1
-    setRegistrations((current) => [...current, { commands, token }])
+    const registration = { commands }
+    setRegistrations((current) => [...current, registration])
 
     return () => {
-      setRegistrations((current) => current.filter((registration) => registration.token !== token))
+      setRegistrations((current) => current.filter((entry) => entry !== registration))
     }
   }, [])
   const commands = useMemo(
@@ -43,6 +42,12 @@ export function useMobileEditorCommandRegistry() {
   }), [commands, register])
 }
 
+export function useMobileEditorOverlayFocus(overlayOpen: boolean, { blur }: MobileEditorCommands) {
+  useEffect(() => {
+    if (overlayOpen) blur?.()
+  }, [blur, overlayOpen])
+}
+
 export function useRegisteredMobileEditorCommands(
   register: RegisterMobileEditorCommands | undefined,
   commands: MobileEditorCommands,
@@ -52,41 +57,37 @@ export function useRegisteredMobileEditorCommands(
     commandsRef.current = commands
   }, [commands])
 
-  const capabilities = mobileEditorCommandCapabilities(commands)
-  const registeredCommands = useMemo<MobileEditorCommands>(() => {
-    const nextCommands: MobileEditorCommands = {}
-
-    if (capabilities.pastePlainText) {
-      nextCommands.pastePlainText = () => {
-        commandsRef.current.pastePlainText?.()
-      }
-    }
-
-    if (capabilities.save) {
-      nextCommands.save = () => {
-        commandsRef.current.save?.()
-      }
-    }
-
-    if (capabilities.toggleRawEditor) {
-      nextCommands.toggleRawEditor = () => {
-        commandsRef.current.toggleRawEditor?.()
-      }
-    }
-
-    return nextCommands
-  }, [capabilities.pastePlainText, capabilities.save, capabilities.toggleRawEditor])
-
+  const { blur, pastePlainText, save, toggleRawEditor } = mobileEditorCommandCapabilities(commands)
   useEffect(() => {
     if (!register) return undefined
-    return register(registeredCommands)
-  }, [register, registeredCommands])
+    return register(createMobileEditorCommandForwarders(
+      { blur, pastePlainText, save, toggleRawEditor }, () => commandsRef.current,
+    ))
+  }, [register, blur, pastePlainText, save, toggleRawEditor])
+}
+
+const mobileEditorCommandNames = ['blur', 'pastePlainText', 'save', 'toggleRawEditor'] as const
+
+export function createMobileEditorCommandForwarders(
+  capabilities: MobileEditorCommandCapabilities,
+  readCommands: () => MobileEditorCommands,
+): MobileEditorCommands {
+  const registered: MobileEditorCommands = {}
+  for (const name of mobileEditorCommandNames) {
+    if (!capabilities[name]) continue
+    registered[name] = () => {
+      const command = readCommands()[name]
+      command?.()
+    }
+  }
+  return registered
 }
 
 export function mobileEditorCommandCapabilities(
   commands: MobileEditorCommands,
 ): MobileEditorCommandCapabilities {
   return {
+    blur: commands.blur !== undefined,
     pastePlainText: commands.pastePlainText !== undefined,
     save: commands.save !== undefined,
     toggleRawEditor: commands.toggleRawEditor !== undefined,
@@ -100,6 +101,7 @@ export function mergeMobileEditorCommands(
 
   const merged: MobileEditorCommands = {}
   for (const commands of registrations) {
+    if (commands.blur) merged.blur = commands.blur
     if (commands.pastePlainText) merged.pastePlainText = commands.pastePlainText
     if (commands.save) merged.save = commands.save
     if (commands.toggleRawEditor) merged.toggleRawEditor = commands.toggleRawEditor

@@ -8,6 +8,13 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['TabletKeyboardTests: measured software-keyboard clearance, rotation, and editor-to-form focus handoff'],
+    contracts: ['desktopPanelParity', 'desktopToolbarParity'],
+    desktopSource: 'Desktop dialog and editor viewport layout; native-only keyboard avoidance preserves their existing visual tokens',
+    mobileFile: 'src/ui/MobileKeyboardAvoidingView.tsx',
+    surface: 'Native keyboard-aware viewport (platform adaptation)',
+  },
+  {
     assertions: ['panel chrome computed styles'],
     contracts: ['desktopPanelParity', 'desktopToolbarParity'],
     desktopSource: 'App shell split panes, NoteListHeader, InspectorHeader, BreadcrumbBar',
