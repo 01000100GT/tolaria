@@ -167,6 +167,15 @@ unread content from valid empty files and guards mutations that require that
 content. Hydration is a read-only operation, including for read-only repositories;
 failed reads never synthesize writable blank notes.
 
+`mobilePreparedEdits.ts` prepares metadata-only note actions before mutation,
+including deletions whose Undo needs the original bytes. Bulk actions read all
+required notes before applying any edits; a failed read leaves the write plan
+empty. The controller's `usePreparedWorkspaceEdits` keeps loaded editor saves
+synchronous, registers pending preparations with the existing sync barrier,
+rejects obsolete vault generations, and exposes a footer retry for read failures.
+Hydration never overwrites an already loaded draft. This is action preparation,
+not a replacement for the per-root disk queue or a multi-file disk transaction.
+
 `nativeQaSink.ts` carries layout measurements and known persistence proofs to the
 simulator harness over loopback, so standalone QA does not depend on JavaScript
 console messages appearing in the iOS unified log.

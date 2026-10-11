@@ -1,4 +1,4 @@
-import { FolderOpen, Tray } from 'phosphor-react-native'
+import { ArrowClockwise, FolderOpen, Tray } from 'phosphor-react-native'
 import { StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
@@ -10,21 +10,25 @@ import { useVaultSyncPresentation } from '../vaults/useVaultSyncPresentation'
 
 export function MobileSyncStatusBar({
   onOpenLocalVault,
+  retryFailedEdit,
   sync,
 }: {
   onOpenLocalVault?: () => void
+  retryFailedEdit?: () => void
   sync: MobileSyncStatus
 }) {
   const vault = useVaultSyncPresentation(sync)
   const action = statusBarAction(onOpenLocalVault)
+  const presentation = statusPresentation(sync, vault, Boolean(retryFailedEdit))
 
   return (
     <View style={styles.syncBar} testID="sync-status-bar">
       <View style={styles.syncStatusGroup}>
-        <Tray color={vault?.color ?? syncStatusColor(sync)} size={desktopStatusBarParity.iconSize} />
-        <Text numberOfLines={1} style={styles.syncStatusText} testID="sync-status-label">{vault?.label ?? syncStatusLabel(sync)}</Text>
-        {!vault && <Text numberOfLines={1} style={styles.syncDetailText} testID="sync-status-detail">{syncStatusDetail(sync)}</Text>}
+        <Tray color={presentation.color} size={desktopStatusBarParity.iconSize} />
+        <Text numberOfLines={1} style={styles.syncStatusText} testID="sync-status-label">{presentation.label}</Text>
+        {presentation.detail && <Text numberOfLines={1} style={styles.syncDetailText} testID="sync-status-detail">{presentation.detail}</Text>}
       </View>
+      {retryFailedEdit && <MobileButton density="status" icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('pulse.retry')} onPress={retryFailedEdit} testID="workspace-edit-retry" variant="ghost" />}
       {vault?.sync && <MobileButton density="status" disabled={vault.busy} icon={<Tray color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('status.sync.now')} onPress={() => { void vault.sync?.() }} variant="ghost" />}
       <MobileButton
         density="status"
@@ -35,6 +39,12 @@ export function MobileSyncStatusBar({
       />
     </View>
   )
+}
+
+function statusPresentation(sync: MobileSyncStatus, vault: ReturnType<typeof useVaultSyncPresentation>, readFailed: boolean) {
+  if (readFailed) return { color: mobileColors.danger, label: mobileText('mobile.editor.readFailed'), detail: null }
+  if (vault) return { color: vault.color, label: vault.label, detail: null }
+  return { color: syncStatusColor(sync), label: syncStatusLabel(sync), detail: syncStatusDetail(sync) }
 }
 
 function statusBarAction(onOpenLocalVault: (() => void) | undefined) {
@@ -109,6 +119,7 @@ const styles = StyleSheet.create({
   },
   syncStatusText: {
     color: mobileColors.textMuted,
+    flexShrink: 1,
     fontSize: desktopStatusBarParity.fontSize,
     fontWeight: '500',
   },

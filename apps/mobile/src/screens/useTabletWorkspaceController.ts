@@ -16,7 +16,6 @@ import type {
   MobileWorkspaceSnapshot,
 } from '../workspace/mobileWorkspaceModel'
 import type {
-  applyMobileWorkspaceEditWithWrites,
   MobileWorkspaceEdit,
 } from '../workspace/mobileWorkspaceEditing'
 import type {
@@ -190,6 +189,7 @@ export function useTabletWorkspaceController({
     canUndoWorkspaceEdit,
     redoWorkspaceEdit,
     reloadWorkspaceSnapshot,
+    retryFailedEdit,
     undoWorkspaceEdit,
     workspaceSnapshot,
   } = useWorkspaceEditPipeline({
@@ -294,6 +294,7 @@ export function useTabletWorkspaceController({
     searchQuery,
     defaultNoteWidth,
     snapshot: workspaceSnapshot,
+    retryFailedEdit,
     selectedNote,
     selectedNoteRead,
     vaultRootUri: repositoryRequest?.vaultRootUri ?? null,
@@ -417,13 +418,14 @@ function useControllerApplyEdit({
   navigation,
   setSelectedNoteId,
 }: {
-  applyWorkspaceEdit: (edit: MobileWorkspaceEdit) => ReturnType<typeof applyMobileWorkspaceEditWithWrites>
+  applyWorkspaceEdit: ReturnType<typeof useWorkspaceEditPipeline>['applyWorkspaceEdit']
   navigation: TabletWorkspaceNavigation
   setSelectedNoteId: (noteId: string | null) => void
 }) {
   return useCallback((edit: MobileWorkspaceEdit) => {
-    const result = applyWorkspaceEdit(edit)
-    selectAfterWorkspaceEdit({ edit, navigation, result, setSelectedNoteId })
+    void applyWorkspaceEdit(edit).then((result) => {
+      if (result) selectAfterWorkspaceEdit({ edit, navigation, result, setSelectedNoteId })
+    })
   }, [applyWorkspaceEdit, navigation, setSelectedNoteId])
 }
 

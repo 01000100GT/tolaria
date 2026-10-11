@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 import { isMobileNoteHydration, mobileEditNeedsNoteRead } from '../workspace/mobileNoteRead'
+import { usePreparedWorkspaceEdits, type WorkspaceEditOptions } from './usePreparedWorkspaceEdits'
 import {
   applyMobileWorkspaceEditWithWrites,
   type MobileWorkspaceEdit,
@@ -20,7 +21,6 @@ import {
 
 type WorkspaceSnapshotRef = MutableRefObject<MobileWorkspaceSnapshot>
 type WorkspaceSnapshotSetter = Dispatch<SetStateAction<MobileWorkspaceSnapshot>>
-type WorkspaceEditOptions = { recordHistory?: boolean }
 type WorkspaceHistory = typeof emptyMobileWorkspaceHistory
 type WorkspaceHistorySetter = Dispatch<SetStateAction<WorkspaceHistory>>
 
@@ -35,11 +35,14 @@ export function useWorkspaceEditPipeline({
 }) {
   const snapshotState = useWorkspaceSnapshotState(snapshot)
   const [workspaceHistory, setWorkspaceHistory] = useState(emptyMobileWorkspaceHistory)
-  const applyWorkspaceEdit = useWorkspaceEditApplier({
+  const applyEdit = useWorkspaceEditApplier({
     repository,
     repositoryRequest,
     setWorkspaceHistory,
     snapshotState,
+  })
+  const { apply: applyWorkspaceEdit, retryFailedEdit } = usePreparedWorkspaceEdits({
+    applyEdit, repository, repositoryRequest, snapshotRef: snapshotState.workspaceSnapshotRef,
   })
   const historyControls = useWorkspaceHistoryControls({
     applyWorkspaceEdit,
@@ -54,6 +57,7 @@ export function useWorkspaceEditPipeline({
 
   return {
     applyWorkspaceEdit,
+    retryFailedEdit,
     reloadWorkspaceSnapshot,
     workspaceSnapshot: snapshotState.workspaceSnapshot,
     ...historyControls,
@@ -126,33 +130,42 @@ function useWorkspaceHistoryControls({
   setWorkspaceHistory,
   workspaceHistory,
 }: {
-  applyWorkspaceEdit: (edit: MobileWorkspaceEdit, options?: WorkspaceEditOptions) => ReturnType<typeof applyMobileWorkspaceEditWithWrites>
+  applyWorkspaceEdit: ReturnType<typeof usePreparedWorkspaceEdits>['apply']
   setWorkspaceHistory: WorkspaceHistorySetter
   workspaceHistory: WorkspaceHistory
 }) {
-  const applyWorkspaceHistoryEntry = useCallback((entry: MobileWorkspaceHistoryEntry, direction: 'redo' | 'undo') => {
+  const historyPending = useRef(false)
+  const applyWorkspaceHistoryEntry = useCallback(async (entry: MobileWorkspaceHistoryEntry, direction: 'redo' | 'undo') => {
     const edits = direction === 'undo' ? entry.undoEdits : entry.redoEdits
-    for (const edit of edits) applyWorkspaceEdit(edit, { recordHistory: false })
+    return applyWorkspaceEdit({ type: 'bulkEdit', edits }, { recordHistory: false })
   }, [applyWorkspaceEdit])
-  const undoWorkspaceEdit = useCallback(() => {
+  const undoWorkspaceEdit = useCallback(async () => {
     const entry = latestWorkspaceHistoryEntry(workspaceHistory.past)
-    if (!entry) return
-
-    setWorkspaceHistory({
-      future: [entry, ...workspaceHistory.future],
-      past: workspaceHistory.past.slice(0, -1),
-    })
-    applyWorkspaceHistoryEntry(entry, 'undo')
+    if (!entry || historyPending.current) return
+    historyPending.current = true
+    try {
+      if (!await applyWorkspaceHistoryEntry(entry, 'undo')) return
+      setWorkspaceHistory({
+        future: [entry, ...workspaceHistory.future],
+        past: workspaceHistory.past.slice(0, -1),
+      })
+    } finally {
+      historyPending.current = false
+    }
   }, [applyWorkspaceHistoryEntry, setWorkspaceHistory, workspaceHistory])
-  const redoWorkspaceEdit = useCallback(() => {
+  const redoWorkspaceEdit = useCallback(async () => {
     const entry = workspaceHistory.future[0]
-    if (!entry) return
-
-    setWorkspaceHistory({
-      future: workspaceHistory.future.slice(1),
-      past: [...workspaceHistory.past, entry],
-    })
-    applyWorkspaceHistoryEntry(entry, 'redo')
+    if (!entry || historyPending.current) return
+    historyPending.current = true
+    try {
+      if (!await applyWorkspaceHistoryEntry(entry, 'redo')) return
+      setWorkspaceHistory({
+        future: workspaceHistory.future.slice(1),
+        past: [...workspaceHistory.past, entry],
+      })
+    } finally {
+      historyPending.current = false
+    }
   }, [applyWorkspaceHistoryEntry, setWorkspaceHistory, workspaceHistory])
 
   return {

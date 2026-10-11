@@ -139,7 +139,7 @@ export function TabletWorkspace({
         {...controller}
         onOpenCreateNote={onCreateNote}
       />
-      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} />
+      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
     </View>
   )
 }

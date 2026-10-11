@@ -393,7 +393,7 @@ function PhoneWorkspaceRoot({
           tableOfContentsTarget={tableOfContentsTarget}
         />
       </PhoneWorkspaceTransition>
-      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} />
+      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
       <WorkspaceActionSheetHost
         {...controller}
         compactTablet

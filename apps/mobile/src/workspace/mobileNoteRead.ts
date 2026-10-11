@@ -20,13 +20,27 @@ export function isMobileNoteHydration(edit: MobileWorkspaceEdit): boolean {
 }
 
 export function mobileEditNeedsNoteRead(edit: MobileWorkspaceEdit, snapshot: MobileWorkspaceSnapshot, source: WorkspaceSource): boolean {
-  if (isMobileNoteHydration(edit) || edit.type === 'deleteNote') return false
-  if (edit.type === 'bulkEdit') return edit.edits.some((child) => mobileEditNeedsNoteRead(child, snapshot, source))
+  return mobileEditReadNotes(edit, snapshot, source).length > 0
+}
+
+export function mobileEditReadNotes(edit: MobileWorkspaceEdit, snapshot: MobileWorkspaceSnapshot, source: WorkspaceSource): MobileNote[] {
+  if (isMobileNoteHydration(edit)) return []
+  if (edit.type === 'bulkEdit') {
+    const notes = edit.edits.flatMap((child) => mobileEditReadNotes(child, snapshot, source))
+    return [...new Map(notes.map((note) => [note.id, note])).values()]
+  }
+  if (edit.type === 'moveFavorite') {
+    return (snapshot.allNotes ?? snapshot.notes).filter((note) => note.favorite && mobileNoteNeedsRead(note, source))
+  }
+  return singleEditReadNotes(edit, snapshot, source)
+}
+
+function singleEditReadNotes(edit: MobileWorkspaceEdit, snapshot: MobileWorkspaceSnapshot, source: WorkspaceSource): MobileNote[] {
   const noteId = edit.type === 'createRelationshipTarget' ? edit.sourceNoteId : noteEditId(edit)
-  if (!noteId) return false
+  if (!noteId) return []
   const note = snapshot.notes.find((item) => item.id === noteId)
     ?? snapshot.allNotes?.find((item) => item.id === noteId)
-  return mobileNoteNeedsRead(note ?? null, source)
+  return note && mobileNoteNeedsRead(note, source) ? [note] : []
 }
 
 function noteEditId(edit: MobileWorkspaceEdit): string | null {
