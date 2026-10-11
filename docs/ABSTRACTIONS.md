@@ -78,6 +78,10 @@ vault switching and manual sync, while a separate memoized workspace context
 prevents progress updates from re-indexing the vault. `savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
 and remounts from disk; a pre-barrier failure instead resumes the existing draft.
+A confirmed no-change folder-picker cancellation also resumes that draft without
+re-indexing or remounting. It restores the frozen editor's callback generation;
+replacement IDs are never reused, and an older cancellation cannot undo a newer
+replacement. Failures after import or Git starts still require the disk refresh.
 `managedGitStorage.native.ts` keeps app-owned working copies and a credential-free
 catalog. Catalog publication renames a validated pending file and retains a
 recoverable backup. `githubAccountState.ts` isolates cancellation and ordered

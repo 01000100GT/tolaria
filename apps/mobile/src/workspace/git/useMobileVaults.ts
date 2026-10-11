@@ -45,7 +45,7 @@ export function useMobileVaults() {
     setOpened(false)
   }
 
-  const perform = async (task: () => Promise<ActiveVault | null>) => {
+  const perform = async (task: () => Promise<ActiveVault | null | 'cancelled'>) => {
     if (running.current || restorePending) return
     running.current = true
     editors.setBlocked(true)
@@ -57,7 +57,12 @@ export function useMobileVaults() {
     try {
       await runSavedVaultOperation({
         editors, rootUri: active.selection?.vaultRootUri,
-        run: async () => { saved = true; next = await task() ?? active },
+        run: async () => {
+          saved = true
+          const result = await task()
+          if (result === 'cancelled') return result
+          next = result ?? active
+        },
         refresh: (selectedNoteId) => {
           setOverride(refreshedVault(next, active, selectedNoteId))
           setRevision((value) => value + 1)
@@ -82,7 +87,7 @@ export function useMobileVaults() {
   }
   const openFolder = () => perform(async () => {
     const selection = await pickNativeWorkspaceDirectory(active.selection?.vaultRootUri)
-    if (!selection) return null
+    if (!selection) return 'cancelled'
     await activateManagedGitVault(null)
     setStatus('local')
     return { selection, git: null }

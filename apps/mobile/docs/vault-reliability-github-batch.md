@@ -201,6 +201,10 @@ Additional manual folder-picker QA exposed a separate existing failure: cancelli
 the Files picker leaves the manager busy. This is not a passing folder workflow;
 it is the next repair, separate from the verified authentication-request batch.
 
+Batch 2 was committed as `cae3f25ec` and pushed to
+`origin/mobile-ui-foundation` through normal hooks. All 1,306 mobile tests,
+mobile lint/typecheck, and the mobile export gate passed.
+
 ### Live GitHub Unblock
 
 Provide the **public** OAuth Client ID with Device Flow enabled, or configure
@@ -208,3 +212,62 @@ Provide the **public** OAuth Client ID with Device Flow enabled, or configure
 chat. The owner must authorize the device flow and designate a disposable private
 repository before live push/pull and divergence testing. No real vault remote
 has been modified by these batches.
+
+## Batch 3: Cancelled Folder Selection
+
+The native cancellation delegate and JavaScript operation both settle. The old
+code then treats cancellation as a replacement and re-indexes/remounts the entire
+vault. The actual iPad regression repeatedly fails its ten-second responsiveness
+check on the 6,036-note copy; later inspection shows recovery rather than a
+permanent native promise hang. Temporary native/JavaScript traces were removed.
+
+`openFolder` now returns an explicit no-change cancellation outcome. The save
+barrier still completes before presenting Files. Only that outcome restores the
+frozen editor's generation and resumes it without re-indexing. Replacement IDs
+are never reused; a stale cancellation cannot roll back a newer replacement.
+Successful operations and failures after potential disk mutation retain the full
+refresh and stale-callback protection. This is not permission to use cancellation
+after an import or Git checkout has already changed files.
+
+Exact batch code manifest, relative to `apps/mobile/`:
+
+| Code file | Classification | Starting CodeScene |
+| --- | --- | --- |
+| `src/workspace/workspaceSyncEditors.ts` | Existing | 10 |
+| `src/workspace/git/savedVaultOperation.ts` | Existing | 10 |
+| `src/workspace/git/useMobileVaults.ts` | Existing | 10 |
+| `src/workspace/git/savedVaultCancellation.test.ts` | New | - |
+| `native-ui-tests/TabletVaultManagerTests.swift` | Existing | 10 |
+
+The new unit regressions fail before the repair and pass afterward. Four focused
+files / 14 tests pass, including the existing save-failure, transport-failure,
+picker, and editor preparation cases. Mobile typecheck passes. All existing code
+files started with zero local Codacy findings; exact scan manifests and native
+test results are retained in the same evidence directory. Final native and
+analyzer results follow.
+
+- Native: the signed Release/Hermes iPad app passes both vault-manager tests in
+  36.327 seconds (`folder-cancel-fixed.xcresult`). Repeated picker cancellation
+  passes in 21.546 seconds total, including cold launch and both Files dialogs.
+  Computer-use inspection additionally confirms enabled controls, modal closure,
+  and selecting another note afterward. No original vault or remote was changed.
+- CodeScene: all five final files score 10 with zero findings. Project API
+  remains Hotspot 10 / Average 9.991289158049293, above the 10 / 9.99 floors.
+  The staged CLI delta checks all five code files and reports `no-issues-found`.
+- Codacy local: `picker-analyzer-matrix.json` contains 23 successful analyzer
+  rows across the five exact paths; four TypeScript files completed all five
+  configured analyzers, and the Swift test completed all three. Each row reports
+  one file analyzed and zero findings/errors at every severity. All existing
+  files remain at zero; the new test has zero whole-file findings. A Biome type
+  warning was fixed and the entire file was rescanned successfully.
+- Cloud Codacy and MCP safeguards remain unavailable under the recorded
+  owner-approved exception, not passing. This batch is not release certification.
+- Temporary diagnostic traces were removed from source and the simulator cache.
+  Final native executable/bundle hashes are in `picker-fixed-artifact-sha256.txt`.
+- Demo fixture dirt check is empty. Refactoring: none beyond the scoped
+  cancellation repair. Normal-hook commit/push results are in the task handoff.
+
+Localization: no UI copy changes. PostHog: no event needed for a cancellation
+recovery bug fix. ADRs: none; this repairs the existing freeze/save boundary.
+Docs: `docs/ABSTRACTIONS.md` and this handoff. Full desktop/Rust coverage is not
+rerun; the mobile experimental scope and approved cloud/MCP exception still apply.

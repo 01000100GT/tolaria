@@ -7,11 +7,18 @@ export function createWorkspaceSyncEditors() {
   const dirtyListeners = new Set<() => void>()
   let blocked = false
   let generation = 0
+  let replacementSequence = 0
   return {
     isBlocked: () => blocked,
     setBlocked: (value: boolean) => { blocked = value },
     generation: () => generation,
-    beginReplacement: () => { generation += 1 },
+    beginReplacement: () => {
+      const previous = generation
+      const replacement = ++replacementSequence
+      generation = replacement
+      // Only a confirmed no-change cancellation may revive the frozen editor.
+      return () => { if (generation === replacement) generation = previous }
+    },
     markDirty: () => { for (const listener of dirtyListeners) listener() },
     subscribeDirty: (listener: () => void) => {
       dirtyListeners.add(listener)
