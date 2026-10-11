@@ -1,9 +1,11 @@
+import type { MobileMetrics } from '../ui/mobileMetrics'
 import { StyleSheet } from 'react-native'
-import { desktopEditorParity } from '../ui/desktopParity'
-import { mobileSpace, mobileType } from '../ui/tokens'
+
+
 import type { MobileColors } from '../ui/theme/mobilePalette'
 
-export function createEditorPanelStyles(mobileColors: MobileColors) {
+export function createEditorPanelStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { editor: desktopEditorParity, space: mobileSpace, type: mobileType } = metrics
   const panelStyles = StyleSheet.create({
     content: {
       alignSelf: 'center',
@@ -18,7 +20,7 @@ export function createEditorPanelStyles(mobileColors: MobileColors) {
     contentWide: {
       alignSelf: 'stretch',
       maxWidth: '100%',
-      paddingHorizontal: 56,
+      paddingHorizontal: metrics.size(56),
     },
     emptyState: {
       flex: 1,
@@ -45,7 +47,7 @@ export function createEditorPanelStyles(mobileColors: MobileColors) {
       maxWidth: 360,
       color: mobileColors.textMuted,
       fontSize: mobileType.body,
-      lineHeight: 22,
+      lineHeight: metrics.size(22),
       textAlign: 'center',
     },
     filePreviewFallback: {

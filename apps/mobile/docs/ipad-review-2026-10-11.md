@@ -49,11 +49,11 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 11 | Favorite and other local actions respond without avoidable delay | Bounded flag edits and lazy settings suggestions implemented; native model timings recorded |
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
 | 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Alignment verified natively; overflow reduction pending |
-| 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
+| 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Implemented; native Standard/Larger numeric geometry, persistence and rotation pass |
 | 15 | Explain and verify local Git and remote sync behavior | Native disposable-remote probe passes; explicit manual commit verified on disk |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Implemented; native manual commit/settings persistence pass; automatic remote UI QA pending |
-| 18 | Essential settings chosen from an audit of desktop settings | Git, appearance and opt-in privacy settings implemented; UI density control pending |
+| 18 | Essential settings chosen from an audit of desktop settings | Git, appearance, UI density and opt-in privacy settings implemented; native persistence checks pass |
 | 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
 | 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Implemented; native pixel, persistence, inspector/dialog and source-editor checks pass |
 
@@ -300,3 +300,47 @@ measurements, commits and remaining limitations as each batch completes.
   QA evidence, not counted as passing regressions or as proof of an editor bug.
   Manual hardware-keyboard confirmation is still required when computer-use
   access is available. The previously verified rich-editor Up result stands.
+
+### Explicit interface density
+
+- Standard retains desktop metrics; Larger derives 110% typography, line heights,
+  spacing and control sizes. Pane widths, maximum document width, strokes, radii,
+  colors and weights remain unchanged. Immutable metric sets flow through the
+  existing appearance context and memoized style factories; editor CSS updates
+  independently of document state. Larger is the persisted default.
+- Native `TabletDensityTests` fails before the control exists, then passes with
+  actual sidebar row/content/label measurements, horizontal and vertical insets,
+  count-pill height and centering, unchanged panel width, relaunch persistence,
+  and portrait rotation. Padding tolerance is 0.6 points; only native text line
+  boxes allow one point for pixel rounding (a 19.8-point line measures 20-20.5).
+  Standard sidebar insets measure 12/6 points; Larger measures 13/6.5 versus the
+  13.2/6.6 token targets. Count pills measure exactly 20 and 22 points.
+- Five software-keyboard checks also pass: long and short forms in both
+  orientations, rotation, dismissing the background editor keyboard when opening
+  a form, and the shared tablet formatting strip remaining visible and tappable.
+  `density-keyboard-native.xcresult` contains all six passing tests.
+- Seven additional native checks pass in `density-surfaces-native.xcresult`:
+  dark-mode panels/editor/inspector/dialogs and persistence, both note swipe
+  workflows, shared formatting, relationship addition and type visibility.
+- Full-screen landscape and portrait captures were inspected. The sidebar rows
+  retain padding, note selection fills the row, muted previews remain distinct,
+  and editor content fits without overlapping chrome. Canonical 100% layout
+  contracts should be run at Standard density; ADR 0215 records this adaptation.
+- Hardware-arrow experiments remain inconclusive: typing through the app
+  rather than refocusing a field still fails the ordinary-text-field control
+  test. These experiments are archived externally, not committed as passing
+  tests. The Mac remains locked, so manual hardware verification is unavailable.
+- Scoped suite: 1,378 tests pass; mobile lint/typecheck and localization validation
+  pass. No new localization keys or translations are needed. Successful scale
+  changes emit the consent-bound `mobile_setting_changed` event (`uiScale`).
+- Baselines: `metrics-baselines.json` and `metrics-extra-baselines.json` reuse
+  exact unchanged final file reviews from the preceding verified commits.
+  Final per-file records use `-metrics-final`; `metrics-analyzer-evidence.json`
+  includes content hashes so late edits must be re-scanned before commit.
+- All 63 code files finish at CodeScene 10 with no warnings; the staged delta
+  checks all 63 and reports no issues. All 311 expected per-file local analyzer
+  runs complete successfully with zero findings at every severity and no errors.
+  Final hashes match the scanned contents, including re-scans of late test and
+  command-palette edits. Exact paths/classification are recorded in
+  `metrics-final-manifest.json`; demo-vault directories remain clean.
+  Cloud verification remains unavailable under the recorded exception.

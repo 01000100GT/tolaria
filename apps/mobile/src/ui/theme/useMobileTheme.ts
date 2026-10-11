@@ -1,8 +1,9 @@
 import { createContext, useContext, useMemo } from 'react'
 import { mobilePalettes, type MobileColorMode, type MobileColors } from './mobilePalette'
+import { mobileMetrics, type MobileMetrics } from '../mobileMetrics'
 
-export const MobileThemeContext = createContext<{ mode: MobileColorMode; colors: MobileColors }>({
-  mode: 'light', colors: mobilePalettes.light,
+export const MobileThemeContext = createContext<{ mode: MobileColorMode; colors: MobileColors; metrics: MobileMetrics }>({
+  mode: 'light', colors: mobilePalettes.light, metrics: mobileMetrics[1.1],
 })
 
 export function useMobileTheme() {
@@ -13,7 +14,11 @@ export function useMobileColors() {
   return useMobileTheme().colors
 }
 
-export function useMobileStyles<T>(createStyles: (colors: MobileColors) => T): T {
-  const colors = useMobileColors()
-  return useMemo(() => createStyles(colors), [colors, createStyles])
+export function useMobileMetrics() {
+  return useMobileTheme().metrics
+}
+
+export function useMobileStyles<T>(createStyles: (colors: MobileColors, metrics: MobileMetrics) => T): T {
+  const { colors, metrics } = useMobileTheme()
+  return useMemo(() => createStyles(colors, metrics), [colors, metrics, createStyles])
 }

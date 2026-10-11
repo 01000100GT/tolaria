@@ -1,10 +1,10 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { CaretDown, CaretRight, Folder, FolderOpen } from 'phosphor-react-native'
 import { Platform, Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
-import { desktopSidebarParity } from '../../ui/desktopParity'
 
 import type { MobileSidebarFolder } from '../../workspace/mobileWorkspaceModel'
 
@@ -59,7 +59,7 @@ function FolderTreeRow({
   onOpenFolderActions?: (selection: MobileSidebarFolderSelection) => void
   onSelectFolder?: (selection: MobileSidebarFolderSelection) => void
 }) {
-  const { folderTreeStyles } = useMobileStyles(createThemeStyles)
+  const { folderTreeStyles, nativeFolderTreeRowStyle, nativeFolderTreeTextStyle, metrics } = useMobileStyles(createThemeStyles)
   const hasChildren = folder.children.length > 0
   const active = activeFolderId ? folder.id === activeFolderId : folder.active
   const metricId = sidebarFolderMetricId(folder.id)
@@ -77,7 +77,7 @@ function FolderTreeRow({
           folderTreeStyles.row,
           nativeFolderTreeRowStyle,
           active ? folderTreeStyles.rowActive : null,
-          folderTreeIndent(depth),
+          folderTreeIndent(metrics.sidebar, depth),
         ]}
       >
         <View {...probeProps(layoutProbe, `${metricId}.content`)} style={folderTreeStyles.rowContent}>
@@ -121,20 +121,19 @@ function sidebarFolderMetricId(folderId: string) {
   return `sidebar.folder.${segment || 'folder'}`
 }
 
-const folderTreeLayoutStyles = StyleSheet.create({
+function createFolderLayoutStyles(metrics: MobileMetrics) {
+  const desktopSidebarParity = metrics.sidebar
+  return StyleSheet.create({
   caretSpacer: {
-    width: 11,
+    width: metrics.size(11),
   },
   children: {
     position: 'relative',
   },
   tree: {
-    gap: 2,
+    gap: metrics.size(2),
     paddingBottom: desktopSidebarParity.sectionContentPaddingBottom,
   },
-})
-
-const folderTreeRowStyles = StyleSheet.create({
   row: {
     justifyContent: 'center',
     borderRadius: desktopSidebarParity.itemRadius,
@@ -144,25 +143,15 @@ const folderTreeRowStyles = StyleSheet.create({
     paddingTop: desktopSidebarParity.itemPadding.regular.top,
     width: '100%',
   },
-})
-
-const folderTreeContentStyles = StyleSheet.create({
   rowContent: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: desktopSidebarParity.folderIconGap,
   },
-})
+  })
+}
 
-const nativeFolderTreeStyles = StyleSheet.create({
-  row: { minHeight: 30 },
-  text: { lineHeight: 18 },
-})
-
-const nativeFolderTreeRowStyle = Platform.OS === 'web' ? null : nativeFolderTreeStyles.row
-const nativeFolderTreeTextStyle = Platform.OS === 'web' ? null : nativeFolderTreeStyles.text
-
-function folderTreeIndent(depth: number) {
+function folderTreeIndent(desktopSidebarParity: MobileMetrics['sidebar'], depth: number) {
   return {
     paddingLeft: desktopSidebarParity.folderRowContentInset
       + depth * desktopSidebarParity.folderRowIndent,
@@ -176,12 +165,12 @@ function FolderTreeCaret({
   expanded?: boolean
   hasChildren: boolean
 }) {
-  const { folderTreeStyles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { folderTreeStyles, mobileColors, metrics } = useMobileStyles(createThemeStyles)
   if (!hasChildren) {
     return <View style={folderTreeStyles.caretSpacer} />
   }
 
-  return expanded ? <CaretDown color={mobileColors.textMuted} size={11} /> : <CaretRight color={mobileColors.textMuted} size={11} />
+  return expanded ? <CaretDown color={mobileColors.textMuted} size={metrics.size(11)} /> : <CaretRight color={mobileColors.textMuted} size={metrics.size(11)} />
 }
 
 function FolderTreeIcon({
@@ -191,17 +180,22 @@ function FolderTreeIcon({
   active?: boolean
   expanded?: boolean
 }) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
+  const { mobileColors, metrics } = useMobileStyles(createThemeStyles)
   const iconColor = active ? mobileColors.primary : mobileColors.textMuted
 
   if (active || expanded) {
-    return <FolderOpen color={iconColor} size={16} weight={active ? 'fill' : 'regular'} />
+    return <FolderOpen color={iconColor} size={metrics.size(16)} weight={active ? 'fill' : 'regular'} />
   }
 
-  return <Folder color={iconColor} size={16} />
+  return <Folder color={iconColor} size={metrics.size(16)} />
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { sidebar: desktopSidebarParity } = metrics
+  const nativeFolderTreeStyles = StyleSheet.create({
+    row: { minHeight: metrics.size(30) },
+    text: { lineHeight: metrics.size(18) },
+  })
   const folderTreeStateStyles = StyleSheet.create({
     rowActive: {
       backgroundColor: mobileColors.primarySoft,
@@ -219,11 +213,13 @@ function createThemeStyles(mobileColors: MobileColors) {
   })
 
   const folderTreeStyles = {
-    ...folderTreeLayoutStyles,
-    ...folderTreeRowStyles,
+    ...createFolderLayoutStyles(metrics),
     ...folderTreeStateStyles,
-    ...folderTreeContentStyles,
     ...folderTreeTextStyles,
   } as const
-  return { mobileColors, folderTreeStateStyles, folderTreeTextStyles, folderTreeStyles }
+  return {
+    mobileColors, metrics, folderTreeStateStyles, folderTreeTextStyles, folderTreeStyles,
+    nativeFolderTreeRowStyle: Platform.OS === 'web' ? null : nativeFolderTreeStyles.row,
+    nativeFolderTreeTextStyle: Platform.OS === 'web' ? null : nativeFolderTreeStyles.text,
+  }
 }

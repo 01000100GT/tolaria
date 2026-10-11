@@ -1,3 +1,4 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import { Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
@@ -77,7 +78,8 @@ const textStyles = {
   },
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity } = metrics
   const chipBackgroundColors: Record<MobileChipTone, string> = {
     blue: mobileColors.blueSoft,
     gray: mobileColors.graySoft,

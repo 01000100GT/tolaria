@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -7,7 +8,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import { MobileWorkspaceSuggestionList } from './MobileWorkspaceSuggestionList'
 import {
   mobileWorkspaceFormSheetMaxSuggestions,
@@ -212,7 +213,8 @@ function isSortDirection(value: string | undefined): value is MobileSortDirectio
   return value === 'asc' || value === 'desc'
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     customDirectionRow: {
       flexDirection: 'row',
@@ -223,7 +225,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       paddingTop: mobileSpace.xs,
     },
     directionButton: {
-      minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
+      minHeight: metrics.size(mobileWorkspaceSortPickerLayoutContract.optionMinHeight),
       flex: 1,
       alignItems: 'center',
       backgroundColor: mobileColors.control,
@@ -240,7 +242,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     sortButton: {
       minWidth: 0,
-      minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
+      minHeight: metrics.size(mobileWorkspaceSortPickerLayoutContract.optionMinHeight),
       flex: 1,
       justifyContent: 'flex-start',
       backgroundColor: mobileColors.control,
@@ -255,10 +257,10 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     optionRow: {
       flexDirection: 'row',
-      gap: mobileWorkspaceSortPickerLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceSortPickerLayoutContract.gap),
     },
     optionRows: {
-      gap: mobileWorkspaceSortPickerLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceSortPickerLayoutContract.gap),
     },
   })
   return { mobileColors, styles }

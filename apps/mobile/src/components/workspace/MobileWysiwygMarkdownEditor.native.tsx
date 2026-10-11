@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { type EditorBridge, RichText, TenTapStartKit, useEditorBridge } from '@10play/tentap-editor'
@@ -11,7 +12,7 @@ import {
   nativeWysiwygMarkdownBlockProbePlainTextPayload,
   nativeWysiwygMarkdownBlockProbeTableGrowthJson,
 } from '../../qa/nativeWysiwygMarkdownBlockProbe'
-import { mobileSpace } from '../../ui/tokens'
+
 import { mobileHtmlWithResolvedAttachmentUris } from '../../workspace/mobileAttachmentUris'
 import { readMobileClipboardText } from '../../workspace/mobileClipboard'
 import {
@@ -1121,7 +1122,8 @@ function isSelectionSettableEditorBridge(editor: EditorBridge | null): editor is
   return typeof (editor as Partial<SelectionSettableEditorBridge> | null)?.setSelection === 'function'
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const nativeEditorStyles = StyleSheet.create({
     container: {
       flex: 1,

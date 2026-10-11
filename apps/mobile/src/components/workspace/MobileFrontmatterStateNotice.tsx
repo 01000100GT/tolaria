@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -6,7 +7,7 @@ import { StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import type { MobileFrontmatterState } from '../../workspace/mobileFrontmatterState'
 
 type MobileFrontmatterStateNoticeProps = {
@@ -78,7 +79,8 @@ function NoticeText({ label }: { label: string }) {
   return <Text style={styles.text}>{label}</Text>
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     dangerFrame: {
       backgroundColor: mobileColors.dangerSoft,
@@ -97,7 +99,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     text: {
       color: mobileColors.textMuted,
       fontSize: mobileType.caption,
-      lineHeight: 18,
+      lineHeight: metrics.size(18),
       textAlign: 'center',
     },
   })

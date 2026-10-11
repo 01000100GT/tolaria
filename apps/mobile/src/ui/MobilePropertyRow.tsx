@@ -1,11 +1,12 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../components/ui/text'
 import { type MobileLayoutProbe, probeProps } from '../qa/mobileLayoutProbe'
-import { desktopPropertyParity } from './desktopParity'
-import { mobileSpace, mobileType } from './tokens'
+
+
 
 export function MobilePropertyRow({
   accessibilityLabel,
@@ -71,7 +72,8 @@ function propertyProbe(layoutProbe: MobileLayoutProbe | undefined, metricId: str
   return metricId ? probeProps(layoutProbe, `${metricId}.${part}`) : {}
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     label: {
       width: 86,

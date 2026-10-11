@@ -1,10 +1,11 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import * as Primitive from '@rn-primitives/dropdown-menu'
 import type { ComponentProps, ReactNode } from 'react'
 import { ScrollView, StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { mobileRadius, mobileSpace } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import { cn } from './utils'
 
 export const DropdownMenu = Primitive.Root
@@ -37,7 +38,8 @@ export function DropdownMenuItem({ className, style, ...props }: ItemProps) {
   return <Primitive.Item className={cn('active:bg-accent', className)} style={[styles.item, style]} {...props} />
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     content: {
       minWidth: 200,

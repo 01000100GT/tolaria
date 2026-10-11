@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -9,7 +10,7 @@ import { MobileButton } from '../../ui/MobileButton'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import {
   mobileEditorFindSnapshot,
   nextMobileEditorFindIndex,
@@ -236,7 +237,8 @@ function mobileEditorFindStatusText(snapshot: MobileEditorFindSnapshot): string 
     .replace('{total}', `${snapshot.matchCount}`)
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType, toolbarAction: desktopToolbarActionParity } = metrics
   const styles = StyleSheet.create({
     content: {
       gap: mobileSpace.md,

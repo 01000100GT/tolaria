@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
@@ -16,7 +17,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import {
   mobileQuickOpenMoveIndex,
   mobileQuickOpenResults,
@@ -151,7 +152,8 @@ function QuickOpenNoteChips({ note }: { note: MobileNote }) {
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     actionRow: { alignItems: 'center', alignSelf: 'stretch', flexDirection: 'row', gap: mobileSpace.sm, minWidth: 0, paddingHorizontal: mobileSpace.sm, paddingVertical: mobileSpace.sm, width: '100%' },
     actionRowPressed: { backgroundColor: mobileColors.control },

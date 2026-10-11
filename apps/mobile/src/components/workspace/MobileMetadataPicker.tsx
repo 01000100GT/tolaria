@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -5,7 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { FileText } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type { MobileSidebarIcon, MobileTone } from '../../workspace/mobileWorkspaceModel'
 import { mobilePhosphorIconElement } from './MobileWorkspaceIconResolver'
 import { noteTypeColor, noteTypeSoftColor } from './mobileWorkspaceTone'
@@ -150,7 +151,8 @@ function selectedText(key: 'viewDialog.selectedColor' | 'viewDialog.selectedIcon
   return mobileText(key).replace(/\{(?:color|icon)\}/u, value)
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     group: {
       gap: mobileSpace.xs,

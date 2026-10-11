@@ -1,8 +1,9 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import { visibleMobileWorkspaceSuggestions, type MobileWorkspaceSuggestionItem } from './MobileWorkspaceSuggestionListModel'
 import { mobileWorkspaceSuggestionRowLayoutContract } from './MobileWorkspaceActionSheetModel'
 
@@ -67,7 +68,8 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     list: {
       gap: mobileSpace.xs,
@@ -84,7 +86,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       width: '100%',
     },
     row: {
-      minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
+      minHeight: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.minHeight),
       minWidth: 0,
       alignSelf: 'stretch',
       alignItems: 'center',
@@ -95,8 +97,8 @@ function createThemeStyles(mobileColors: MobileColors) {
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
-      paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
+      paddingHorizontal: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal),
+      paddingVertical: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingVertical),
     },
     rowPressed: {
       backgroundColor: mobileColors.graySoft,

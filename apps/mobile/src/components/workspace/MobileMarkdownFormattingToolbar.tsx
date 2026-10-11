@@ -1,9 +1,10 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
 import { Button } from '../ui/button'
-import { mobileSpace } from '../../ui/tokens'
+
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 
@@ -84,7 +85,8 @@ function formattingProbeProps(
   return probeProps(layoutProbe, segment ? `${metricId}.${segment}` : metricId)
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     actionProbe: {
       height: formattingToolbarTouchSize,

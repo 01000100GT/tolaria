@@ -2,6 +2,13 @@
 
 This inventory is the working source map for the experimental mobile UI foundation. Mobile and tablet styling should copy the desktop Tolaria implementation by default, and only diverge where the target form factor requires a different interaction model.
 
+The October 11 physical-device review explicitly requests a 110% interface.
+`mobileMetrics` derives that setting from these same desktop tokens; Standard
+retains the canonical values. Panel widths, radii, strokes, colors and weights
+do not change. Run canonical numeric layout contracts at Standard, and use
+`TabletDensityTests` for actual native padding, row, line-box and count-centering
+checks at both sizes. This is not a new visual language (ADR 0215).
+
 The machine-readable coverage source lives in `src/ui/mobileParityInventory.ts`. `src/ui/mobileParityInventory.test.ts` fails when a visible iPad implementation file under `src/ui`, `src/components/workspace`, `TabletWorkspace`, or `TabletEditorPanel` is not mapped to a desktop source, parity contract, and assertion.
 
 ## Tokens

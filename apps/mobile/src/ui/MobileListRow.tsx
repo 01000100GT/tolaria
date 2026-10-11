@@ -1,11 +1,11 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../components/ui/text'
 import { probeProps, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
-import { desktopNoteItemParity } from './desktopParity'
-import { mobileSpace, mobileType } from './tokens'
+
 
 type MobileListRowProps = {
   chips?: ReactNode
@@ -28,13 +28,6 @@ type MobileListRowState = {
   desktopSelected: boolean
   multiSelected: boolean
 }
-
-const baseContentStyle = {
-  paddingBottom: desktopNoteItemParity.padding.bottom,
-  paddingLeft: desktopNoteItemParity.padding.left,
-  paddingRight: desktopNoteItemParity.padding.right,
-  paddingTop: desktopNoteItemParity.padding.top,
-} as const
 
 export function MobileListRow(props: MobileListRowProps) {
   const themeStyles = useMobileStyles(createThemeStyles)
@@ -106,7 +99,14 @@ function rowProbeProps(layoutProbe: MobileLayoutProbe | undefined, metricId: str
   return metricId ? probeProps(layoutProbe, `${metricId}.${segment}`) : {}
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { noteItem: desktopNoteItemParity, space: mobileSpace, type: mobileType } = metrics
+  const baseContentStyle = {
+    paddingBottom: desktopNoteItemParity.padding.bottom,
+    paddingLeft: desktopNoteItemParity.padding.left,
+    paddingRight: desktopNoteItemParity.padding.right,
+    paddingTop: desktopNoteItemParity.padding.top,
+  }
   const styles = StyleSheet.create({
     base: baseContentStyle,
     baseSelected: {

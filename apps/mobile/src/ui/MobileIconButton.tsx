@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { StyleSheet } from 'react-native'
 import { Button } from '../components/ui/button'
 import { cn } from '../components/ui/utils'
-import { desktopToolbarActionParity } from './desktopParity'
+import { useMobileStyles } from './theme/useMobileTheme'
+import type { MobileColors } from './theme/mobilePalette'
+import type { MobileMetrics } from './mobileMetrics'
 
 type MobileIconButtonDensity = 'default' | 'toolbar'
 
@@ -21,14 +23,15 @@ export function MobileIconButton({
   selected?: boolean
   testID?: string
 }) {
+  const { styles, hitSlop } = useMobileStyles(createIconButtonStyles)
   return (
     <Button
       accessibilityLabel={accessibilityLabel}
-      className={cn(iconButtonDensityClassNames[density], 'active:opacity-70', selected ? 'bg-accent' : 'bg-transparent')}
-      hitSlop={desktopToolbarActionParity.hitSlop}
+      className={cn('active:opacity-70', selected ? 'bg-accent' : 'bg-transparent')}
+      hitSlop={hitSlop}
       onPress={onPress}
       size="icon"
-      style={iconButtonStyles[density]}
+      style={styles[density]}
       testID={testID}
       variant={selected ? 'secondary' : 'ghost'}
     >
@@ -37,12 +40,14 @@ export function MobileIconButton({
   )
 }
 
-const styles = StyleSheet.create({
+function createIconButtonStyles(_colors: MobileColors, metrics: MobileMetrics) {
+  const desktopToolbarActionParity = metrics.toolbarAction
+  const styles = StyleSheet.create({
   default: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 36,
-    height: 36,
+    width: metrics.size(36),
+    height: metrics.size(36),
     borderRadius: 6,
     flexDirection: 'row',
   },
@@ -54,14 +59,6 @@ const styles = StyleSheet.create({
     borderRadius: desktopToolbarActionParity.borderRadius,
     flexDirection: 'row',
   },
-})
-
-const iconButtonDensityClassNames: Record<MobileIconButtonDensity, string> = {
-  default: '!h-9 !w-9 rounded-md',
-  toolbar: '!h-6 !w-6 !rounded',
+  })
+  return { styles, hitSlop: desktopToolbarActionParity.hitSlop }
 }
-
-const iconButtonStyles = {
-  default: styles.default,
-  toolbar: styles.toolbar,
-} as const

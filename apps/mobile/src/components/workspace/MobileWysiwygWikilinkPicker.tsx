@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -9,7 +10,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace } from '../../ui/tokens'
+
 import type { MobileNote, MobileTypeDefinitions } from '../../workspace/mobileWorkspaceModel'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
 import {
@@ -144,7 +145,8 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFillObject,
@@ -159,8 +161,8 @@ function createThemeStyles(mobileColors: MobileColors) {
       paddingVertical: mobileSpace.md,
     },
     emoji: {
-      fontSize: 20,
-      lineHeight: 24,
+      fontSize: metrics.size(20),
+      lineHeight: metrics.size(24),
     },
     host: {
       ...StyleSheet.absoluteFillObject,

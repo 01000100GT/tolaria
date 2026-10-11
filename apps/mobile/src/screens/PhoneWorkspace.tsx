@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
@@ -17,7 +18,7 @@ import { MobileWorkspaceSidebar } from '../components/workspace/MobileWorkspaceS
 import { mobileText } from '../i18n/mobileText'
 import { probeProps, useMobileLayoutProbe, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { MobileIconButton } from '../ui/MobileIconButton'
-import { mobileSpace } from '../ui/tokens'
+
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
 import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
@@ -1129,7 +1130,8 @@ function useSelectAndOpenList<Selection>(
   }, [select, openList])
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     drawerPanel: {
       flex: 1,
@@ -1177,7 +1179,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     topBarTitle: {
       flex: 1,
       color: mobileColors.text,
-      fontSize: 13,
+      fontSize: metrics.size(13),
       fontWeight: '600',
     },
   })

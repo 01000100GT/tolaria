@@ -1,10 +1,11 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import { StyleSheet, View, type TextInputProps } from 'react-native'
 import { Input } from '../components/ui/input'
 import { Text } from '../components/ui/text'
-import { desktopPropertyParity } from './desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from './tokens'
+
+import { mobileRadius } from './tokens'
 
 export function MobileTextInput({
   label,
@@ -31,7 +32,8 @@ export function MobileTextInput({
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType, property: desktopPropertyParity } = metrics
   const styles = StyleSheet.create({
     field: {
       gap: mobileSpace.xs,

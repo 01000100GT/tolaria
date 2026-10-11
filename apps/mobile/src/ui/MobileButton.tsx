@@ -1,7 +1,8 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
-import { Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
 import { Button, type ButtonProps } from '../components/ui/button'
 import { Text } from '../components/ui/text'
 import { cn } from '../components/ui/utils'
@@ -42,16 +43,14 @@ export function MobileButton(props: MobileButtonProps) {
     variant = 'secondary',
   } = props
   const buttonVariant = buttonVariantByMobileVariant[variant]
-  const buttonStyle = Platform.OS === 'web'
-    ? style
-    : [
+  const buttonStyle = [
       styles.base,
       buttonDensityStyles[density],
       buttonVariantStyles[variant],
       disabled ? styles.disabled : null,
       style,
     ]
-  const labelStyle = Platform.OS === 'web' ? undefined : [labelDensityStyles[density], labelColorStyles[variant], tone === 'danger' ? styles.labelDanger : null]
+  const labelStyle = [labelDensityStyles[density], labelColorStyles[variant], tone === 'danger' ? styles.labelDanger : null]
 
   return (
     <Button
@@ -108,41 +107,41 @@ const labelDensityClassNames: Record<MobileButtonDensity, string> = {
   status: 'text-xs font-medium',
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const styles = StyleSheet.create({
     base: {
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
-      gap: 6,
+      gap: metrics.size(6),
     },
     default: {
-      minHeight: 36,
+      minHeight: metrics.size(36),
       borderRadius: 6,
-      paddingHorizontal: 12,
+      paddingHorizontal: metrics.size(12),
     },
     disabled: {
       opacity: 0.5,
     },
     compact: {
-      minHeight: 32,
+      minHeight: metrics.size(32),
       borderRadius: 6,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
+      paddingHorizontal: metrics.size(8),
+      paddingVertical: metrics.size(4),
     },
     labelDefault: {
-      fontSize: 14,
+      fontSize: metrics.size(14),
       fontWeight: '500',
     },
     labelCompact: {
-      fontSize: 12,
+      fontSize: metrics.size(12),
       fontWeight: '500',
     },
     labelDanger: {
       color: mobileColors.red,
     },
     labelStatus: {
-      fontSize: 12,
+      fontSize: metrics.size(12),
       fontWeight: '500',
     },
     labelGhost: {
@@ -162,10 +161,10 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     status: {
       minHeight: 0,
-      height: 24,
+      height: metrics.size(24),
       borderRadius: 4,
-      paddingHorizontal: 4,
-      paddingVertical: 2,
+      paddingHorizontal: metrics.size(4),
+      paddingVertical: metrics.size(2),
     },
     ghost: {
       backgroundColor: 'transparent',

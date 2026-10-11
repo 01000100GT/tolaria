@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { StyleSheet, View } from 'react-native'
@@ -15,10 +16,10 @@ export function MobileWorkspaceLoadFailure({ onManage }: { onManage: () => void 
   </View>
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const styles = StyleSheet.create({
-    root: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 16, backgroundColor: mobileColors.app },
-    message: { color: mobileColors.textMuted, fontSize: 14, lineHeight: 20, maxWidth: 440, textAlign: 'center' },
+    root: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: metrics.size(24), gap: metrics.size(16), backgroundColor: mobileColors.app },
+    message: { color: mobileColors.textMuted, fontSize: metrics.size(14), lineHeight: metrics.size(20), maxWidth: 440, textAlign: 'center' },
   })
   return { mobileColors, styles }
 }

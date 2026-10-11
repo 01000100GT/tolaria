@@ -1,13 +1,15 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { StyleSheet } from 'react-native'
-import { desktopPanelParity, desktopPropertyParity, desktopRelationshipParity } from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+
+import { mobileRadius } from '../../ui/tokens'
 import {
   mobileInspectorPlaceholderRowLayoutContract,
   mobileInspectorReferenceRowLayoutContract,
 } from './MobilePropertiesPanelModel'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 
-export function createPropertyPanelStyles(mobileColors: MobileColors) {
+export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, panel: desktopPanelParity, space: mobileSpace, type: mobileType, relationship: desktopRelationshipParity } = metrics
   const panelStyles = StyleSheet.create({
     content: { padding: desktopPropertyParity.panelPadding },
     emptyContent: { flexGrow: 1 },
@@ -81,20 +83,20 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       borderTopWidth: StyleSheet.hairlineWidth,
     },
     row: {
-      minHeight: mobileInspectorReferenceRowLayoutContract.minHeight,
+      minHeight: metrics.size(mobileInspectorReferenceRowLayoutContract.minHeight),
       minWidth: 0,
       alignItems: 'center',
       flexDirection: 'row',
       gap: desktopRelationshipParity.rowGap,
       borderRadius: mobileInspectorReferenceRowLayoutContract.radius,
-      paddingHorizontal: mobileInspectorReferenceRowLayoutContract.paddingHorizontal,
-      paddingVertical: mobileInspectorReferenceRowLayoutContract.paddingVertical,
+      paddingHorizontal: metrics.size(mobileInspectorReferenceRowLayoutContract.paddingHorizontal),
+      paddingVertical: metrics.size(mobileInspectorReferenceRowLayoutContract.paddingVertical),
       width: '100%',
     },
     text: {
       minWidth: 0,
       flex: 1,
-      fontSize: mobileInspectorReferenceRowLayoutContract.textFontSize,
+      fontSize: metrics.size(mobileInspectorReferenceRowLayoutContract.textFontSize),
       fontWeight: mobileInspectorReferenceRowLayoutContract.textFontWeight,
     },
   })
@@ -144,7 +146,7 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       fontSize: desktopPropertyParity.labelTextSize,
     },
     placeholderAddValue: {
-      minHeight: mobileInspectorPlaceholderRowLayoutContract.minHeight,
+      minHeight: metrics.size(mobileInspectorPlaceholderRowLayoutContract.minHeight),
       minWidth: 0,
       alignItems: 'center',
       flex: 1,
@@ -183,7 +185,7 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       justifyContent: 'flex-end',
       borderRadius: 4,
       paddingHorizontal: mobileSpace.xs,
-      paddingVertical: 2,
+      paddingVertical: metrics.size(2),
     },
     editableValue: {
       maxHeight: 96,
@@ -194,7 +196,7 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       justifyContent: 'flex-end',
       borderRadius: 4,
       paddingHorizontal: mobileSpace.xs,
-      paddingVertical: 2,
+      paddingVertical: metrics.size(2),
       width: '100%',
     },
     editableValuePressed: { backgroundColor: mobileColors.graySoft },
@@ -211,8 +213,8 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       color: mobileColors.textMuted,
       fontSize: mobileType.micro,
       fontWeight: '400',
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: metrics.size(6),
+      paddingVertical: metrics.size(2),
     },
   })
 
@@ -234,7 +236,7 @@ export function createPropertyPanelStyles(mobileColors: MobileColors) {
       minHeight: desktopPropertyParity.chipHeight,
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 3,
+      gap: metrics.size(3),
       borderRadius: desktopPropertyParity.chipRadius,
       backgroundColor: mobileColors.orangeSoft,
       paddingHorizontal: desktopPropertyParity.chipPaddingHorizontal,

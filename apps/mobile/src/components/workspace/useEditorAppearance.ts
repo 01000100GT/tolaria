@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type MutableRefObject } from 'react'
-import { useMobileColors } from '../../ui/theme/useMobileTheme'
+import { useMobileColors, useMobileMetrics } from '../../ui/theme/useMobileTheme'
 import type { MobileNoteWidth } from '../../workspace/mobileWorkspaceModel'
 import { mobileTentapEditorCss } from './MobileWysiwygMarkdownEditorCss'
 
@@ -17,7 +17,8 @@ export function useEditorAppearance({ compact, noteWidth, editorRef }: {
   editorRef: MutableRefObject<CssEditor | null>
 }) {
   const colors = useMobileColors()
-  const css = useMemo(() => mobileTentapEditorCss(compact, noteWidth, colors), [compact, noteWidth, colors])
+  const metrics = useMobileMetrics()
+  const css = useMemo(() => mobileTentapEditorCss(compact, noteWidth, colors, metrics), [compact, noteWidth, colors, metrics])
   useEffect(() => { injectMobileEditorAppearance(editorRef.current, css) }, [editorRef, css])
   return css
 }

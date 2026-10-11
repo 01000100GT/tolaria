@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
@@ -14,7 +15,7 @@ import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { desktopPanelParity, desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import { mobileNoteRowChips } from '../../workspace/mobileNoteDisplay'
 import type { MobileNoteListFilter } from '../../workspace/mobileNoteFilters'
 import type { MobileNeighborhood, MobileNeighborhoodGroup } from '../../workspace/mobileNeighborhood'
@@ -667,7 +668,8 @@ const panelStyles = StyleSheet.create({
   },
 })
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     chipRow: {
       alignItems: 'center',
@@ -709,11 +711,11 @@ function createThemeStyles(mobileColors: MobileColors) {
     filterPill: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 6,
+      gap: metrics.size(6),
       minHeight: 28,
       borderRadius: mobileRadius.pill,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+      paddingHorizontal: metrics.size(10),
+      paddingVertical: metrics.size(4),
     },
     filterPillSelected: {
       backgroundColor: mobileColors.control,

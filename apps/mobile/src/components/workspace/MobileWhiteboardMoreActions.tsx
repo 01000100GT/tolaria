@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -8,7 +9,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent'
 import {
   readMobileTldrawWhiteboards,
@@ -264,7 +265,8 @@ function whiteboardLabel(whiteboard: MobileTldrawWhiteboard, index: number): str
   return whiteboard.boardId || `${mobileText('editor.formatting.whiteboard')} ${index + 1}`
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { toolbarAction: desktopToolbarActionParity, space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     actionIcon: {
       width: desktopToolbarActionParity.iconSize,

@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { Modal, ScrollView, StyleSheet, View } from 'react-native'
@@ -7,7 +8,7 @@ import { Switch } from '../components/ui/switch'
 import { MobileButton } from '../ui/MobileButton'
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
-import { mobileSpace } from '../ui/tokens'
+
 import { mobileText } from '../i18n/mobileText'
 import { useMobileSettings } from './useMobileSettings'
 import { MobileAppearanceSettings } from './MobileAppearanceSettings'
@@ -47,16 +48,17 @@ export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean })
   </Modal>
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: mobileColors.overlay, padding: mobileSpace.lg },
     panel: { width: '100%', maxWidth: 540, maxHeight: '85%', borderRadius: 8, overflow: 'hidden', backgroundColor: mobileColors.dialog },
-    content: { padding: 20, gap: 12 },
-    row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 16 },
-    label: { flex: 1, fontSize: 14, color: mobileColors.text },
-    heading: { fontSize: 12, color: mobileColors.textMuted, fontWeight: '500' },
-    detail: { fontSize: 12, lineHeight: 18, color: mobileColors.textMuted },
-    error: { fontSize: 12, lineHeight: 18, color: mobileColors.danger },
+    content: { padding: metrics.size(20), gap: metrics.size(12) },
+    row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: metrics.size(16) },
+    label: { flex: 1, fontSize: metrics.size(14), color: mobileColors.text },
+    heading: { fontSize: metrics.size(12), color: mobileColors.textMuted, fontWeight: '500' },
+    detail: { fontSize: metrics.size(12), lineHeight: metrics.size(18), color: mobileColors.textMuted },
+    error: { fontSize: metrics.size(12), lineHeight: metrics.size(18), color: mobileColors.danger },
   })
   return { mobileColors, styles }
 }

@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useEffect, type ReactNode } from 'react'
@@ -11,7 +12,7 @@ import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } f
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import type { MobileEditorBlock, MobileNote, MobileSidebarIcon, MobileTone, MobileTypeDefinitions, MobileViewFilterGroup } from '../../workspace/mobileWorkspaceModel'
 import type {
   MobileTypeSchemaProperty,
@@ -1155,7 +1156,8 @@ const actionTitleByAction: Record<MobileWorkspaceAction, Parameters<typeof mobil
   tableOfContents: 'tableOfContents.title',
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType, toolbarAction: desktopToolbarActionParity } = metrics
   const styles = StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFillObject,
@@ -1163,8 +1165,8 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     content: {
       alignSelf: 'stretch',
-      gap: mobileActionSheetLayoutContract.contentGap,
-      padding: mobileActionSheetLayoutContract.contentPadding,
+      gap: metrics.size(mobileActionSheetLayoutContract.contentGap),
+      padding: metrics.size(mobileActionSheetLayoutContract.contentPadding),
     },
     footer: {
       alignItems: 'center',
@@ -1189,16 +1191,16 @@ function createThemeStyles(mobileColors: MobileColors) {
       minHeight: 0,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: mobileActionSheetLayoutContract.overlayPaddingHorizontal,
-      paddingVertical: mobileActionSheetLayoutContract.overlayPaddingVertical,
+      paddingHorizontal: metrics.size(mobileActionSheetLayoutContract.overlayPaddingHorizontal),
+      paddingVertical: metrics.size(mobileActionSheetLayoutContract.overlayPaddingVertical),
     },
     scrollArea: {
       flexShrink: 1,
       minHeight: 0,
     },
     pinnedFooter: {
-      paddingBottom: mobileActionSheetLayoutContract.footerPaddingBottom,
-      paddingHorizontal: mobileActionSheetLayoutContract.footerPaddingHorizontal,
+      paddingBottom: metrics.size(mobileActionSheetLayoutContract.footerPaddingBottom),
+      paddingHorizontal: metrics.size(mobileActionSheetLayoutContract.footerPaddingHorizontal),
     },
     suggestionList: {
       gap: mobileSpace.xs,
@@ -1208,16 +1210,16 @@ function createThemeStyles(mobileColors: MobileColors) {
       width: '100%',
     },
     suggestionRow: {
-      minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
+      minHeight: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.minHeight),
       alignItems: 'center',
       flexDirection: 'row',
-      gap: mobileWorkspaceSuggestionRowLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.gap),
       backgroundColor: mobileColors.control,
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
-      paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
+      paddingHorizontal: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal),
+      paddingVertical: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingVertical),
     },
     suggestionRowPressed: {
       backgroundColor: mobileColors.graySoft,
@@ -1232,7 +1234,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     visibilityDescription: {
       color: mobileColors.textMuted,
       fontSize: mobileType.caption,
-      lineHeight: 16,
+      lineHeight: metrics.size(16),
     },
     visibilityHeader: {
       gap: mobileSpace.xs,
@@ -1261,7 +1263,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     visibilityText: {
       minWidth: 0,
       flex: 1,
-      gap: 2,
+      gap: metrics.size(2),
     },
     visibilityTitle: {
       color: mobileColors.textMuted,

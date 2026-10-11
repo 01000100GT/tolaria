@@ -1,4 +1,4 @@
-import { useMobileStyles, useMobileColors } from '../ui/theme/useMobileTheme'
+import { useMobileStyles, useMobileColors, useMobileMetrics } from '../ui/theme/useMobileTheme'
 import { Code, DotsThree, SidebarSimple, Star } from 'phosphor-react-native'
 import {
   ScrollView,
@@ -17,7 +17,6 @@ import { MobileChip } from '../ui/MobileChip'
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
 import { noteTypeColor } from '../components/workspace/mobileWorkspaceTone'
-import { desktopEditorParity, desktopToolbarActionParity } from '../ui/desktopParity'
 
 import { MobileLayoutProbeReadout } from '../qa/MobileLayoutProbeReadout'
 import { useMobileLayoutProbe } from '../qa/mobileLayoutProbe'
@@ -195,6 +194,7 @@ function useTableOfContentsScroll(
   target: MobileTableOfContentsTarget | null,
   onProof?: (proof: NativeTableOfContentsProof) => void,
 ): TableOfContentsScroll {
+  const metrics = useMobileMetrics()
   const [layoutVersion, setLayoutVersion] = useState(0)
   const [scrollViewVersion, setScrollViewVersion] = useState(0)
   const scrollViewRef = useRef<ScrollView | null>(null)
@@ -221,7 +221,7 @@ function useTableOfContentsScroll(
     if (!scrollView) return
 
     const beforeY = scrollYRef.current
-    const expectedY = Math.max(0, y - desktopEditorParity.contentPaddingVertical)
+    const expectedY = Math.max(0, y - metrics.editor.contentPaddingVertical)
     scrollView.scrollTo({
       animated: true,
       y: expectedY,
@@ -241,7 +241,7 @@ function useTableOfContentsScroll(
     }, 900)
 
     return () => clearTimeout(proofTimeout)
-  }, [layoutVersion, onProof, scrollViewVersion, target])
+  }, [layoutVersion, onProof, scrollViewVersion, target, metrics])
 
   return { onScroll, onTargetLayout, setScrollViewNode }
 }
@@ -289,6 +289,7 @@ function EditorToolbarIcon({
   typeDefinitions,
 }: Pick<EditorToolbarProps, 'fileMode' | 'note' | 'typeDefinitions'>) {
   const colors = useMobileColors()
+  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
   if (fileMode === 'markdown' && note.icon?.trim()) {
     return (
       <MobileNoteIcon
@@ -318,6 +319,7 @@ function EditorToolbarActions(props: EditorToolbarProps) {
 
 function FileToolbarActions(props: EditorToolbarProps) {
   const mobileColors = useMobileColors()
+  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
   return (
     <>
       <MobileIconButton
@@ -348,6 +350,7 @@ function MarkdownToolbarActions({
 }: EditorToolbarProps) {
   const mobileColors = useMobileColors()
   const sourceModeActive = editingMode === 'source'
+  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
 
   return (
     <>
@@ -398,6 +401,7 @@ function PropertiesToolbarAction({
   propertiesVisible?: boolean
 }) {
   const mobileColors = useMobileColors()
+  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
   return (
     <MobileIconButton
       accessibilityLabel={mobileText(

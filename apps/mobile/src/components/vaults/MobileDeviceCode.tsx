@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useState } from 'react'
@@ -35,12 +36,12 @@ export function MobileDeviceCode({ code }: { code: string }) {
   </View>
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const styles = StyleSheet.create({
-    container: { gap: 8 },
-    row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' },
-    code: { fontSize: 24, fontWeight: '600', color: mobileColors.text, paddingVertical: 8 },
-    error: { fontSize: 12, color: mobileColors.danger },
+    container: { gap: metrics.size(8) },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: metrics.size(12), alignItems: 'center', justifyContent: 'space-between' },
+    code: { fontSize: metrics.size(24), fontWeight: '600', color: mobileColors.text, paddingVertical: metrics.size(8) },
+    error: { fontSize: metrics.size(12), color: mobileColors.danger },
   })
   return { mobileColors, styles }
 }

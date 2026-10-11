@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo } from 'react'
@@ -7,7 +8,7 @@ import { Button } from '../ui/button'
 import { pluralizeType } from '../../../../../src/shared/typeLabels'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type { MobileTypeDefinitions } from '../../workspace/mobileWorkspaceModel'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
 
@@ -105,7 +106,8 @@ function slugifyTypeVisibilityId(typeName: string) {
   return typeName.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/g, '') || 'type'
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     content: {
       gap: mobileSpace.md,
@@ -123,7 +125,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     visibilityDescription: {
       color: mobileColors.textMuted,
       fontSize: mobileType.caption,
-      lineHeight: 16,
+      lineHeight: metrics.size(16),
     },
     visibilityLabel: {
       color: mobileColors.text,
@@ -147,7 +149,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     visibilityText: {
       flex: 1,
-      gap: 2,
+      gap: metrics.size(2),
       minWidth: 0,
     },
   })

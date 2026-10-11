@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Check, DotsThree, ListBullets, Plus, Table, TextH } from 'phosphor-react-native'
@@ -8,7 +9,7 @@ import { Text } from '../ui/text'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { mobileText } from '../../i18n/mobileText'
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
-import { mobileSpace } from '../../ui/tokens'
+
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 import { formattingCommands, type FormattingCommand } from './mobileFormattingCommands'
 import { formattingToolbarGroups, formattingToolbarTouchSize, type FormattingToolbarGroup } from './mobileFormattingToolbarModel'
@@ -109,13 +110,14 @@ function metricProps(props: Props, segment?: string) {
   return probeProps(props.layoutProbe, segment ? `${props.metricId}.${segment}` : props.metricId)
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     viewport: { flexGrow: 0 },
     row: { flexDirection: 'row', gap: mobileSpace.xs, paddingBottom: mobileSpace.xs },
     action: { width: formattingToolbarTouchSize, height: formattingToolbarTouchSize, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
     selected: { backgroundColor: mobileColors.primarySoft },
-    label: { color: mobileColors.text, fontSize: 13, flexShrink: 1, flexGrow: 1 },
+    label: { color: mobileColors.text, fontSize: metrics.size(13), flexShrink: 1, flexGrow: 1 },
     icon: { width: 16, height: 16, alignItems: 'center', justifyContent: 'center' },
   })
   return { mobileColors, styles }

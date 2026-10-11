@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ArrowClockwise, FolderOpen, GearSix, GitCommit, Tray } from 'phosphor-react-native'
@@ -115,7 +116,8 @@ function syncStatusLabel(sync: MobileSyncStatus) {
   return mobileText(labels[sync.kind])
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { statusBar: desktopStatusBarParity } = metrics
   const styles = StyleSheet.create({
     syncBar: {
       alignItems: 'center',

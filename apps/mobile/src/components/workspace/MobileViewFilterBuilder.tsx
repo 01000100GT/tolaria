@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -7,7 +8,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type {
   MobileNote,
   MobileViewFilterCondition,
@@ -442,7 +443,8 @@ function operatorLabel(operator: MobileViewFilterOp) {
   return mobileText(`viewDialog.filter.operator.${operator}`)
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     actions: {
       flexDirection: 'row',
@@ -450,11 +452,11 @@ function createThemeStyles(mobileColors: MobileColors) {
       gap: mobileSpace.xs,
     },
     builder: {
-      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceFormSectionLayoutContract.gap),
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+      padding: metrics.size(mobileWorkspaceFormSectionLayoutContract.padding),
     },
     condition: {
       gap: mobileSpace.sm,
@@ -512,12 +514,12 @@ function createThemeStyles(mobileColors: MobileColors) {
       fontWeight: '500',
     },
     modeButton: {
-      minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
+      minHeight: metrics.size(mobileWorkspaceFilterControlLayoutContract.minHeight),
       backgroundColor: mobileColors.control,
       borderColor: mobileColors.borderStrong,
       borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
+      paddingHorizontal: metrics.size(mobileWorkspaceFilterControlLayoutContract.paddingHorizontal),
     },
     nestedGroup: {
       borderLeftColor: mobileColors.borderStrong,
@@ -528,12 +530,12 @@ function createThemeStyles(mobileColors: MobileColors) {
       gap: mobileSpace.sm,
     },
     operatorPill: {
-      minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
+      minHeight: metrics.size(mobileWorkspaceFilterControlLayoutContract.minHeight),
       backgroundColor: mobileColors.control,
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
+      paddingHorizontal: metrics.size(mobileWorkspaceFilterControlLayoutContract.paddingHorizontal),
     },
     operatorPillActive: {
       backgroundColor: mobileColors.primarySoft,
@@ -542,7 +544,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     operatorWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: mobileWorkspaceFilterControlLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceFilterControlLayoutContract.gap),
     },
     valuePreview: {
       color: mobileColors.textMuted,

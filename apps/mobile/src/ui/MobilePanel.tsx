@@ -1,9 +1,10 @@
+import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { StyleSheet, View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native'
 import { Text } from '../components/ui/text'
-import { desktopPanelParity, desktopToolbarParity } from './desktopParity'
+
 
 type MobileToolbarTitleVariant = 'default' | 'inspector'
 
@@ -50,7 +51,8 @@ export function MobileToolbarSpacer() {
   return <View style={styles.spacer} />
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { toolbar: desktopToolbarParity, panel: desktopPanelParity } = metrics
   const styles = StyleSheet.create({
     panel: {
       minWidth: 0,

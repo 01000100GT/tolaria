@@ -1,9 +1,10 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Platform, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
-import { desktopSidebarParity } from '../../ui/desktopParity'
+
 
 type MobileSidebarCountPillProps = {
   activeColor?: string
@@ -70,7 +71,8 @@ export function MobileSidebarCountPill(props: MobileSidebarCountPillProps) {
   return Platform.OS === 'web' ? <WebCountPill {...props} /> : <NativeCountPill {...props} />
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { sidebar: desktopSidebarParity } = metrics
   const nativeStyles = StyleSheet.create({
     activeText: { color: mobileColors.textInverse },
     compact: {
@@ -97,7 +99,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       color: mobileColors.textMuted,
       fontSize: desktopSidebarParity.countPillTextSize,
       fontWeight: '400',
-      lineHeight: 12,
+      lineHeight: metrics.size(12),
       textAlign: 'center',
     },
   })

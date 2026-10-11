@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -88,7 +89,7 @@ import {
 } from '../workspace/localVaultMarkdown'
 import { Text } from '../components/ui/text'
 import { mobileText } from '../i18n/mobileText'
-import { mobileSpace, mobileType } from '../ui/tokens'
+
 import {
   mobileSnapshotWithRequestedSelectedNote,
   requestedSelectedNoteId,
@@ -610,13 +611,14 @@ function envValue(name: string) {
   return processGlobal.process?.env?.[name] ?? null
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { type: mobileType, space: mobileSpace } = metrics
   const devVaultStyles = StyleSheet.create({
     detail: {
       maxWidth: 520,
       color: mobileColors.textMuted,
       fontSize: mobileType.body,
-      lineHeight: 22,
+      lineHeight: metrics.size(22),
       textAlign: 'center',
     },
     root: {

@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { CheckCircle } from 'phosphor-react-native'
@@ -6,7 +7,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type { MobileNote, MobileSidebarIcon, MobileTone } from '../../workspace/mobileWorkspaceModel'
 import {
   mobileTypeSchemaPropertyValueText,
@@ -279,7 +280,8 @@ function schemaSlug(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '') || 'field'
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     editor: {
       gap: mobileSpace.md,
@@ -297,11 +299,11 @@ function createThemeStyles(mobileColors: MobileColors) {
       fontSize: mobileType.body,
     },
     section: {
-      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceFormSectionLayoutContract.gap),
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+      padding: metrics.size(mobileWorkspaceFormSectionLayoutContract.padding),
     },
     schemaInputs: {
       gap: mobileSpace.sm,
@@ -333,7 +335,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       minHeight: 92,
       fontFamily: 'Menlo',
       fontSize: mobileType.caption,
-      lineHeight: 18,
+      lineHeight: metrics.size(18),
       paddingTop: mobileSpace.sm,
     },
     toggleRow: {

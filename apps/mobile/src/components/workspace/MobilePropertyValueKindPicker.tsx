@@ -1,9 +1,10 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors as propertyColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileColors as propertyColors, mobileRadius } from '../../ui/tokens'
 import type { MobilePropertyValueKind } from '../../workspace/mobilePropertyValues'
 import { mobilePropertyValueChoiceLayoutContract } from './MobileWorkspaceActionSheetModel'
 import { mobilePropertyValueKindOptions } from './mobilePropertyValueKindOptions'
@@ -222,22 +223,23 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { type: mobileType, space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     booleanButton: {
-      minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
-      minWidth: mobilePropertyValueChoiceLayoutContract.minWidth,
+      minHeight: metrics.size(mobilePropertyValueChoiceLayoutContract.minHeight),
+      minWidth: metrics.size(mobilePropertyValueChoiceLayoutContract.minWidth),
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: mobileColors.control,
       borderColor: mobileColors.border,
       borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
+      paddingHorizontal: metrics.size(mobilePropertyValueChoiceLayoutContract.paddingHorizontal),
     },
     booleanOptions: {
       flexDirection: 'row',
-      gap: mobilePropertyValueChoiceLayoutContract.gap,
+      gap: metrics.size(mobilePropertyValueChoiceLayoutContract.gap),
     },
     buttonText: {
       color: mobileColors.textMuted,
@@ -272,14 +274,14 @@ function createThemeStyles(mobileColors: MobileColors) {
       color: mobileColors.textFaint,
     },
     kindButton: {
-      minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
+      minHeight: metrics.size(mobilePropertyValueChoiceLayoutContract.minHeight),
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: mobileColors.control,
       borderColor: mobileColors.border,
       borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
+      paddingHorizontal: metrics.size(mobilePropertyValueChoiceLayoutContract.paddingHorizontal),
     },
     kindGroup: {
       gap: mobileSpace.xs,
@@ -291,7 +293,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     kindOptions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: mobilePropertyValueChoiceLayoutContract.gap,
+      gap: metrics.size(mobilePropertyValueChoiceLayoutContract.gap),
     },
     pressedButton: {
       backgroundColor: mobileColors.graySoft,
@@ -306,7 +308,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     statusOptions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: mobilePropertyValueChoiceLayoutContract.gap,
+      gap: metrics.size(mobilePropertyValueChoiceLayoutContract.gap),
     },
   })
   return { mobileColors, styles }

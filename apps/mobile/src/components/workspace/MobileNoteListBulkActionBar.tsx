@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -5,7 +6,7 @@ import { ArchiveIcon, CheckCircle, Trash, X } from 'phosphor-react-native'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileRadius, mobileSpace } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 
 type MobileNoteListBulkActionBarProps = {
   archivedMode: boolean
@@ -98,7 +99,8 @@ function selectedCountLabel(count: number) {
   return mobileText('noteList.bulk.selectedCount').replace('{count}', count.toLocaleString())
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     action: {
       alignItems: 'center',
@@ -123,7 +125,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     count: {
       color: mobileColors.textInverse,
-      fontSize: 13,
+      fontSize: metrics.size(13),
       fontWeight: '500',
     },
     destructiveAction: {

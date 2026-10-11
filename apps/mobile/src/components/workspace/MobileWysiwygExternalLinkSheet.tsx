@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -6,7 +7,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace } from '../../ui/tokens'
+
 import {
   nativeWysiwygCanSaveExternalLink,
   nativeWysiwygNormalizedExternalLink,
@@ -73,7 +74,8 @@ export function MobileWysiwygExternalLinkSheet({
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFillObject,

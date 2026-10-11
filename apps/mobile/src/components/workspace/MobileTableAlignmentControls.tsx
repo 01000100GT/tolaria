@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
@@ -10,7 +11,7 @@ import {
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type { MobileMarkdownTableAlignment } from '../../workspace/mobileMarkdownTables'
 
 type MobileTableAlignmentControlsProps = {
@@ -134,7 +135,8 @@ function tableAlignmentLabel(alignment: MobileMarkdownTableAlignment): string {
   return mobileText('editor.table.alignDefault')
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     group: {
       gap: mobileSpace.xs,

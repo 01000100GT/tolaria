@@ -1,17 +1,20 @@
 import { StyleSheet } from 'react-native'
-import { mobileSpace } from '../../ui/tokens'
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 
-export const createVaultManagerStyles = (mobileColors: MobileColors) => StyleSheet.create({
+export function createVaultManagerStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const mobileSpace = metrics.space
+  return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: mobileColors.overlay, justifyContent: 'center', alignItems: 'center', padding: mobileSpace.lg },
   panel: { width: '100%', maxWidth: 560, maxHeight: '90%', borderRadius: 8, overflow: 'hidden' },
   content: { padding: mobileSpace.lg, gap: mobileSpace.lg },
   section: { gap: mobileSpace.sm },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: mobileSpace.sm },
-  label: { fontSize: 13, fontWeight: '500', color: mobileColors.text },
-  detail: { fontSize: 12, lineHeight: 18, color: mobileColors.textMuted },
-  error: { fontSize: 12, lineHeight: 18, color: mobileColors.danger },
-  code: { fontSize: 24, fontWeight: '600', color: mobileColors.text, textAlign: 'center', paddingVertical: mobileSpace.sm },
+  label: { fontSize: metrics.size(13), fontWeight: '500', color: mobileColors.text },
+  detail: { fontSize: metrics.size(12), lineHeight: metrics.size(18), color: mobileColors.textMuted },
+  error: { fontSize: metrics.size(12), lineHeight: metrics.size(18), color: mobileColors.danger },
+  code: { fontSize: metrics.size(24), fontWeight: '600', color: mobileColors.text, textAlign: 'center', paddingVertical: mobileSpace.sm },
   vault: { alignItems: 'center', justifyContent: 'flex-start', minHeight: 44 },
   progress: { gap: mobileSpace.sm, flexDirection: 'row', alignItems: 'center' },
-})
+  })
+}

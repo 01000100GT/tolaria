@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ListBullets, TextHOne, TextHThree, TextHTwo } from 'phosphor-react-native'
@@ -6,7 +7,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import {
   buildMobileTableOfContents,
   type MobileTableOfContentsItem,
@@ -122,7 +123,8 @@ function tocIcon(themeStyles: ReturnType<typeof createThemeStyles>, level: Mobil
   return <TextHThree color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType, toolbarAction: desktopToolbarActionParity } = metrics
   const styles = StyleSheet.create({
     content: {
       gap: mobileSpace.xs,

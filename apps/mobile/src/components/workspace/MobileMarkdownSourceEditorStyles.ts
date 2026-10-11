@@ -1,9 +1,11 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { StyleSheet } from 'react-native'
-import { desktopEditorParity } from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+
+import { mobileRadius } from '../../ui/tokens'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 
-export function createSourceEditorStyles(mobileColors: MobileColors) {
+export function createSourceEditorStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { editor: desktopEditorParity, space: mobileSpace, type: mobileType } = metrics
   const inputStyles = StyleSheet.create({
     container: {
       flex: 1,

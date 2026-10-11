@@ -1,6 +1,5 @@
 import { mobilePalettes, type MobileColors } from '../../ui/theme/mobilePalette'
-import { desktopEditorParity } from '../../ui/desktopParity'
-import { mobileSpace } from '../../ui/tokens'
+import { mobileMetrics, type MobileMetrics } from '../../ui/mobileMetrics'
 import type { MobileNoteWidth } from '../../workspace/mobileWorkspaceModel'
 
 type CssDeclaration = readonly [property: string, value: string | number]
@@ -9,21 +8,25 @@ export function mobileTentapEditorCss(
   compact: boolean,
   noteWidth: MobileNoteWidth | null | undefined = null,
   colors: MobileColors = mobilePalettes.light,
+  metrics: MobileMetrics = mobileMetrics[1],
 ): string {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
   const horizontalPadding = compact ? mobileSpace.xl : desktopEditorParity.contentPaddingHorizontal
-  const h1FontSize = compact ? 30 : desktopEditorParity.h1FontSize
-  const h1LineHeight = compact ? 36 : desktopEditorParity.h1LineHeight
+  const h1FontSize = compact ? metrics.size(30) : desktopEditorParity.h1FontSize
+  const h1LineHeight = compact ? metrics.size(36) : desktopEditorParity.h1LineHeight
   const wide = noteWidth === 'wide'
 
   return [
-    ...documentRules(colors, { horizontalPadding, wide }),
-    ...headingRules(colors, { h1FontSize, h1LineHeight }),
-    ...blockRules(colors),
-    ...tableRules(colors),
+    ...documentRules(colors, metrics, { horizontalPadding, wide }),
+    ...headingRules(colors, metrics, { h1FontSize, h1LineHeight }),
+    ...blockRules(colors, metrics),
+    ...tableRules(colors, metrics),
   ].join('\n')
 }
 
-function documentRules(mobileColors: MobileColors, { horizontalPadding, wide }: { horizontalPadding: number; wide: boolean }): string[] {
+function documentRules(mobileColors: MobileColors, metrics: MobileMetrics, { horizontalPadding, wide }: { horizontalPadding: number; wide: boolean }): string[] {
+  const desktopEditorParity = metrics.editor
+  const widePadding = `clamp(${metrics.size(24)}px, 4vw, ${metrics.size(72)}px)`
   return [
     cssRule('html, body', [
       ['background', mobileColors.editor],
@@ -41,13 +44,14 @@ function documentRules(mobileColors: MobileColors, { horizontalPadding, wide }: 
       ['max-width', wide ? 'none' : `${desktopEditorParity.contentMaxWidth}px`],
       ['min-height', '100vh'],
       ['outline', 'none'],
-      ['padding', `${desktopEditorParity.contentPaddingVertical}px ${wide ? 'clamp(24px, 4vw, 72px)' : `${horizontalPadding}px`} 96px`],
+      ['padding', `${desktopEditorParity.contentPaddingVertical}px ${wide ? widePadding : `${horizontalPadding}px`} ${metrics.size(96)}px`],
       ['width', '100%'],
     ]),
   ]
 }
 
-function headingRules(mobileColors: MobileColors, { h1FontSize, h1LineHeight }: { h1FontSize: number; h1LineHeight: number }): string[] {
+function headingRules(mobileColors: MobileColors, metrics: MobileMetrics, { h1FontSize, h1LineHeight }: { h1FontSize: number; h1LineHeight: number }): string[] {
+  const desktopEditorParity = metrics.editor
   return [
     cssRule('.ProseMirror h1', [
       ['border-bottom', `1px solid ${mobileColors.border}`],
@@ -79,7 +83,8 @@ function headingRules(mobileColors: MobileColors, { h1FontSize, h1LineHeight }: 
   ]
 }
 
-function blockRules(mobileColors: MobileColors): string[] {
+function blockRules(mobileColors: MobileColors, metrics: MobileMetrics): string[] {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
   return [
     cssRule('.ProseMirror p', [
       ['margin', `0 0 ${desktopEditorParity.paragraphSpacing}px`],
@@ -119,7 +124,8 @@ function blockRules(mobileColors: MobileColors): string[] {
   ]
 }
 
-function tableRules(mobileColors: MobileColors): string[] {
+function tableRules(mobileColors: MobileColors, metrics: MobileMetrics): string[] {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
   return [
     cssRule('.ProseMirror table', [
       ['border-collapse', 'collapse'],

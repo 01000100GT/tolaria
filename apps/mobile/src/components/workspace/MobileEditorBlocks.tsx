@@ -1,12 +1,10 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { CheckSquare, Square } from 'phosphor-react-native'
 import { StyleSheet, type LayoutChangeEvent, type TextStyle, View } from 'react-native'
 import { Text } from '../ui/text'
-import {
-  desktopEditorParity,
-} from '../../ui/desktopParity'
-import { mobileRadius, mobileSpace } from '../../ui/tokens'
+import { mobileRadius } from '../../ui/tokens'
 import type {
   MobileEditorBlock,
   MobileEditorInline,
@@ -276,7 +274,7 @@ function ListRow({
   const themeStyles = useMobileStyles(createThemeStyles)
   const { listStyles, textStyles } = themeStyles
   return (
-    <View style={[listStyles.row, listDepthStyle(item.depth)]} testID={testID}>
+    <View style={[listStyles.row, listDepthStyle(themeStyles.metrics, item.depth)]} testID={testID}>
       <Text style={listStyles.marker}>{marker}</Text>
       <InlineText
         content={item.content}
@@ -305,11 +303,11 @@ function TaskRow({
   const Icon = item.checked ? CheckSquare : Square
 
   return (
-    <View style={[listStyles.taskRow, listDepthStyle(item.depth)]} testID={testID}>
+    <View style={[listStyles.taskRow, listDepthStyle(themeStyles.metrics, item.depth)]} testID={testID}>
       <View style={listStyles.taskIcon}>
         <Icon
           color={item.checked ? mobileColors.primary : mobileColors.textMuted}
-          size={desktopEditorParity.listCheckboxSize}
+          size={themeStyles.metrics.editor.listCheckboxSize}
           weight={item.checked ? 'fill' : 'regular'}
         />
       </View>
@@ -464,8 +462,8 @@ function listMarker(variant: Exclude<EditorListProps['variant'], 'task'>, item: 
   return bulletSymbols[(item.depth ?? 0) % bulletSymbols.length]
 }
 
-function listDepthStyle(depth: number | undefined) {
-  return depth ? { paddingLeft: depth * desktopEditorParity.listIndentSize } : null
+function listDepthStyle(metrics: MobileMetrics, depth: number | undefined) {
+  return depth ? { paddingLeft: depth * metrics.editor.listIndentSize } : null
 }
 
 function shouldRenderTitleBlock(blocks: MobileEditorBlock[], title: string, enabled: boolean) {
@@ -479,7 +477,8 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
   const textStyles = StyleSheet.create({
     body: {
       flex: 1,
@@ -610,7 +609,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       color: mobileColors.text,
       fontFamily: 'Menlo',
       fontSize: desktopEditorParity.inlineCodeFontSize,
-      lineHeight: 20,
+      lineHeight: metrics.size(20),
     },
     container: {
       borderColor: mobileColors.border,
@@ -623,7 +622,7 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     language: {
       color: mobileColors.textMuted,
-      fontSize: 11,
+      fontSize: metrics.size(11),
       fontWeight: '600',
       marginBottom: mobileSpace.xs,
       textTransform: 'uppercase',
@@ -647,7 +646,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       borderRightWidth: StyleSheet.hairlineWidth,
       color: mobileColors.text,
       fontSize: desktopEditorParity.tableFontSize,
-      lineHeight: 20,
+      lineHeight: metrics.size(20),
       paddingHorizontal: desktopEditorParity.tableCellPaddingHorizontal,
       paddingVertical: desktopEditorParity.tableCellPaddingVertical,
     },
@@ -670,5 +669,5 @@ function createThemeStyles(mobileColors: MobileColors) {
       marginTop: mobileSpace.md,
     },
   })
-  return { mobileColors, textStyles, titleBlockStyles, inlineStyles, listStyles, quoteStyles, codeBlockStyles, dividerStyles, tableStyles }
+  return { mobileColors, metrics, textStyles, titleBlockStyles, inlineStyles, listStyles, quoteStyles, codeBlockStyles, dividerStyles, tableStyles }
 }

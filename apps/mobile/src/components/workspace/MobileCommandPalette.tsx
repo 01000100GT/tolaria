@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState, type ReactNode } from 'react'
@@ -15,7 +16,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import {
   mobileCommandGroupLabel,
   mobileCommandPaletteResults,
@@ -199,10 +200,11 @@ function CommandFooter() {
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     emptyState: {
-      minHeight: mobileCommandPaletteLayoutContract.emptyMinHeight,
+      minHeight: metrics.size(mobileCommandPaletteLayoutContract.emptyMinHeight),
       alignItems: 'center',
       justifyContent: 'center',
       padding: mobileSpace.lg,
@@ -213,27 +215,27 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     groupLabel: {
       color: mobileColors.textMuted,
-      fontSize: 11,
+      fontSize: metrics.size(11),
       fontWeight: '500',
-      lineHeight: 14,
-      paddingBottom: mobileCommandPaletteLayoutContract.groupLabelPaddingBottom,
-      paddingHorizontal: mobileCommandPaletteLayoutContract.groupLabelPaddingHorizontal,
-      paddingTop: mobileCommandPaletteLayoutContract.groupLabelPaddingTop,
+      lineHeight: metrics.size(14),
+      paddingBottom: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingBottom),
+      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingHorizontal),
+      paddingTop: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingTop),
     },
     group: {
       alignSelf: 'stretch',
       width: '100%',
     },
     input: {
-      minHeight: mobileCommandPaletteLayoutContract.inputMinHeight,
+      minHeight: metrics.size(mobileCommandPaletteLayoutContract.inputMinHeight),
       borderBottomColor: mobileColors.border,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderRadius: 0,
       borderWidth: 0,
       color: mobileColors.text,
-      fontSize: mobileCommandPaletteLayoutContract.inputTextSize,
-      paddingHorizontal: mobileCommandPaletteLayoutContract.inputPaddingHorizontal,
-      paddingVertical: mobileCommandPaletteLayoutContract.inputPaddingVertical,
+      fontSize: metrics.size(mobileCommandPaletteLayoutContract.inputTextSize),
+      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.inputPaddingHorizontal),
+      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.inputPaddingVertical),
     },
     results: {
       alignItems: 'stretch',
@@ -254,22 +256,22 @@ function createThemeStyles(mobileColors: MobileColors) {
       flexDirection: 'row',
       gap: mobileSpace.sm,
       justifyContent: 'space-between',
-      minHeight: mobileCommandPaletteLayoutContract.rowMinHeight,
-      paddingHorizontal: mobileCommandPaletteLayoutContract.rowPaddingHorizontal,
-      paddingVertical: mobileCommandPaletteLayoutContract.rowPaddingVertical,
+      minHeight: metrics.size(mobileCommandPaletteLayoutContract.rowMinHeight),
+      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.rowPaddingHorizontal),
+      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.rowPaddingVertical),
       width: '100%',
     },
     rowPressable: {
       alignSelf: 'stretch',
-      marginHorizontal: mobileCommandPaletteLayoutContract.rowMarginHorizontal,
+      marginHorizontal: metrics.size(mobileCommandPaletteLayoutContract.rowMarginHorizontal),
       width: 'auto',
     },
     rowLabel: {
       flex: 1,
       minWidth: 0,
       color: mobileColors.text,
-      fontSize: mobileCommandPaletteLayoutContract.rowTextSize,
-      lineHeight: 18,
+      fontSize: metrics.size(mobileCommandPaletteLayoutContract.rowTextSize),
+      lineHeight: metrics.size(18),
     },
     rowPressed: {
       opacity: 0.78,
@@ -279,8 +281,8 @@ function createThemeStyles(mobileColors: MobileColors) {
     },
     shortcut: {
       color: mobileColors.textMuted,
-      fontSize: mobileCommandPaletteLayoutContract.shortcutTextSize,
-      lineHeight: 16,
+      fontSize: metrics.size(mobileCommandPaletteLayoutContract.shortcutTextSize),
+      lineHeight: metrics.size(16),
     },
     footer: {
       alignItems: 'center',
@@ -288,8 +290,8 @@ function createThemeStyles(mobileColors: MobileColors) {
       gap: mobileSpace.md,
       borderTopColor: mobileColors.border,
       borderTopWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileCommandPaletteLayoutContract.footerPaddingHorizontal,
-      paddingVertical: mobileCommandPaletteLayoutContract.footerPaddingVertical,
+      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.footerPaddingHorizontal),
+      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.footerPaddingVertical),
     },
     footerText: {
       color: mobileColors.textMuted,
@@ -311,7 +313,7 @@ function createThemeStyles(mobileColors: MobileColors) {
       minHeight: 0,
       alignItems: 'center',
       justifyContent: 'flex-start',
-      paddingTop: mobileCommandPaletteLayoutContract.overlayPaddingTop,
+      paddingTop: metrics.size(mobileCommandPaletteLayoutContract.overlayPaddingTop),
     },
     palette: {
       flexShrink: 1,

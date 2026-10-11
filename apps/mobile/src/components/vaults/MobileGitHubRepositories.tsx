@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
@@ -70,18 +71,18 @@ function RepositoryRow({ repository, disabled, onPress }: { repository: GitHubRe
   </Button>
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const styles = StyleSheet.create({
-    backdrop: { flex: 1, padding: 24, backgroundColor: mobileColors.overlay, alignItems: 'center', justifyContent: 'center' },
+    backdrop: { flex: 1, padding: metrics.size(24), backgroundColor: mobileColors.overlay, alignItems: 'center', justifyContent: 'center' },
     panel: { width: '100%', maxWidth: 560, height: '85%', maxHeight: 640, borderRadius: 8, overflow: 'hidden' },
-    search: { padding: 16 },
+    search: { padding: metrics.size(16) },
     list: { flex: 1 },
-    repository: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, minHeight: 64, height: 'auto', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: mobileColors.border },
-    identity: { flex: 1, minWidth: 0, gap: 4 },
-    name: { color: mobileColors.text, fontSize: 15, fontWeight: '500' },
-    owner: { color: mobileColors.textMuted, fontSize: 12 },
-    empty: { color: mobileColors.textMuted, textAlign: 'center', padding: 24 },
-    error: { color: mobileColors.danger, paddingHorizontal: 16, paddingBottom: 12 },
+    repository: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: metrics.size(12), minHeight: 64, height: 'auto', paddingHorizontal: metrics.size(16), paddingVertical: metrics.size(10), borderRadius: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: mobileColors.border },
+    identity: { flex: 1, minWidth: 0, gap: metrics.size(4) },
+    name: { color: mobileColors.text, fontSize: metrics.size(15), fontWeight: '500' },
+    owner: { color: mobileColors.textMuted, fontSize: metrics.size(12) },
+    empty: { color: mobileColors.textMuted, textAlign: 'center', padding: metrics.size(24) },
+    error: { color: mobileColors.danger, paddingHorizontal: metrics.size(16), paddingBottom: metrics.size(12) },
   })
   return { mobileColors, styles }
 }

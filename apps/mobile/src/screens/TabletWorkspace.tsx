@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react'
@@ -21,7 +22,7 @@ import {
   type ReadOnlyWorkspaceRequest,
 } from '../workspace/readOnlyWorkspaceRepository'
 
-import { desktopPanelParity } from '../ui/desktopParity'
+
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { mobileText } from '../i18n/mobileText'
 import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
@@ -933,7 +934,8 @@ function actionSheetViewHandlers(props: ActionSheetHostProps) {
   }
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { panel: desktopPanelParity } = metrics
   const styles = StyleSheet.create({
     shell: {
       flex: 1,

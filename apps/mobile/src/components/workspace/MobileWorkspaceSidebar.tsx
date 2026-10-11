@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -16,8 +17,7 @@ import { MobileLayoutProbeReadout } from '../../qa/MobileLayoutProbeReadout'
 import { probeProps, useMobileLayoutProbe, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar } from '../../ui/MobilePanel'
-import { desktopPanelParity, desktopSidebarParity, desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type {
   MobileNote,
   MobileSidebarIcon,
@@ -112,7 +112,7 @@ export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
     <MobilePanel {...layoutProbe.probe('sidebar.panel')} style={styles.panel} testID="workspace-sidebar-panel">
       <MobileToolbar testID="sidebar-toolbar">
         <MobileIconButton accessibilityLabel={mobileText('sidebar.action.collapse')} testID="sidebar-collapse-action" onPress={onCollapse}>
-          <SidebarSimple color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
+          <SidebarSimple color={mobileColors.textMuted} size={themeStyles.metrics.toolbarAction.iconSize} />
         </MobileIconButton>
         <Text numberOfLines={1} style={styles.vaultTitle} testID="sidebar-toolbar-title">{title}</Text>
         {onOpenCommandPalette ? (
@@ -122,7 +122,7 @@ export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
               testID="sidebar-command-palette-action"
               onPress={onOpenCommandPalette}
             >
-              <Command color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
+              <Command color={mobileColors.textMuted} size={themeStyles.metrics.toolbarAction.iconSize} />
             </MobileIconButton>
           </View>
         ) : null}
@@ -439,20 +439,20 @@ function SidebarItem(props: SidebarItemProps) {
       onPress={onPress}
       style={[
         styles.item,
-        sidebarItemPadding(Boolean(count)),
+        sidebarItemPadding(themeStyles.metrics.sidebar, Boolean(count)),
         active ? { backgroundColor: activeBackgroundColor } : null,
       ]}
       testID={`sidebar-item-${slug}`}
     >
       <View
         {...probeProps(layoutProbe, `${metricId}.content`)}
-        style={[styles.itemContent, sidebarItemContentHeight(Boolean(count))]}
+        style={[styles.itemContent, sidebarItemContentHeight(themeStyles.metrics.sidebar, Boolean(count))]}
       >
         {icon}
         <Text
           {...probeProps(layoutProbe, `${metricId}.label`)}
           numberOfLines={1}
-          style={[styles.itemText, nativeItemTextStyle, active ? { color: activeColor } : null]}
+          style={[styles.itemText, themeStyles.nativeItemTextStyle, active ? { color: activeColor } : null]}
           testID={`sidebar-item-${slug}-label`}
         >
           {label}
@@ -497,13 +497,13 @@ function SectionTitle({
   return (
     <View
       {...probeProps(layoutProbe, `${metricId}.row`)}
-      style={[styles.sectionTitleRow, nativeSectionTitleRowStyle, count ? styles.sectionTitleRowWithCount : styles.sectionTitleRowRegular]}
+      style={[styles.sectionTitleRow, themeStyles.nativeSectionTitleRowStyle, count ? styles.sectionTitleRowWithCount : styles.sectionTitleRowRegular]}
       testID={`sidebar-section-title-${sectionId}`}
     >
-      <CaretDown color={mobileColors.textMuted} size={11} />
+      <CaretDown color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />
       <Text
         {...probeProps(layoutProbe, `${metricId}.label`)}
-        style={[styles.sectionTitle, nativeSectionTitleTextStyle]}
+        style={[styles.sectionTitle, themeStyles.nativeSectionTitleTextStyle]}
         testID={`sidebar-section-title-text-${sectionId}`}
       >
         {label}
@@ -523,7 +523,7 @@ function SectionTitle({
           testID={`sidebar-section-visibility-${sectionId}`}
           onPress={onVisibility}
         >
-          <Eye color={mobileColors.textMuted} size={12} />
+          <Eye color={mobileColors.textMuted} size={themeStyles.metrics.size(12)} />
         </MobileIconButton>
       ) : null}
       {onCreate ? (
@@ -532,7 +532,7 @@ function SectionTitle({
           testID={`sidebar-section-create-${sectionId}`}
           onPress={onCreate}
         >
-          <Plus color={mobileColors.textMuted} size={12} />
+          <Plus color={mobileColors.textMuted} size={themeStyles.metrics.size(12)} />
         </MobileIconButton>
       ) : null}
     </View>
@@ -542,7 +542,8 @@ function SectionTitle({
 function sidebarIcon(themeStyles: ReturnType<typeof createThemeStyles>, icon: MobileSidebarIcon, tone?: MobileNote['typeTone'] | 'primary') {
   const color = sidebarIconColor(themeStyles, tone)
 
-  return mobilePhosphorIconElement(icon, { color, size: 15 }) ?? <FileText color={color} size={15} />
+  const size = themeStyles.metrics.size(15)
+  return mobilePhosphorIconElement(icon, { color, size }) ?? <FileText color={color} size={size} />
 }
 
 function sidebarIconColor(themeStyles: ReturnType<typeof createThemeStyles>, tone?: MobileNote['typeTone'] | 'primary') {
@@ -580,20 +581,7 @@ function sidebarSectionLabel(id: SidebarSectionId, fallback: SidebarDisplayLabel
   return fallback
 }
 
-const nativeRowStyles = StyleSheet.create({
-  sectionTitleRow: { minHeight: 30 },
-})
-
-const nativeTextStyles = StyleSheet.create({
-  itemText: { lineHeight: 18 },
-  sectionTitle: { lineHeight: 14 },
-})
-
-const nativeItemTextStyle = Platform.OS === 'web' ? null : nativeTextStyles.itemText
-const nativeSectionTitleRowStyle = Platform.OS === 'web' ? null : nativeRowStyles.sectionTitleRow
-const nativeSectionTitleTextStyle = Platform.OS === 'web' ? null : nativeTextStyles.sectionTitle
-
-function sidebarItemPadding(hasCount: boolean) {
+function sidebarItemPadding(desktopSidebarParity: MobileMetrics['sidebar'], hasCount: boolean) {
   const padding = hasCount ? desktopSidebarParity.itemPadding.withCount : desktopSidebarParity.itemPadding.regular
   const contentHeight = hasCount ? desktopSidebarParity.itemContentHeight.withCount : desktopSidebarParity.itemContentHeight.regular
 
@@ -606,12 +594,18 @@ function sidebarItemPadding(hasCount: boolean) {
   }
 }
 
-function sidebarItemContentHeight(hasCount: boolean) {
+function sidebarItemContentHeight(desktopSidebarParity: MobileMetrics['sidebar'], hasCount: boolean) {
   const minHeight = hasCount ? desktopSidebarParity.itemContentHeight.withCount : desktopSidebarParity.itemContentHeight.regular
   return { height: minHeight, minHeight }
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { sidebar: desktopSidebarParity, panel: desktopPanelParity, type: mobileType, space: mobileSpace } = metrics
+  const nativeStyles = StyleSheet.create({
+    itemText: { lineHeight: metrics.size(18) },
+    sectionTitleRow: { minHeight: metrics.size(30) },
+    sectionTitle: { lineHeight: metrics.size(14) },
+  })
   const panelStyles = StyleSheet.create({
     content: { padding: 0 },
     groupSection: { paddingHorizontal: desktopSidebarParity.sectionHorizontalPadding },
@@ -695,5 +689,10 @@ function createThemeStyles(mobileColors: MobileColors) {
     ...itemStyles,
     ...sectionTitleStyles,
   } as const
-  return { mobileColors, panelStyles, itemStyles, sectionTitleStyles, styles }
+  return {
+    mobileColors, metrics, panelStyles, itemStyles, sectionTitleStyles, styles,
+    nativeItemTextStyle: Platform.OS === 'web' ? null : nativeStyles.itemText,
+    nativeSectionTitleRowStyle: Platform.OS === 'web' ? null : nativeStyles.sectionTitleRow,
+    nativeSectionTitleTextStyle: Platform.OS === 'web' ? null : nativeStyles.sectionTitle,
+  }
 }

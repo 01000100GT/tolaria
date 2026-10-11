@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { StyleSheet, View } from 'react-native'
@@ -6,7 +7,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import { mobileWorkspaceFormSectionLayoutContract } from './MobileWorkspaceActionSheetModel'
 
 type MobileViewDisplayPropertiesPickerProps = {
@@ -125,7 +126,8 @@ function testIdSegment(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '') || 'property'
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { type: mobileType, space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     empty: {
       color: mobileColors.textMuted,
@@ -154,11 +156,11 @@ function createThemeStyles(mobileColors: MobileColors) {
       borderColor: mobileColors.primary,
     },
     picker: {
-      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      gap: metrics.size(mobileWorkspaceFormSectionLayoutContract.gap),
       borderColor: mobileColors.border,
       borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
       borderWidth: StyleSheet.hairlineWidth,
-      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+      padding: metrics.size(mobileWorkspaceFormSectionLayoutContract.padding),
     },
   })
   return { mobileColors, styles }

@@ -322,6 +322,14 @@ palette-dependent style factory. `useEditorAppearance` changes WebView CSS witho
 resynchronizing the document. The generated palette is checked against desktop
 CSS in the scoped mobile unit suite; see ADR 0213.
 
+`mobileMetrics` derives Standard and Larger metric sets from desktop parity
+tokens. The appearance context publishes the persisted `uiScale`; style
+factories receive colors and metrics, while `useMobileMetrics` serves geometry
+and icon consumers. Fonts, spacing and controls scale together without changing
+panel widths, strokes, radii or document state. Rich-editor CSS shares this
+recipe. Native measured density checks complement canonical token tests; see
+ADR 0215.
+
 Current primitives:
 
 | Primitive | Purpose |

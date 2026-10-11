@@ -49,13 +49,13 @@ final class TabletKeyboardTests: XCTestCase {
     XCUIDevice.shared.orientation = .portrait
     waitUntil { app.frame.width < app.frame.height }
     assertFormattingAboveKeyboard(app)
-    element(app, "editor-format-menu-headings").tap()
     let heading = element(app, "editor-format-heading-2")
+    if !heading.isHittable { element(app, "editor-formatting-toolbar").swipeLeft() }
     XCTAssertTrue(heading.waitForExistence(timeout: 5))
     XCTAssertTrue(heading.isHittable)
     XCTAssertLessThanOrEqual(heading.frame.maxY, keyboard.frame.minY + 1)
     heading.tap()
-    waitUntil { !heading.exists }
+    XCTAssertTrue(element(app, "editor-formatting-toolbar").exists)
   }
 
   func testOpeningFormDismissesBackgroundEditorKeyboard() {
@@ -86,13 +86,13 @@ final class TabletKeyboardTests: XCTestCase {
   }
 
   private func assertFormattingAboveKeyboard(_ app: XCUIApplication) {
-    let headingMenu = element(app, "editor-format-menu-headings")
+    let headingMenu = element(app, "editor-format-bold")
     let keyboard = app.keyboards.firstMatch
     waitUntil { headingMenu.frame.maxY <= keyboard.frame.minY + 1 }
     XCTAssertTrue(headingMenu.isHittable)
     XCTAssertEqual(headingMenu.frame.height, 44, accuracy: 1)
     print("TOOLBAR_KEYBOARD_BOUNDS keyboard=\(keyboard.frame) formatting=\(headingMenu.frame)")
-    let screenshot = XCTAttachment(screenshot: app.screenshot())
+    let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
     screenshot.lifetime = .keepAlways
     add(screenshot)
   }
@@ -106,7 +106,7 @@ final class TabletKeyboardTests: XCTestCase {
     XCTAssertTrue(field.waitForExistence(timeout: 30))
     let sheet = element(app, "workspace-action-sheet-createView")
     XCTAssertEqual(sheet.frame.width, 640, accuracy: 1)
-    XCTAssertEqual(field.frame.minX - sheet.frame.minX, 16, accuracy: 1)
+    XCTAssertEqual(field.frame.minX - sheet.frame.minX, 17.6, accuracy: 1)
     field.tap()
     field.typeText("Keyboard regression")
     assertFooterAboveKeyboard(app)
@@ -131,7 +131,7 @@ final class TabletKeyboardTests: XCTestCase {
     waitUntil { create.frame.maxY <= keyboard.frame.minY + 1 }
     XCTAssertTrue(create.isHittable)
     print("KEYBOARD_BOUNDS keyboard=\(keyboard.frame) create=\(create.frame)")
-    let screenshot = XCTAttachment(screenshot: app.screenshot())
+    let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
     screenshot.lifetime = .keepAlways
     add(screenshot)
   }

@@ -1,3 +1,4 @@
+import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
@@ -7,7 +8,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileChip } from '../../ui/MobileChip'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileSpace, mobileType } from '../../ui/tokens'
+
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import type { MobileWorkspaceActionSheetProps } from './MobileWorkspaceActionSheet'
 import { MobileSourceBlockMoreActions } from './MobileSourceBlockMoreActions'
@@ -188,7 +189,8 @@ function MoreActionRow({
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors) {
+function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { toolbarAction: desktopToolbarActionParity, space: mobileSpace, type: mobileType } = metrics
   const styles = StyleSheet.create({
     actionIcon: {
       width: desktopToolbarActionParity.iconSize,
