@@ -212,6 +212,14 @@ rejected instead of becoming all-note views. Evaluation and serialization remain
 in `mobileSavedViews.ts`. Sidebar type discovery has no arbitrary count cap and
 uses the desktop pluralization helper, while explicit type labels take priority.
 
+`MobilePanelSafeArea` owns each tablet pane's top inset, background and divider;
+the footer owns the bottom inset. This keeps native system areas visually joined
+to their panels without placing interactive controls under system chrome.
+`MobileGitHubRepositories` uses a bounded, searchable FlatList picker, and
+`MobileDeviceCode` copies authorization codes without routing secrets through the
+diagnostic clipboard helper. Inspector relationship groups expose their own add
+action, and native option rows use explicit styles on the RNR button primitive.
+
 Storage verification can also run against an optimized local binary using the
 explicit `TOLARIA_QA` Swift condition (ADR 0208). A read-only native capability
 enables the existing loopback-only probes without Metro or development JavaScript.

@@ -1177,6 +1177,11 @@ files:
     mobile.vaults.signOut: c87aacf5673fada1108c9f809d354311
     mobile.vaults.notConfigured: 2d33e8a8e25632cf621aafc08d241f78
     mobile.vaults.repositoryUrl: 03f473f095af3f5db1b6cf6a25dd5cf7
+    mobile.vaults.codeCopied: 6374f6f0a9e670419393ec54958d772a
+    mobile.vaults.copyFailed: 4dd610ff449cd68b7f8cec0365ec0480
+    mobile.vaults.searchRepositories: 48d7b48bf6921b89a9bb19bd554bb471
+    mobile.vaults.privateRepository: 89853b01145b46e87e0c9eb6371eb782
+    mobile.vaults.publicRepository: f97a69e726782005f0d28bbaa678db47
     mobile.vaults.clone: 47264ada9bf203c6967098ce1bb23d5f
     mobile.vaults.cloning: b1f52f7c8685c73d7808f5f419448a0b
     mobile.vaults.repositories: de1f88f6f7789baf4d35f2919f100fc3

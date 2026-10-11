@@ -8,6 +8,13 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['native safe-area continuity and panel divider screenshots'],
+    contracts: ['desktopPanelParity', 'desktopToolbarParity'],
+    desktopSource: 'Desktop shell panel backgrounds and borders; native-only safe-area insets',
+    mobileFile: 'src/ui/MobilePanelSafeArea.tsx',
+    surface: 'Edge-to-edge panel surfaces (platform adaptation)',
+  },
+  {
     assertions: ['TabletKeyboardTests: measured software-keyboard clearance, rotation, and editor-to-form focus handoff'],
     contracts: ['desktopPanelParity', 'desktopToolbarParity'],
     desktopSource: 'Desktop dialog and editor viewport layout; native-only keyboard avoidance preserves their existing visual tokens',

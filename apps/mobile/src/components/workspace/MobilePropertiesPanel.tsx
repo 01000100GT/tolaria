@@ -5,7 +5,8 @@ import { mobileCopy, mobileText } from '../../i18n/mobileText'
 import { type MobileLayoutProbe, probeProps, useMobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import { desktopRelationshipParity } from '../../ui/desktopParity'
 import { MobileChip } from '../../ui/MobileChip'
-import { MobilePanel, MobileToolbar, MobileToolbarTitle } from '../../ui/MobilePanel'
+import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
+import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePropertyRow } from '../../ui/MobilePropertyRow'
 import { mobileColors } from '../../ui/tokens'
 import { mobileFrontmatterState, needsMobileFrontmatterNotice } from '../../workspace/mobileFrontmatterState'
@@ -88,6 +89,12 @@ export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
     >
       <MobileToolbar testID="properties-toolbar">
         <MobileToolbarTitle testID="properties-toolbar-title" title={mobileCopy.properties} variant="inspector" />
+        <MobileToolbarSpacer />
+        {props.note ? <MobileIconButton
+          accessibilityLabel={mobileText('inspector.properties.addProperty')}
+          testID="properties-toolbar-add"
+          onPress={() => props.onAddProperty()}
+        ><Plus size={16} color={mobileColors.textMuted} /></MobileIconButton> : null}
       </MobileToolbar>
       <ScrollView
         {...probeProps(propertyLayoutProbe.probe, 'properties.scroll')}
@@ -288,6 +295,11 @@ function RelationshipPropertyRows({ relationshipSlots, props }: { relationshipSl
             typeDefinitions={typeDefinitions}
             onSelectNote={onSelectNote}
           />
+          <PropertyActionRow
+            label={mobileText('inspector.relationship.add')}
+            testID={`relationship-add-${testIdSegment(relationship.key ?? relationshipHeading(relationship))}`}
+            onPress={() => onAddRelationship(relationship.key ?? relationshipHeading(relationship))}
+          />
         </PropertySection>
       ))}
       {relationshipSlots.map((slot) => (
@@ -353,7 +365,7 @@ function MissingTypeButton({ onPress, typeName }: { onPress: () => void; typeNam
       accessibilityHint={mobileText('sidebar.action.createType')}
       accessibilityLabel={label}
       accessibilityRole="button"
-      style={({ pressed }) => [typeStyles.missingButton, pressed ? propertyStyles.editableValuePressed : null]}
+      style={typeStyles.missingButton}
       testID="missing-type-warning"
       onPress={onPress}
     >
@@ -396,7 +408,7 @@ function EditableTagsValue({ labels, onPress }: { labels: string[]; onPress: () 
     <Pressable
       accessibilityLabel="Tags"
       accessibilityRole="button"
-      style={({ pressed }) => [propertyStyles.emptyEditableValue, pressed ? propertyStyles.editableValuePressed : null]}
+      style={propertyStyles.emptyEditableValue}
       testID="property-tags-edit"
       onPress={onPress}
     >
@@ -439,7 +451,7 @@ function EditablePropertyRow({
         <Pressable
           accessibilityLabel={`${property.label}: ${display.text}`}
           accessibilityRole="button"
-          style={({ pressed }) => [propertyStyles.editableValue, pressed ? propertyStyles.editableValuePressed : null]}
+          style={propertyStyles.editableValue}
           testID={`${testId}-edit`}
           onPress={() => onEditProperty(noteId, property.key, property.value)}
         >
@@ -639,10 +651,7 @@ function PlaceholderRelationshipSection({
       <Pressable
         accessibilityLabel={mobileText('inspector.relationship.add')}
         accessibilityRole="button"
-        style={({ pressed }) => [
-          propertyStyles.placeholderRelationshipButton,
-          pressed ? propertyStyles.editableValuePressed : null,
-        ]}
+        style={propertyStyles.placeholderRelationshipButton}
         testID={`${testID}-add`}
         onPress={onPress}
       >
@@ -795,11 +804,7 @@ function ReferenceValues({
           accessibilityLabel={note.title}
           accessibilityRole="button"
           {...propertyProbe(layoutProbe, referenceRowMetricId(group, note), 'row')}
-          style={({ pressed }) => [
-            referenceStyles.row,
-            relationshipRowTone(note.typeTone),
-            pressed ? propertyStyles.editableValuePressed : null,
-          ]}
+          style={[referenceStyles.row, relationshipRowTone(note.typeTone)]}
           testID={`inspector-reference-row-${testIdSegment(note.title)}`}
           onPress={() => onSelectNote(note.id)}
         >

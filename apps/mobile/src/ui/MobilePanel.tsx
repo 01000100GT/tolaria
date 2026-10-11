@@ -55,6 +55,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
+    flexShrink: 1,
+    minWidth: 0,
     color: mobileColors.text,
     fontSize: desktopToolbarParity.titleFontSize,
     fontWeight: desktopToolbarParity.titleFontWeight,

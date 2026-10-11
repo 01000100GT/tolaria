@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps 
 import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import Reanimated from 'react-native-reanimated'
 import { GestureDetector } from 'react-native-gesture-handler'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { MobilePanelSafeArea } from '../ui/MobilePanelSafeArea'
 import { CaretLeft, CaretRight, SidebarSimple } from 'phosphor-react-native'
 import { MobileCommandPalette } from '../components/workspace/MobileCommandPalette'
 import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
@@ -139,7 +141,9 @@ export function TabletWorkspace({
         {...controller}
         onOpenCreateNote={onCreateNote}
       />
-      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
+      <SafeAreaView edges={['bottom']} style={{ backgroundColor: mobileColors.sidebar }}>
+        <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
+      </SafeAreaView>
     </View>
   )
 }
@@ -432,7 +436,7 @@ function TabletSidebarHost({
       pointerEvents={gestures.showSidebar ? 'auto' : 'none'}
       style={styles.panelHost}
     >
-      <MobileWorkspaceSidebar
+      <MobilePanelSafeArea sidebar><MobileWorkspaceSidebar
         activeFolderId={activeFolderId}
         activeItemId={activeItemId}
         layoutProbe={layoutProbe}
@@ -457,7 +461,7 @@ function TabletSidebarHost({
           onSelectSidebarItem(selection)
           gestures.finishSidebarNavigation()
         }}
-      />
+      /></MobilePanelSafeArea>
     </View>
   )
 }
@@ -473,7 +477,7 @@ function TabletNoteListHost(props: TabletPanelHostProps) {
       pointerEvents={gestures.noteListVisible ? 'auto' : 'none'}
       style={styles.panelHost}
     >
-      <MobileNoteListPanel {...tabletNoteListPanelProps(props)} />
+      <MobilePanelSafeArea><MobileNoteListPanel {...tabletNoteListPanelProps(props)} /></MobilePanelSafeArea>
     </View>
   )
 }
@@ -564,7 +568,7 @@ type TabletEditorPanelHostProps = Pick<
 }
 
 function TabletEditorPanelHost(props: TabletEditorPanelHostProps) {
-  return <TabletEditorPanel {...tabletEditorPanelProps(props)} />
+  return <MobilePanelSafeArea divider="none"><TabletEditorPanel {...tabletEditorPanelProps(props)} /></MobilePanelSafeArea>
 }
 
 function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentProps<typeof TabletEditorPanel> {
@@ -631,7 +635,7 @@ function TabletPropertiesPanelHost(props: TabletPropertiesPanelHostProps) {
       style={[styles.panelHost, styles.propertiesPanelHost, gestures.propertiesMotionStyle]}
       testID="tablet-properties-panel-host"
     >
-      <MobilePropertiesPanel {...propertiesPanelProps(props, referenceGroups)} />
+      <MobilePanelSafeArea divider="left"><MobilePropertiesPanel {...propertiesPanelProps(props, referenceGroups)} /></MobilePanelSafeArea>
     </Reanimated.View>
   )
 }

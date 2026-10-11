@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Linking, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { PhoneWorkspace, type PhoneWorkspaceState } from './PhoneWorkspace'
 import { TabletWorkspace } from './TabletWorkspace'
 import type { TabletTransitionProbeMode } from './tabletWorkspaceTypes'
@@ -8,9 +9,7 @@ import {
   fetchDevVaultWorkspaceState,
   type DevVaultWorkspaceState,
 } from '../workspace/devVaultWorkspaceRepository'
-import {
-  type NativeWorkspaceSelection,
-} from '../workspace/nativeWorkspacePicker'
+import type { NativeWorkspaceSelection } from '../workspace/nativeWorkspacePicker'
 import { useNativeWorkspace } from '../workspace/useNativeWorkspace'
 import { MobileVaultDisplayContext } from '../workspace/MobileVaultContext'
 import { initialMobileEditorStateFromMode } from './mobileEditorMode'
@@ -179,7 +178,7 @@ export function MobileUiLab() {
     <MobileVaultDisplayContext.Provider value={{ source, rootUri: repositoryRequest.vaultRootUri }}>
       {isWideEnoughForTablet
         ? <TabletWorkspace key={workspaceKey} {...sharedProps} onTableOfContentsScrollProof={qa.tableOfContentsProbe ? handleTableOfContentsScrollProof : undefined} />
-        : <PhoneWorkspace key={workspaceKey} {...sharedProps} initialState={currentPhoneState(searchParams)} />}
+        : <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: mobileColors.sidebar }}><PhoneWorkspace key={workspaceKey} {...sharedProps} initialState={currentPhoneState(searchParams)} /></SafeAreaView>}
     </MobileVaultDisplayContext.Provider>
   )
 }

@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { CheckCircle } from 'phosphor-react-native'
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import { Button } from '../ui/button'
+import { pluralizeType } from '../../../../../src/shared/typeLabels'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
@@ -28,13 +30,14 @@ export function MobileTypeVisibilityEditor({
           const label = typeVisibilityLabel(typeName, definition)
 
           return (
-            <Pressable
+            <Button
               accessibilityLabel={toggleTypeVisibilityLabel(label)}
               accessibilityRole="switch"
               accessibilityState={{ checked: visible }}
               aria-checked={visible}
               key={typeName}
-              style={({ pressed }) => [styles.visibilityRow, pressed ? styles.visibilityRowPressed : null]}
+              variant="ghost"
+              style={styles.visibilityRow}
               testID={`workspace-type-visibility-${slugifyTypeVisibilityId(typeName)}`}
               onPress={() => onToggleTypeVisibility(typeName)}
             >
@@ -49,7 +52,7 @@ export function MobileTypeVisibilityEditor({
                 <Text style={styles.visibilityDescription}>{mobileText('sidebar.section.showInSidebar')}</Text>
               </View>
               <CheckCircle color={visible ? mobileColors.primary : mobileColors.textFaint} size={16} weight={visible ? 'fill' : 'regular'} />
-            </Pressable>
+            </Button>
           )
         })}
       </View>
@@ -87,14 +90,7 @@ function compareOptionalOrder(left: number | null | undefined, right: number | n
 }
 
 function typeVisibilityLabel(typeName: string, definition: MobileTypeDefinitions[string]) {
-  return definition.label ?? pluralizedTypeLabel(typeName)
-}
-
-function pluralizedTypeLabel(typeName: string) {
-  const cleanType = typeName.trim()
-  if (cleanType.endsWith('s')) return cleanType
-  if (cleanType.endsWith('y')) return `${cleanType.slice(0, -1)}ies`
-  return `${cleanType}s`
+  return definition.label ?? pluralizeType(typeName.trim())
 }
 
 function toggleTypeVisibilityLabel(label: string) {
@@ -130,14 +126,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   visibilityRow: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderRadius: 6,
     flexDirection: 'row',
     gap: mobileSpace.sm,
     padding: mobileSpace.sm,
-  },
-  visibilityRowPressed: {
-    backgroundColor: mobileColors.control,
+    height: 52,
+    justifyContent: 'flex-start',
   },
   visibilitySection: {
     borderColor: mobileColors.border,

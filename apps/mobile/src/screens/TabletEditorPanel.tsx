@@ -1,4 +1,4 @@
-import { Code, DotsThree, FileText, SidebarSimple, Star } from 'phosphor-react-native'
+import { Code, DotsThree, SidebarSimple, Star } from 'phosphor-react-native'
 import {
   ScrollView,
   View,
@@ -14,7 +14,8 @@ import { MobileWysiwygMarkdownEditor } from '../components/workspace/MobileWysiw
 import { mobileText } from '../i18n/mobileText'
 import { MobileChip } from '../ui/MobileChip'
 import { MobileIconButton } from '../ui/MobileIconButton'
-import { MobilePanel, MobileToolbar, MobileToolbarTitle } from '../ui/MobilePanel'
+import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
+import { noteTypeColor } from '../components/workspace/mobileWorkspaceTone'
 import { desktopEditorParity, desktopToolbarActionParity } from '../ui/desktopParity'
 import { mobileColors } from '../ui/tokens'
 import { MobileLayoutProbeReadout } from '../qa/MobileLayoutProbeReadout'
@@ -267,10 +268,10 @@ function EditorToolbar({
   return (
     <MobileToolbar testID="editor-toolbar">
       {leading}
-      <FileText color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
       <EditorToolbarIcon fileMode={fileMode} note={note} typeDefinitions={typeDefinitions} />
       <MobileToolbarTitle testID="editor-toolbar-title" title={note.title} />
       {chipLabel ? <MobileChip label={chipLabel} tone="gray" /> : null}
+      <MobileToolbarSpacer />
       <EditorToolbarActions
         editing={editing}
         editingMode={editingMode}
@@ -291,10 +292,10 @@ function EditorToolbarIcon({
   note,
   typeDefinitions,
 }: Pick<EditorToolbarProps, 'fileMode' | 'note' | 'typeDefinitions'>) {
-  if (fileMode === 'markdown') {
+  if (fileMode === 'markdown' && note.icon?.trim()) {
     return (
       <MobileNoteIcon
-        color={mobileColors.textMuted}
+        color={noteTypeColor(note.typeTone)}
         icon={note.icon}
         size={desktopToolbarActionParity.iconSize}
         testID="editor-toolbar-note-icon"

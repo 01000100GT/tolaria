@@ -13,7 +13,7 @@ export function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <SafeAreaView style={{ backgroundColor: mobileColors.app, flex: 1 }}>
+        <SafeAreaView edges={['left', 'right']} style={{ backgroundColor: mobileColors.app, flex: 1 }}>
           <StatusBar style="dark" />
           <MobileVaultProvider><MobileUiLab /></MobileVaultProvider>
         </SafeAreaView>

@@ -42,8 +42,8 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 4 | Editor-focused arrow keys never change selected note | In progress |
 | 5 | Restore desktop-style editor slash commands | Pending |
 | 6 | Inline find in note, with visible match navigation/highlighting | Pending |
-| 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Cap/pluralization fixed; native verification pending |
-| 8 | Saved views apply their actual persisted filters | Parser fixed; native verification pending |
+| 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
+| 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
 | 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Pending |
 | 10 | Breadcrumbs use the note's configured type icon and color | Pending |
 | 11 | Favorite and other local actions respond without avoidable delay | Pending |
@@ -51,7 +51,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Pending |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
 | 15 | Explain and verify local Git and remote sync behavior | Code inspected; native remote QA pending |
-| 16 | Type-visibility picker has properly aligned native option rows | Pending |
+| 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Pending |
 | 18 | Essential settings chosen from an audit of desktop settings | Pending |
 | 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Pending |
@@ -100,3 +100,41 @@ measurements, commits and remaining limitations as each batch completes.
 - Localization: no UI copy changes. PostHog: no event needed because these fixes
   restore existing type navigation and view filtering, not new user actions.
 - Native integration and exact-SHA cloud verification are not claimed here.
+
+### Native layout and controls
+
+- First verified commit: `694a3e1e1`; mobile lint, typecheck and all 1,320
+  scoped mobile tests passed. Staged CodeScene delta: no issues, nine files
+  checked. No full desktop/Rust suite was run.
+- iPad Release simulator: saved view Active Procedures shows only its single
+  matching procedure; switching back to All Notes restores all three fixture
+  notes. Type visibility toggles update the actual sidebar.
+- `TabletReviewLayoutTests`: red before rebuild, green after rebuild, two tests.
+  Native picker rows measure 52 points high, at least 250 wide, separated by at
+  least 4 points. Existing-relationship add opens its correctly keyed picker.
+- Native screenshots confirm panel backgrounds and dividers continue through the
+  status-bar area, and the footer background continues under the home indicator.
+  Breadcrumb type icon is green for Essay; actions align at the right edge.
+- The keyboard root controller no longer gives bare arrows priority over text
+  input and excludes them while a native text responder is focused. Manual CUA
+  hardware-keyboard input confirms Up moves from the third rich-text line to the
+  second, with a typed marker appearing there and no selected-note change.
+  XCUITest `typeKey` did not reliably deliver Command-A/arrows to this simulator;
+  its experimental test was discarded, not reported as passing. Source-editor
+  manual verification and post-edit persistence remain in the final QA batch.
+- GitHub authorization-code copying and repository picker are implemented;
+  repository search has three behavioral tests. An authenticated native session
+  has not yet verified those two controls. No authentication code is logged.
+- Localization: Lara translated the five new keys into all 19 configured target
+  locales; the additional Belarusian Latin locale is maintained explicitly.
+- Native-controls batch file manifest is `native-controls-manifest.txt` in the
+  evidence directory. All touched scorable files remain at CodeScene 10; the
+  declarative parity inventory is unscorable with no findings. Each new code
+  file scores 10. Each TypeScript file reports five successful local analyzers,
+  one target each, zero findings at all severities and no errors; the Swift
+  layout test reports successful Semgrep, Trivy and Lizard with zero findings.
+  Existing zero baselines remain zero; MobileUiLab's one Info finding is fixed.
+  Locale files are translated data, validated across all 21 catalogs, not
+  executable configuration. Cloud checks remain unavailable under the exception.
+- PostHog: no new event needed for repairs to existing controls, navigation and
+  styling. No note content, credentials or repository names are instrumented.
