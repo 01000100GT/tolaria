@@ -12,6 +12,8 @@ describe('mobile editor commands', () => {
 
     expect(mobileEditorCommandCapabilities(commands)).toEqual({
       blur: false,
+      findInNote: false,
+      replaceInNote: false,
       pastePlainText: false,
       save: true,
       toggleRawEditor: false,
@@ -21,6 +23,8 @@ describe('mobile editor commands', () => {
   it('marks every supplied editor command as available', () => {
     const commands = {
       blur: vi.fn(),
+      findInNote: vi.fn(),
+      replaceInNote: vi.fn(),
       pastePlainText: vi.fn(),
       save: vi.fn(),
       toggleRawEditor: vi.fn(),
@@ -28,6 +32,8 @@ describe('mobile editor commands', () => {
 
     expect(mobileEditorCommandCapabilities(commands)).toEqual({
       blur: true,
+      findInNote: true,
+      replaceInNote: true,
       pastePlainText: true,
       save: true,
       toggleRawEditor: true,

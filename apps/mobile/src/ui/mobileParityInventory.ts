@@ -8,6 +8,41 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['TabletEditorFindSlashTests: inline placement, 44-point controls, next-match and replacement'],
+    contracts: ['desktopEditorParity', 'desktopToolbarActionParity'],
+    desktopSource: 'RawEditorFindBar and editorFind: inline search, case/regex options and replace controls',
+    mobileFile: 'src/components/workspace/MobileEditorFindBar.tsx',
+    surface: 'Inline Find and Replace (native touch targets)',
+  },
+  {
+    assertions: ['TenTap Find tests: decorations, navigation, replace/undo and safe regex'],
+    contracts: ['desktopEditorParity'],
+    desktopSource: 'Rich editor Find decorations and editor-local command dispatch',
+    mobileFile: 'src/components/workspace/MobileWysiwygFind.native.tsx',
+    surface: 'Native rich-editor Find state subscriber',
+  },
+  {
+    assertions: ['Source Find syntax-token preservation tests', 'native long-document source Find recheck'],
+    contracts: ['desktopEditorParity'],
+    desktopSource: 'RawEditorFindBar and shared editorFind match/replacement utilities',
+    mobileFile: 'src/components/workspace/useMobileSourceFind.tsx',
+    surface: 'Source-editor inline Find integration',
+  },
+  {
+    assertions: ['editor-command registry capability tests', 'native overflow Find opens inline without a modal'],
+    contracts: ['desktopToolbarActionParity'],
+    desktopSource: 'Desktop command routing to the mounted editor',
+    mobileFile: 'src/components/workspace/MobileEditorActionRedirect.tsx',
+    surface: 'Editor-local action routing (no rendered chrome)',
+  },
+  {
+    assertions: ['TenTap slash tests: all supported commands, keyboard selection, dismissal and undo', 'native touch-to-Markdown heading test'],
+    contracts: ['desktopEditorParity', 'desktopToolbarActionParity'],
+    desktopSource: 'TolariaSlashMenu command labels and editor block actions; native touch list above formatting strip',
+    mobileFile: 'src/components/workspace/MobileWysiwygSlashMenu.native.tsx',
+    surface: 'Native slash-command choices',
+  },
+  {
     assertions: ['native safe-area continuity and panel divider screenshots'],
     contracts: ['desktopPanelParity', 'desktopToolbarParity'],
     desktopSource: 'Desktop shell panel backgrounds and borders; native-only safe-area insets',

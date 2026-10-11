@@ -5,17 +5,19 @@ import {
   type NativeSyntheticEvent,
   type TextInputScrollEventData,
   type TextInputSelectionChangeEventData,
+  type TextInput,
   View,
 } from 'react-native'
 import Animated, { useAnimatedStyle, useEvent, useSharedValue } from 'react-native-reanimated'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react'
+import { useMobileSourceFind } from './useMobileSourceFind'
 import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { MobileChip } from '../../ui/MobileChip'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 
 import { createSourceEditorStyles } from './MobileMarkdownSourceEditorStyles'
-import { markdownSyntaxTokens } from './MobileMarkdownSourceSyntax'
+import { sourceFindSyntaxTokens, type SourceFindRange } from './MobileSourceFindHighlight'
 import { useWorkspaceSyncEditor } from '../../workspace/workspaceSyncEditors'
 import {
   activeMobileEmojiShortcodeQuery,
@@ -175,6 +177,9 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
     onUpdateContent: editorDraft.updateContent,
   })
   const frontmatterIssue = mobileSourceFrontmatterIssue(editorDraft.content)
+  const findInputRef = useRef<TextInput>(null)
+  const find = useMobileSourceFind({ input: findInputRef, content: editorDraft.content, register: onRegisterEditorCommands,
+    onUpdate: (content) => editorDraft.updateContent(note.id, content) })
   useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
     pastePlainText: () => {
       void autocomplete.applyFormat('pastePlainText')
@@ -185,9 +190,12 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
 
   return (
     <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-markdown-form">
+      {find.bar}
       <MobileSourceFrontmatterIssueBanner issue={frontmatterIssue} />
       <View style={editorStyles.editorBody}>
         <SourceEditorInput
+          inputRef={findInputRef}
+          findMatch={find.active}
           editable={!editorDraft.paused}
           testID="editor-markdown-input"
           value={editorDraft.content}
@@ -221,6 +229,8 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
 }
 
 function SourceEditorInput({
+  inputRef,
+  findMatch,
   editable,
   onChangeText,
   onSelectionChange,
@@ -228,6 +238,8 @@ function SourceEditorInput({
   testID,
   value,
 }: {
+  inputRef: Ref<TextInput>
+  findMatch?: SourceFindRange | null
   editable: boolean
   onChangeText: (value: string) => void
   onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void
@@ -252,12 +264,14 @@ function SourceEditorInput({
     <View style={editorStyles.sourceInputHost}>
       <Animated.View pointerEvents="none" style={[editorStyles.syntaxLayer, syntaxTransform]} testID="editor-markdown-syntax">
         <Text style={editorStyles.syntaxText}>
-          {markdownSyntaxTokens(value).map((token, index) => (
-            <Text key={`${index}:${token.text}`} style={token.kind ? editorStyles[token.kind] : undefined}>{token.text}</Text>
+          {sourceFindSyntaxTokens(value, findMatch).map((token, index) => (
+            <Text key={`${index}:${token.text}`} style={[token.kind ? editorStyles[token.kind] : undefined,
+              token.highlighted ? { backgroundColor: mobileColors.yellowSoft, color: mobileColors.text } : undefined]}>{token.text}</Text>
           ))}
         </Text>
       </Animated.View>
       <AnimatedInput
+        ref={inputRef}
         multiline
         scrollEnabled
         editable={editable}
@@ -312,6 +326,9 @@ function MobilePlainTextSourceEditor({
     onCommit: onUpdateContent,
     sourceContent: note.rawContent ?? '',
   })
+  const findInputRef = useRef<TextInput>(null)
+  const find = useMobileSourceFind({ input: findInputRef, content, register: onRegisterEditorCommands,
+    onUpdate: (value) => updateContent(note.id, value) })
   const [selection, setSelection] = useState<MobileMarkdownTextSelection>(textStartSelection())
   const [controlledSelection, setControlledSelection] = useState<MobileMarkdownTextSelection | undefined>(textStartSelection())
   const handleSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
@@ -344,7 +361,9 @@ function MobilePlainTextSourceEditor({
 
   return (
     <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-text-file-form">
+      {find.bar}
       <Input
+        ref={findInputRef}
         multiline
         scrollEnabled
         editable={!paused}

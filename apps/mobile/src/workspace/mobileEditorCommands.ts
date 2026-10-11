@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export type MobileEditorCommands = {
   blur?: () => void
+  findInNote?: () => void
+  replaceInNote?: () => void
   pastePlainText?: () => void
   save?: () => void
   toggleRawEditor?: () => void
@@ -10,6 +12,8 @@ export type MobileEditorCommands = {
 export type RegisterMobileEditorCommands = (commands: MobileEditorCommands) => () => void
 type MobileEditorCommandCapabilities = {
   blur: boolean
+  findInNote: boolean
+  replaceInNote: boolean
   pastePlainText: boolean
   save: boolean
   toggleRawEditor: boolean
@@ -57,16 +61,16 @@ export function useRegisteredMobileEditorCommands(
     commandsRef.current = commands
   }, [commands])
 
-  const { blur, pastePlainText, save, toggleRawEditor } = mobileEditorCommandCapabilities(commands)
+  const { blur, findInNote, replaceInNote, pastePlainText, save, toggleRawEditor } = mobileEditorCommandCapabilities(commands)
   useEffect(() => {
     if (!register) return undefined
     return register(createMobileEditorCommandForwarders(
-      { blur, pastePlainText, save, toggleRawEditor }, () => commandsRef.current,
+      { blur, findInNote, replaceInNote, pastePlainText, save, toggleRawEditor }, () => commandsRef.current,
     ))
-  }, [register, blur, pastePlainText, save, toggleRawEditor])
+  }, [register, blur, findInNote, replaceInNote, pastePlainText, save, toggleRawEditor])
 }
 
-const mobileEditorCommandNames = ['blur', 'pastePlainText', 'save', 'toggleRawEditor'] as const
+const mobileEditorCommandNames = ['blur', 'findInNote', 'replaceInNote', 'pastePlainText', 'save', 'toggleRawEditor'] as const
 
 export function createMobileEditorCommandForwarders(
   capabilities: MobileEditorCommandCapabilities,
@@ -88,6 +92,8 @@ export function mobileEditorCommandCapabilities(
 ): MobileEditorCommandCapabilities {
   return {
     blur: commands.blur !== undefined,
+    findInNote: commands.findInNote !== undefined,
+    replaceInNote: commands.replaceInNote !== undefined,
     pastePlainText: commands.pastePlainText !== undefined,
     save: commands.save !== undefined,
     toggleRawEditor: commands.toggleRawEditor !== undefined,
@@ -101,10 +107,9 @@ export function mergeMobileEditorCommands(
 
   const merged: MobileEditorCommands = {}
   for (const commands of registrations) {
-    if (commands.blur) merged.blur = commands.blur
-    if (commands.pastePlainText) merged.pastePlainText = commands.pastePlainText
-    if (commands.save) merged.save = commands.save
-    if (commands.toggleRawEditor) merged.toggleRawEditor = commands.toggleRawEditor
+    for (const name of mobileEditorCommandNames) {
+      if (commands[name]) merged[name] = commands[name]
+    }
   }
   return merged
 }

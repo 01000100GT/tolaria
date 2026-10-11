@@ -58,6 +58,10 @@ import { useNativeWysiwygMathEditProbe } from './MobileWysiwygMathEditProbe.nati
 import { useNativeWysiwygMutationProbe } from './MobileWysiwygMutationProbe.native'
 import { MobileWysiwygContentBridge } from './MobileWysiwygContentBridge'
 import { MobileWysiwygOutlineBridge } from './MobileWysiwygOutlineBridge'
+import { MobileWysiwygSlashBridge } from './MobileWysiwygSlashBridge'
+import { MobileWysiwygSlashMenu } from './MobileWysiwygSlashMenu.native'
+import { MobileWysiwygFindBridge } from './MobileWysiwygFindBridge'
+import { MobileWysiwygFind } from './MobileWysiwygFind.native'
 import { useMobileWysiwygOutlineNavigation } from './MobileWysiwygOutlineNavigation.native'
 import { useFlushEditorDocument } from './MobileWysiwygPersistence.native'
 import { MobileTableBridge } from './MobileWysiwygTableBridge'
@@ -192,6 +196,8 @@ const mobileTenTapBridgeExtensions = [
   MobileMathInlineBridge,
   MobileWysiwygContentBridge,
   MobileWysiwygOutlineBridge,
+  MobileWysiwygSlashBridge,
+  MobileWysiwygFindBridge,
   MobileTableBridge,
 ]
 
@@ -341,6 +347,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
       testID="editor-wysiwyg-form"
       onTouchStart={activateEditorChanges}
     >
+      <MobileWysiwygFind editor={editor} register={onRegisterEditorCommands} onBeforeReplace={activateEditorChanges} />
       <RichText
         editor={editor}
         {...probeProps(layoutProbe, 'editor.wysiwyg.richText')}
@@ -348,6 +355,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
         testID="editor-wysiwyg-input"
         onLoadEnd={injectEditorCss}
       />
+      <MobileWysiwygSlashMenu editor={editor} />
       <View
         {...probeProps(layoutProbe, 'editor.wysiwyg.toolbarHost')}
         style={nativeEditorStyles.toolbarHost}

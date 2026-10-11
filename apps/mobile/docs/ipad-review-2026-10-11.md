@@ -32,6 +32,29 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
   native simulator interaction/layout checks and isolated Git integration tests.
 - Starting CodeScene: Hotspot 10.0, Average 9.991289158049293; floors 10.0 / 9.99.
 
+### Generated editor bundle analyzer exception
+
+- Approver: Luca explicitly approved the generated-bundle analyzer exception
+  in this chat on 2026-10-11; recorded at 20:21 UTC. Expires 2026-10-14 20:21 UTC
+  or when the analyzer can process the bundle, whichever comes first. Review
+  and remove within seven days. This does not authorize production promotion.
+- Affected file: `apps/mobile/src/components/workspace/MobileWysiwygTentapEditorHtml.ts`.
+  The local Codacy CLI rejected this approximately 1.2 MB generated artifact
+  at its hard 150 KB limit on the initial run and retry. Evidence is retained
+  as `MobileWysiwygTentapEditorHtml.ts-before.json` and
+  `generated-html-retry.json` in the Jupiter review evidence directory.
+- Blocked command: the recorded individual `codacy-analysis analyze` invocation
+  for that exact path using the existing mobile analyzer configuration.
+  A skipped generated artifact is not a clean scan or a zero-finding result.
+- Risk: the artifact embeds application code and bundled dependencies which the
+  local generated-file scan cannot examine as a whole. No scanner limits,
+  suppressions, quality floors, authentication, or release gates are changed.
+- Compensation: individually scan all editable sources touched by these editor
+  changes, review their CodeScene before/after results, rebuild the artifact with
+  the committed generator, run focused behavior tests and the scoped mobile
+  gates, and verify slash/find interaction, document preservation and native
+  rendering in the iPad simulator. No hand edits to the generated bundle.
+
 ## Checklist
 
 | # | Requested result | Status |
@@ -40,8 +63,8 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 2 | Searchable, aligned, scrollable repository picker for large lists | Implemented with virtualized rows; search tests pass; authenticated native picker QA pending |
 | 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Implemented; native screenshot verified |
 | 4 | Editor-focused arrow keys never change selected note | Implemented; native rich-text and source hardware-arrow checks pass; source edits/frontmatter survive cold launch |
-| 5 | Restore desktop-style editor slash commands | Pending |
-| 6 | Inline find in note, with visible match navigation/highlighting | Pending |
+| 5 | Restore desktop-style editor slash commands | Implemented; 15 supported commands, actual TenTap runtime tests and native touch-to-Markdown test pass |
+| 6 | Inline find in note, with visible match navigation/highlighting | Rich-text native navigation/replacement/44-point layout pass; source highlighting implemented, long-document scroll fix awaiting native recheck |
 | 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
 | 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
 | 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Implemented; native relationship-add, inspector, on-disk backlink geometry and navigation pass |
@@ -67,6 +90,71 @@ existing implementation is not proof of working user-facing iPad sync.
 
 Record exact files, baseline/final analyzer results, regression tests, native
 measurements, commits and remaining limitations as each batch completes.
+
+### Slash commands and inline Find/Replace
+
+- Rich-text slash commands use the production TenTap schema and keyboard
+  handling, plus a native searchable command list. Fifteen supported actions
+  include paragraphs, headings, lists, quote, code, divider, table and math.
+  URLs, code blocks and nonempty selections do not open the menu. Unsupported
+  desktop block types are not presented as working native commands.
+- Find opens below the breadcrumbs, not in a modal. The rich editor highlights
+  all matches, distinguishes the active match, scrolls it into view and supports
+  previous/next, case-sensitive and safe-regex searches, replacement and undo.
+  Source Find reuses the same controls and preserves raw YAML frontmatter.
+- The actual TenTap test harness covers all 15 slash actions, arrow/Enter/Escape
+  selection, stale choices, undo, formatted-text matches, regex safeguards and
+  replacement capture groups. Two source-layer tests preserve syntax tokens and
+  frontmatter while highlighting the active match.
+- Native `TabletEditorFindSlashTests` initially caught 26.5-point Find buttons.
+  Explicit 44-point RNR controls fix this; both tests pass in the Release iPad
+  simulator. Touching Heading 2 produces `## Slash heading` in raw Markdown.
+  Native screenshots verify yellow match highlights and a distinct active match.
+- A manual 65-paragraph source test caught the last match remaining offscreen.
+  The fix uses React Native's public `setSelection`, which invokes native
+  selection scrolling, rather than `setNativeProps`. The rebuilt app is installed;
+  the Mac locked before its final native recheck. This check remains pending.
+- The first scoped suite run passed 1,403 tests and failed the parity-inventory
+  completeness check for the new components. The inventory must be updated with
+  their desktop references before committing. Those entries are now present;
+  the rerun passes all 1,409 tests, including the following Git regression batch.
+- PostHog: opt-in `mobile_editor_tool_opened` records only `find`, `replace` or
+  `slash`. Queries, replacements and document content are never event properties.
+- Localization: existing translated labels reused; no UI copy changes.
+  Architecture documents the existing editor bridge boundary; no new dependency
+  or storage strategy. Generated HTML remains under the explicit exception.
+- Final editor manifest: `editor-scan-manifest.json` in the evidence directory,
+  with all branch changes, untracked paths and the exact 30-path commit batch.
+  All 28 code paths have CodeScene review: scorable files score 10, while the
+  generated bundle, configuration and declarative inventory are unscorable with
+  no findings. Existing 10 baselines remain 10. Slash dispatch, menu visibility
+  and source Find helpers were simplified to meet the gate without suppression.
+- All 27 analyzable code paths have individual successful local Codacy scans:
+  133 analyzer rows, zero Critical/High/Medium/Minor/Info/unclassified findings
+  and no tool errors. Each TypeScript file has Biome, ESLint9, Opengrep, Trivy
+  and Lizard; Swift has Opengrep, Trivy and Lizard. WebView source improves from
+  one unused-import finding to zero; all other existing zero baselines remain
+  zero. Generated HTML is explicitly excluded under the approved exception,
+  never counted as zero. Cloud analyzer parity/exact-SHA verification remain
+  unavailable under the separately recorded owner approval.
+- CodeScene staged CLI delta: no issues across 28 checked files. Project
+  Hotspot 10, Average 9.991289158049293, above the 10 / 9.99 floors. MCP safeguard
+  is unavailable, not claimed as passing. No direct-to-main promotion is made.
+- Mobile lint/typecheck pass; locale validation passes all 21 catalogs. No full
+  desktop/Rust suite or release coverage measurement was run in this scoped
+  experimental batch. Demo vault dirt is empty. Native recheck and authenticated
+  Git QA remain explicit open items while the Mac is locked.
+
+### Authenticated Laputa clone investigation
+
+- Luca authorized additive-only local QA changes, with exact cleanup afterward.
+  No existing user note may be modified, and no QA note may be pushed to Laputa.
+  GitHub login remains intact. Editor checks above use disposable fixture data.
+- Native CFNetwork logs show the user's clone request received HTTP 200 and
+  214,529,014 bytes, then was cancelled at 120,017 ms. The transport's fixed
+  120-second deadline aborted a progressing large download. Replacing this with
+  a bounded idle-read timeout is the next fix; large authenticated clone and
+  automatic remote UI checks remain pending.
 
 ### Saved views and sidebar types
 

@@ -1,4 +1,3 @@
-import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { EditorContent } from '@tiptap/react'
 import { TenTapStartKit, useTenTap } from '@10play/tentap-editor/web'
@@ -7,6 +6,10 @@ import { MobileWysiwygContentBridge } from './MobileWysiwygContentBridge'
 import { MobileMathInlineBridge } from './MobileWysiwygMathBridge'
 import { MobileWysiwygOutlineBridge } from './MobileWysiwygOutlineBridge'
 import { MobileTableBridge } from './MobileWysiwygTableBridge'
+import { createMobileSlashBridge } from './MobileWysiwygSlashBridge'
+import { MobileSlashExtension, readMobileSlash, runMobileSlash } from './MobileWysiwygSlashExtension'
+import { createMobileFindBridge } from './MobileWysiwygFindBridge'
+import { MobileFindExtension, readMobileFind, applyMobileFindRequest } from './MobileWysiwygFindExtension'
 
 declare global {
   interface Window {
@@ -22,6 +25,8 @@ const mobileTenTapExtensions = [
   MobileWysiwygContentBridge,
   MobileWysiwygOutlineBridge,
   MobileTableBridge,
+  createMobileSlashBridge({ extension: MobileSlashExtension, read: readMobileSlash, run: runMobileSlash }),
+  createMobileFindBridge({ extension: MobileFindExtension, read: readMobileFind, run: applyMobileFindRequest }),
 ]
 
 function enabledTenTapExtensions() {

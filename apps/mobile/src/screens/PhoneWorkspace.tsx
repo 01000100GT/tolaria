@@ -412,6 +412,7 @@ function PhoneWorkspaceRoot({
       <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
       <WorkspaceActionSheetHost
         {...controller}
+        editorCommands={editorCommandRegistry.commands}
         compactTablet
         defaultPropertiesVisible={false}
         initialEditorEditing={options.initialEditorEditing}

@@ -8,6 +8,13 @@ function setup() {
 }
 
 describe('consent-bound mobile analytics', () => {
+  it('records editor tool discovery without queries or document content', () => {
+    const { analytics, send } = setup()
+    analytics.setEnabled(true)
+    analytics.capture({ name: 'mobile_editor_tool_opened', tool: 'find' })
+    expect(send.mock.calls[0]?.[0]).toEqual({ event: 'mobile_editor_tool_opened', distinct_id: 'anonymous-session',
+      properties: { $process_person_profile: false, $geoip_disable: true, platform: 'ios', tool: 'find' } })
+  })
   it('does no work and creates no identifier before consent', () => {
     const { analytics, send, createId } = setup()
     analytics.capture({ name: 'mobile_note_swipe_used', action: 'archive' })

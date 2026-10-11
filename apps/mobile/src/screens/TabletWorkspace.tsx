@@ -25,7 +25,8 @@ import {
 
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { mobileText } from '../i18n/mobileText'
-import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
+import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands, type MobileEditorCommands } from '../workspace/mobileEditorCommands'
+import { MobileEditorActionRedirect } from '../components/workspace/MobileEditorActionRedirect'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
 import { buildMobileCommandPaletteCommands } from '../workspace/mobileCommandPalette'
 import { useMobileWorkspaceKeyboardShortcuts } from '../workspace/mobileWorkspaceKeyboardShortcuts'
@@ -276,6 +277,7 @@ function TabletWorkspaceChrome(props: TabletWorkspaceChromeProps) {
       />
       <WorkspaceActionSheetHost
         {...props}
+        editorCommands={editorCommandRegistry.commands}
         suggestionNotes={suggestionNotes}
         onSelectTableOfContentsTarget={handleSelectTableOfContentsTarget}
       />
@@ -680,18 +682,23 @@ function propertiesPanelProps(
 }
 
 type ActionSheetHostProps = TabletWorkspaceChromeProps & {
+  editorCommands?: MobileEditorCommands
   onSelectTableOfContentsTarget?: (target: MobileTableOfContentsTarget) => void
   suggestionNotes: MobileNote[]
 }
 
-export const WorkspaceActionSheetHost = (props: ActionSheetHostProps) =>
-  props.openAction ? (
+export const WorkspaceActionSheetHost = (props: ActionSheetHostProps) => {
+  const findAction = props.openAction === 'findInNote' || props.openAction === 'replaceInNote'
+  const command = findAction ? props.editorCommands?.[props.openAction as 'findInNote' | 'replaceInNote'] : undefined
+  if (command) return <MobileEditorActionRedirect command={command} onClose={props.onCloseAction} />
+  return props.openAction ? (
     <MobileWorkspaceActionSheet
       action={props.openAction}
       {...actionSheetValues(props)}
       {...actionSheetHandlers(props)}
     />
   ) : null
+}
 
 function actionSheetValues(props: ActionSheetHostProps) {
   const {
