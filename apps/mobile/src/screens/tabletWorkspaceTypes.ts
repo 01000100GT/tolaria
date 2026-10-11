@@ -263,6 +263,7 @@ export type TabletWorkspaceChromeProps = {
   onSetDefaultNoteWidth: (mode: MobileNoteWidth) => void
   onSetOrganized: (organized: boolean) => void
   onToggleFavorite: () => void
+  onToggleNoteFavorite: (noteId: string) => void
   onToggleNoteWidth: () => void
   onToggleTypeVisibility: (typeName: string) => void
   onUndoWorkspaceEdit: () => void

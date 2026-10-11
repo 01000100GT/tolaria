@@ -6,6 +6,7 @@ import {
   List,
 } from 'phosphor-react-native'
 import { Animated as NativeAnimated, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Text } from '../components/ui/text'
 import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
 import { MobilePropertiesPanel } from '../components/workspace/MobilePropertiesPanel'
@@ -38,6 +39,7 @@ import { TabletEditorPanel } from './TabletEditorPanel'
 import type { EditorEditingMode } from './TabletEditorPanel'
 import { WorkspaceActionSheetHost } from './TabletWorkspace'
 import { PhoneWorkspaceTransition } from './PhoneWorkspaceTransition'
+import { phonePanelDragSurface } from './phonePanelDragSurface'
 import { useTabletWorkspaceController } from './useTabletWorkspaceController'
 import { useMobileInspectorReferenceGroups } from './useMobileInspectorReferenceGroups'
 import { useInitialActionSheetQaTarget } from './useInitialActionSheetQaTarget'
@@ -530,12 +532,13 @@ function usePhoneSwipeHandlers({
   phoneState: PhoneWorkspaceState
   phoneSwipePreview: PhoneSwipePreview
 }) {
+  const canStart = usePhonePanelDragSurface(phoneState)
   const commitEditor = useCallback(() => phoneSwipePreview.commit('editor', () => openEditor(phoneGestureHandoffOptions)), [openEditor, phoneSwipePreview])
   const commitList = useCallback(() => phoneSwipePreview.commit('list', () => openList(phoneGestureHandoffOptions)), [openList, phoneSwipePreview])
   const commitProperties = useCallback(() => phoneSwipePreview.commit('properties', () => openProperties(phoneGestureHandoffOptions)), [openProperties, phoneSwipePreview])
   const commitSidebar = useCallback(() => phoneSwipePreview.commit('sidebar', () => openSidebar(phoneGestureHandoffOptions)), [openSidebar, phoneSwipePreview])
-  const editorSwipe = useHorizontalSwipe({ onSwipeLeft: commitProperties, onSwipeRight: commitList })
-  const listSwipe = useHorizontalSwipe({ onSwipeRight: commitSidebar })
+  const editorSwipe = useHorizontalSwipe({ canStart, onSwipeLeft: commitProperties, onSwipeRight: commitList })
+  const listSwipe = useHorizontalSwipe({ canStart, onSwipeRight: commitSidebar })
   const propertiesSwipe = useHorizontalSwipe({ onSwipeRight: commitEditor })
   const sidebarSwipe = useHorizontalSwipe({ onSwipeLeft: commitList })
 
@@ -543,6 +546,12 @@ function usePhoneSwipeHandlers({
   if (phoneState === 'properties') return propertiesSwipe
   if (phoneState === 'sidebar') return sidebarSwipe
   return listSwipe
+}
+
+function usePhonePanelDragSurface(state: PhoneWorkspaceState) {
+  const { width } = useWindowDimensions()
+  const { top } = useSafeAreaInsets()
+  return useCallback((start: { x: number; y: number }) => phonePanelDragSurface(state, start, width, top), [state, width, top])
 }
 
 function usePhoneDragPreview(
@@ -751,6 +760,7 @@ function PhoneNoteListScreen({
   )
   const swipeHandlers = useHorizontalSwipe({
     ...phoneSwipePreviewHandlers(phoneSwipePreview),
+    canStart: usePhonePanelDragSurface('list'),
     onSwipeRight: commitSidebar,
   })
 
@@ -758,6 +768,7 @@ function PhoneNoteListScreen({
     <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.list.screen')} style={styles.screen} testID="phone-note-list-screen">
       <MobileNoteListPanel
         compact
+        onToggleNoteFavorite={controller.onToggleNoteFavorite}
         bulkActions={{
           onArchive: controller.onBulkArchiveNotes,
           onDelete: controller.onBulkDeleteNotes,
@@ -891,6 +902,7 @@ function PhoneEditorScreen({
   )
   const swipeHandlers = useHorizontalSwipe({
     ...phoneSwipePreviewHandlers(phoneSwipePreview),
+    canStart: usePhonePanelDragSurface('editor'),
     onSwipeLeft: commitProperties,
     onSwipeRight: commitList,
   })

@@ -1,12 +1,12 @@
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
-import { MobileIconButton } from '../../ui/MobileIconButton'
-import { desktopToolbarActionParity } from '../../ui/desktopParity'
+import { Button } from '../ui/button'
 import { mobileColors, mobileSpace } from '../../ui/tokens'
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 
 import { formattingCommands } from './mobileFormattingCommands'
+import { formattingToolbarTouchSize } from './mobileFormattingToolbarModel'
 
 const nativeOnlyFormattingActions = new Set<MobileMarkdownFormatAction>([
   'tableAddColumnAfter',
@@ -24,13 +24,18 @@ export function MobileMarkdownFormattingToolbar({
   layoutProbe,
   metricId,
   onFormat,
+  selected = [],
+  inTable = false,
 }: {
   actions?: readonly MobileMarkdownFormatAction[]
   layoutProbe?: MobileLayoutProbe
   metricId?: string
   onFormat: (action: MobileMarkdownFormatAction) => void
+  selected?: readonly MobileMarkdownFormatAction[]
+  inTable?: boolean
 }) {
-  const visibleActions = new Set(actions ?? sourceMarkdownFormattingActions)
+  const visibleActions = new Set((actions ?? sourceMarkdownFormattingActions)
+    .filter((action) => inTable || !nativeOnlyFormattingActions.has(action)))
 
   return (
     <ScrollView
@@ -38,7 +43,7 @@ export function MobileMarkdownFormattingToolbar({
       alwaysBounceHorizontal={false}
       contentContainerStyle={styles.toolbarContent}
       horizontal
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps="always"
       {...formattingProbeProps(layoutProbe, metricId)}
       showsHorizontalScrollIndicator={false}
       style={styles.toolbarViewport}
@@ -50,13 +55,17 @@ export function MobileMarkdownFormattingToolbar({
           {...formattingProbeProps(layoutProbe, metricId, `action.${command.action}`)}
           style={styles.actionProbe}
         >
-          <MobileIconButton
+          <Button
             accessibilityLabel={command.label}
+            accessibilityState={{ selected: selected.includes(command.action) }}
+            variant="ghost"
+            size="icon"
+            style={[styles.actionProbe, selected.includes(command.action) && styles.selected]}
             testID={command.testID}
             onPress={() => onFormat(command.action)}
           >
-            {command.icon(mobileColors.textMuted)}
-          </MobileIconButton>
+            {command.icon(selected.includes(command.action) ? mobileColors.primary : mobileColors.textMuted)}
+          </Button>
         </View>
       ))}
     </ScrollView>
@@ -74,9 +83,13 @@ function formattingProbeProps(
 
 const styles = StyleSheet.create({
   actionProbe: {
-    height: desktopToolbarActionParity.iconButtonSize,
-    width: desktopToolbarActionParity.iconButtonSize,
+    height: formattingToolbarTouchSize,
+    width: formattingToolbarTouchSize,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
   },
+  selected: { backgroundColor: mobileColors.primarySoft },
   toolbarContent: {
     flexDirection: 'row',
     gap: mobileSpace.xs,

@@ -9,10 +9,22 @@ it('waits for horizontal intent and yields vertical movement to scrolling', () =
   expect(tabletPanelGestureIntent(context, { x: 500, dx: -30, dy: 8 })).toBe('left')
 })
 
-it('uses the whole note list for sequential collapse, not just an edge', () => {
+it('keeps sequential panel navigation available from the note-list header', () => {
   expect(tabletPanelGestureIntent(context, { x: 450, dx: -30, dy: 0 })).toBe('left')
-  expect(tabletPanelGestureIntent({ ...context, left: -260 }, { x: 450, dx: -30, dy: 0 })).toBe('left')
+  expect(tabletPanelGestureIntent({ ...context, left: -260 }, { x: 200, dx: -30, dy: 0 })).toBe('left')
   expect(tabletPanelGestureIntent({ ...context, left: -600 }, { x: 450, dx: -30, dy: 0 })).toBe('fail')
+})
+
+it('leaves note-row swipes to quick actions and editor drags to editing', () => {
+  expect(tabletPanelGestureIntent(context, { x: 450, y: 200, dx: -30, dy: 0 })).toBe('fail')
+  expect(tabletPanelGestureIntent(context, { x: 450, y: 200, dx: 30, dy: 0 })).toBe('fail')
+  expect(tabletPanelGestureIntent(context, { x: 800, y: 900, dx: -30, dy: 0 })).toBe('fail')
+  expect(tabletPanelGestureIntent(context, { x: 800, y: 200, dx: -30, dy: 0 })).toBe('fail')
+})
+
+it('keeps sidebar drags and editor edge reveals available', () => {
+  expect(tabletPanelGestureIntent(context, { x: 100, y: 200, dx: -30, dy: 0 })).toBe('left')
+  expect(tabletPanelGestureIntent({ ...context, left: -600 }, { x: 10, y: 200, dx: 30, dy: 0 })).toBe('left')
 })
 
 it('opens Properties only from the right edge and closes it from its own surface', () => {

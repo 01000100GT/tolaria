@@ -229,15 +229,23 @@ public final class TolariaKeyCommandsReactDelegateHandler: ExpoReactDelegateHand
 
 private final class TolariaKeyCommandsRootViewController: UIViewController {
   override var keyCommands: [UIKeyCommand]? {
-    TolariaKeyCommandsModule.applicationKeyCommands().map { specification in
+    let textInputFocused = containsFocusedTextInput(view.window ?? view)
+    return TolariaKeyCommandsModule.applicationKeyCommands().filter {
+      !$0.modifierFlags.isEmpty || !textInputFocused
+    }.map { specification in
       let command = UIKeyCommand(
         input: specification.input,
         modifierFlags: specification.modifierFlags,
         action: #selector(handleTolariaKeyCommand(_:))
       )
-      command.wantsPriorityOverSystemBehavior = true
+      command.wantsPriorityOverSystemBehavior = !specification.modifierFlags.isEmpty
       return command
     }
+  }
+
+  private func containsFocusedTextInput(_ candidate: UIView) -> Bool {
+    if candidate.isFirstResponder && candidate is UITextInput { return true }
+    return candidate.subviews.contains(where: containsFocusedTextInput)
   }
 
   @objc private func handleTolariaKeyCommand(_ command: UIKeyCommand) {

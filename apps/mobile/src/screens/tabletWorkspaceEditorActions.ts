@@ -87,6 +87,10 @@ export function editorWorkspaceActions({
     onToggleFavorite: () => {
       applyOptionalEdit(applyEdit, toggleFavoriteEdit(selectedNote))
     },
+    onToggleNoteFavorite: (noteId: string) => {
+      const note = (workspaceSnapshot.allNotes ?? workspaceSnapshot.notes).find((candidate) => candidate.id === noteId) ?? null
+      applyOptionalEdit(applyEdit, toggleFavoriteEdit(note))
+    },
     onToggleNoteWidth: () => {
       applyOptionalEdit(applyEdit, toggleNoteWidthEdit(selectedNote))
     },

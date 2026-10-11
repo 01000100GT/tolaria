@@ -106,6 +106,20 @@ export const mobileParityInventory = [
     surface: 'Note-list bulk action bar',
   },
   {
+    assertions: ['TabletNoteSwipeTests: partial actions and full-swipe favorite/archive without panel movement'],
+    contracts: ['desktopNoteItemParity'],
+    desktopSource: 'NoteItem and desktop favorite/archive/delete commands; owner-requested native swipe adaptation',
+    mobileFile: 'src/components/workspace/MobileSwipeableNoteRow.tsx',
+    surface: 'Native note-row swipe gestures',
+  },
+  {
+    assertions: ['TabletNoteSwipeTests: visible quick actions and non-destructive full swipe'],
+    contracts: ['desktopNoteItemParity', 'desktopToolbarActionParity'],
+    desktopSource: 'Desktop note action icons and semantic colors; owner-requested native swipe adaptation',
+    mobileFile: 'src/components/workspace/MobileNoteSwipeActions.tsx',
+    surface: 'Native note-row swipe actions',
+  },
+  {
     assertions: ['properties computed styles', 'derived reference groups from inspector semantics'],
     contracts: ['desktopPanelParity', 'desktopPropertyParity', 'desktopRelationshipParity'],
     desktopSource: 'InspectorHeader, propertyPanelLayout, RelationshipsPanel, InstancesPanel, ReferencedByPanel, BacklinksPanel',

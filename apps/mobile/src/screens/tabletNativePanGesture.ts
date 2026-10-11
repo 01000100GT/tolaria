@@ -22,6 +22,7 @@ type PanOptions = {
   compactTablet: boolean
   propertiesReplaceSidebar: boolean
   width: number
+  topInset: number
   motion: TabletPanelMotion
   session: SharedValue<TabletPanSession>
   onSettle: (position: TabletPanelPosition) => void
@@ -41,8 +42,8 @@ export function createTabletPanGesture(options: PanOptions) {
       const touch = event.allTouches[0]
       if (!touch) return
       const intent = tabletPanelGestureIntent(
-        { width, minimumLeft, left: motion.left.value, properties: motion.properties.value },
-        { x: session.value.x, dx: touch.x - session.value.x, dy: touch.y - session.value.y },
+        { width, minimumLeft, left: motion.left.value, properties: motion.properties.value, topInset: options.topInset },
+        { x: session.value.x, y: session.value.y, dx: touch.x - session.value.x, dy: touch.y - session.value.y },
       )
       session.value = { ...session.value, mode: intent }
       if (intent === 'fail') manager.fail()

@@ -505,6 +505,7 @@ function tabletNoteListPanelProps(props: TabletPanelHostProps): ComponentProps<t
     onOpenCreateNote: props.onOpenCreateNote,
     onOpenSearch: props.onOpenSearch,
     onOpenVault: props.onOpenNativeVault,
+    onToggleNoteFavorite: props.onToggleNoteFavorite,
     onSelectNote: (noteId) => {
       props.onSelectNote(noteId)
       props.gestures.finishSidebarNavigation()

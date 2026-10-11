@@ -18,6 +18,7 @@ import type { MobileNoteListFilter } from '../../workspace/mobileNoteFilters'
 import type { MobileNeighborhood, MobileNeighborhoodGroup } from '../../workspace/mobileNeighborhood'
 import type { MobileNote, MobilePropertyDisplayMode, MobileTypeDefinitions } from '../../workspace/mobileWorkspaceModel'
 import { MobileNoteListBulkActionBar } from './MobileNoteListBulkActionBar'
+import { MobileSwipeableNoteRow, type MobileNoteRowActions } from './MobileSwipeableNoteRow'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
 import {
   mobileNoteListEmptyStateChrome,
@@ -61,6 +62,7 @@ type MobileNoteListPanelProps = {
   onOpenVault?: () => void
   onNoteListFilterChange?: (filter: MobileNoteListFilter) => void
   onSelectNote: (noteId: string) => void
+  onToggleNoteFavorite?: (noteId: string) => void
   propertyDisplayModes?: Record<string, MobilePropertyDisplayMode> | null
   searchQuery?: string
   selectedNoteId: string | null
@@ -120,6 +122,7 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
       </MobileToolbar>
       {searchQuery ? <SearchPill searchQuery={searchQuery} /> : null}
       <NoteListContent
+        rowActions={noteListRowActions(props)}
         activeNoteId={activeNoteId}
         bulkSelection={bulkSelection}
         displayPropertyKeys={displayPropertyKeys}
@@ -145,6 +148,11 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
       {layoutProbeEnabled ? <MobileLayoutProbeReadout metrics={layoutProbe.metrics} testID="note-list-layout-metrics" /> : null}
     </MobilePanel>
   )
+}
+
+function noteListRowActions({ bulkActions, onToggleNoteFavorite }: MobileNoteListPanelProps): MobileNoteRowActions | undefined {
+  if (!bulkActions || !onToggleNoteFavorite) return undefined
+  return { ...bulkActions, onToggleFavorite: onToggleNoteFavorite }
 }
 
 function NoteListFilterPills({
@@ -190,6 +198,7 @@ function NoteListFilterPills({
 }
 
 type NoteListContentProps = {
+  rowActions?: MobileNoteRowActions
   activeNoteId: string | null
   bulkSelection: ReturnType<typeof useMobileNoteListBulkSelection>
   displayPropertyKeys: string[]
@@ -224,6 +233,7 @@ function NoteListContent(props: NoteListContentProps) {
   if (neighborhood) {
     return (
       <NeighborhoodNoteList
+        rowActions={props.rowActions}
         activeNoteId={activeNoteId}
         displayPropertyKeys={displayPropertyKeys}
         layoutProbe={layoutProbe}
@@ -248,6 +258,7 @@ function NoteListContent(props: NoteListContentProps) {
       initialNumToRender={16}
       keyExtractor={(note) => note.id}
       renderItem={({ item: note }) => noteRow({
+        rowActions: bulkSelection.selectedNotes.length === 0 ? props.rowActions : undefined,
         activeNoteId,
         displayPropertyKeys,
         layoutProbe,
@@ -418,6 +429,7 @@ type NeighborhoodRow =
   | { id: string; kind: 'note'; note: MobileNote }
 
 function NeighborhoodNoteList({
+  rowActions,
   activeNoteId,
   displayPropertyKeys,
   layoutProbe,
@@ -426,6 +438,7 @@ function NeighborhoodNoteList({
   propertyDisplayModes,
   typeDefinitions,
 }: {
+  rowActions?: MobileNoteRowActions
   activeNoteId: string | null
   displayPropertyKeys: string[]
   layoutProbe: MobileLayoutProbe
@@ -444,6 +457,7 @@ function NeighborhoodNoteList({
       initialNumToRender={18}
       keyExtractor={(row) => row.id}
       renderItem={({ item }) => neighborhoodRow({
+        rowActions,
         activeNoteId,
         displayPropertyKeys,
         item,
@@ -470,6 +484,7 @@ function neighborhoodRows(neighborhood: MobileNeighborhood): NeighborhoodRow[] {
 }
 
 function neighborhoodRow({
+  rowActions,
   activeNoteId,
   displayPropertyKeys,
   item,
@@ -478,6 +493,7 @@ function neighborhoodRow({
   propertyDisplayModes,
   typeDefinitions,
 }: {
+  rowActions?: MobileNoteRowActions
   activeNoteId: string | null
   displayPropertyKeys: string[]
   item: NeighborhoodRow
@@ -489,6 +505,7 @@ function neighborhoodRow({
   if (item.kind === 'header') return <RelationshipGroupHeader group={item.group} />
 
   return noteRow({
+    rowActions,
     activeNoteId,
     displayPropertyKeys,
     forceSelected: item.kind === 'source',
@@ -501,6 +518,7 @@ function neighborhoodRow({
 }
 
 type NoteRowProps = {
+  rowActions?: MobileNoteRowActions
   activeNoteId: string | null
   displayPropertyKeys: string[]
   forceSelected?: boolean
@@ -527,6 +545,7 @@ function noteRow(props: NoteRowProps) {
     typeDefinitions,
   } = props
   return (
+    <MobileSwipeableNoteRow actions={props.rowActions} note={note}>
     <MobileListRow
       chips={<NoteRowChips displayPropertyKeys={displayPropertyKeys} note={note} propertyDisplayModes={propertyDisplayModes} typeDefinitions={typeDefinitions} />}
       layoutProbe={layoutProbe}
@@ -549,6 +568,7 @@ function noteRow(props: NoteRowProps) {
       onLongPress={onBeginSelection ? () => onBeginSelection(note.id) : undefined}
       onPress={() => onSelectNote(note.id)}
     />
+    </MobileSwipeableNoteRow>
   )
 }
 

@@ -38,23 +38,23 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | --- | --- | --- |
 | 1 | One-tap copy of GitHub device authorization code | Pending |
 | 2 | Searchable, aligned, scrollable repository picker for large lists | Pending |
-| 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Pending |
+| 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Implemented; native screenshot verified |
 | 4 | Editor-focused arrow keys never change selected note | In progress |
 | 5 | Restore desktop-style editor slash commands | Pending |
 | 6 | Inline find in note, with visible match navigation/highlighting | Pending |
 | 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
 | 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
 | 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Pending |
-| 10 | Breadcrumbs use the note's configured type icon and color | Pending |
+| 10 | Breadcrumbs use the note's configured type icon and color | Implemented; native typed icon verified |
 | 11 | Favorite and other local actions respond without avoidable delay | Pending |
-| 12 | Rich-editor formatting commands match source-editor capabilities | Pending |
+| 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
 | 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Pending |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
 | 15 | Explain and verify local Git and remote sync behavior | Code inspected; native remote QA pending |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Pending |
 | 18 | Essential settings chosen from an audit of desktop settings | Pending |
-| 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Pending |
+| 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
 | 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Pending |
 
 Sidebar type-selection latency belongs to item 11. The earlier bottom-safe-area
@@ -138,3 +138,30 @@ measurements, commits and remaining limitations as each batch completes.
   executable configuration. Cloud checks remain unavailable under the exception.
 - PostHog: no new event needed for repairs to existing controls, navigation and
   styling. No note content, credentials or repository names are instrumented.
+
+### Editor controls and note gestures
+
+- Tablet rich and source editors share the horizontally scrollable formatting
+  strip with 44-point controls and active-format states. The focused native
+  formatting test passes, including headings, quote/math discovery and panel
+  toggle preservation. Phones keep their compact formatting strip.
+- Native row swipe tests failed before implementation and both pass in the
+  Release iPad simulator: partial left swipe exposes Delete and Archive without
+  moving panels; full right toggles Favorite; full left archives rather than
+  deletes, with the note recoverable in Archive.
+- Parent panel gestures yield to note rows and editor interiors. Panel controls,
+  list headers, sidebar surfaces and edge gestures remain available. Pure
+  regression tests protect gesture ownership and the full-swipe threshold.
+- Every scorable touched/new code file in this batch scores 10 with no CodeScene
+  warnings. Type-only/inventory files have no scorable code and no findings.
+  Individual local scans have zero findings and successful completion from all
+  five TypeScript or three Swift analyzers. Evidence files end in `-after.json`
+  and `-after-cs.json`; `editor-gestures-manifest.txt` records exact paths.
+- ADR 0211 records gesture ownership and supersedes ADR 0202's tablet toolbar
+  decision. ABSTRACTIONS documents the shared formatting and swipe components.
+- Localization: existing translated commands reused; no new UI copy.
+- PostHog: gesture adoption instrumentation remains part of the consent-aware
+  mobile settings work before release; do not treat this batch as releasable.
+- The generated TenTap HTML exceeds the local analyzer's 150 KB limit on both
+  attempts. No change to that generated file has been made; additional owner
+  approval was requested for source-scanning/build/native-QA compensation.

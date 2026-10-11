@@ -1,38 +1,48 @@
 import XCTest
 
 final class TabletFormattingToolbarTests: XCTestCase {
-  func testFormattingMenusKeepTouchTargetsAndApplyHeading() throws {
+  func testTabletFormattingStripKeepsTouchTargetsAndAppliesHeading() throws {
     continueAfterFailure = false
+    XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
     app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&tabletPanels=all&qaRun=toolbar"]
     app.launch()
-    let headings = element(app, "editor-format-menu-headings")
-    XCTAssertTrue(headings.waitForExistence(timeout: 60))
-    XCTAssertEqual(headings.frame.width, 44, accuracy: 1)
-    XCTAssertEqual(headings.frame.height, 44, accuracy: 1)
-    headings.tap()
+    let toolbar = element(app, "editor-formatting-toolbar")
+    XCTAssertTrue(toolbar.waitForExistence(timeout: 60))
     let heading = element(app, "editor-format-heading-2")
     XCTAssertTrue(heading.waitForExistence(timeout: 5))
+    reveal(heading, in: toolbar)
     XCTAssertTrue(heading.isHittable)
-    XCTAssertGreaterThanOrEqual(heading.frame.height, 44)
+    XCTAssertEqual(heading.frame.height, 44, accuracy: 1)
+    XCTAssertEqual(heading.frame.width, 44, accuracy: 1)
     XCTAssertTrue(app.frame.contains(heading.frame))
     heading.tap()
-    waitUntil { !heading.exists }
-    headings.tap()
-    waitUntil { heading.exists && heading.isSelected }
+    waitUntil { heading.isSelected }
+    heading.tap()
+    waitUntil { !heading.isSelected }
+    let quote = element(app, "editor-format-quote")
+    reveal(quote, in: toolbar)
+    XCTAssertTrue(quote.isHittable)
+    let math = element(app, "editor-format-math-block")
+    reveal(math, in: toolbar)
+    XCTAssertTrue(math.isHittable)
     let screenshot = XCTAttachment(screenshot: app.screenshot())
     screenshot.lifetime = .keepAlways
     add(screenshot)
-    // The overlay must dismiss without moving a panel or consuming the next tap.
-    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
-    waitUntil { !heading.exists }
-    let lists = element(app, "editor-format-menu-lists")
-    lists.tap()
-    XCTAssertTrue(element(app, "editor-format-bullet-list").waitForExistence(timeout: 5))
-    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
     let toggle = app.buttons.matching(identifier: "editor-properties-action").firstMatch
     toggle.tap()
     waitUntil { !self.element(app, "properties-panel").exists }
+  }
+
+  private func reveal(_ target: XCUIElement, in toolbar: XCUIElement) {
+    for _ in 0..<12 {
+      if target.isHittable { return }
+      let movingLeft = target.frame.midX > toolbar.frame.midX
+      let startX = movingLeft ? 0.7 : 0.3
+      let endX = movingLeft ? 0.4 : 0.6
+      toolbar.coordinate(withNormalizedOffset: CGVector(dx: startX, dy: 0.5))
+        .press(forDuration: 0.05, thenDragTo: toolbar.coordinate(withNormalizedOffset: CGVector(dx: endX, dy: 0.5)))
+    }
   }
 
   private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {

@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
 import { desktopPanelParity } from '../ui/desktopParity'
 import { tabletLeftPanelStageAfterDrag, tabletLeftPanelStageOffset, type TabletLeftPanelStage } from './tabletWorkspacePanelTransitions'
@@ -22,6 +23,7 @@ function initialLeftStage(options: TabletPanelGestureOptions): TabletLeftPanelSt
 
 export function useTabletPanelGestures(options: TabletPanelGestureOptions) {
   const { width } = useWindowDimensions()
+  const { top: topInset } = useSafeAreaInsets()
   const { compactTablet, propertiesReplaceSidebar } = options
   const [position, setPosition] = useState<TabletPanelPosition>(() => ({
     stage: initialLeftStage(options),
@@ -33,8 +35,8 @@ export function useTabletPanelGestures(options: TabletPanelGestureOptions) {
   const session = useSharedValue<TabletPanSession>({ x: 0, y: 0, left: 0, properties: 0, mode: 'wait' })
   const motion = useMemo(() => ({ left, properties, restoreLeft }), [left, properties, restoreLeft])
   const panGesture = useMemo(() => createTabletPanGesture({
-    compactTablet, propertiesReplaceSidebar, width, motion, session, onSettle: setPosition,
-  }), [compactTablet, propertiesReplaceSidebar, width, motion, session])
+    compactTablet, propertiesReplaceSidebar, width, topInset, motion, session, onSettle: setPosition,
+  }), [compactTablet, propertiesReplaceSidebar, width, topInset, motion, session])
 
   const settle = useCallback((stage: TabletLeftPanelStage, propertiesVisible: boolean) => {
     const normalized = compactTablet && stage === 'all' ? 'list' : stage

@@ -14,6 +14,7 @@ type HorizontalSwipeProgress = {
 }
 
 type HorizontalSwipeOptions = {
+  canStart?: (start: { x: number; y: number }) => boolean
   captureOnStart?: boolean
   disabled?: boolean
   onSwipeEnd?: (committed: boolean) => void
@@ -28,6 +29,7 @@ type NormalizedHorizontalSwipeOptions = HorizontalSwipeOptions & {
 }
 
 export function useHorizontalSwipe({
+  canStart,
   captureOnStart = false,
   disabled = false,
   onSwipeEnd,
@@ -36,8 +38,8 @@ export function useHorizontalSwipe({
   onSwipeRight,
 }: HorizontalSwipeOptions) {
   const options = useMemo(
-    () => ({ captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight }),
-    [captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight],
+    () => ({ canStart, captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight }),
+    [canStart, captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight],
   )
 
   return useMemo(
@@ -49,8 +51,8 @@ export function useHorizontalSwipe({
 function createHorizontalSwipeHandlers(options: NormalizedHorizontalSwipeOptions) {
   return PanResponder.create({
     onStartShouldSetPanResponder: () => shouldStartHorizontalSwipe(options),
-    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options.disabled),
-    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options.disabled),
+    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options),
+    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options),
     onPanResponderRelease: (_, gesture) => releaseHorizontalSwipe(gesture, options),
     onPanResponderTerminationRequest: () => true,
     ...moveResponder(options.onSwipeProgress),
@@ -96,7 +98,7 @@ function commitHorizontalSwipe(
   action?.()
 }
 
-function shouldCapture(gesture: PanResponderGestureState, disabled: boolean) {
-  if (disabled) return false
+function shouldCapture(gesture: PanResponderGestureState, options: NormalizedHorizontalSwipeOptions) {
+  if (options.disabled || options.canStart?.({ x: gesture.x0, y: gesture.y0 }) === false) return false
   return horizontalSwipeCapturesMovement(gesture)
 }
