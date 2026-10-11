@@ -1,4 +1,5 @@
 import { evaluateMobileSavedView } from './mobileSavedViews'
+import { pluralizeType } from '../../../../src/shared/typeLabels'
 import {
   DEFAULT_MOBILE_ALL_NOTES_FILE_VISIBILITY,
   isMobileAllNotesEntry,
@@ -190,7 +191,6 @@ function orderedTypeCounts(notes: MobileNote[], typeDefinitions: MobileTypeDefin
   return [...counts.entries()]
     .filter(([type]) => isVisibleTypeDefinition(typeDefinitions[type]))
     .sort((left, right) => compareTypeSectionEntries(left, right, typeDefinitions))
-    .slice(0, 10)
 }
 
 function previousTypeItemId(items: MobileSidebarItem[], type: string): string | null {
@@ -229,12 +229,6 @@ function isVisibleTypeDefinition(definition?: MobileTypeDefinition) {
 
 function viewTone(view: MobileSavedView): MobileTone {
   return mobileToneFromValue(view.definition.color, 'gray')
-}
-
-function pluralizeType(type: string): string {
-  if (type.endsWith('s')) return type
-  if (type.endsWith('y')) return `${type.slice(0, -1)}ies`
-  return `${type}s`
 }
 
 function normalizedSidebarLabel(label: string): string {

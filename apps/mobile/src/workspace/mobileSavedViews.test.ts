@@ -42,7 +42,7 @@ filters:
         sort: 'modified:desc',
       },
     })
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({ id: 'draft-project', modifiedAt: 10, status: 'Draft', title: 'Draft project', type: 'Project' }),
       note({ id: 'active-project', modifiedAt: 20, status: 'Active', title: 'Active project', type: 'Project' }),
       note({ id: 'done-project', modifiedAt: 30, status: 'Done', title: 'Done project', type: 'Project' }),
@@ -67,7 +67,7 @@ filters:
       id: 'view-legacy-focus',
       definition: { name: 'Legacy Focus' },
     })
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({ id: 'essay', type: 'Essay' }),
       note({ id: 'procedure', type: 'Procedure' }),
     ]).map((candidate) => candidate.id)).toEqual(['essay'])
@@ -87,7 +87,7 @@ filters:
     }, 0)
 
     expect(commaView?.definition.listPropertiesDisplay).toEqual(['AI, UX', 'Status'])
-    expect(evaluateMobileSavedView(commaView!, [
+    expect(evaluateMobileSavedView(requiredView(commaView), [
       note({ id: 'quoted-comma', tags: ['AI, UX'] }),
       note({ id: 'plain', tags: ['Design'] }),
       note({ id: 'split-would-be-wrong', tags: ['AI'] }),
@@ -107,7 +107,7 @@ filters:
 
     expect(hashView?.definition.name).toBe('Hash Tags')
     expect(hashView?.definition.listPropertiesDisplay).toEqual(['Topic #', 'Status'])
-    expect(evaluateMobileSavedView(hashView!, [
+    expect(evaluateMobileSavedView(requiredView(hashView), [
       note({ id: 'hash-content', tags: ['AI # UX'] }),
       note({ id: 'plain', tags: ['Design'] }),
       note({ id: 'hash-prefix-only', tags: ['AI'] }),
@@ -148,7 +148,7 @@ filters:
         { field: 'category', op: 'equals', value: null },
       ],
     })
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({ id: 'missing-null-fields', title: 'Mobile\nQA' }),
       note({ id: 'empty-priority', properties: [{ key: 'priority', label: 'Priority', value: '' }], title: 'Mobile\nQA' }),
       note({ id: 'literal-backslash', title: String.raw`Mobile\nQA` }),
@@ -167,13 +167,13 @@ filters:
       note({ id: 'high', properties: [{ key: 'Priority', label: 'Priority', value: 1 }, { key: 'Due', label: 'Due', value: '2026-06-20' }] }),
     ]
 
-    expect(evaluateMobileSavedView(rankedView!, notes).map((candidate) => candidate.id)).toEqual(['high', 'low', 'missing'])
-    expect(evaluateMobileSavedView(datedView!, notes).map((candidate) => candidate.id)).toEqual(['high', 'low', 'missing'])
-    expect(evaluateMobileSavedView(offsetDateView!, [
+    expect(evaluateMobileSavedView(requiredView(rankedView), notes).map((candidate) => candidate.id)).toEqual(['high', 'low', 'missing'])
+    expect(evaluateMobileSavedView(requiredView(datedView), notes).map((candidate) => candidate.id)).toEqual(['high', 'low', 'missing'])
+    expect(evaluateMobileSavedView(requiredView(offsetDateView), [
       note({ id: 'late-us-evening', properties: [{ key: 'Due', label: 'Due', value: '2026-06-10T23:00:00-05:00' }] }),
       note({ id: 'utc-midnight', properties: [{ key: 'Due', label: 'Due', value: '2026-06-11T00:00:00Z' }] }),
     ]).map((candidate) => candidate.id)).toEqual(['utc-midnight', 'late-us-evening'])
-    expect(evaluateMobileSavedView(typePropertyView!, [
+    expect(evaluateMobileSavedView(requiredView(typePropertyView), [
       note({ id: 'missing', type: 'Book' }),
       note({ id: 'frontmatter-zeta', properties: [{ key: 'type', label: 'type', value: 'Zeta' }], type: 'Essay' }),
       note({ id: 'frontmatter-alpha', properties: [{ key: 'type', label: 'type', value: 'Alpha' }], type: 'Procedure' }),
@@ -186,7 +186,7 @@ filters:
       relativePath: 'views/ranked-tags.yml',
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({ id: 'same-first-late', properties: [{ key: 'Tags', label: 'Tags', value: ['alpha', 'zeta'] }] }),
       note({ id: 'same-first-early', properties: [{ key: 'Tags', label: 'Tags', value: ['alpha', 'beta'] }] }),
       note({ id: 'later-first', properties: [{ key: 'Tags', label: 'Tags', value: ['bravo'] }] }),
@@ -203,13 +203,13 @@ filters:
       1,
     )
 
-    expect(evaluateMobileSavedView(createdView!, [
+    expect(evaluateMobileSavedView(requiredView(createdView), [
       note({ createdAt: null, id: 'missing-created-newer-modified', modifiedAt: 3000 }),
       note({ createdAt: 2000, id: 'created-middle', modifiedAt: 1000 }),
       note({ createdAt: 1000, id: 'created-older', modifiedAt: 5000 }),
     ]).map((candidate) => candidate.id)).toEqual(['missing-created-newer-modified', 'created-middle', 'created-older'])
 
-    expect(evaluateMobileSavedView(statusView!, [
+    expect(evaluateMobileSavedView(requiredView(statusView), [
       note({ id: 'done', modifiedAt: 1000, status: 'Done' }),
       note({ id: 'active-older', modifiedAt: 1000, status: 'Active' }),
       note({ id: 'empty-status', modifiedAt: 4000, status: '' }),
@@ -233,7 +233,7 @@ filters:
 `,
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({
         id: 'match',
         properties: [{ key: 'priority', label: 'Priority', value: 'High' }],
@@ -317,9 +317,9 @@ filters:
       }),
     ]
 
-    expect(evaluateMobileSavedView(hasView!, notes).map((candidate) => candidate.id)).toEqual(['canonical-has'])
-    expect(evaluateMobileSavedView(customHasView!, notes).map((candidate) => candidate.id)).toEqual(['custom-has-part'])
-    expect(evaluateMobileSavedView(belongsToView!, notes).map((candidate) => candidate.id)).toEqual(['label-only-belongs-to'])
+    expect(evaluateMobileSavedView(requiredView(hasView), notes).map((candidate) => candidate.id)).toEqual(['canonical-has'])
+    expect(evaluateMobileSavedView(requiredView(customHasView), notes).map((candidate) => candidate.id)).toEqual(['custom-has-part'])
+    expect(evaluateMobileSavedView(requiredView(belongsToView), notes).map((candidate) => candidate.id)).toEqual(['label-only-belongs-to'])
   })
 
   it('evaluates discoverable desktop built-in saved-view fields', () => {
@@ -343,7 +343,7 @@ filters:
 `,
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({
         favorite: true,
         id: 'Procedures/mobile-runbook.md',
@@ -371,7 +371,7 @@ filters:
   it('resolves desktop-non-built-in filter fields through custom properties', () => {
     const view = parseMobileSavedViewFile({ content: 'name: Custom\nfilters:\n  all:\n    - field: created\n      op: equals\n      value: 2026-06-01\n    - field: modified\n      op: equals\n      value: custom-modified\n    - field: path\n      op: equals\n      value: Roadmap\n    - field: organized\n      op: equals\n      value: planned\n', relativePath: 'views/custom.yml' }, 0)
     const notes = [note({ createdAt: Date.parse('2020-01-01'), id: 'custom-property-match', modifiedAt: Date.parse('2020-01-02'), organized: false, path: 'Actual/Location.md', properties: [{ key: 'created', label: 'created', value: '2026-06-01' }, { key: 'modified', label: 'modified', value: 'custom-modified' }, { key: 'path', label: 'path', value: 'Roadmap' }, { key: 'organized', label: 'organized', value: 'planned' }] }), note({ createdAt: Date.parse('2026-06-01'), id: 'metadata-only-match', modifiedAt: Date.parse('2020-01-02'), organized: true, path: 'Roadmap' })]
-    expect(evaluateMobileSavedView(view!, notes).map((candidate) => candidate.id)).toEqual(['custom-property-match'])
+    expect(evaluateMobileSavedView(requiredView(view), notes).map((candidate) => candidate.id)).toEqual(['custom-property-match'])
   })
 
   it('round-trips nested desktop saved-view filter groups', () => {
@@ -403,17 +403,17 @@ filters:
       note({ favorite: false, id: 'plain-project', status: 'Draft', type: 'Project' }),
     ]
 
-    expect(evaluateMobileSavedView(view!, notes).map((candidate) => candidate.id)).toEqual([
+    expect(evaluateMobileSavedView(requiredView(view), notes).map((candidate) => candidate.id)).toEqual([
       'favorite-project',
       'favorite-active-event',
     ])
 
-    const serialized = serializeMobileSavedViewDefinition(view!.definition)
+    const serialized = serializeMobileSavedViewDefinition(requiredView(view).definition)
     const reparsed = parseMobileSavedViewFile({ content: serialized, relativePath: 'views/nested-focus.yml' }, 0)
 
     expect(serialized).toContain('    - any:')
     expect(serialized).toContain('        - all:')
-    expect(evaluateMobileSavedView(reparsed!, notes).map((candidate) => candidate.id)).toEqual([
+    expect(evaluateMobileSavedView(requiredView(reparsed), notes).map((candidate) => candidate.id)).toEqual([
       'favorite-project',
       'favorite-active-event',
     ])
@@ -427,7 +427,7 @@ filters:
   all:
     - field: title
       op: contains
-      value: "^Mobile\\s+QA"
+      value: '^Mobile\\s+QA'
       regex: true
 `,
     }, 0)
@@ -458,9 +458,9 @@ filters:
       note({ id: 'miss', title: 'Desktop QA Draft' }),
     ]
 
-    expect(evaluateMobileSavedView(view!, notes).map((candidate) => candidate.id)).toEqual(['match'])
-    expect(evaluateMobileSavedView(invalidRegexView!, notes)).toEqual([])
-    expect(evaluateMobileSavedView(unsafeRegexView!, [
+    expect(evaluateMobileSavedView(requiredView(view), notes).map((candidate) => candidate.id)).toEqual(['match'])
+    expect(evaluateMobileSavedView(requiredView(invalidRegexView), notes)).toEqual([])
+    expect(evaluateMobileSavedView(requiredView(unsafeRegexView), [
       note({ id: 'unsafe-would-match', title: 'aaaaaaaaaaaaaaaaaaaaaaaa' }),
     ])).toEqual([])
   })
@@ -477,7 +477,7 @@ filters:
 `,
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({
         id: 'single',
         relationships: [relationship('related_to', [{ ref: '[[svc-session-trail]]', title: 'Trail' }])],
@@ -508,7 +508,7 @@ filters:
 `,
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({
         id: 'match',
         relationships: [relationship('related_to', [{ ref: '[[tolaria]]', title: 'Tolaria' }])],
@@ -532,7 +532,7 @@ filters:
 `,
     }, 0)
 
-    expect(evaluateMobileSavedView(view!, [
+    expect(evaluateMobileSavedView(requiredView(view), [
       note({ id: 'exact', tags: ['Design'] }),
       note({ id: 'substring', tags: ['Design Systems'] }),
     ]).map((candidate) => candidate.id)).toEqual(['exact'])
@@ -579,9 +579,9 @@ filters:
       note({ id: 'upcoming', properties: [{ key: 'Date', label: 'Date', value: '2026-04-21' }] }),
     ]
 
-    expect(evaluateMobileSavedView(todayView!, notes).map((candidate) => candidate.id)).toEqual(['today'])
-    expect(evaluateMobileSavedView(recentView!, notes).map((candidate) => candidate.id)).toEqual(['recent', 'today', 'upcoming'])
-    expect(evaluateMobileSavedView(upcomingView!, notes).map((candidate) => candidate.id)).toEqual(['upcoming'])
+    expect(evaluateMobileSavedView(requiredView(todayView), notes).map((candidate) => candidate.id)).toEqual(['today'])
+    expect(evaluateMobileSavedView(requiredView(recentView), notes).map((candidate) => candidate.id)).toEqual(['recent', 'today', 'upcoming'])
+    expect(evaluateMobileSavedView(requiredView(upcomingView), notes).map((candidate) => candidate.id)).toEqual(['upcoming'])
   })
 
   it('clamps relative month and year filters to desktop date-fns calendar semantics', () => {
@@ -615,8 +615,8 @@ filters:
       note({ id: 'native-rollover-future', properties: [{ key: 'Date', label: 'Date', value: '2026-05-01' }] }),
     ]
 
-    expect(evaluateMobileSavedView(oneMonthAgoView!, notes).map((candidate) => candidate.id)).toEqual(['desktop-month-past'])
-    expect(evaluateMobileSavedView(nextMonthView!, notes).map((candidate) => candidate.id)).toEqual(['desktop-month-future'])
+    expect(evaluateMobileSavedView(requiredView(oneMonthAgoView), notes).map((candidate) => candidate.id)).toEqual(['desktop-month-past'])
+    expect(evaluateMobileSavedView(requiredView(nextMonthView), notes).map((candidate) => candidate.id)).toEqual(['desktop-month-future'])
 
     vi.setSystemTime(new Date(2024, 1, 29, 12))
     const lastYearView = parseMobileSavedViewFile({
@@ -630,7 +630,7 @@ filters:
 `,
     }, 2)
 
-    expect(evaluateMobileSavedView(lastYearView!, [
+    expect(evaluateMobileSavedView(requiredView(lastYearView), [
       note({ id: 'desktop-year-past', properties: [{ key: 'Date', label: 'Date', value: '2023-02-28' }] }),
       note({ id: 'native-rollover-year', properties: [{ key: 'Date', label: 'Date', value: '2023-03-01' }] }),
     ]).map((candidate) => candidate.id)).toEqual(['desktop-year-past'])
@@ -658,10 +658,10 @@ filters:
 `,
     }, 1)
 
-    expect(evaluateMobileSavedView(invalidTargetView!, [
+    expect(evaluateMobileSavedView(requiredView(invalidTargetView), [
       note({ id: 'normalized-target-would-be-wrong', properties: [{ key: 'Date', label: 'Date', value: '2026-03-03' }] }),
     ])).toEqual([])
-    expect(evaluateMobileSavedView(validTargetView!, [
+    expect(evaluateMobileSavedView(requiredView(validTargetView), [
       note({ id: 'normalized-field-would-be-wrong', properties: [{ key: 'Date', label: 'Date', value: '2026-02-31' }] }),
     ])).toEqual([])
   })
@@ -800,4 +800,9 @@ function viewFixture(filename: string, name: string, order: number | null): Mobi
     filename,
     id: `view-${filename.replace(/\.yml$/u, '')}`,
   }
+}
+
+function requiredView(view: MobileSavedView | null): MobileSavedView {
+  if (!view) throw new Error('Expected a valid saved view')
+  return view
 }

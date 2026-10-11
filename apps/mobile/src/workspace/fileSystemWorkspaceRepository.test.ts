@@ -36,7 +36,7 @@ describe('createFileSystemWorkspaceRepository', () => {
 
   it('builds snapshots from markdown and saved-view files in the selected native vault root', () => {
     const fileSystem = fakeWorkspaceFileSystem({
-      'views/active-essays.yml': 'name: Active Essays\nfilters:\n  type: Essay\n',
+      'views/active-essays.yml': 'name: Active Essays\nfilters:\n  all:\n    - field: type\n      op: equals\n      value: Essay\n',
       'Writing/Workflow.md': `---
 type: Essay
 status: Active
@@ -77,6 +77,7 @@ type: Project
     expect(snapshot.sidebarSections.find((section) => section.id === 'views')?.items?.[0]).toMatchObject({
       icon: 'view',
       label: 'Active Essays',
+      count: '1',
     })
     expect(snapshot.allNotes?.find((note) => note.path === 'views/active-essays.yml')).toMatchObject({
       fileKind: 'text',

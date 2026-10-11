@@ -205,6 +205,13 @@ to the app sandbox. It returns fresh stat fields without caching file state;
 Expo continues to own byte IO. Rapid-edit staging and checkout recovery remain
 unchanged (ADR 0205).
 
+Mobile saved-view loading uses `mobileViewYaml.ts` and the `yaml` parser with
+bounded input, alias expansion and filter depth (ADR 0210). Valid desktop YAML
+indentation and flow collections retain their filters; malformed definitions are
+rejected instead of becoming all-note views. Evaluation and serialization remain
+in `mobileSavedViews.ts`. Sidebar type discovery has no arbitrary count cap and
+uses the desktop pluralization helper, while explicit type labels take priority.
+
 Storage verification can also run against an optimized local binary using the
 explicit `TOLARIA_QA` Swift condition (ADR 0208). A read-only native capability
 enables the existing loopback-only probes without Metro or development JavaScript.

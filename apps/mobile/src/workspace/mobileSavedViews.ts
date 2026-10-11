@@ -1,3 +1,4 @@
+import { parseMobileViewDefinition } from './mobileViewYaml'
 import type {
   MobileNote,
   MobileSavedView,
@@ -5,7 +6,6 @@ import type {
   MobileViewFilterCondition,
   MobileViewFilterGroup,
   MobileViewFilterNode,
-  MobileViewFilterOp,
 } from './mobileWorkspaceModel'
 import {
   compareSortableValues,
@@ -33,20 +33,7 @@ type ViewFileSource = {
   relativePath: string
 }
 
-type YamlLine = {
-  indent: number
-  text: string
-}
-
-type FilterParseResult = {
-  group: MobileViewFilterGroup
-  nextIndex: number
-}
-
 type FieldKey = string
-type FilterGroupKind = 'all' | 'any'
-type IndentLevel = number
-type LineIndex = number
 type MobileViewEntry = ViewFilterEntry & { mobileNote: MobileNote }
 type SortField = { key: FieldKey; kind: 'builtIn' | 'property' }
 type SortFieldValue = string | number | boolean | string[] | null
@@ -58,37 +45,12 @@ type YamlText = string
 type YamlScalar = string | number | boolean | null
 
 
-const supportedFilterOps = new Set<MobileViewFilterOp>([
-  'equals',
-  'not_equals',
-  'contains',
-  'not_contains',
-  'any_of',
-  'none_of',
-  'is_empty',
-  'is_not_empty',
-  'before',
-  'after',
-])
-const doubleQuote = '"'
-const singleQuote = '\''
-const doubleQuotedScalarEscapes: Record<string, string> = {
-  '\\\\': '\\',
-  '\\"': '"',
-  '\\/': '/',
-  '\\b': '\b',
-  '\\f': '\f',
-  '\\n': '\n',
-  '\\r': '\r',
-  '\\t': '\t',
-}
-
 export function parseMobileSavedViewFile(file: ViewFileSource, index: ViewIndex): MobileSavedView | null {
   if (!isViewFile(file.relativePath)) return null
 
-  const lines = yamlLines(file.content)
   const filename = file.relativePath.split('/').at(-1) ?? `view-${index + 1}.yml`
-  const definition = parseViewDefinition(lines, filename, index)
+  const definition = parseMobileViewDefinition(file.content, fallbackViewName(filename, index))
+  if (!definition) return null
 
   return {
     definition,
@@ -172,135 +134,6 @@ export function serializeMobileSavedViewDefinition(definition: MobileViewDefinit
 
 function isViewFile(path: ViewPath) {
   return /^(?:views|\.laputa\/views)\/[^/]+\.ya?ml$/u.test(path)
-}
-
-function parseViewDefinition(lines: YamlLine[], filename: ViewFilename, index: ViewIndex): MobileViewDefinition {
-  return {
-    color: optionalTopLevelString(lines, 'color'),
-    filters: parseFilters(lines),
-    icon: optionalTopLevelString(lines, 'icon'),
-    listPropertiesDisplay: topLevelList(lines, 'listPropertiesDisplay'),
-    name: optionalTopLevelString(lines, 'name') ?? fallbackViewName(filename, index),
-    order: topLevelNumber(lines, 'order'),
-    sort: optionalTopLevelString(lines, 'sort'),
-  }
-}
-
-function parseFilters(lines: YamlLine[]): MobileViewFilterGroup {
-  const filtersIndex = lines.findIndex((line) => line.indent === 0 && line.text === 'filters:')
-  if (filtersIndex === -1) return { all: [] }
-
-  const groupLine = lines[filtersIndex + 1]
-  if (!groupLine || groupLine.indent !== 2) return { all: [] }
-
-  return parseGroupAt(lines, filtersIndex + 1).group
-}
-
-function parseGroupAt(lines: YamlLine[], index: LineIndex): FilterParseResult {
-  const line = lines[index]
-  const kind = groupKind(line?.text ?? '')
-  if (!line || !kind) return { group: { all: [] }, nextIndex: index + 1 }
-
-  return parseGroupItems(lines, index + 1, line.indent + 2, kind)
-}
-
-function parseGroupItems(
-  lines: YamlLine[],
-  startIndex: LineIndex,
-  itemIndent: IndentLevel,
-  kind: FilterGroupKind,
-): FilterParseResult {
-  const nodes: MobileViewFilterNode[] = []
-  let index = startIndex
-
-  while (index < lines.length) {
-    const line = lines[index]
-    if (line.indent < itemIndent) break
-    if (line.indent !== itemIndent || !line.text.startsWith('- ')) {
-      index += 1
-      continue
-    }
-
-    const parsed = parseFilterNode(lines, index, itemIndent)
-    nodes.push(parsed.node)
-    index = parsed.nextIndex
-  }
-
-  return { group: kind === 'any' ? { any: nodes } : { all: nodes }, nextIndex: index }
-}
-
-function parseFilterNode(
-  lines: YamlLine[],
-  index: LineIndex,
-  itemIndent: IndentLevel,
-): { nextIndex: number; node: MobileViewFilterNode } {
-  const inlineText = lines[index].text.slice(2).trim()
-  const inlineGroup = groupKind(inlineText)
-  if (inlineGroup) {
-    const result = parseGroupItems(lines, index + 1, itemIndent + 4, inlineGroup)
-    return { nextIndex: result.nextIndex, node: result.group }
-  }
-
-  return parseCondition(lines, index, itemIndent, inlineText)
-}
-
-function parseCondition(
-  lines: YamlLine[],
-  index: LineIndex,
-  itemIndent: IndentLevel,
-  inlineText: YamlText,
-): { nextIndex: number; node: MobileViewFilterCondition } {
-  const entries: Record<string, unknown> = {}
-  applyKeyValue(entries, inlineText)
-
-  let nextIndex = index + 1
-  while (nextIndex < lines.length && lines[nextIndex].indent > itemIndent) {
-    const line = lines[nextIndex]
-    if (line.indent === itemIndent + 2) {
-      const parsed = parseConditionProperty(lines, nextIndex, itemIndent + 2)
-      if (parsed) {
-        Reflect.set(entries, parsed.key, parsed.value)
-        nextIndex = parsed.nextIndex
-        continue
-      }
-    }
-    nextIndex += 1
-  }
-
-  return {
-    nextIndex,
-    node: normalizeCondition(entries),
-  }
-}
-
-function parseConditionProperty(lines: YamlLine[], index: LineIndex, indent: IndentLevel) {
-  const keyValue = keyValueText(lines[index].text)
-  if (!keyValue) return null
-
-  if (keyValue.value !== '') {
-    return { key: keyValue.key, nextIndex: index + 1, value: parseYamlValue(keyValue.value) }
-  }
-
-  const list = listValues(lines, index + 1, indent + 2)
-  return {
-    key: keyValue.key,
-    nextIndex: index + 1 + list.consumed,
-    value: list.values.length > 0 ? list.values : null,
-  }
-}
-
-function normalizeCondition(entries: Record<string, unknown>): MobileViewFilterCondition {
-  return {
-    field: typeof entries.field === 'string' ? entries.field : '',
-    op: normalizedFilterOp(entries.op),
-    regex: entries.regex === true,
-    value: entries.value,
-  }
-}
-
-function normalizedFilterOp(value: unknown): MobileViewFilterOp {
-  if (typeof value !== 'string') return 'equals'
-  return supportedFilterOps.has(value as MobileViewFilterOp) ? value as MobileViewFilterOp : 'equals'
 }
 
 function mobileNoteToViewEntry(note: MobileNote): MobileViewEntry {
@@ -420,209 +253,6 @@ function compareMissingValues(left: SortFieldValue, right: SortFieldValue) {
 
 function comparePresentFieldValue(left: SortFieldValue, right: SortFieldValue) {
   return compareSortableValues(left, right)
-}
-
-function yamlLines(content: string): YamlLine[] {
-  return content
-    .split(/\r?\n/u)
-    .map(stripYamlComment)
-    .filter((line) => line.trim().length > 0)
-    .map((line) => ({ indent: line.search(/\S/u), text: line.trim() }))
-}
-
-function stripYamlComment(line: YamlText): YamlText {
-  const commentIndex = yamlCommentIndex(line)
-  return commentIndex === -1 ? line : line.slice(0, commentIndex).trimEnd()
-}
-
-function yamlCommentIndex(line: YamlText): number {
-  let quote: '"' | '\'' | null = null
-
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index]
-    if (char === '\\' && quote === '"') {
-      index += 1
-      continue
-    }
-    if (isQuote(char)) {
-      quote = quote === char ? null : quote ?? char
-      continue
-    }
-    if (quote === null && isYamlCommentStart(line, index)) return index
-  }
-
-  return -1
-}
-
-function isYamlCommentStart(line: YamlText, index: number): boolean {
-  return line[index] === '#' && (index === 0 || /\s/u.test(line[index - 1] ?? ''))
-}
-
-function optionalTopLevelString(lines: YamlLine[], key: FieldKey) {
-  const value = topLevelValue(lines, key)
-  return typeof value === 'string' && value.trim().length > 0 ? value : null
-}
-
-function topLevelNumber(lines: YamlLine[], key: FieldKey) {
-  const value = topLevelValue(lines, key)
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
-}
-
-function topLevelList(lines: YamlLine[], key: FieldKey) {
-  const inlineValue = topLevelValue(lines, key)
-  if (Array.isArray(inlineValue)) return inlineValue.map(String)
-
-  const index = lines.findIndex((line) => line.indent === 0 && line.text === `${key}:`)
-  if (index === -1) return undefined
-
-  const { values } = listValues(lines, index + 1, 2)
-  return values.length > 0 ? values.map(String) : undefined
-}
-
-function topLevelValue(lines: YamlLine[], key: FieldKey): unknown {
-  const prefix = `${key}:`
-  const line = lines.find((candidate) => candidate.indent === 0 && candidate.text.startsWith(prefix))
-  if (!line) return null
-  return parseYamlValue(line.text.slice(prefix.length).trim())
-}
-
-function listValues(lines: YamlLine[], startIndex: LineIndex, indent: IndentLevel) {
-  const values: unknown[] = []
-  let index = startIndex
-  while (isListValue(lines[index], indent)) {
-    values.push(parseYamlValue(lines[index].text.slice(2).trim()))
-    index += 1
-  }
-  return { consumed: index - startIndex, values }
-}
-
-function isListValue(line: YamlLine | undefined, indent: number) {
-  return line?.indent === indent && line.text.startsWith('- ')
-}
-
-function applyKeyValue(target: Record<string, unknown>, text: YamlText) {
-  const parsed = keyValueText(text)
-  if (parsed) Reflect.set(target, parsed.key, parseYamlValue(parsed.value))
-}
-
-function keyValueText(text: YamlText) {
-  const separatorIndex = text.indexOf(':')
-  if (separatorIndex === -1) return null
-
-  return {
-    key: text.slice(0, separatorIndex).trim(),
-    value: text.slice(separatorIndex + 1).trim(),
-  }
-}
-
-function parseYamlValue(value: YamlText): unknown {
-  const scalar = yamlScalarToken(value)
-  return scalar.quoted ? scalar.text : parseUnquotedYamlValue(scalar.text)
-}
-
-function yamlScalarToken(value: YamlText) {
-  const quote = scalarQuote(value)
-
-  return {
-    quoted: quote !== null,
-    text: unquotedScalar(value, quote),
-  }
-}
-
-function parseUnquotedYamlValue(value: YamlText): unknown {
-  const literal = yamlLiteralValue(value)
-  if (literal !== undefined) return literal
-  return isInlineListLiteral(value) ? parseInlineList(value) : value
-}
-
-function yamlLiteralValue(value: YamlText): unknown {
-  const lower = value.toLowerCase()
-  if (lower === 'true') return true
-  if (lower === 'false') return false
-  if (lower === 'null' || lower === '~') return null
-  return /^-?\d+(?:\.\d+)?$/u.test(value) ? Number(value) : undefined
-}
-
-function isInlineListLiteral(value: YamlText) {
-  if (value.startsWith('[[')) return false
-  return value.startsWith('[') && value.endsWith(']')
-}
-
-function parseInlineList(value: YamlText) {
-  const inner = value.slice(1, -1)
-  if (!inner.trim()) return []
-  return splitInlineListItems(inner).map((item) => parseYamlValue(item.trim()))
-}
-
-function splitInlineListItems(value: YamlText): YamlText[] {
-  const items: YamlText[] = []
-  let quote: '"' | '\'' | null = null
-  let startIndex = 0
-
-  for (let index = 0; index < value.length; index += 1) {
-    const char = value[index]
-    if (char === '\\' && quote === '"') {
-      index += 1
-      continue
-    }
-    if (isQuote(char)) {
-      quote = quote === char ? null : quote ?? char
-      continue
-    }
-    if (char === ',' && quote === null) {
-      items.push(value.slice(startIndex, index))
-      startIndex = index + 1
-    }
-  }
-
-  items.push(value.slice(startIndex))
-  return items
-}
-
-function unquotedScalar(value: YamlText, quote: '"' | '\'' | null) {
-  if (quote === null) return value
-
-  const inner = value.slice(1, -1)
-  return quote === doubleQuote ? unescapeDoubleQuotedScalar(inner) : inner.replaceAll("''", "'")
-}
-
-function unescapeDoubleQuotedScalar(value: YamlText) {
-  return value.replace(/\\(?:["\\/bfnrt]|x[\da-fA-F]{2}|u[\da-fA-F]{4}|U[\da-fA-F]{8})/gu, (escape) => {
-    const shortEscape = doubleQuotedScalarEscape(escape)
-    return shortEscape ?? unicodeEscapeText(escape)
-  })
-}
-
-function doubleQuotedScalarEscape(value: YamlText): string | null {
-  return doubleQuotedScalarEscapes[value] ?? null
-}
-
-function unicodeEscapeText(value: YamlText) {
-  const codePoint = Number.parseInt(value.slice(2), 16)
-  if (!Number.isFinite(codePoint)) return value
-
-  try {
-    return String.fromCodePoint(codePoint)
-  } catch {
-    return value
-  }
-}
-
-function scalarQuote(value: YamlText): '"' | '\'' | null {
-  const quote = value.at(0)
-  if (isQuote(quote) && value.at(-1) === quote) return quote
-  return null
-}
-
-function isQuote(value: string | undefined): value is '"' | '\'' {
-  if (value === doubleQuote) return true
-  return value === singleQuote
-}
-
-function groupKind(text: YamlText): FilterGroupKind | null {
-  if (text === 'all:') return 'all'
-  if (text === 'any:') return 'any'
-  return null
 }
 
 function isFilterGroup(node: MobileViewFilterNode): node is MobileViewFilterGroup {
