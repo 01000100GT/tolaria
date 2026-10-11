@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Wprowadź ten kod na GitHubie",
   "mobile.vaults.requestFailed": "Operacja nie powiodła się. Twoje lokalne pliki zostały zachowane. Sprawdź połączenie i uprawnienia do repozytorium, a następnie spróbuj ponownie.",
   "mobile.vaults.catalogFailed": "Nie udało się odczytać zapisanej listy repozytoriów. Nie usunięto żadnych plików repozytorium.",
+  "mobile.editor.loading": "Ładowanie notatki...",
+  "mobile.editor.readFailed": "Nie udało się odczytać tej notatki. Jej plik nie został zmieniony.",
   "mobile.vaults.diverged": "Historie lokalna i zdalna rozeszły się. Obie historie zostały zachowane. Rozwiąż rozbieżność na komputerze przed ponowną synchronizacją.",
   "mobile.vaults.checkpoint": "Zapisywanie zmian lokalnych...",
   "mobile.vaults.fetch": "Pobieranie zmian zdalnych...",

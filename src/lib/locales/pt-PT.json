@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Introduza este código no GitHub",
   "mobile.vaults.requestFailed": "A operação falhou. Os seus ficheiros locais foram mantidos. Verifique a sua ligação e as permissões do repositório e tente novamente.",
   "mobile.vaults.catalogFailed": "Não foi possível ler a lista de vaults guardada. Não foram removidos ficheiros do vault.",
+  "mobile.editor.loading": "A carregar a nota...",
+  "mobile.editor.readFailed": "Não foi possível ler esta nota. O seu ficheiro não foi alterado.",
   "mobile.vaults.diverged": "Os históricos local e remoto divergiram. Ambos os históricos são preservados. Resolva a divergência no computador antes de sincronizar novamente.",
   "mobile.vaults.checkpoint": "A guardar as alterações locais...",
   "mobile.vaults.fetch": "A obter alterações remotas...",

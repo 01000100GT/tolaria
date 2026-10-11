@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Zadajte tento kód na GitHub",
   "mobile.vaults.requestFailed": "Operácia zlyhala. Vaše lokálne súbory boli zachované. Skontrolujte svoje pripojenie a oprávnenia pre ukladací priestor a potom to skúste znova.",
   "mobile.vaults.catalogFailed": "Uložený zoznam trezorov sa nepodarilo prečítať. Neboli odstránené žiadne súbory úložiska.",
+  "mobile.editor.loading": "Načítava sa poznámka…",
+  "mobile.editor.readFailed": "Túto poznámku sa nepodarilo prečítať. Jej súbor nebol zmenený.",
   "mobile.vaults.diverged": "Miestna a vzdialená história sa rozchádzajú. Obe histórie sú zachované. Pred ďalšou synchronizáciou vyriešte rozdiel v desktopovej aplikácii.",
   "mobile.vaults.checkpoint": "Ukladajú sa lokálne zmeny...",
   "mobile.vaults.fetch": "Načítavajú sa vzdialené zmeny...",

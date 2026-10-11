@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Introduce este código en GitHub",
   "mobile.vaults.requestFailed": "La operación ha fallado. Se han conservado tus archivos locales. Compruebe su conexión y los permisos del repositorio y, a continuación, inténtelo de nuevo.",
   "mobile.vaults.catalogFailed": "No se ha podido leer la lista de bóvedas guardada. No se ha eliminado ningún archivo del repositorio.",
+  "mobile.editor.loading": "Cargando nota...",
+  "mobile.editor.readFailed": "No se ha podido leer esta nota. Su archivo no se ha modificado.",
   "mobile.vaults.diverged": "Los historiales local y remoto han divergido. Se conservan ambos historiales. Resuelva la divergencia en el escritorio antes de volver a sincronizar.",
   "mobile.vaults.checkpoint": "Guardando los cambios locales...",
   "mobile.vaults.fetch": "Obteniendo cambios remotos...",

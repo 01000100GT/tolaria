@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
+import { isMobileNoteHydration, mobileEditNeedsNoteRead } from '../workspace/mobileNoteRead'
 import {
   applyMobileWorkspaceEditWithWrites,
   type MobileWorkspaceEdit,
@@ -94,7 +95,7 @@ function useWorkspaceEditApplier({
   return useCallback((edit: MobileWorkspaceEdit, options: WorkspaceEditOptions = {}) => {
     const previousSnapshot = snapshotState.workspaceSnapshotRef.current
     if (generation !== syncEditors?.generation()) return { snapshot: previousSnapshot, writes: [] }
-    const result = applyWorkspaceEditToWritableSnapshot(previousSnapshot, edit)
+    const result = applyWorkspaceEditToWritableSnapshot(previousSnapshot, edit, repositoryRequest?.source)
     if (result.writes.length > 0) syncEditors?.markDirty()
     snapshotState.replaceWorkspaceSnapshot(result.snapshot)
     recordWorkspaceEditHistory({ edit, options, previousSnapshot, resultSnapshot: result.snapshot, setWorkspaceHistory })
@@ -112,8 +113,11 @@ function useWorkspaceEditApplier({
 export function applyWorkspaceEditToWritableSnapshot(
   snapshot: MobileWorkspaceSnapshot,
   edit: MobileWorkspaceEdit,
+  source?: ReadOnlyWorkspaceRequest['source'],
 ) {
+  if (isMobileNoteHydration(edit)) return applyMobileWorkspaceEditWithWrites(snapshot, edit)
   if (snapshot.sync.kind === 'noVault' || snapshot.sync.kind === 'readOnly') return { snapshot, writes: [] }
+  if (mobileEditNeedsNoteRead(edit, snapshot, source)) return { snapshot, writes: [] }
   return applyMobileWorkspaceEditWithWrites(snapshot, edit)
 }
 

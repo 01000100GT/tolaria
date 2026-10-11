@@ -29,6 +29,7 @@ import type {
   SidebarLabel,
 } from './tabletWorkspaceNavigation'
 import type { EditorEditingMode } from './TabletEditorPanel'
+import type { MobileNoteReadState } from '../workspace/mobileNoteRead'
 import type { NativeTableOfContentsProof } from '../qa/nativeTableOfContentsProbe'
 
 export type TabletPanel = 'noteList' | 'properties' | 'sidebar'
@@ -269,6 +270,7 @@ export type TabletWorkspaceChromeProps = {
   readOnlyForm: TabletReadOnlyForm
   searchQuery: SearchQuery
   selectedNote: MobileNote | null
+  selectedNoteRead: MobileNoteReadState
   selectedNoteId: string | null
   sourceIdleSave?: boolean
   sourceSelectionProbe?: boolean

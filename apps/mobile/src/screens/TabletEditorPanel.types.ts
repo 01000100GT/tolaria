@@ -12,6 +12,7 @@ import type { MobileAttachmentLinkOpener } from '../workspace/mobileAttachmentOp
 import type { RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import type { MobileTableOfContentsTarget } from '../workspace/mobileTableOfContents'
 import type { MobileEditorBlock, MobileNote, MobileTypeDefinitions } from '../workspace/mobileWorkspaceModel'
+import type { MobileNoteReadState } from '../workspace/mobileNoteRead'
 
 export type EditorEditingMode = 'source' | 'wysiwyg'
 export type EditorFileMode = 'binary' | 'markdown' | 'text'
@@ -25,6 +26,7 @@ export type TabletEditorPanelProps = {
   layoutProbe?: boolean
   leading?: ReactNode
   note: MobileNote | null
+  noteRead?: MobileNoteReadState
   notes: MobileNote[]
   onNavigateWikilink: (target: string) => void
   onOpenMoreActions: () => void
@@ -69,6 +71,7 @@ export type EditorPanelBodyProps = {
   contentProps: EditorContentProps
   fileMode: EditorFileMode
   note: MobileNote
+  noteRead?: MobileNoteReadState
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
   onScrollViewRef: (node: ScrollView | null) => void
 }

@@ -525,6 +525,7 @@ type TabletEditorPanelHostProps = Pick<
   | 'onToggleFavorite'
   | 'onUpdateNoteContent'
   | 'selectedNote'
+  | 'selectedNoteRead'
   | 'sourceIdleSave'
   | 'sourceSelectionProbe'
   | 'vaultRootUri'
@@ -560,6 +561,7 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     layoutProbe: props.layoutProbe,
     leading: <TabletEditorChromeToggle gestures={props.gestures} />,
     note: props.selectedNote,
+    noteRead: props.selectedNoteRead,
     notes: props.suggestionNotes,
     onNavigateWikilink: props.onNavigateWikilink,
     onOpenMoreActions: props.onOpenMoreActions,

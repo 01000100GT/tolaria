@@ -20,13 +20,13 @@ import { mobileColors } from '../ui/tokens'
 import { MobileLayoutProbeReadout } from '../qa/MobileLayoutProbeReadout'
 import { useMobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import type { MobileEditorBlock, MobileNote } from '../workspace/mobileWorkspaceModel'
-import { type MobileTableOfContentsTarget } from '../workspace/mobileTableOfContents'
+import type { MobileTableOfContentsTarget } from '../workspace/mobileTableOfContents'
 import { nativeTableOfContentsScrollProof, type NativeTableOfContentsProof } from '../qa/nativeTableOfContentsProbe'
 import { useMobileAttachmentImporter } from '../workspace/mobileAttachmentImport'
 import { useMobileAttachmentLinkOpener } from '../workspace/mobileAttachmentOpen'
 import { useRegisteredMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteActionMode } from '../workspace/mobileNoteActionMode'
-import { EmptyEditorPanel, MobileFilePreviewFallback } from './TabletEditorPanelChrome'
+import { EmptyEditorPanel, MobileFilePreviewFallback, MobileNoteReadFallback } from './TabletEditorPanelChrome'
 import { panelStyles } from './TabletEditorPanelStyles'
 import type {
   EditorContentProps,
@@ -50,6 +50,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     layoutProbe: layoutProbeEnabled = false,
     leading,
     note,
+    noteRead,
     notes,
     onNavigateWikilink,
     onOpenMoreActions,
@@ -150,6 +151,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         contentProps={contentProps}
         fileMode={fileMode}
         note={note}
+        noteRead={noteRead}
         onScroll={onScroll}
         onScrollViewRef={setScrollViewNode}
       />
@@ -160,7 +162,8 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
   )
 }
 
-function EditorPanelBody({ compact, contentProps, fileMode, note, onScroll, onScrollViewRef }: EditorPanelBodyProps) {
+function EditorPanelBody({ compact, contentProps, fileMode, note, noteRead, onScroll, onScrollViewRef }: EditorPanelBodyProps) {
+  if (noteRead && noteRead.status !== 'ready') return <MobileNoteReadFallback state={noteRead} />
   if (fileMode === 'binary') {
     return (
       <ScrollView contentContainerStyle={panelStyles.filePreviewContent} testID="editor-scroll">

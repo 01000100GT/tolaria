@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Saisissez ce code sur GitHub",
   "mobile.vaults.requestFailed": "L'opération a échoué. Vos fichiers locaux ont été conservés. Vérifiez votre connexion et les autorisations du dépôt, puis réessayez.",
   "mobile.vaults.catalogFailed": "La liste des coffres-forts enregistrée n'a pas pu être lue. Aucun fichier du coffre-fort n'a été supprimé.",
+  "mobile.editor.loading": "Chargement de la note…",
+  "mobile.editor.readFailed": "Cette note n'a pas pu être lue. Son fichier n'a pas été modifié.",
   "mobile.vaults.diverged": "Les historiques local et distant ont divergé. Les deux historiques sont conservés. Résolvez la divergence sur le poste de travail avant de synchroniser à nouveau.",
   "mobile.vaults.checkpoint": "Enregistrement des modifications locales…",
   "mobile.vaults.fetch": "Récupération des modifications distantes…",

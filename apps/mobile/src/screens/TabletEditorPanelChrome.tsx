@@ -1,13 +1,37 @@
-import { FileText } from 'phosphor-react-native'
-import { View } from 'react-native'
+import { ArrowClockwise, FileText, WarningCircle } from 'phosphor-react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { MobileTypeIcon } from '../components/workspace/MobileWorkspaceIcons'
 import { Text } from '../components/ui/text'
 import { mobileText } from '../i18n/mobileText'
 import { MobilePanel, MobileToolbar, MobileToolbarTitle } from '../ui/MobilePanel'
+import { MobileButton } from '../ui/MobileButton'
 import { desktopToolbarActionParity } from '../ui/desktopParity'
 import { mobileColors } from '../ui/tokens'
 import type { MobileNote, MobileTypeDefinitions } from '../workspace/mobileWorkspaceModel'
 import { panelStyles } from './TabletEditorPanelStyles'
+import type { MobileNoteReadState } from '../workspace/mobileNoteRead'
+
+export function MobileNoteReadFallback({ state }: { state: MobileNoteReadState }) {
+  const failed = state.status === 'error'
+  return (
+    <View style={panelStyles.emptyState} testID={failed ? 'note-read-error' : 'note-read-loading'}>
+      <View style={panelStyles.filePreviewFallback} accessibilityLiveRegion="polite">
+        {failed ? <WarningCircle size={24} color={mobileColors.textMuted} /> : <ActivityIndicator color={mobileColors.textMuted} />}
+        <Text style={panelStyles.filePreviewDescription}>
+          {mobileText(failed ? 'mobile.editor.readFailed' : 'mobile.editor.loading')}
+        </Text>
+        {failed ? (
+          <MobileButton
+            icon={<ArrowClockwise size={16} color={mobileColors.textMuted} />}
+            label={mobileText('pulse.retry')}
+            onPress={state.retry}
+            testID="note-read-retry"
+          />
+        ) : null}
+      </View>
+    </View>
+  )
+}
 
 export function MobileFilePreviewFallback({
   note,

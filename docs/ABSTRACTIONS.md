@@ -160,6 +160,13 @@ Expo filesystem reads likewise propagate failures instead of synthesizing empty 
 `WorkspaceLoadBoundary` keeps vault-management controls available after a read or
 render failure; a successful vault operation remounts the boundary from the new revision.
 
+`useMobileNoteRead` handles lazy selected-note reads independently of workspace
+loading. It exposes loading/error/retry before the editor mounts, cancels stale
+responses, and never replaces a loaded draft. `mobileNoteRead.ts` distinguishes
+unread content from valid empty files and guards mutations that require that
+content. Hydration is a read-only operation, including for read-only repositories;
+failed reads never synthesize writable blank notes.
+
 `nativeQaSink.ts` carries layout measurements and known persistence proofs to the
 simulator harness over loopback, so standalone QA does not depend on JavaScript
 console messages appearing in the iOS unified log.

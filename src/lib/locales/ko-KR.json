@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "GitHub에 이 코드 입력",
   "mobile.vaults.requestFailed": "작업에 실패했습니다. 로컬 파일은 그대로 유지되었습니다. 인터넷 연결과 리포지토리 권한을 확인한 후 다시 시도하세요.",
   "mobile.vaults.catalogFailed": "저장된 볼트 목록을 읽을 수 없습니다. 볼트 파일이 제거되지 않았습니다.",
+  "mobile.editor.loading": "노트 불러오는 중...",
+  "mobile.editor.readFailed": "이 노트를 읽을 수 없습니다. 해당 파일은 변경되지 않았습니다.",
   "mobile.vaults.diverged": "로컬 기록과 원격 기록이 달라졌습니다. 두 기록 모두 보존됩니다. 다시 동기화하기 전에 데스크톱에서 차이를 해결하세요.",
   "mobile.vaults.checkpoint": "로컬 변경 사항을 저장하는 중...",
   "mobile.vaults.fetch": "원격 변경 사항을 가져오는 중...",

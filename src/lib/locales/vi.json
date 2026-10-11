@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Nhập mã này trên GitHub",
   "mobile.vaults.requestFailed": "Thao tác không thành công. Các tệp cục bộ của bạn đã được giữ lại. Kiểm tra kết nối và quyền đối với kho lưu trữ của bạn, sau đó thử lại.",
   "mobile.vaults.catalogFailed": "Không thể đọc danh sách vault đã lưu. Chưa có tệp vault nào bị xóa.",
+  "mobile.editor.loading": "Đang tải ghi chú...",
+  "mobile.editor.readFailed": "Không thể đọc ghi chú này. Tệp của nó chưa được thay đổi.",
   "mobile.vaults.diverged": "Lịch sử cục bộ và lịch sử từ xa đã phân kỳ. Cả hai lịch sử đều được lưu giữ. Giải quyết sự khác biệt trên máy tính để bàn trước khi đồng bộ hóa lại.",
   "mobile.vaults.checkpoint": "Đang lưu các thay đổi cục bộ...",
   "mobile.vaults.fetch": "Đang tải các thay đổi từ xa...",

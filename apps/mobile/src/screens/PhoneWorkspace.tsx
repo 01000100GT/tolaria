@@ -971,6 +971,7 @@ function PhoneEditorBody({
       initialEditingMode={sourceModeRequested ? 'source' : options.initialEditorEditingMode}
       layoutProbe={options.layoutProbe}
       note={controller.selectedNote}
+      noteRead={controller.selectedNoteRead}
       notes={notes}
       onNavigateWikilink={onNavigateWikilink}
       onOpenMoreActions={controller.onOpenMoreActions}

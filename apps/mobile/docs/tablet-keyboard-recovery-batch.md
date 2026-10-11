@@ -213,3 +213,65 @@ analyzer errors. Typecheck and 28 focused command/parity tests pass. Normal scop
 commit/push hooks remain enabled. Demo fixture Git status remains clean. Full
 desktop/Rust coverage, Android, physical-device and floating-keyboard QA were not
 run; this checkpoint does not waive those launch requirements.
+
+### Selected-note read recovery
+
+Starting commit: `762aafaf1`. Project CodeScene remains Hotspot 10.0 / Average
+9.991289158049293 against floors 10.0 / 9.99. A failed lazy note read now exposes
+a localized Retry state instead of mounting an editable placeholder. A successful
+empty-file read is still editable. Cancelled replies cannot replace newer drafts;
+frontmatter/property/relationship mutations cannot manufacture content for an
+unread note. Hydration itself remains available in read-only repositories.
+
+Red evidence: `recovery-red-behavior.log` contains four failing regressions before
+the reducer/persistence fixes; `recovery-web-red.log` fails the missing recovery
+surface assertion. Green evidence: `recovery-tests-final.log` passes 82 focused
+tests across five files, `recovery-web-green.log` passes the host read/retry/edit
+smoke flow, and `recovery-types.log` passes mobile typechecking.
+
+Native QA used the actual standalone iPad app and its isolated Laputa copy. One
+disposable organized QA note was indexed, then moved outside that vault. Selecting
+it produced the error state; retry and a favorite action did not recreate its
+missing file. Restoring the original file and tapping Retry opened its original
+WYSIWYG body. Typing a paragraph saved that paragraph while preserving all four
+frontmatter fields. The QA note was removed after navigating away. Evidence:
+`recovery-native-unreadable.png`, `recovery-native-edited.png`, and
+`recovery-native-saved-note.md`. Original user-vault notes were not edited.
+
+The per-file manifest below is relative to `apps/mobile/`; analyzer identities and
+zero-severity definitions are the same as above. Reports are named
+`recovery-before-*` and `recovery-after-*` in the evidence directory. Null CodeScene
+scores are type-only files with no findings, not fabricated ten-point scores.
+
+| File | Kind | Baseline | B | E9 | O | T | L | CodeScene |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `src/screens/useTabletWorkspaceController.ts` | E | 1 Biome Info | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/TabletWorkspace.tsx` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/PhoneWorkspace.tsx` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/tabletWorkspaceTypes.ts` | E | All 0 | 0 | 0 | 0 | 0 | 0 | Null, no warnings |
+| `src/screens/TabletEditorPanel.tsx` | E | 1 Biome Info | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/TabletEditorPanel.types.ts` | E | All 0 | 0 | 0 | 0 | 0 | 0 | Null, no warnings |
+| `src/screens/TabletEditorPanelChrome.tsx` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/tabletWorkspacePersistence.ts` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/workspace/mobileWorkspaceEditing.ts` | E | 3 Opengrep Error | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/workspace/mobileNoteRead.ts` | N | New | 0 | 0 | 0 | 0 | 0 | New -> 10 |
+| `src/screens/useMobileNoteRead.ts` | N | New | 0 | 0 | 0 | 0 | 0 | New -> 10 |
+| `src/workspace/mobileNoteRead.test.ts` | N | New | 0 | 0 | 0 | 0 | 0 | New -> 10 |
+| `tests/mobile-note-read-recovery.spec.ts` | N | New | 0 | 0 | 0 | 0 | 0 | New -> 10 |
+
+Refactoring: typed handler maps replace dynamic object calls; a literal suffix
+operation replaces a dynamic regular expression; type-only imports are explicit.
+Localization: two English messages translated with `pnpm l10n:translate`; the
+additional Belarusian Latin catalog is aligned manually because it is not a Lara
+target. `pnpm l10n:validate` passes 21 catalogs / 1,195 keys. PostHog: no new event
+needed for recovery of the existing note-open operation; no note/error content is
+added to telemetry. ADRs: none (bug fix, no dependency or storage change). Docs:
+this record and `docs/ABSTRACTIONS.md`. Desktop/Rust coverage and Android/physical
+device QA were not rerun. Cloud analyzer results remain unavailable under the
+same temporary exception; this is not launch/release approval.
+
+Final staged CodeScene delta: `no-issues-found`, all 13 eligible files checked
+(`recovery-codescene-staged.json`). Every expected local analyzer completed with
+zero findings and zero errors. Complete branch/untracked inventories are
+`recovery-branch-manifest.txt` and `recovery-untracked-manifest.txt`. Demo fixture
+Git status is clean; the disposable simulator note is absent after autosave.

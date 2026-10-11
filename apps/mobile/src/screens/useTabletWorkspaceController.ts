@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { MobileWorkspaceAction } from '../components/workspace/MobileWorkspaceActionSheet'
 import type {
   MobileSidebarFolderSelection,
@@ -15,15 +15,14 @@ import type {
   MobileViewFilterNode,
   MobileWorkspaceSnapshot,
 } from '../workspace/mobileWorkspaceModel'
-import {
+import type {
   applyMobileWorkspaceEditWithWrites,
-  type MobileWorkspaceEdit,
+  MobileWorkspaceEdit,
 } from '../workspace/mobileWorkspaceEditing'
 import type {
   ReadOnlyWorkspaceRepository,
   ReadOnlyWorkspaceRequest,
 } from '../workspace/readOnlyWorkspaceRepository'
-import { mobileNoteActionMode } from '../workspace/mobileNoteActionMode'
 import { mobileNoteWithResolvedWidth } from '../workspace/mobileNoteWidth'
 import { canMoveMobileSavedView, evaluateMobileSavedView } from '../workspace/mobileSavedViews'
 import { mobileDefaultNoteWidthFromVaultConfig } from '../workspace/mobileVaultConfig'
@@ -53,6 +52,7 @@ import { editorWorkspaceActions } from './tabletWorkspaceEditorActions'
 import { selectAfterWorkspaceEdit } from './tabletWorkspaceEditSelection'
 import { favoriteWorkspaceActions, openFavoriteActions } from './tabletWorkspaceFavoriteActions'
 import { useWorkspaceEditPipeline } from './tabletWorkspacePersistence'
+import { useMobileNoteRead } from './useMobileNoteRead'
 import {
   createFolderFields,
   folderActionFields,
@@ -276,7 +276,7 @@ export function useTabletWorkspaceController({
       workspaceSnapshot,
     })
   }, [actionSheetActions, workspaceSnapshot])
-  useHydrateSelectedNote({ applyEdit, repository, repositoryRequest, selectedNote })
+  const selectedNoteRead = useMobileNoteRead({ applyEdit, note: navigation.selectedNote, repository, request: repositoryRequest })
 
   return {
     ...actionSheetActions,
@@ -295,6 +295,7 @@ export function useTabletWorkspaceController({
     defaultNoteWidth,
     snapshot: workspaceSnapshot,
     selectedNote,
+    selectedNoteRead,
     vaultRootUri: repositoryRequest?.vaultRootUri ?? null,
     canRedoWorkspaceEdit,
     canUndoWorkspaceEdit,
@@ -468,40 +469,6 @@ function useReadOnlyFormState() {
     resetForm: useCallback(() => setReadOnlyForm(emptyReadOnlyForm), []),
     updateReadOnlyForm,
   }
-}
-
-function useHydrateSelectedNote({
-  applyEdit,
-  repository,
-  repositoryRequest,
-  selectedNote,
-}: {
-  applyEdit: (edit: MobileWorkspaceEdit) => void
-  repository: ReadOnlyWorkspaceRepository
-  repositoryRequest?: ReadOnlyWorkspaceRequest
-  selectedNote: MobileNote | null
-}) {
-  useEffect(() => {
-    if (!selectedNote || selectedNote.rawContent !== undefined) return
-    const hydrationType = mobileHydrationType(selectedNote)
-    if (!hydrationType) return
-
-    let cancelled = false
-    void repository.readNoteContent(selectedNote, repositoryRequest).then((rawContent) => {
-      if (cancelled || rawContent === null) return
-      applyEdit({ noteId: selectedNote.id, rawContent, type: hydrationType })
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [applyEdit, repository, repositoryRequest, selectedNote])
-}
-
-function mobileHydrationType(note: MobileNote): 'hydrateNoteContent' | 'hydrateTextFileContent' | null {
-  const actionMode = mobileNoteActionMode(note)
-  if (actionMode === 'markdown-note') return 'hydrateNoteContent'
-  return actionMode === 'text-file' ? 'hydrateTextFileContent' : null
 }
 
 function actionSheetWorkspaceActions({

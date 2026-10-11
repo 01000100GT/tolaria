@@ -82,6 +82,7 @@ import {
   mobileVaultConfigWithPrimaryNoteListProperties,
 } from './mobileVaultConfig'
 import { applyMobilePropertyDisplayModeEdit } from './mobilePropertyDisplayModeEditing'
+import { isMobileNoteHydration } from './mobileNoteRead'
 import type { MobileTypeDefinitionPatch } from './mobileTypeDefinitions'
 import { applyMobileTypeEdit } from './mobileWorkspaceTypeEditing'
 import { applyMobileRestorationEdit } from './mobileWorkspaceRestoration'
@@ -200,7 +201,7 @@ type AddRelationshipInput = {
 }
 type MobileNoteEditHandler = (context: MobileNoteEditContext, edit: MobileNoteEdit) => MobileNote
 
-const mobileNoteEditHandlers: Record<MobileNoteEdit['type'], MobileNoteEditHandler> = {
+const mobileNoteEditHandlers = new Map(Object.entries({
   addRelationship: ({ editableNote, notes }, edit) => {
     if (edit.type !== 'addRelationship') return editableNote
     return addRelationship({
@@ -260,9 +261,9 @@ const mobileNoteEditHandlers: Record<MobileNoteEdit['type'], MobileNoteEditHandl
     if (edit.type !== 'updateTextFileContent') return note
     return mobileTextFileNoteWithContent(note, edit.content)
   },
-}
+} satisfies Record<MobileNoteEdit['type'], MobileNoteEditHandler>))
 
-const mobileWorkspaceResultHandlers: MobileWorkspaceResultHandlerMap = {
+const mobileWorkspaceResultHandlers = new Map(Object.entries({
   bulkEdit: (snapshot, edit) => applyMobileBulkWorkspaceEdit(snapshot, edit),
   createFolder: (snapshot, edit) => applyMobileFolderEdit(snapshot, edit, rebuildSnapshot),
   createNote: (snapshot, edit) => createMobileNoteResult(snapshot, edit.title, edit.defaults),
@@ -295,7 +296,7 @@ const mobileWorkspaceResultHandlers: MobileWorkspaceResultHandlerMap = {
   updateTypeDefinition: (snapshot, edit) => applyMobileTypeEdit(snapshot, edit, rebuildSnapshot),
   updateProperty: (snapshot, edit) => updateMobileNoteProperty(snapshot, edit),
   updateView: (snapshot, edit) => updateMobileView(snapshot, edit.viewId, edit.definition),
-}
+} satisfies MobileWorkspaceResultHandlerMap))
 
 const mobileNoteEditTypes = new Set<MobileWorkspaceEdit['type']>([
   'addRelationship',
@@ -415,7 +416,7 @@ function applyMobileWorkspaceResultHandler(
   snapshot: MobileWorkspaceSnapshot,
   edit: MobileWorkspaceEdit,
 ): MobileWorkspaceEditResult | null {
-  const handler = mobileWorkspaceResultHandlers[edit.type] as
+  const handler = mobileWorkspaceResultHandlers.get(edit.type) as
     | ((snapshot: MobileWorkspaceSnapshot, edit: MobileWorkspaceEdit) => MobileWorkspaceEditResult)
     | undefined
   return handler?.(snapshot, edit) ?? null
@@ -441,8 +442,8 @@ export function replaceTrailingWikilinkQuery(
 ): MarkdownContent {
   const target = mobileWikilinkTargetForNote(selectedNote)
   const replacement = `[[${target}]]`
-  const pattern = new RegExp(`\\[\\[${escapeRegExp(query)}$`)
-  if (pattern.test(content)) return content.replace(pattern, replacement)
+  const suffix = `[[${query}`
+  if (content.endsWith(suffix)) return `${content.slice(0, -suffix.length)}${replacement}`
   return `${content}${replacement}`
 }
 
@@ -569,11 +570,13 @@ function applyMobileNoteEdit(
   typeDefinitions?: MobileTypeDefinitions,
 ): MobileNote {
   if (note.id !== edit.noteId) return note
+  if (isMobileNoteHydration(edit) && note.rawContent !== undefined) return note
   if (isMobileTextFileContentEdit(edit)) return applyMobileTextFileContentEdit(note, edit)
   if (!canApplyMobileMarkdownEdit(note)) return note
 
   const editableNote = withEditableContent(note)
-  return mobileNoteEditHandlers[edit.type]({ editableNote, note, notes, typeDefinitions }, edit)
+  const handler = mobileNoteEditHandlers.get(edit.type)
+  return handler ? handler({ editableNote, note, notes, typeDefinitions }, edit) : note
 }
 
 function addRelationship({
@@ -1307,8 +1310,4 @@ function slugifyTitle(title: NoteTitle): string {
 
 function absoluteDate(timestamp: number): string {
   return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(timestamp))
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }

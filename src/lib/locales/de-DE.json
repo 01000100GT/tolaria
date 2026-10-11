@@ -1184,6 +1184,8 @@
   "mobile.vaults.deviceCode": "Geben Sie diesen Code auf GitHub ein",
   "mobile.vaults.requestFailed": "Der Vorgang ist fehlgeschlagen. Ihre lokalen Dateien wurden beibehalten. Überprüfen Sie Ihre Verbindung und die Repository-Berechtigungen und versuchen Sie es dann erneut.",
   "mobile.vaults.catalogFailed": "Die gespeicherte Vault-Liste konnte nicht gelesen werden. Es wurden keine Vault-Dateien entfernt.",
+  "mobile.editor.loading": "Notiz wird geladen …",
+  "mobile.editor.readFailed": "Diese Notiz konnte nicht gelesen werden. Die zugehörige Datei wurde nicht geändert.",
   "mobile.vaults.diverged": "Der lokale und der Remote-Verlauf weichen voneinander ab. Beide Verläufe bleiben erhalten. Beheben Sie die Abweichung auf dem Desktop, bevor Sie erneut synchronisieren.",
   "mobile.vaults.checkpoint": "Lokale Änderungen werden gespeichert …",
   "mobile.vaults.fetch": "Remote-Änderungen werden abgerufen …",

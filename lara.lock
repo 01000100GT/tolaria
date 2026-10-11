@@ -1186,6 +1186,8 @@ files:
     mobile.vaults.deviceCode: 67f981e4910421e95dc4a88be242397b
     mobile.vaults.requestFailed: 23d523bd5f38e459cb818abda1045032
     mobile.vaults.catalogFailed: 959d00638eaad955646fa2cafd9002dc
+    mobile.editor.loading: 88d1d76b5e54b416c0103fe99cc7fefa
+    mobile.editor.readFailed: 9c6c94312466ead61546b567527d7d32
     mobile.vaults.diverged: eb9883175a55936ddc2526ee0d9fe55d
     mobile.vaults.checkpoint: a937d10266de6dce3543aebe7e4b5899
     mobile.vaults.fetch: ededa7d275710f6c3a8f104844814afd
