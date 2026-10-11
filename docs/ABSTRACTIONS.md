@@ -330,6 +330,13 @@ panel widths, strokes, radii or document state. Rich-editor CSS shares this
 recipe. Native measured density checks complement canonical token tests; see
 ADR 0215.
 
+The Markdown source editor keeps its RNR input as the editable surface and uses
+Reanimated native scroll events to move a non-interactive syntax layer on the UI
+thread. The layer lays out the complete document before viewport clipping. Raw
+Markdown and plain-text editors share `MobileKeyboardAvoidingView` with the rich
+editor so keyboard and rotation changes resize the real input, not just its
+visual overlay.
+
 Current primitives:
 
 | Primitive | Purpose |

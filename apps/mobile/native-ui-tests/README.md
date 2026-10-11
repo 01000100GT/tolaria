@@ -1,4 +1,4 @@
-# Native Tablet Interaction Tests
+# Native Mobile Interaction Tests
 
 These XCUITest checks drive the **standalone iOS app**, not Safari, Expo web,
 or synthetic JavaScript gesture callbacks. They can run without operating the
@@ -13,7 +13,7 @@ node apps/mobile/scripts/test-ios-panel-gestures.mjs SIMULATOR_UDID /tmp/tolaria
 ```
 
 The test opens an explicit isolated fixture. It verifies eight transitions:
-toolbar properties hide, a long note-row drag hiding both left panels, restoring
+toolbar properties hide, a long note-list-header drag hiding both left panels, restoring
 the list from the editor, restoring the sidebar, properties edge reveal, dismissal
 from its surface, and the two toolbar toggles. It also checks that vertical
 movement does not collapse the left panels. Native accessibility frames must
@@ -41,6 +41,16 @@ For a standalone build with an embedded current-source bundle, Metro is not
 required: generate the project with `create-project.rb` and run `xcodebuild test`
 against the installed bundle. Retain the `.xcresult`, and identify the tested
 source/bundle in the batch evidence. Do not count a browser capture as this test.
+
+The generated test runner supports iPad and iPhone. `PhoneNoteSwipeTests` checks
+that row drags reveal Favorite/Delete/Archive without opening the sidebar, that
+full swipes toggle Favorite or archive without deleting, and that the archived
+note remains reachable through navigation. These checks use a disposable fixture.
+
+`TabletSourceScrollTests` checks the raw editor with fifty inserted lines:
+the syntax layer must lay out the entire document and follow real input scrolling.
+It also verifies formatting controls stay above the software keyboard through
+rotation. Screenshots supplement numeric frame checks to catch clipped text.
 
 `TabletCommandPaletteKeyboardTests` checks the palette's full bounds against the
 software keyboard in both orientations, preserves its 540-point tablet width,

@@ -29,7 +29,7 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
     },
     input: {
       flex: 1,
-      minHeight: 420,
+      minHeight: 0,
       borderWidth: 0,
       color: mobileColors.text,
       fontFamily: 'Menlo',
@@ -38,20 +38,14 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       paddingHorizontal: mobileSpace.md,
       paddingVertical: mobileSpace.md,
     },
-    inputCompact: {
-      minHeight: 360,
-    },
     sourceInputHost: {
       flex: 1,
-      minHeight: 420,
+      minHeight: 0,
       backgroundColor: mobileColors.editor,
       borderColor: 'transparent',
       borderWidth: 0,
       overflow: 'hidden',
       position: 'relative',
-    },
-    sourceInputHostCompact: {
-      minHeight: 360,
     },
   })
 
@@ -74,7 +68,10 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       color: mobileColors.syntaxCode,
     },
     syntaxLayer: {
-      ...StyleSheet.absoluteFillObject,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
       paddingHorizontal: mobileSpace.md,
       paddingVertical: mobileSpace.md,
     },

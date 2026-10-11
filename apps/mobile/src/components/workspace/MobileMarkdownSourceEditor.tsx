@@ -1,14 +1,18 @@
 import { useMobileStyles, useMobileColors } from '../../ui/theme/useMobileTheme'
 import {
+  Platform,
   Pressable,
   type NativeSyntheticEvent,
+  type TextInputScrollEventData,
   type TextInputSelectionChangeEventData,
   View,
 } from 'react-native'
+import Animated, { useAnimatedStyle, useEvent, useSharedValue } from 'react-native-reanimated'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { MobileChip } from '../../ui/MobileChip'
+import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 
 import { createSourceEditorStyles } from './MobileMarkdownSourceEditorStyles'
 import { markdownSyntaxTokens } from './MobileMarkdownSourceSyntax'
@@ -93,12 +97,12 @@ type MarkdownInlineAutocompleteReplacement = {
   text: string
 }
 type TimerHandle = ReturnType<typeof setTimeout>
+const AnimatedInput = Animated.createAnimatedComponent(Input)
 
 export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProps) {
   const {
     blocks,
     bullets,
-    compact,
     note,
     notes,
     onImportAttachment,
@@ -112,7 +116,6 @@ export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProp
   if (plainText) {
     return (
       <MobilePlainTextSourceEditor
-        compact={compact}
         note={note}
         onRegisterEditorCommands={onRegisterEditorCommands}
         onUpdateContent={onUpdateContent}
@@ -126,7 +129,6 @@ export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProp
     <MarkdownSourceEditor
       blocks={blocks}
       bullets={bullets}
-      compact={compact}
       note={note}
       notes={notes}
       onImportAttachment={onImportAttachment}
@@ -138,13 +140,12 @@ export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProp
   )
 }
 
-function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plainText'>) {
+function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plainText' | 'compact'>) {
   const themeStyles = useMobileStyles(createSourceEditorStyles)
   const { editorStyles } = themeStyles
   const {
     blocks,
     bullets,
-    compact,
     note,
     notes,
     onImportAttachment,
@@ -183,11 +184,10 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
   useNativeSourceSelectionProbe(sourceSelectionProbe === true)
 
   return (
-    <View style={editorStyles.container} testID="editor-markdown-form">
+    <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-markdown-form">
       <MobileSourceFrontmatterIssueBanner issue={frontmatterIssue} />
       <View style={editorStyles.editorBody}>
         <SourceEditorInput
-          compact={compact}
           editable={!editorDraft.paused}
           testID="editor-markdown-input"
           value={editorDraft.content}
@@ -216,12 +216,11 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
       <View style={editorStyles.toolbarHost}>
         <MobileMarkdownFormattingToolbar onFormat={autocomplete.applyFormat} />
       </View>
-    </View>
+    </MobileKeyboardAvoidingView>
   )
 }
 
 function SourceEditorInput({
-  compact,
   editable,
   onChangeText,
   onSelectionChange,
@@ -229,7 +228,6 @@ function SourceEditorInput({
   testID,
   value,
 }: {
-  compact: boolean
   editable: boolean
   onChangeText: (value: string) => void
   onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void
@@ -240,16 +238,26 @@ function SourceEditorInput({
   const themeStyles = useMobileStyles(createSourceEditorStyles)
   const { editorStyles } = themeStyles
   const mobileColors = useMobileColors()
+  const scrollY = useSharedValue(0)
+  const syntaxTransform = useAnimatedStyle(() => ({ transform: [{ translateY: -scrollY.value }] }))
+  const onScroll = useEvent<NativeSyntheticEvent<TextInputScrollEventData>>((event) => {
+    'worklet'
+    scrollY.set(event.contentOffset.y)
+  }, ['onScroll'])
+  const onWebScroll = useCallback((event: NativeSyntheticEvent<TextInputScrollEventData>) => {
+    const target = event.currentTarget
+    if (target && typeof target === 'object' && 'scrollTop' in target && typeof target.scrollTop === 'number') scrollY.set(target.scrollTop)
+  }, [scrollY])
   return (
-    <View style={[editorStyles.sourceInputHost, compact ? editorStyles.sourceInputHostCompact : null]}>
-      <View pointerEvents="none" style={editorStyles.syntaxLayer}>
+    <View style={editorStyles.sourceInputHost}>
+      <Animated.View pointerEvents="none" style={[editorStyles.syntaxLayer, syntaxTransform]} testID="editor-markdown-syntax">
         <Text style={editorStyles.syntaxText}>
           {markdownSyntaxTokens(value).map((token, index) => (
             <Text key={`${index}:${token.text}`} style={token.kind ? editorStyles[token.kind] : undefined}>{token.text}</Text>
           ))}
         </Text>
-      </View>
-      <Input
+      </Animated.View>
+      <AnimatedInput
         multiline
         scrollEnabled
         editable={editable}
@@ -263,6 +271,7 @@ function SourceEditorInput({
         value={value}
         selection={selection}
         onChangeText={onChangeText}
+        onScroll={Platform.OS === 'web' ? onWebScroll : onScroll}
         onSelectionChange={onSelectionChange}
       />
     </View>
@@ -288,13 +297,12 @@ function mobileSourceFrontmatterIssueText(issue: MobileSourceFrontmatterIssue) {
 }
 
 function MobilePlainTextSourceEditor({
-  compact,
   note,
   onRegisterEditorCommands,
   onUpdateContent,
   idleSave,
   sourceSelectionProbe,
-}: Pick<MobileMarkdownSourceEditorProps, 'compact' | 'idleSave' | 'note' | 'onRegisterEditorCommands' | 'onUpdateContent' | 'sourceSelectionProbe'>) {
+}: Pick<MobileMarkdownSourceEditorProps, 'idleSave' | 'note' | 'onRegisterEditorCommands' | 'onUpdateContent' | 'sourceSelectionProbe'>) {
   const themeStyles = useMobileStyles(createSourceEditorStyles)
   const { editorStyles } = themeStyles
   const mobileColors = useMobileColors()
@@ -335,13 +343,13 @@ function MobilePlainTextSourceEditor({
   useNativeSourceSelectionProbe(sourceSelectionProbe === true)
 
   return (
-    <View style={editorStyles.container} testID="editor-text-file-form">
+    <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-text-file-form">
       <Input
         multiline
         scrollEnabled
         editable={!paused}
         placeholderTextColor={mobileColors.textFaint}
-        style={[editorStyles.input, compact ? editorStyles.inputCompact : null]}
+        style={editorStyles.input}
         testID="editor-text-file-input"
         textAlignVertical="top"
         value={content}
@@ -349,7 +357,7 @@ function MobilePlainTextSourceEditor({
         onChangeText={handleTextChange}
         onSelectionChange={handleSelectionChange}
       />
-    </View>
+    </MobileKeyboardAvoidingView>
   )
 }
 

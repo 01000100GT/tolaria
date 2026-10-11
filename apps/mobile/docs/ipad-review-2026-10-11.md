@@ -54,7 +54,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Implemented; native manual commit/settings persistence pass; automatic remote UI QA pending |
 | 18 | Essential settings chosen from an audit of desktop settings | Git, appearance, UI density and opt-in privacy settings implemented; native persistence checks pass |
-| 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
+| 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet and two native phone tests pass |
 | 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Implemented; native pixel, persistence, inspector/dialog and source-editor checks pass |
 
 Sidebar type-selection latency belongs to item 11. The earlier bottom-safe-area
@@ -344,3 +344,39 @@ measurements, commits and remaining limitations as each batch completes.
   command-palette edits. Exact paths/classification are recorded in
   `metrics-final-manifest.json`; demo-vault directories remain clean.
   Cloud verification remains unavailable under the recorded exception.
+
+### Source scrolling and native gesture regression coverage
+
+- Native reproduction caught two independent source-editor defects: the syntax
+  layer stayed stationary while the input scrolled, and a viewport-sized absolute
+  layer clipped later lines. A shared Reanimated scroll value now follows native
+  input events on the UI thread; the syntax document has its natural full height.
+  Web preview uses the textarea's actual scroll position. The RNR input remains
+  the editing control, with no document or frontmatter serialization changes.
+- The existing keyboard-avoiding host now contains both source modes; obsolete
+  minimum heights no longer force formatting controls beneath the keyboard.
+  Failing native checks preceded both repairs. The strengthened regression checks
+  the full syntax height after typing fifty lines, not only its scroll offset.
+- Final Release build: `source-and-panels-final.xcresult` passes all three tests:
+  continuous panel transitions, source scrolling and source formatting through
+  keyboard rotation. Full-screen screenshots show later lines and caret aligned,
+  with formatting above the keyboard. Header/edge panel drags are tested
+  separately from the approved note-row quick actions.
+- `phone-swipe-final.xcresult` passes both native iPhone tests: partial and full
+  favorite swipes, Delete/Archive reveal, and full-swipe archive without deletion.
+  The native runner supports both tablet and phone destinations.
+- All three browser viewport scroll checks pass in `source-scroll-web-verified.log`.
+  Mobile lint passes and twelve targeted source/draft/frontmatter tests pass.
+  No full desktop or Rust suite was run. Normal mobile hooks run before push.
+- Seven exact code paths are recorded in `source-scroll-final-manifest.json`.
+  Every scorable file remains or starts at CodeScene 10 with no findings; the
+  Ruby project generator remains unscorable with no findings. Baselines are
+  `source-scroll-baselines.json`, `native-project-before`, and
+  `panel-gesture-before`. All 27 expected per-file local analyzer runs complete
+  with zero findings at every severity and no errors; hashes are retained in
+  `source-scroll-analyzer-evidence.json`. Cloud verification remains unavailable.
+- Localization: no UI copy changes. PostHog: no event needed because this repairs
+  existing scrolling/keyboard behavior and expands regression coverage.
+  ABSTRACTIONS and native QA documentation are updated; no ADR is needed.
+  Manual source hardware-arrow verification remains outstanding while the Mac
+  is locked; software-keyboard success is not substituted for that check.

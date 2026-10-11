@@ -13,7 +13,7 @@ target.build_configurations.each do |config|
     'PRODUCT_BUNDLE_IDENTIFIER' => 'com.tolaria.mobile.tablet-gesture-tests',
     'GENERATE_INFOPLIST_FILE' => 'YES',
     'CODE_SIGNING_ALLOWED' => 'NO',
-    'TARGETED_DEVICE_FAMILY' => '2',
+    'TARGETED_DEVICE_FAMILY' => '1,2',
     'ENABLE_TESTING_SEARCH_PATHS' => 'YES',
     'FRAMEWORK_SEARCH_PATHS' => ['$(inherited)', '$(PLATFORM_DIR)/Developer/Library/Frameworks'],
     'LD_RUNPATH_SEARCH_PATHS' => ['$(inherited)', '@executable_path/Frameworks', '@loader_path/Frameworks']

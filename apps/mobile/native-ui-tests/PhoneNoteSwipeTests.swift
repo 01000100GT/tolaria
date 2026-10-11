@@ -1,0 +1,75 @@
+import XCTest
+
+final class PhoneNoteSwipeTests: XCTestCase {
+  override func setUp() {
+    continueAfterFailure = false
+    XCUIDevice.shared.orientation = .portrait
+  }
+
+  func testRowSwipeRevealsActionsWithoutOpeningSidebar() {
+    let app = launchFixture()
+    let row = element(app, "note-row-workflow-orchestration")
+    XCTAssertTrue(row.waitForExistence(timeout: 30))
+    drag(row, from: 0.75, to: 0.40)
+    let archive = element(app, "note-swipe-archive-workflow-orchestration")
+    XCTAssertTrue(archive.waitForExistence(timeout: 5))
+    XCTAssertTrue(archive.isHittable)
+    XCTAssertTrue(element(app, "note-swipe-delete-workflow-orchestration").isHittable)
+    XCTAssertFalse(element(app, "phone-sidebar-screen").exists)
+    archive.tap()
+    verifyArchivedNote(app)
+  }
+
+  func testFullSwipeTogglesFavoriteThenArchivesWithoutDeleting() {
+    let app = launchFixture()
+    let row = element(app, "note-row-workflow-orchestration")
+    XCTAssertTrue(row.waitForExistence(timeout: 30))
+    row.tap()
+    let favorite = element(app, "editor-favorite-action")
+    XCTAssertTrue(favorite.waitForExistence(timeout: 5))
+    let initialLabel = favorite.label
+    element(app, "phone-back-action").tap()
+    XCTAssertTrue(row.waitForExistence(timeout: 5))
+    drag(row, from: 0.08, to: 0.92)
+    row.tap()
+    waitUntil { favorite.exists && favorite.label != initialLabel }
+    element(app, "phone-back-action").tap()
+    XCTAssertTrue(row.waitForExistence(timeout: 5))
+    drag(row, from: 0.92, to: 0.08)
+    verifyArchivedNote(app)
+    let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+    screenshot.lifetime = .keepAlways
+    add(screenshot)
+  }
+
+  private func verifyArchivedNote(_ app: XCUIApplication) {
+    let row = element(app, "note-row-workflow-orchestration")
+    waitUntil { !row.exists }
+    element(app, "phone-sidebar-action").tap()
+    let archive = element(app, "sidebar-item-archive")
+    XCTAssertTrue(archive.waitForExistence(timeout: 5))
+    archive.tap()
+    XCTAssertTrue(row.waitForExistence(timeout: 5))
+  }
+
+  private func launchFixture() -> XCUIApplication {
+    let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
+    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&qaRun=phone-row-swipe"]
+    app.launch()
+    return app
+  }
+
+  private func drag(_ row: XCUIElement, from: Double, to: Double) {
+    row.coordinate(withNormalizedOffset: CGVector(dx: from, dy: 0.5))
+      .press(forDuration: 0.05, thenDragTo: row.coordinate(withNormalizedOffset: CGVector(dx: to, dy: 0.5)))
+  }
+
+  private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
+    app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+  }
+
+  private func waitUntil(_ predicate: @escaping () -> Bool) {
+    expectation(for: NSPredicate { _, _ in predicate() }, evaluatedWith: nil)
+    waitForExpectations(timeout: 8)
+  }
+}
