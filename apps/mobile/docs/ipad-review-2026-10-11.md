@@ -36,26 +36,26 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 
 | # | Requested result | Status |
 | --- | --- | --- |
-| 1 | One-tap copy of GitHub device authorization code | Pending |
-| 2 | Searchable, aligned, scrollable repository picker for large lists | Pending |
+| 1 | One-tap copy of GitHub device authorization code | Implemented; native live device-code copy/cancel check passes |
+| 2 | Searchable, aligned, scrollable repository picker for large lists | Implemented with virtualized rows; search tests pass; authenticated native picker QA pending |
 | 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Implemented; native screenshot verified |
 | 4 | Editor-focused arrow keys never change selected note | In progress |
 | 5 | Restore desktop-style editor slash commands | Pending |
 | 6 | Inline find in note, with visible match navigation/highlighting | Pending |
 | 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
 | 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
-| 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Pending |
+| 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Implemented; native relationship-add and inspector checks pass; real-vault backlink QA pending |
 | 10 | Breadcrumbs use the note's configured type icon and color | Implemented; native typed icon verified |
 | 11 | Favorite and other local actions respond without avoidable delay | Bounded flag edits and lazy settings suggestions implemented; native model timings recorded |
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
-| 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Pending |
+| 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Alignment verified natively; overflow reduction pending |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
 | 15 | Explain and verify local Git and remote sync behavior | Native disposable-remote probe passes; explicit manual commit verified on disk |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
 | 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Implemented; native manual commit/settings persistence pass; automatic remote UI QA pending |
-| 18 | Essential settings chosen from an audit of desktop settings | Git settings implemented; appearance/scale/privacy implementation pending |
+| 18 | Essential settings chosen from an audit of desktop settings | Git and appearance settings implemented; scale/privacy implementation pending |
 | 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
-| 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Pending |
+| 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Implemented; native pixel, persistence, inspector/dialog and source-editor checks pass |
 
 Sidebar type-selection latency belongs to item 11. The earlier bottom-safe-area
 clarification belongs to item 3. Panel drags must not consume item 19's row
@@ -227,3 +227,44 @@ measurements, commits and remaining limitations as each batch completes.
   or four JSON analyzers successfully processing their exact target. Existing
   zero baselines remain zero. The exact manifest is `git-settings-manifest.txt`;
   per-file records end in `-git-after.json` and `-git-after-cs.json`.
+
+### Desktop-derived appearance
+
+- Desktop CSS now generates the mobile Light and Dark palettes through a
+  development-only PostCSS parser. A drift test compares the generated tokens
+  with the desktop source. NativeWind/RNR and explicit native styles consume
+  the same resolved palette; System, Light and Dark preferences persist.
+- Rich-editor theme changes inject only CSS, without resetting the document,
+  cursor or frontmatter. Source syntax tokens are semantic rather than carrying
+  baked-in light colors. Stored document mark colors remain unchanged.
+- The Release iPad simulator passes native color/persistence and dark-surface
+  tests. Measured RGB values: dark sidebar 25/24/20, dark editor 31/30/27, light
+  sidebar 247/246/243, tolerance four per channel. The theme survives relaunch.
+  Dark inspector, relationship picker, type-visibility picker and source editor
+  are captured and inspected. Type rows remain 52 points high with aligned icons.
+- Full-screen XCTest attachments are used for review: this simulator's
+  application-only screenshot API crops landscape captures incorrectly. The
+  Mac became locked during QA, so direct computer-use interaction was unavailable;
+  native XCTest continued, without substituting browser checks.
+- Scoped tests: 1,365 passing before the separate analytics batch. Mobile lint
+  and typecheck pass. ADR 0213 records the palette boundary; ABSTRACTIONS is
+  updated. No localization keys changed. Appearance usage instrumentation is
+  intentionally grouped with the pending opt-in privacy implementation.
+- Per-file evidence is in `theme-final-manifest.txt`, `-theme-final.json` and
+  `-theme-final-cs.json`; late corrections use `-theme-recheck` records. The
+  compact toolbar's two baseline warnings and overflow action duplication were
+  corrected. Final scan completion and the staged delta are recorded at commit.
+- Final theme gate: 88 exact code/config targets, 436 successful per-file
+  analyzer rows, zero findings at every severity and no analyzer errors.
+  Existing zero baselines remain zero; the compact toolbar's two warnings and
+  the workspace action import's one Info are removed. All scorable files finish
+  at CodeScene 10; declarative files have no score and no findings. Staged delta
+  checks 86 eligible files with no issues. The later combined scoped run has
+  1,373 passing tests, including eight uncommitted analytics tests. Demo-vault
+  directories are clean. Cloud parity/exact-SHA verification remains unavailable
+  under the recorded exception, not a passing release gate.
+- A separate live GitHub device-code check passes in the Release iPad app:
+  requesting authorization displays the code; Copy reports success without
+  leaving Tolaria; Cancel closes authorization. No login was completed and no
+  repository was contacted. The initial fixture-source attempt lacked vault
+  management; the passing check uses the disposable app-local vault instead.

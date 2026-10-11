@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useEffect, type ReactNode } from 'react'
 import { Keyboard, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 import { ArrowSquareOut, CheckCircle, ClipboardText, FilePlus, FolderOpen, Trash } from 'phosphor-react-native'
@@ -9,7 +11,7 @@ import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } f
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileEditorBlock, MobileNote, MobileSidebarIcon, MobileTone, MobileTypeDefinitions, MobileViewFilterGroup } from '../../workspace/mobileWorkspaceModel'
 import type {
   MobileTypeSchemaProperty,
@@ -289,6 +291,7 @@ type SuggestionInputActionConfig = {
 type RetargetNoteAction = 'changeType' | 'moveFolder'
 
 export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProps) {
+  const { styles, sheetStyles } = useMobileStyles(createThemeStyles)
   useEffect(() => {
     if (props.action !== 'search') Keyboard.dismiss()
   }, [props.action])
@@ -377,6 +380,7 @@ function SearchContent(props: MobileWorkspaceActionSheetProps) {
 }
 
 function SingleTextFieldContent({ config }: { config: SingleTextFieldConfig }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const {
     allowEmptyInput,
     extraContent,
@@ -571,6 +575,7 @@ function editViewContent(props: MobileWorkspaceActionSheetProps) {
 }
 
 function FolderActionsContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       <MobileTextInput
@@ -621,6 +626,7 @@ function FolderActionsContent(props: MobileWorkspaceActionSheetProps) {
 }
 
 function FavoriteActionsContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       <MobileFavoriteActions
@@ -637,6 +643,7 @@ function FavoriteActionsContent(props: MobileWorkspaceActionSheetProps) {
 }
 
 function TypeSectionContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       <MobileTypeSectionActions
@@ -716,6 +723,7 @@ function ViewDisplayPropertiesPicker({
 }
 
 function PrimaryListPropertiesContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       <MobileViewDisplayPropertiesPicker
@@ -743,6 +751,7 @@ function AllNotesFileVisibilityContent({
   onPrimaryAllNotesShowPdfsChange,
   onPrimaryAllNotesShowUnsupportedChange,
 }: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.visibilitySection} testID="workspace-all-notes-file-visibility">
       <View style={styles.visibilityHeader}>
@@ -787,6 +796,7 @@ function VisibilitySwitchRow({
   onChange: (value: boolean) => void
   testID: string
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={label}
@@ -807,6 +817,7 @@ function VisibilitySwitchRow({
 }
 
 function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const {
     action,
     notes,
@@ -898,6 +909,7 @@ function AddRelationshipContent({
   selectedNote,
   typeDefinitions,
 }: MobileWorkspaceActionSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const keySuggestions = mobileRelationshipKeySuggestions(notes, relationshipName, selectedNote, typeDefinitions)
   const suggestions = mobileRelationshipTargetSuggestions(notes, relationshipNoteTitle, {
     relationshipKey: relationshipName,
@@ -975,6 +987,7 @@ function CreateRelationshipTargetRow({
   onPress: () => void
   title: string
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={`${mobileText('inspector.relationship.createAndOpen')} ${title}`}
@@ -1035,6 +1048,7 @@ function retargetNoteInputConfig(props: MobileWorkspaceActionSheetProps & { reta
 }
 
 function SuggestionInputActionContent({ config }: { config: SuggestionInputActionConfig }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       <MobileTextInput
@@ -1094,6 +1108,7 @@ function ActionRow({
   onPress: () => void
   testID?: string
 }) {
+  const { actionStyles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [actionStyles.actionRow, pressed ? actionStyles.actionRowPressed : null]} testID={testID} onPress={onPress}>
       <View style={actionStyles.actionRowContent}>
@@ -1105,6 +1120,7 @@ function ActionRow({
 }
 
 function SheetFooter({ children, pinned = false }: { children: ReactNode; pinned?: boolean }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return <View style={[styles.footer, pinned ? styles.pinnedFooter : null]}>{children}</View>
 }
 
@@ -1139,169 +1155,172 @@ const actionTitleByAction: Record<MobileWorkspaceAction, Parameters<typeof mobil
   tableOfContents: 'tableOfContents.title',
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(55, 53, 47, 0.14)',
-  },
-  content: {
-    alignSelf: 'stretch',
-    gap: mobileActionSheetLayoutContract.contentGap,
-    padding: mobileActionSheetLayoutContract.contentPadding,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: mobileSpace.sm,
-    borderTopColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: mobileSpace.md,
-  },
-  formBody: {
-    flexShrink: 1,
-    minHeight: 0,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    elevation: 1000,
-    zIndex: 1000,
-  },
-  sheetContainer: {
-    flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: mobileActionSheetLayoutContract.overlayPaddingHorizontal,
-    paddingVertical: mobileActionSheetLayoutContract.overlayPaddingVertical,
-  },
-  scrollArea: {
-    flexShrink: 1,
-    minHeight: 0,
-  },
-  pinnedFooter: {
-    paddingBottom: mobileActionSheetLayoutContract.footerPaddingBottom,
-    paddingHorizontal: mobileActionSheetLayoutContract.footerPaddingHorizontal,
-  },
-  suggestionList: {
-    gap: mobileSpace.xs,
-  },
-  suggestionPressable: {
-    alignSelf: 'stretch',
-    width: '100%',
-  },
-  suggestionRow: {
-    minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileWorkspaceSuggestionRowLayoutContract.gap,
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
-    paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
-  },
-  suggestionRowPressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  suggestionTitle: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  visibilityDescription: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    lineHeight: 16,
-  },
-  visibilityHeader: {
-    gap: mobileSpace.xs,
-  },
-  visibilityLabel: {
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  visibilityRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderRadius: 6,
-    padding: mobileSpace.sm,
-  },
-  visibilityRowPressed: {
-    backgroundColor: mobileColors.control,
-  },
-  visibilitySection: {
-    gap: mobileSpace.xs,
-    borderColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: mobileSpace.md,
-  },
-  visibilityText: {
-    minWidth: 0,
-    flex: 1,
-    gap: 2,
-  },
-  visibilityTitle: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: mobileColors.overlay,
+    },
+    content: {
+      alignSelf: 'stretch',
+      gap: mobileActionSheetLayoutContract.contentGap,
+      padding: mobileActionSheetLayoutContract.contentPadding,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: mobileSpace.sm,
+      borderTopColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: mobileSpace.md,
+    },
+    formBody: {
+      flexShrink: 1,
+      minHeight: 0,
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      elevation: 1000,
+      zIndex: 1000,
+    },
+    sheetContainer: {
+      flex: 1,
+      minHeight: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: mobileActionSheetLayoutContract.overlayPaddingHorizontal,
+      paddingVertical: mobileActionSheetLayoutContract.overlayPaddingVertical,
+    },
+    scrollArea: {
+      flexShrink: 1,
+      minHeight: 0,
+    },
+    pinnedFooter: {
+      paddingBottom: mobileActionSheetLayoutContract.footerPaddingBottom,
+      paddingHorizontal: mobileActionSheetLayoutContract.footerPaddingHorizontal,
+    },
+    suggestionList: {
+      gap: mobileSpace.xs,
+    },
+    suggestionPressable: {
+      alignSelf: 'stretch',
+      width: '100%',
+    },
+    suggestionRow: {
+      minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileWorkspaceSuggestionRowLayoutContract.gap,
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
+      paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
+    },
+    suggestionRowPressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    suggestionTitle: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    visibilityDescription: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      lineHeight: 16,
+    },
+    visibilityHeader: {
+      gap: mobileSpace.xs,
+    },
+    visibilityLabel: {
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    visibilityRow: {
+      alignItems: 'flex-start',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderRadius: 6,
+      padding: mobileSpace.sm,
+    },
+    visibilityRowPressed: {
+      backgroundColor: mobileColors.control,
+    },
+    visibilitySection: {
+      gap: mobileSpace.xs,
+      borderColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: mobileSpace.md,
+    },
+    visibilityText: {
+      minWidth: 0,
+      flex: 1,
+      gap: 2,
+    },
+    visibilityTitle: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+  })
 
-const sheetStyles = StyleSheet.create({
-  sheet: {
-    flexShrink: 1,
-    minHeight: 0,
-    maxHeight: mobileActionSheetLayoutContract.sheetMaxHeight,
-    maxWidth: mobileActionSheetLayoutContract.sheetMaxWidth,
-    width: '100%',
-    backgroundColor: mobileColors.card,
-    borderColor: mobileColors.borderStrong,
-    borderRadius: mobileRadius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { height: 10, width: 0 },
-    shadowOpacity: 0.14,
-    shadowRadius: 28,
-  },
-})
+  const sheetStyles = StyleSheet.create({
+    sheet: {
+      flexShrink: 1,
+      minHeight: 0,
+      maxHeight: mobileActionSheetLayoutContract.sheetMaxHeight,
+      maxWidth: mobileActionSheetLayoutContract.sheetMaxWidth,
+      width: '100%',
+      backgroundColor: mobileColors.card,
+      borderColor: mobileColors.borderStrong,
+      borderRadius: mobileRadius.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      overflow: 'hidden',
+      shadowColor: '#000000',
+      shadowOffset: { height: 10, width: 0 },
+      shadowOpacity: 0.14,
+      shadowRadius: 28,
+    },
+  })
 
-const actionStyles = StyleSheet.create({
-  actionRow: {
-    minWidth: 0,
-    alignSelf: 'stretch',
-    width: '100%',
-    borderRadius: 4,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.sm,
-  },
-  actionIcon: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  actionRowContent: {
-    minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: mobileSpace.sm,
-  },
-  actionRowPressed: {
-    backgroundColor: mobileColors.control,
-  },
-  actionText: {
-    minWidth: 0,
-    flex: 1,
-    flexShrink: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-  },
-  actionTextDestructive: {
-    color: mobileColors.red,
-  },
-})
+  const actionStyles = StyleSheet.create({
+    actionRow: {
+      minWidth: 0,
+      alignSelf: 'stretch',
+      width: '100%',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.sm,
+    },
+    actionIcon: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    actionRowContent: {
+      minWidth: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: mobileSpace.sm,
+    },
+    actionRowPressed: {
+      backgroundColor: mobileColors.control,
+    },
+    actionText: {
+      minWidth: 0,
+      flex: 1,
+      flexShrink: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+    },
+    actionTextDestructive: {
+      color: mobileColors.red,
+    },
+  })
+  return { mobileColors, styles, sheetStyles, actionStyles }
+}

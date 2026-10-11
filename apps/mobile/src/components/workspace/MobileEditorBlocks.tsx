@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { CheckSquare, Square } from 'phosphor-react-native'
 import { StyleSheet, type LayoutChangeEvent, type TextStyle, View } from 'react-native'
 import { Text } from '../ui/text'
 import {
   desktopEditorParity,
 } from '../../ui/desktopParity'
-import { mobileColors, mobileRadius, mobileSpace } from '../../ui/tokens'
+import { mobileRadius, mobileSpace } from '../../ui/tokens'
 import type {
   MobileEditorBlock,
   MobileEditorInline,
@@ -95,6 +97,8 @@ export function MobileEditorBlocks({
 }
 
 function FallbackBullets({ bullets }: { bullets: string[] }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { listStyles, textStyles } = themeStyles
   return (
     <>
       {bullets.map((item) => (
@@ -120,6 +124,8 @@ function EditorBlock({
   onOpenLink?: (href: string) => void
   onNavigateWikilink: (target: string) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { dividerStyles } = themeStyles
   if (block.kind === 'paragraph') return <EditorParagraph block={block} onOpenLink={onOpenLink} onNavigateWikilink={onNavigateWikilink} />
   if (block.kind === 'heading') {
     return (
@@ -148,6 +154,8 @@ function EditorParagraph({
   onOpenLink?: (href: string) => void
   onNavigateWikilink: (target: string) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { textStyles } = themeStyles
   return (
     <InlineText
       content={block.content}
@@ -168,6 +176,7 @@ function EditorHeading({
   tableOfContentsTargetId?: string
   onTableOfContentsTargetLayout?: (targetId: string, event: LayoutChangeEvent) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
   if (block.level === 1) {
     return (
       <EditorTitleBlock
@@ -181,7 +190,7 @@ function EditorHeading({
   return (
     <Text
       onLayout={tableOfContentsTargetId ? (event) => onTableOfContentsTargetLayout?.(tableOfContentsTargetId, event) : undefined}
-      style={headingStylesForLevel(block.level)}
+      style={headingStylesForLevel(themeStyles, block.level)}
       testID={`editor-heading-${block.level}`}
     >
       {block.text}
@@ -198,13 +207,15 @@ function EditorTitleBlock({
   tableOfContentsTargetId?: string
   onTableOfContentsTargetLayout?: (targetId: string, event: LayoutChangeEvent) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { titleBlockStyles } = themeStyles
   return (
     <View
       onLayout={tableOfContentsTargetId ? (event) => onTableOfContentsTargetLayout?.(tableOfContentsTargetId, event) : undefined}
       style={titleBlockStyles.container}
       testID="editor-title-block"
     >
-      <Text style={headingStylesForLevel(1)} testID="editor-title">
+      <Text style={headingStylesForLevel(themeStyles, 1)} testID="editor-title">
         {text}
       </Text>
     </View>
@@ -212,6 +223,8 @@ function EditorTitleBlock({
 }
 
 function EditorList(props: EditorListProps) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { listStyles } = themeStyles
   return (
     <View style={listStyles.group}>
       {props.items.map((item, index) => editorListRow(props, item, index))}
@@ -260,6 +273,8 @@ function ListRow({
   testID: string
   textTestID: string
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { listStyles, textStyles } = themeStyles
   return (
     <View style={[listStyles.row, listDepthStyle(item.depth)]} testID={testID}>
       <Text style={listStyles.marker}>{marker}</Text>
@@ -285,6 +300,8 @@ function TaskRow({
   onNavigateWikilink: (target: string) => void
   testID: string
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { listStyles, mobileColors, textStyles } = themeStyles
   const Icon = item.checked ? CheckSquare : Square
 
   return (
@@ -316,6 +333,8 @@ function EditorQuote({
   onOpenLink?: (href: string) => void
   onNavigateWikilink: (target: string) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { quoteStyles } = themeStyles
   return (
     <View style={quoteStyles.container} testID="editor-quote">
       <InlineText
@@ -336,6 +355,8 @@ function EditorCodeBlock({
   code: string
   language: string | null
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { codeBlockStyles } = themeStyles
   return (
     <View style={codeBlockStyles.container} testID="editor-code-block">
       {language ? <Text style={codeBlockStyles.language} testID="editor-code-language">{language}</Text> : null}
@@ -357,12 +378,13 @@ function InlineText({
   style: TextStyle
   testID?: string
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
   return (
     <Text style={style} testID={testID}>
       {content.map((segment, index) => (
         <Text
           key={`${segment.text}-${index}`}
-          style={inlineSegmentStyles(segment)}
+          style={inlineSegmentStyles(themeStyles, segment)}
           testID={inlineSegmentTestId(segment)}
           onPress={inlineSegmentPressHandler(segment, onNavigateWikilink, onOpenLink)}
         >
@@ -380,6 +402,8 @@ function EditorTable({
   headers: string[]
   rows: string[][]
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { tableStyles } = themeStyles
   return (
     <View style={tableStyles.table} testID="editor-table">
       <View style={[tableStyles.row, tableStyles.headerRow]}>
@@ -398,14 +422,16 @@ function EditorTable({
   )
 }
 
-function headingStylesForLevel(level: number) {
+function headingStylesForLevel(themeStyles: ReturnType<typeof createThemeStyles>, level: number) {
+  const { textStyles } = themeStyles
   if (level === 1) return [textStyles.heading, textStyles.headingOne]
   if (level === 2) return textStyles.heading
   if (level === 3) return [textStyles.heading, textStyles.headingSmall]
   return [textStyles.heading, textStyles.headingFour]
 }
 
-function inlineSegmentStyles(segment: MobileEditorInline): TextStyle[] {
+function inlineSegmentStyles(themeStyles: ReturnType<typeof createThemeStyles>, segment: MobileEditorInline): TextStyle[] {
+  const { inlineStyles } = themeStyles
   const styles: TextStyle[] = []
   if (segment.bold) styles.push(inlineStyles.bold)
   if (segment.italic) styles.push(inlineStyles.italic)
@@ -453,193 +479,196 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-const textStyles = StyleSheet.create({
-  body: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: desktopEditorParity.bodyFontSize,
-    lineHeight: desktopEditorParity.bodyLineHeight,
-  },
-  heading: {
-    color: mobileColors.text,
-    fontSize: desktopEditorParity.h2FontSize,
-    fontWeight: '600',
-    lineHeight: desktopEditorParity.h2LineHeight,
-    marginBottom: desktopEditorParity.h2MarginBottom,
-    marginTop: desktopEditorParity.h2MarginTop,
-  },
-  headingFour: {
-    fontSize: desktopEditorParity.h4FontSize,
-    lineHeight: desktopEditorParity.h4LineHeight,
-    marginBottom: desktopEditorParity.h4MarginBottom,
-    marginTop: desktopEditorParity.h4MarginTop,
-  },
-  headingOne: {
-    fontSize: desktopEditorParity.h1FontSize,
-    fontWeight: '700',
-    lineHeight: desktopEditorParity.h1LineHeight,
-    marginBottom: 0,
-    marginTop: 0,
-  },
-  headingSmall: {
-    fontSize: desktopEditorParity.h3FontSize,
-    lineHeight: desktopEditorParity.h3LineHeight,
-    marginBottom: desktopEditorParity.h3MarginBottom,
-    marginTop: desktopEditorParity.h3MarginTop,
-  },
-  paragraph: {
-    color: mobileColors.text,
-    fontSize: desktopEditorParity.bodyFontSize,
-    lineHeight: desktopEditorParity.bodyLineHeight,
-    marginBottom: desktopEditorParity.paragraphSpacing,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const textStyles = StyleSheet.create({
+    body: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: desktopEditorParity.bodyFontSize,
+      lineHeight: desktopEditorParity.bodyLineHeight,
+    },
+    heading: {
+      color: mobileColors.text,
+      fontSize: desktopEditorParity.h2FontSize,
+      fontWeight: '600',
+      lineHeight: desktopEditorParity.h2LineHeight,
+      marginBottom: desktopEditorParity.h2MarginBottom,
+      marginTop: desktopEditorParity.h2MarginTop,
+    },
+    headingFour: {
+      fontSize: desktopEditorParity.h4FontSize,
+      lineHeight: desktopEditorParity.h4LineHeight,
+      marginBottom: desktopEditorParity.h4MarginBottom,
+      marginTop: desktopEditorParity.h4MarginTop,
+    },
+    headingOne: {
+      fontSize: desktopEditorParity.h1FontSize,
+      fontWeight: '700',
+      lineHeight: desktopEditorParity.h1LineHeight,
+      marginBottom: 0,
+      marginTop: 0,
+    },
+    headingSmall: {
+      fontSize: desktopEditorParity.h3FontSize,
+      lineHeight: desktopEditorParity.h3LineHeight,
+      marginBottom: desktopEditorParity.h3MarginBottom,
+      marginTop: desktopEditorParity.h3MarginTop,
+    },
+    paragraph: {
+      color: mobileColors.text,
+      fontSize: desktopEditorParity.bodyFontSize,
+      lineHeight: desktopEditorParity.bodyLineHeight,
+      marginBottom: desktopEditorParity.paragraphSpacing,
+    },
+  })
 
-const titleBlockStyles = StyleSheet.create({
-  container: {
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    marginBottom: desktopEditorParity.h1MarginBottom,
-    paddingBottom: desktopEditorParity.h1PaddingBottom,
-  },
-})
+  const titleBlockStyles = StyleSheet.create({
+    container: {
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      marginBottom: desktopEditorParity.h1MarginBottom,
+      paddingBottom: desktopEditorParity.h1PaddingBottom,
+    },
+  })
 
-const inlineStyles = StyleSheet.create({
-  bold: {
-    color: mobileColors.text,
-    fontWeight: '700',
-  },
-  code: {
-    overflow: 'hidden',
-    borderRadius: 3,
-    backgroundColor: mobileColors.graySoft,
-    color: mobileColors.textMuted,
-    fontFamily: 'Menlo',
-    fontSize: desktopEditorParity.inlineCodeFontSize,
-    paddingHorizontal: desktopEditorParity.inlineCodePaddingHorizontal,
-    paddingVertical: desktopEditorParity.inlineCodePaddingVertical,
-  },
-  italic: {
-    color: mobileColors.text,
-    fontStyle: 'italic',
-  },
-  link: {
-    color: mobileColors.primary,
-    textDecorationLine: 'underline',
-  },
-  strike: {
-    color: mobileColors.textMuted,
-    textDecorationLine: 'line-through',
-  },
-  wikilink: {
-    color: mobileColors.primary,
-  },
-})
+  const inlineStyles = StyleSheet.create({
+    bold: {
+      color: mobileColors.text,
+      fontWeight: '700',
+    },
+    code: {
+      overflow: 'hidden',
+      borderRadius: 3,
+      backgroundColor: mobileColors.graySoft,
+      color: mobileColors.textMuted,
+      fontFamily: 'Menlo',
+      fontSize: desktopEditorParity.inlineCodeFontSize,
+      paddingHorizontal: desktopEditorParity.inlineCodePaddingHorizontal,
+      paddingVertical: desktopEditorParity.inlineCodePaddingVertical,
+    },
+    italic: {
+      color: mobileColors.text,
+      fontStyle: 'italic',
+    },
+    link: {
+      color: mobileColors.primary,
+      textDecorationLine: 'underline',
+    },
+    strike: {
+      color: mobileColors.textMuted,
+      textDecorationLine: 'line-through',
+    },
+    wikilink: {
+      color: mobileColors.primary,
+    },
+  })
 
-const listStyles = StyleSheet.create({
-  group: {
-    marginBottom: desktopEditorParity.paragraphSpacing,
-  },
-  marker: {
-    color: mobileColors.primary,
-    fontSize: desktopEditorParity.listBulletSize,
-    lineHeight: desktopEditorParity.bodyLineHeight,
-    minWidth: desktopEditorParity.listIndentSize,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: desktopEditorParity.listBulletGap,
-    marginBottom: desktopEditorParity.listItemSpacing,
-  },
-  taskIcon: {
-    width: desktopEditorParity.listIndentSize,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  taskRow: {
-    flexDirection: 'row',
-    gap: desktopEditorParity.listCheckboxGap,
-    marginBottom: desktopEditorParity.listItemSpacing,
-  },
-})
+  const listStyles = StyleSheet.create({
+    group: {
+      marginBottom: desktopEditorParity.paragraphSpacing,
+    },
+    marker: {
+      color: mobileColors.primary,
+      fontSize: desktopEditorParity.listBulletSize,
+      lineHeight: desktopEditorParity.bodyLineHeight,
+      minWidth: desktopEditorParity.listIndentSize,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: desktopEditorParity.listBulletGap,
+      marginBottom: desktopEditorParity.listItemSpacing,
+    },
+    taskIcon: {
+      width: desktopEditorParity.listIndentSize,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    taskRow: {
+      flexDirection: 'row',
+      gap: desktopEditorParity.listCheckboxGap,
+      marginBottom: desktopEditorParity.listItemSpacing,
+    },
+  })
 
-const quoteStyles = StyleSheet.create({
-  container: {
-    borderLeftColor: mobileColors.primary,
-    borderLeftWidth: 3,
-    marginVertical: desktopEditorParity.quoteMarginVertical,
-    paddingLeft: desktopEditorParity.quotePaddingLeft,
-  },
-  text: {
-    color: mobileColors.textMuted,
-    fontSize: desktopEditorParity.bodyFontSize,
-    fontStyle: 'italic',
-    lineHeight: desktopEditorParity.bodyLineHeight,
-  },
-})
+  const quoteStyles = StyleSheet.create({
+    container: {
+      borderLeftColor: mobileColors.primary,
+      borderLeftWidth: 3,
+      marginVertical: desktopEditorParity.quoteMarginVertical,
+      paddingLeft: desktopEditorParity.quotePaddingLeft,
+    },
+    text: {
+      color: mobileColors.textMuted,
+      fontSize: desktopEditorParity.bodyFontSize,
+      fontStyle: 'italic',
+      lineHeight: desktopEditorParity.bodyLineHeight,
+    },
+  })
 
-const codeBlockStyles = StyleSheet.create({
-  code: {
-    color: mobileColors.text,
-    fontFamily: 'Menlo',
-    fontSize: desktopEditorParity.inlineCodeFontSize,
-    lineHeight: 20,
-  },
-  container: {
-    borderColor: mobileColors.border,
-    borderRadius: mobileRadius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: mobileColors.sidebar,
-    marginVertical: mobileSpace.md,
-    paddingHorizontal: mobileSpace.md,
-    paddingVertical: mobileSpace.sm,
-  },
-  language: {
-    color: mobileColors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: mobileSpace.xs,
-    textTransform: 'uppercase',
-  },
-})
+  const codeBlockStyles = StyleSheet.create({
+    code: {
+      color: mobileColors.text,
+      fontFamily: 'Menlo',
+      fontSize: desktopEditorParity.inlineCodeFontSize,
+      lineHeight: 20,
+    },
+    container: {
+      borderColor: mobileColors.border,
+      borderRadius: mobileRadius.sm,
+      borderWidth: StyleSheet.hairlineWidth,
+      backgroundColor: mobileColors.sidebar,
+      marginVertical: mobileSpace.md,
+      paddingHorizontal: mobileSpace.md,
+      paddingVertical: mobileSpace.sm,
+    },
+    language: {
+      color: mobileColors.textMuted,
+      fontSize: 11,
+      fontWeight: '600',
+      marginBottom: mobileSpace.xs,
+      textTransform: 'uppercase',
+    },
+  })
 
-const dividerStyles = StyleSheet.create({
-  divider: {
-    borderTopColor: mobileColors.border,
-    borderTopWidth: desktopEditorParity.horizontalRuleThickness,
-    marginVertical: desktopEditorParity.horizontalRuleMarginVertical,
-  },
-})
+  const dividerStyles = StyleSheet.create({
+    divider: {
+      borderTopColor: mobileColors.border,
+      borderTopWidth: desktopEditorParity.horizontalRuleThickness,
+      marginVertical: desktopEditorParity.horizontalRuleMarginVertical,
+    },
+  })
 
-const tableStyles = StyleSheet.create({
-  cell: {
-    flex: 1,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderRightColor: mobileColors.border,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    color: mobileColors.text,
-    fontSize: desktopEditorParity.tableFontSize,
-    lineHeight: 20,
-    paddingHorizontal: desktopEditorParity.tableCellPaddingHorizontal,
-    paddingVertical: desktopEditorParity.tableCellPaddingVertical,
-  },
-  headerCell: {
-    backgroundColor: mobileColors.card,
-    fontWeight: '600',
-  },
-  headerRow: {
-    backgroundColor: mobileColors.card,
-  },
-  row: {
-    flexDirection: 'row',
-  },
-  table: {
-    overflow: 'hidden',
-    borderColor: mobileColors.border,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderRadius: mobileRadius.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: mobileSpace.md,
-  },
-})
+  const tableStyles = StyleSheet.create({
+    cell: {
+      flex: 1,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderRightColor: mobileColors.border,
+      borderRightWidth: StyleSheet.hairlineWidth,
+      color: mobileColors.text,
+      fontSize: desktopEditorParity.tableFontSize,
+      lineHeight: 20,
+      paddingHorizontal: desktopEditorParity.tableCellPaddingHorizontal,
+      paddingVertical: desktopEditorParity.tableCellPaddingVertical,
+    },
+    headerCell: {
+      backgroundColor: mobileColors.card,
+      fontWeight: '600',
+    },
+    headerRow: {
+      backgroundColor: mobileColors.card,
+    },
+    row: {
+      flexDirection: 'row',
+    },
+    table: {
+      overflow: 'hidden',
+      borderColor: mobileColors.border,
+      borderLeftWidth: StyleSheet.hairlineWidth,
+      borderRadius: mobileRadius.sm,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      marginTop: mobileSpace.md,
+    },
+  })
+  return { mobileColors, textStyles, titleBlockStyles, inlineStyles, listStyles, quoteStyles, codeBlockStyles, dividerStyles, tableStyles }
+}

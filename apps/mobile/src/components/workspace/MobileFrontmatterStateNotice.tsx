@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { PencilSimple, Sparkle, WarningCircle } from 'phosphor-react-native'
 import { StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
-import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileFrontmatterState } from '../../workspace/mobileFrontmatterState'
 
 type MobileFrontmatterStateNoticeProps = {
@@ -18,6 +20,7 @@ export function MobileFrontmatterStateNotice({
   onInitializeProperties,
   state,
 }: MobileFrontmatterStateNoticeProps) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   if (state === 'invalid') {
     return (
       <NoticeFrame tone="danger" testID="properties-invalid-frontmatter">
@@ -59,6 +62,7 @@ function NoticeFrame({
   testID: string
   tone?: 'danger' | 'default'
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View
       style={[styles.frame, tone === 'danger' ? styles.dangerFrame : null]}
@@ -70,28 +74,32 @@ function NoticeFrame({
 }
 
 function NoticeText({ label }: { label: string }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return <Text style={styles.text}>{label}</Text>
 }
 
-const styles = StyleSheet.create({
-  dangerFrame: {
-    backgroundColor: mobileColors.dangerSoft,
-    borderColor: mobileColors.danger,
-  },
-  frame: {
-    alignItems: 'center',
-    borderColor: mobileColors.border,
-    borderRadius: mobileRadius.lg,
-    borderStyle: 'dashed',
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: mobileSpace.md,
-    paddingHorizontal: mobileSpace.lg,
-    paddingVertical: mobileSpace.xl,
-  },
-  text: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    dangerFrame: {
+      backgroundColor: mobileColors.dangerSoft,
+      borderColor: mobileColors.danger,
+    },
+    frame: {
+      alignItems: 'center',
+      borderColor: mobileColors.border,
+      borderRadius: mobileRadius.lg,
+      borderStyle: 'dashed',
+      borderWidth: StyleSheet.hairlineWidth,
+      gap: mobileSpace.md,
+      paddingHorizontal: mobileSpace.lg,
+      paddingVertical: mobileSpace.xl,
+    },
+    text: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      lineHeight: 18,
+      textAlign: 'center',
+    },
+  })
+  return { mobileColors, styles }
+}

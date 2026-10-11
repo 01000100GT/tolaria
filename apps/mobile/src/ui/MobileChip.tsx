@@ -1,9 +1,10 @@
+import { useMobileStyles } from './theme/useMobileTheme'
+import type { MobileColors } from './theme/mobilePalette'
 import { Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
 import { Badge } from '../components/ui/badge'
 import { Text } from '../components/ui/text'
 import { cn } from '../components/ui/utils'
 import { desktopPropertyParity } from './desktopParity'
-import { mobileColors } from './tokens'
 
 type MobileChipTone = 'blue' | 'gray' | 'green' | 'orange' | 'purple' | 'red' | 'yellow'
 type MobileChipDensity = 'list' | 'property'
@@ -19,6 +20,7 @@ export function MobileChip({
   style?: StyleProp<ViewStyle>
   tone?: MobileChipTone
 }) {
+  const { listChipStyles, propertyChipStyles, chipTextColors } = useMobileStyles(createThemeStyles)
   const chipStyle = density === 'list' ? listChipStyles[tone] : propertyChipStyles[tone]
   const badgeStyle = Platform.OS === 'web'
     ? [chipStyle, style]
@@ -36,42 +38,6 @@ const densityClassNames: Record<MobileChipDensity, string> = {
   list: 'rounded-md px-1.5 py-0.5',
   property: 'rounded-md',
 }
-
-const chipBackgroundColors: Record<MobileChipTone, string> = {
-  blue: mobileColors.blueSoft,
-  gray: mobileColors.graySoft,
-  green: mobileColors.greenSoft,
-  orange: mobileColors.orangeSoft,
-  purple: mobileColors.purpleSoft,
-  red: mobileColors.redSoft,
-  yellow: mobileColors.yellowSoft,
-}
-
-const chipTextColors: Record<MobileChipTone, string> = {
-  blue: mobileColors.blue,
-  gray: mobileColors.textMuted,
-  green: mobileColors.green,
-  orange: mobileColors.orange,
-  purple: mobileColors.purple,
-  red: mobileColors.red,
-  yellow: mobileColors.yellow,
-}
-
-const listChipStyles = Object.fromEntries(
-  Object.entries(chipBackgroundColors).map(([tone, backgroundColor]) => [tone, { backgroundColor }]),
-) as Record<MobileChipTone, ViewStyle>
-
-const propertyChipStyles = Object.fromEntries(
-  Object.entries(chipBackgroundColors).map(([tone, backgroundColor]) => [
-    tone,
-    {
-      backgroundColor,
-      borderRadius: desktopPropertyParity.chipRadius,
-      height: desktopPropertyParity.chipHeight,
-      paddingHorizontal: desktopPropertyParity.chipPaddingHorizontal,
-    },
-  ]),
-) as Record<MobileChipTone, ViewStyle>
 
 const styles = StyleSheet.create({
   base: {
@@ -109,4 +75,43 @@ const textStyles = {
     fontWeight: '500' as const,
     lineHeight: desktopPropertyParity.chipHeight,
   },
+}
+
+function createThemeStyles(mobileColors: MobileColors) {
+  const chipBackgroundColors: Record<MobileChipTone, string> = {
+    blue: mobileColors.blueSoft,
+    gray: mobileColors.graySoft,
+    green: mobileColors.greenSoft,
+    orange: mobileColors.orangeSoft,
+    purple: mobileColors.purpleSoft,
+    red: mobileColors.redSoft,
+    yellow: mobileColors.yellowSoft,
+  }
+
+  const chipTextColors: Record<MobileChipTone, string> = {
+    blue: mobileColors.blue,
+    gray: mobileColors.textMuted,
+    green: mobileColors.green,
+    orange: mobileColors.orange,
+    purple: mobileColors.purple,
+    red: mobileColors.red,
+    yellow: mobileColors.yellow,
+  }
+
+  const listChipStyles = Object.fromEntries(
+    Object.entries(chipBackgroundColors).map(([tone, backgroundColor]) => [tone, { backgroundColor }]),
+  ) as Record<MobileChipTone, ViewStyle>
+
+  const propertyChipStyles = Object.fromEntries(
+    Object.entries(chipBackgroundColors).map(([tone, backgroundColor]) => [
+      tone,
+      {
+        backgroundColor,
+        borderRadius: desktopPropertyParity.chipRadius,
+        height: desktopPropertyParity.chipHeight,
+        paddingHorizontal: desktopPropertyParity.chipPaddingHorizontal,
+      },
+    ]),
+  ) as Record<MobileChipTone, ViewStyle>
+  return { mobileColors, chipBackgroundColors, chipTextColors, listChipStyles, propertyChipStyles }
 }

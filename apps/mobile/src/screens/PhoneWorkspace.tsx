@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../ui/theme/useMobileTheme'
+import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   CaretLeft,
@@ -15,7 +17,7 @@ import { MobileWorkspaceSidebar } from '../components/workspace/MobileWorkspaceS
 import { mobileText } from '../i18n/mobileText'
 import { probeProps, useMobileLayoutProbe, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { MobileIconButton } from '../ui/MobileIconButton'
-import { mobileColors, mobileSpace } from '../ui/tokens'
+import { mobileSpace } from '../ui/tokens'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
 import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
@@ -367,6 +369,7 @@ function PhoneWorkspaceRoot({
   transitionSwipeHandlers,
   onOpenNativeVault,
 }: PhoneWorkspaceRootProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View {...phoneLayoutProbe('phone.root')} style={styles.root}>
       <PhoneWorkspaceTransition
@@ -754,6 +757,7 @@ function PhoneNoteListScreen({
   phoneLayoutProbe,
   phoneSwipePreview,
 }: PhoneWorkspaceStateViewProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const commitSidebar = useCallback(
     () => phoneSwipePreview.commit('sidebar', openSidebar),
     [openSidebar, phoneSwipePreview],
@@ -816,6 +820,7 @@ function PhoneSidebarDrawer({
   phoneLayoutProbe,
   phoneSwipePreview,
 }: PhoneWorkspaceStateViewProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const { width } = useWindowDimensions()
   const drawerWidth = phoneWorkspaceSidebarDrawerWidth(width)
   const commitList = useCallback(
@@ -892,6 +897,7 @@ function PhoneEditorScreen({
   suggestionNotes,
   tableOfContentsTarget,
 }: PhoneWorkspaceStateViewProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const commitList = useCallback(
     () => phoneSwipePreview.commit('list', openList),
     [openList, phoneSwipePreview],
@@ -940,6 +946,7 @@ function PhoneEditorTopBar({
   onOpenProperties: () => void
   title: string
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <PhoneTopBar title={title} onBack={onBack}>
       <MobileIconButton
@@ -1018,6 +1025,7 @@ function PhonePropertiesScreen({
   phoneLayoutProbe,
   phoneSwipePreview,
 }: PhoneWorkspaceStateViewProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const returnToEditor = useCallback(() => openEditor(), [openEditor])
   const commitEditor = useCallback(
     () => phoneSwipePreview.commit('editor', returnToEditor),
@@ -1063,6 +1071,7 @@ function PhonePropertiesScreen({
 }
 
 function PhoneCommandPaletteButton({ onPress }: { onPress: () => void }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <MobileIconButton
       accessibilityLabel={mobileText('menu.view.commandPalette')}
@@ -1083,6 +1092,7 @@ function PhoneTopBar({
   onBack: () => void
   title: string
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.topBar} testID="phone-top-bar">
       <MobileIconButton accessibilityLabel={mobileText('command.navigation.goBack')} testID="phone-back-action" onPress={onBack}>
@@ -1119,54 +1129,57 @@ function useSelectAndOpenList<Selection>(
   }, [select, openList])
 }
 
-const styles = StyleSheet.create({
-  drawerPanel: {
-    flex: 1,
-    backgroundColor: mobileColors.sidebar,
-    borderRightColor: mobileColors.border,
-    borderRightWidth: StyleSheet.hairlineWidth,
-  },
-  drawerPreview: {
-    bottom: 0,
-    position: 'absolute',
-    top: 0,
-  },
-  drawerRoot: {
-    flex: 1,
-    backgroundColor: mobileColors.sidebar,
-    overflow: 'hidden',
-  },
-  root: {
-    flex: 1,
-    backgroundColor: mobileColors.app,
-  },
-  leadingActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: mobileColors.app,
-  },
-  topBar: {
-    minHeight: 44,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    backgroundColor: mobileColors.card,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  topBarActions: {
-    minWidth: 32,
-    alignItems: 'flex-end',
-  },
-  topBarTitle: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    drawerPanel: {
+      flex: 1,
+      backgroundColor: mobileColors.sidebar,
+      borderRightColor: mobileColors.border,
+      borderRightWidth: StyleSheet.hairlineWidth,
+    },
+    drawerPreview: {
+      bottom: 0,
+      position: 'absolute',
+      top: 0,
+    },
+    drawerRoot: {
+      flex: 1,
+      backgroundColor: mobileColors.sidebar,
+      overflow: 'hidden',
+    },
+    root: {
+      flex: 1,
+      backgroundColor: mobileColors.app,
+    },
+    leadingActions: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    screen: {
+      flex: 1,
+      backgroundColor: mobileColors.app,
+    },
+    topBar: {
+      minHeight: 44,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      backgroundColor: mobileColors.card,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    topBarActions: {
+      minWidth: 32,
+      alignItems: 'flex-end',
+    },
+    topBarTitle: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+  })
+  return { mobileColors, styles }
+}

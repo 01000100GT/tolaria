@@ -1,38 +1,7 @@
-import { desktopParityColors } from './desktopParity'
+import { mobilePalettes } from './theme/mobilePalette'
 
-export const mobileColors = {
-  app: desktopParityColors.surfaceApp,
-  border: desktopParityColors.borderDefault,
-  borderStrong: desktopParityColors.borderStrong,
-  card: desktopParityColors.surfaceCard,
-  blue: desktopParityColors.accentBlue,
-  blueSoft: desktopParityColors.accentBlueLight,
-  control: desktopParityColors.surfaceButton,
-  controlPressed: desktopParityColors.borderStrong,
-  danger: desktopParityColors.accentRed,
-  dangerSoft: desktopParityColors.accentRedLight,
-  editor: desktopParityColors.surfaceEditor,
-  graySoft: desktopParityColors.stateHoverSubtle,
-  green: desktopParityColors.accentGreen,
-  greenSoft: desktopParityColors.accentGreenLight,
-  orange: desktopParityColors.accentOrange,
-  orangeSoft: desktopParityColors.accentOrangeLight,
-  primary: desktopParityColors.accentBlue,
-  primarySoft: desktopParityColors.accentBlueLight,
-  purple: desktopParityColors.accentPurple,
-  purpleSoft: desktopParityColors.accentPurpleLight,
-  red: desktopParityColors.accentRed,
-  redSoft: desktopParityColors.accentRedLight,
-  selected: desktopParityColors.stateSelected,
-  selectedStrong: desktopParityColors.stateSelectedStrong,
-  sidebar: desktopParityColors.surfaceSidebar,
-  text: desktopParityColors.textPrimary,
-  textFaint: desktopParityColors.textFaint,
-  textInverse: desktopParityColors.textInverse,
-  textMuted: desktopParityColors.textSecondary,
-  yellow: desktopParityColors.accentYellow,
-  yellowSoft: desktopParityColors.accentYellowLight,
-} as const
+// Canonical colors for saved document marks; UI components use the active theme.
+export const mobileColors = mobilePalettes.light
 
 export const mobileSpace = {
   xxs: 2,

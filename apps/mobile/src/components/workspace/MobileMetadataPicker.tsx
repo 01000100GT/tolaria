@@ -1,9 +1,11 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { FileText } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileSidebarIcon, MobileTone } from '../../workspace/mobileWorkspaceModel'
 import { mobilePhosphorIconElement } from './MobileWorkspaceIconResolver'
 import { noteTypeColor, noteTypeSoftColor } from './mobileWorkspaceTone'
@@ -39,6 +41,7 @@ export function MobileMetadataPicker({
   selectedTone,
   testIDPrefix,
 }: MobileMetadataPickerProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.picker} testID={`${testIDPrefix}-metadata-picker`}>
       <PickerGroup
@@ -72,14 +75,14 @@ export function MobileMetadataPicker({
               style={[
                 styles.swatch,
                 {
-                  backgroundColor: noteTypeSoftColor(tone),
-                  borderColor: selectedTone === tone ? noteTypeColor(tone) : 'transparent',
+                  backgroundColor: noteTypeSoftColor(tone, mobileColors),
+                  borderColor: selectedTone === tone ? noteTypeColor(tone, mobileColors) : 'transparent',
                 },
               ]}
               testID={`${testIDPrefix}-tone-${tone}`}
               onPress={() => onToneSelect(tone)}
             >
-              <View style={[styles.swatchDot, { backgroundColor: noteTypeColor(tone) }]} />
+              <View style={[styles.swatchDot, { backgroundColor: noteTypeColor(tone, mobileColors) }]} />
             </Pressable>
           ))}
         </View>
@@ -99,6 +102,7 @@ function PickerGroup({
   selectedLabel: string
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.group}>
       <View style={styles.groupHeader}>
@@ -123,6 +127,7 @@ function IconOption({
   selected: boolean
   testID: string
 }) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   const color = selected ? mobileColors.primary : mobileColors.textMuted
 
   return (
@@ -145,63 +150,66 @@ function selectedText(key: 'viewDialog.selectedColor' | 'viewDialog.selectedIcon
   return mobileText(key).replace(/\{(?:color|icon)\}/u, value)
 }
 
-const styles = StyleSheet.create({
-  group: {
-    gap: mobileSpace.xs,
-  },
-  groupHeader: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    justifyContent: 'space-between',
-  },
-  iconButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: mobileColors.border,
-    backgroundColor: mobileColors.card,
-  },
-  iconButtonSelected: {
-    borderColor: mobileColors.primary,
-    backgroundColor: mobileColors.primarySoft,
-  },
-  iconRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.sm,
-  },
-  label: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  picker: {
-    gap: mobileSpace.md,
-  },
-  selectedLabel: {
-    flexShrink: 1,
-    color: mobileColors.textFaint,
-    fontSize: mobileType.caption,
-  },
-  swatch: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 2,
-  },
-  swatchDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-  },
-  swatches: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.sm,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    group: {
+      gap: mobileSpace.xs,
+    },
+    groupHeader: {
+      alignItems: 'baseline',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      justifyContent: 'space-between',
+    },
+    iconButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: mobileColors.border,
+      backgroundColor: mobileColors.card,
+    },
+    iconButtonSelected: {
+      borderColor: mobileColors.primary,
+      backgroundColor: mobileColors.primarySoft,
+    },
+    iconRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.sm,
+    },
+    label: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    picker: {
+      gap: mobileSpace.md,
+    },
+    selectedLabel: {
+      flexShrink: 1,
+      color: mobileColors.textFaint,
+      fontSize: mobileType.caption,
+    },
+    swatch: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      borderWidth: 2,
+    },
+    swatchDot: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+    },
+    swatches: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.sm,
+    },
+  })
+  return { mobileColors, styles }
+}

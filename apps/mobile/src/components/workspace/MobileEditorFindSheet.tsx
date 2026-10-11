@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { CaretDown, CaretUp } from 'phosphor-react-native'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
@@ -7,7 +9,7 @@ import { MobileButton } from '../../ui/MobileButton'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import {
   mobileEditorFindSnapshot,
   nextMobileEditorFindIndex,
@@ -34,6 +36,7 @@ export function MobileEditorFindSheet({
   onUpdateContent: (noteId: string, content: string) => void
   replace: boolean
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState('')
   const [replacement, setReplacement] = useState('')
   const [caseSensitive, setCaseSensitive] = useState(false)
@@ -155,6 +158,7 @@ function ReplaceControls({
   replacement: string
   snapshot: MobileEditorFindSnapshot
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const replaceCurrent = () => {
     onUpdateContent(replaceCurrentMobileEditorFindMatch({
       activeIndex: snapshot.activeIndex,
@@ -203,6 +207,7 @@ function FindToggle({
   onPress: () => void
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -231,72 +236,75 @@ function mobileEditorFindStatusText(snapshot: MobileEditorFindSnapshot): string 
     .replace('{total}', `${snapshot.matchCount}`)
 }
 
-const styles = StyleSheet.create({
-  content: {
-    gap: mobileSpace.md,
-    padding: mobileSpace.md,
-  },
-  controlRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  replaceActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    justifyContent: 'flex-end',
-  },
-  replaceGroup: {
-    gap: mobileSpace.sm,
-  },
-  scrollArea: {
-    flexShrink: 1,
-  },
-  summary: {
-    minWidth: 0,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: mobileSpace.xs,
-    paddingBottom: mobileSpace.sm,
-  },
-  summaryStatus: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  summaryTitle: {
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  toggle: {
-    alignItems: 'center',
-    borderColor: mobileColors.borderStrong,
-    borderRadius: mobileRadius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    minHeight: desktopToolbarActionParity.iconButtonSize,
-    minWidth: 38,
-    justifyContent: 'center',
-    paddingHorizontal: mobileSpace.sm,
-  },
-  toggleActive: {
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.primary,
-  },
-  togglePressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  toggleText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  toggleTextActive: {
-    color: mobileColors.primary,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    content: {
+      gap: mobileSpace.md,
+      padding: mobileSpace.md,
+    },
+    controlRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
+    replaceActions: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      justifyContent: 'flex-end',
+    },
+    replaceGroup: {
+      gap: mobileSpace.sm,
+    },
+    scrollArea: {
+      flexShrink: 1,
+    },
+    summary: {
+      minWidth: 0,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      gap: mobileSpace.xs,
+      paddingBottom: mobileSpace.sm,
+    },
+    summaryStatus: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    summaryTitle: {
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    toggle: {
+      alignItems: 'center',
+      borderColor: mobileColors.borderStrong,
+      borderRadius: mobileRadius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      minHeight: desktopToolbarActionParity.iconButtonSize,
+      minWidth: 38,
+      justifyContent: 'center',
+      paddingHorizontal: mobileSpace.sm,
+    },
+    toggleActive: {
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.primary,
+    },
+    togglePressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    toggleText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    toggleTextActive: {
+      color: mobileColors.primary,
+    },
+  })
+  return { mobileColors, styles }
+}

@@ -1,7 +1,9 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileColors as propertyColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobilePropertyValueKind } from '../../workspace/mobilePropertyValues'
 import { mobilePropertyValueChoiceLayoutContract } from './MobileWorkspaceActionSheetModel'
 import { mobilePropertyValueKindOptions } from './mobilePropertyValueKindOptions'
@@ -15,6 +17,7 @@ export function MobilePropertyValueKindPicker({
   onSelect: (value: MobilePropertyValueKind) => void
   selectedKind: MobilePropertyValueKind
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.kindGroup} testID="workspace-property-kind-picker">
       <Text style={styles.kindLabel}>{mobileText('inspector.properties.valueKind')}</Text>
@@ -41,6 +44,7 @@ export function MobileBooleanPropertyValuePicker({
   onChange: (value: string) => void
   value: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const selectedValue = /^(true|yes|1|on)$/iu.test(value.trim()) ? 'true' : 'false'
   return (
     <View style={styles.booleanOptions} testID="workspace-property-boolean-picker">
@@ -67,6 +71,7 @@ export function MobileColorPropertyValuePicker({
   onChange: (value: string) => void
   value: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const selectedValue = value.trim().toLowerCase()
 
   return (
@@ -107,6 +112,7 @@ export function MobileStatusPropertyValuePicker({
   options: string[]
   value: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (options.length === 0) return null
 
   const selectedValue = value.trim().toLowerCase()
@@ -139,6 +145,7 @@ function PropertyValueKindButton({
   onPress: () => void
   selected: boolean
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       aria-selected={selected}
@@ -178,6 +185,7 @@ function PropertyValueButton({
   selected: boolean
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={label}
@@ -197,13 +205,13 @@ function PropertyValueButton({
 }
 
 const propertyColorOptions = [
-  colorOption('gray', mobileColors.textMuted, mobileColors.graySoft),
-  colorOption('blue', mobileColors.blue, mobileColors.blueSoft),
-  colorOption('green', mobileColors.green, mobileColors.greenSoft),
-  colorOption('purple', mobileColors.purple, mobileColors.purpleSoft),
-  colorOption('orange', mobileColors.orange, mobileColors.orangeSoft),
-  colorOption('red', mobileColors.red, mobileColors.redSoft),
-  colorOption('yellow', mobileColors.yellow, mobileColors.yellowSoft),
+  colorOption('gray', propertyColors.textMuted, propertyColors.graySoft),
+  colorOption('blue', propertyColors.blue, propertyColors.blueSoft),
+  colorOption('green', propertyColors.green, propertyColors.greenSoft),
+  colorOption('purple', propertyColors.purple, propertyColors.purpleSoft),
+  colorOption('orange', propertyColors.orange, propertyColors.orangeSoft),
+  colorOption('red', propertyColors.red, propertyColors.redSoft),
+  colorOption('yellow', propertyColors.yellow, propertyColors.yellowSoft),
 ] as const
 
 function colorOption(label: string, value: string, softColor: string) {
@@ -214,89 +222,92 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-const styles = StyleSheet.create({
-  booleanButton: {
-    minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
-    minWidth: mobilePropertyValueChoiceLayoutContract.minWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
-  },
-  booleanOptions: {
-    flexDirection: 'row',
-    gap: mobilePropertyValueChoiceLayoutContract.gap,
-  },
-  buttonText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  colorButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: mobileRadius.pill,
-    borderWidth: 2,
-  },
-  colorDot: {
-    width: 14,
-    height: 14,
-    borderRadius: mobileRadius.pill,
-  },
-  colorOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.xs,
-  },
-  choicePressable: {
-    borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
-  },
-  disabledButton: {
-    opacity: 0.45,
-  },
-  disabledButtonText: {
-    color: mobileColors.textFaint,
-  },
-  kindButton: {
-    minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
-  },
-  kindGroup: {
-    gap: mobileSpace.xs,
-  },
-  kindLabel: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  kindOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobilePropertyValueChoiceLayoutContract.gap,
-  },
-  pressedButton: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  selectedButton: {
-    backgroundColor: mobileColors.selected,
-    borderColor: mobileColors.primary,
-  },
-  selectedButtonText: {
-    color: mobileColors.primary,
-  },
-  statusOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobilePropertyValueChoiceLayoutContract.gap,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    booleanButton: {
+      minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
+      minWidth: mobilePropertyValueChoiceLayoutContract.minWidth,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
+    },
+    booleanOptions: {
+      flexDirection: 'row',
+      gap: mobilePropertyValueChoiceLayoutContract.gap,
+    },
+    buttonText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    colorButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 30,
+      height: 30,
+      borderRadius: mobileRadius.pill,
+      borderWidth: 2,
+    },
+    colorDot: {
+      width: 14,
+      height: 14,
+      borderRadius: mobileRadius.pill,
+    },
+    colorOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.xs,
+    },
+    choicePressable: {
+      borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
+    },
+    disabledButton: {
+      opacity: 0.45,
+    },
+    disabledButtonText: {
+      color: mobileColors.textFaint,
+    },
+    kindButton: {
+      minHeight: mobilePropertyValueChoiceLayoutContract.minHeight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: mobilePropertyValueChoiceLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobilePropertyValueChoiceLayoutContract.paddingHorizontal,
+    },
+    kindGroup: {
+      gap: mobileSpace.xs,
+    },
+    kindLabel: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    kindOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobilePropertyValueChoiceLayoutContract.gap,
+    },
+    pressedButton: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    selectedButton: {
+      backgroundColor: mobileColors.selected,
+      borderColor: mobileColors.primary,
+    },
+    selectedButtonText: {
+      color: mobileColors.primary,
+    },
+    statusOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobilePropertyValueChoiceLayoutContract.gap,
+    },
+  })
+  return { mobileColors, styles }
+}

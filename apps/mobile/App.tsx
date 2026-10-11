@@ -4,7 +4,8 @@ import { PortalHost } from '@rn-primitives/portal'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { MobileUiLab } from './src/screens/MobileUiLab'
-import { mobileColors } from './src/ui/tokens'
+import { MobileThemeProvider } from './src/ui/theme/MobileThemeProvider'
+import { useMobileTheme } from './src/ui/theme/useMobileTheme'
 import { useNativeGitProbe } from './src/qa/nativeGitProbe'
 import { MobileVaultProvider } from './src/workspace/MobileVaultProvider'
 import { MobileSettingsProvider } from './src/settings/MobileSettingsProvider'
@@ -13,13 +14,20 @@ export function App() {
   useNativeGitProbe()
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <MobileSettingsProvider><MobileThemeProvider><AppSurface /></MobileThemeProvider></MobileSettingsProvider>
+    </GestureHandlerRootView>
+  )
+}
+
+function AppSurface() {
+  const { colors, mode } = useMobileTheme()
+  return (
       <SafeAreaProvider>
-        <SafeAreaView edges={['left', 'right']} style={{ backgroundColor: mobileColors.app, flex: 1 }}>
-          <StatusBar style="dark" />
-          <MobileSettingsProvider><MobileVaultProvider><MobileUiLab /></MobileVaultProvider></MobileSettingsProvider>
+        <SafeAreaView edges={['left', 'right']} style={{ backgroundColor: colors.app, flex: 1 }}>
+          <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+          <MobileVaultProvider><MobileUiLab /></MobileVaultProvider>
         </SafeAreaView>
         <PortalHost />
       </SafeAreaProvider>
-    </GestureHandlerRootView>
   )
 }

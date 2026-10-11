@@ -1,24 +1,29 @@
+import { mobilePalettes, type MobileColors } from '../../ui/theme/mobilePalette'
 import { desktopEditorParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import type { MobileNoteWidth } from '../../workspace/mobileWorkspaceModel'
 
 type CssDeclaration = readonly [property: string, value: string | number]
 
-export function mobileTentapEditorCss(compact: boolean, noteWidth: MobileNoteWidth | null | undefined = null): string {
+export function mobileTentapEditorCss(
+  compact: boolean,
+  noteWidth: MobileNoteWidth | null | undefined = null,
+  colors: MobileColors = mobilePalettes.light,
+): string {
   const horizontalPadding = compact ? mobileSpace.xl : desktopEditorParity.contentPaddingHorizontal
   const h1FontSize = compact ? 30 : desktopEditorParity.h1FontSize
   const h1LineHeight = compact ? 36 : desktopEditorParity.h1LineHeight
   const wide = noteWidth === 'wide'
 
   return [
-    ...documentRules({ horizontalPadding, wide }),
-    ...headingRules({ h1FontSize, h1LineHeight }),
-    ...blockRules(),
-    ...tableRules(),
+    ...documentRules(colors, { horizontalPadding, wide }),
+    ...headingRules(colors, { h1FontSize, h1LineHeight }),
+    ...blockRules(colors),
+    ...tableRules(colors),
   ].join('\n')
 }
 
-function documentRules({ horizontalPadding, wide }: { horizontalPadding: number; wide: boolean }): string[] {
+function documentRules(mobileColors: MobileColors, { horizontalPadding, wide }: { horizontalPadding: number; wide: boolean }): string[] {
   return [
     cssRule('html, body', [
       ['background', mobileColors.editor],
@@ -42,7 +47,7 @@ function documentRules({ horizontalPadding, wide }: { horizontalPadding: number;
   ]
 }
 
-function headingRules({ h1FontSize, h1LineHeight }: { h1FontSize: number; h1LineHeight: number }): string[] {
+function headingRules(mobileColors: MobileColors, { h1FontSize, h1LineHeight }: { h1FontSize: number; h1LineHeight: number }): string[] {
   return [
     cssRule('.ProseMirror h1', [
       ['border-bottom', `1px solid ${mobileColors.border}`],
@@ -53,19 +58,19 @@ function headingRules({ h1FontSize, h1LineHeight }: { h1FontSize: number; h1Line
       ['margin', `0 0 ${desktopEditorParity.h1MarginBottom}px`],
       ['padding-bottom', `${desktopEditorParity.h1PaddingBottom}px`],
     ]),
-    headingRule('.ProseMirror h2', {
+    headingRule(mobileColors, '.ProseMirror h2', {
       fontSize: desktopEditorParity.h2FontSize,
       lineHeight: desktopEditorParity.h2LineHeight,
       marginBottom: desktopEditorParity.h2MarginBottom,
       marginTop: desktopEditorParity.h2MarginTop,
     }),
-    headingRule('.ProseMirror h3', {
+    headingRule(mobileColors, '.ProseMirror h3', {
       fontSize: desktopEditorParity.h3FontSize,
       lineHeight: desktopEditorParity.h3LineHeight,
       marginBottom: desktopEditorParity.h3MarginBottom,
       marginTop: desktopEditorParity.h3MarginTop,
     }),
-    headingRule('.ProseMirror h4', {
+    headingRule(mobileColors, '.ProseMirror h4', {
       fontSize: desktopEditorParity.h4FontSize,
       lineHeight: desktopEditorParity.h4LineHeight,
       marginBottom: desktopEditorParity.h4MarginBottom,
@@ -74,7 +79,7 @@ function headingRules({ h1FontSize, h1LineHeight }: { h1FontSize: number; h1Line
   ]
 }
 
-function blockRules(): string[] {
+function blockRules(mobileColors: MobileColors): string[] {
   return [
     cssRule('.ProseMirror p', [
       ['margin', `0 0 ${desktopEditorParity.paragraphSpacing}px`],
@@ -114,7 +119,7 @@ function blockRules(): string[] {
   ]
 }
 
-function tableRules(): string[] {
+function tableRules(mobileColors: MobileColors): string[] {
   return [
     cssRule('.ProseMirror table', [
       ['border-collapse', 'collapse'],
@@ -134,6 +139,7 @@ function tableRules(): string[] {
 }
 
 function headingRule(
+  mobileColors: MobileColors,
   selector: string,
   tokens: { fontSize: number; lineHeight: number; marginBottom: number; marginTop: number },
 ): string {

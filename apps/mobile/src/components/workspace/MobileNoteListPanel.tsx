@@ -1,3 +1,5 @@
+import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { FolderOpen, MagnifyingGlass, Plus } from 'phosphor-react-native'
 import { FlatList, StyleSheet, View } from 'react-native'
@@ -12,7 +14,7 @@ import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { desktopPanelParity, desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileRadius, mobileSpace, mobileType } from '../../ui/tokens'
 import { mobileNoteRowChips } from '../../workspace/mobileNoteDisplay'
 import type { MobileNoteListFilter } from '../../workspace/mobileNoteFilters'
 import type { MobileNeighborhood, MobileNeighborhoodGroup } from '../../workspace/mobileNeighborhood'
@@ -72,6 +74,7 @@ type MobileNoteListPanelProps = {
 }
 
 export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const {
     bulkActions,
     compact,
@@ -164,6 +167,7 @@ function NoteListFilterPills({
   counts: Record<MobileNoteListFilter, number>
   onChange: (filter: MobileNoteListFilter) => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View accessibilityRole="tablist" style={styles.filterBar} testID="note-list-filter-pills">
       {mobileNoteListFilterOptions.map((option) => {
@@ -215,6 +219,7 @@ type NoteListContentProps = {
 }
 
 function NoteListContent(props: NoteListContentProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const {
     activeNoteId,
     bulkSelection,
@@ -257,7 +262,7 @@ function NoteListContent(props: NoteListContentProps) {
       extraData={bulkSelection.rowExtraData(selectedNoteId)}
       initialNumToRender={16}
       keyExtractor={(note) => note.id}
-      renderItem={({ item: note }) => noteRow({
+      renderItem={({ item: note }) => <NoteRow {...{
         rowActions: bulkSelection.selectedNotes.length === 0 ? props.rowActions : undefined,
         activeNoteId,
         displayPropertyKeys,
@@ -268,7 +273,7 @@ function NoteListContent(props: NoteListContentProps) {
         propertyDisplayModes,
         typeDefinitions,
         onSelectNote: bulkSelection.pressNote,
-      })}
+      }} />}
       removeClippedSubviews
       showsVerticalScrollIndicator={false}
       windowSize={5}
@@ -447,6 +452,7 @@ function NeighborhoodNoteList({
   propertyDisplayModes?: Record<string, MobilePropertyDisplayMode> | null
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const rows = useMemo(() => neighborhoodRows(neighborhood), [neighborhood])
 
   return (
@@ -504,7 +510,7 @@ function neighborhoodRow({
 }) {
   if (item.kind === 'header') return <RelationshipGroupHeader group={item.group} />
 
-  return noteRow({
+  return <NoteRow {...{
     rowActions,
     activeNoteId,
     displayPropertyKeys,
@@ -514,7 +520,7 @@ function neighborhoodRow({
     propertyDisplayModes,
     typeDefinitions,
     onSelectNote,
-  })
+  }} />
 }
 
 type NoteRowProps = {
@@ -531,7 +537,8 @@ type NoteRowProps = {
   typeDefinitions?: MobileTypeDefinitions
 }
 
-function noteRow(props: NoteRowProps) {
+function NoteRow(props: NoteRowProps) {
+  const colors = useMobileColors()
   const {
     activeNoteId,
     displayPropertyKeys,
@@ -552,7 +559,7 @@ function noteRow(props: NoteRowProps) {
       metricId={`noteList.item.${note.id}`}
       multiSelected={multiSelected}
       selected={forceSelected || note.id === activeNoteId}
-      selectedBackgroundColor={noteTypeSoftColor(note.typeTone)}
+      selectedBackgroundColor={noteTypeSoftColor(note.typeTone, colors)}
       subtitle={note.snippet}
       testID={`note-row-${note.id}`}
       title={note.title}
@@ -573,6 +580,7 @@ function noteRow(props: NoteRowProps) {
 }
 
 function RelationshipGroupHeader({ group }: { group: MobileNeighborhoodGroup }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.groupHeader} testID={`relationship-group-${group.id}`}>
       <Text style={styles.groupLabel}>{group.label}</Text>
@@ -582,6 +590,7 @@ function RelationshipGroupHeader({ group }: { group: MobileNeighborhoodGroup }) 
 }
 
 function SearchPill({ searchQuery }: { searchQuery: string }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.searchPill}>
       <MagnifyingGlass color={mobileColors.textMuted} size={16} />
@@ -599,6 +608,7 @@ function NoteListEmptyState({
   onOpenVault?: () => void
   searchQuery?: string
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const chrome = mobileNoteListEmptyStateChrome({ emptyVault, searchQuery })
 
   return (
@@ -629,6 +639,7 @@ function NoteRowChips({
   propertyDisplayModes?: Record<string, MobilePropertyDisplayMode> | null
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const chips = mobileNoteRowChips(note, displayPropertyKeys, typeDefinitions, propertyDisplayModes)
   if (chips.length === 0) return null
 
@@ -656,112 +667,115 @@ const panelStyles = StyleSheet.create({
   },
 })
 
-const styles = StyleSheet.create({
-  chipRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.xs,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: mobileSpace.xl,
-  },
-  emptyAction: {
-    marginTop: mobileSpace.lg,
-  },
-  emptyText: {
-    marginTop: mobileSpace.sm,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.body,
-    textAlign: 'center',
-  },
-  emptyTitle: {
-    color: mobileColors.text,
-    fontSize: mobileType.title,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  filterBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: mobileSpace.sm,
-    borderTopColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileSpace.lg,
-    paddingVertical: mobileSpace.md,
-  },
-  filterPill: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 6,
-    minHeight: 28,
-    borderRadius: mobileRadius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  filterPillSelected: {
-    backgroundColor: mobileColors.control,
-  },
-  filterPillText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  filterPillTextSelected: {
-    color: mobileColors.text,
-  },
-  filterPillCount: {
-    color: mobileColors.textFaint,
-    fontSize: mobileType.micro,
-    fontVariant: ['tabular-nums'],
-  },
-  filterPillCountSelected: {
-    color: mobileColors.textMuted,
-  },
-  groupCount: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.micro,
-    fontWeight: '400',
-    fontVariant: ['tabular-nums'],
-  },
-  groupHeader: {
-    minHeight: 32,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: mobileColors.graySoft,
-    paddingHorizontal: mobileSpace.lg,
-  },
-  groupLabel: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.micro,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-  },
-  listContent: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  searchPill: {
-    minHeight: 36,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileSpace.lg,
-  },
-  searchText: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  toolbarTitleBlock: {
-    minWidth: 0,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    chipRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.xs,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: mobileSpace.xl,
+    },
+    emptyAction: {
+      marginTop: mobileSpace.lg,
+    },
+    emptyText: {
+      marginTop: mobileSpace.sm,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.body,
+      textAlign: 'center',
+    },
+    emptyTitle: {
+      color: mobileColors.text,
+      fontSize: mobileType.title,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    filterBar: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: mobileSpace.sm,
+      borderTopColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileSpace.lg,
+      paddingVertical: mobileSpace.md,
+    },
+    filterPill: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 6,
+      minHeight: 28,
+      borderRadius: mobileRadius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    filterPillSelected: {
+      backgroundColor: mobileColors.control,
+    },
+    filterPillText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    filterPillTextSelected: {
+      color: mobileColors.text,
+    },
+    filterPillCount: {
+      color: mobileColors.textFaint,
+      fontSize: mobileType.micro,
+      fontVariant: ['tabular-nums'],
+    },
+    filterPillCountSelected: {
+      color: mobileColors.textMuted,
+    },
+    groupCount: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.micro,
+      fontWeight: '400',
+      fontVariant: ['tabular-nums'],
+    },
+    groupHeader: {
+      minHeight: 32,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      backgroundColor: mobileColors.graySoft,
+      paddingHorizontal: mobileSpace.lg,
+    },
+    groupLabel: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.micro,
+      fontWeight: '500',
+      textTransform: 'uppercase',
+    },
+    listContent: {
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+    },
+    searchPill: {
+      minHeight: 36,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileSpace.lg,
+    },
+    searchText: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    toolbarTitleBlock: {
+      minWidth: 0,
+    },
+  })
+  return { mobileColors, styles }
+}

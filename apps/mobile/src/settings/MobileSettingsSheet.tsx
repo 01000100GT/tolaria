@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../ui/theme/useMobileTheme'
+import type { MobileColors } from '../ui/theme/mobilePalette'
 import { Modal, ScrollView, StyleSheet, View } from 'react-native'
 import { X } from 'phosphor-react-native'
 import { Text } from '../components/ui/text'
@@ -5,11 +7,13 @@ import { Switch } from '../components/ui/switch'
 import { MobileButton } from '../ui/MobileButton'
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
-import { mobileColors, mobileSpace } from '../ui/tokens'
+import { mobileSpace } from '../ui/tokens'
 import { mobileText } from '../i18n/mobileText'
 import { useMobileSettings } from './useMobileSettings'
+import { MobileAppearanceSettings } from './MobileAppearanceSettings'
 
 export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const preferences = useMobileSettings()
   const disabled = !preferences.ready || preferences.saving
   return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={preferences.close}>
@@ -23,6 +27,7 @@ export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean })
         <ScrollView contentContainerStyle={styles.content}>
           {preferences.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(preferences.error === 'load' ? 'mobile.settings.loadFailed' : 'mobile.settings.saveFailed')}</Text>}
           {preferences.error === 'load' && <MobileButton label={mobileText('pulse.retry')} onPress={() => { void preferences.retry() }} />}
+          <MobileAppearanceSettings />
           <Text style={styles.heading}>{mobileText('settings.autogit.title')}</Text>
           <View style={styles.row}>
             <Text style={styles.label}>{mobileText('settings.autogit.enable')}</Text>
@@ -35,13 +40,16 @@ export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean })
   </Modal>
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#00000040', padding: mobileSpace.lg },
-  panel: { width: '100%', maxWidth: 540, maxHeight: '85%', borderRadius: 8, overflow: 'hidden' },
-  content: { padding: 20, gap: 12 },
-  row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 16 },
-  label: { flex: 1, fontSize: 14, color: mobileColors.text },
-  heading: { fontSize: 12, color: mobileColors.textMuted, fontWeight: '500' },
-  detail: { fontSize: 12, lineHeight: 18, color: mobileColors.textMuted },
-  error: { fontSize: 12, lineHeight: 18, color: mobileColors.danger },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: mobileColors.overlay, padding: mobileSpace.lg },
+    panel: { width: '100%', maxWidth: 540, maxHeight: '85%', borderRadius: 8, overflow: 'hidden', backgroundColor: mobileColors.dialog },
+    content: { padding: 20, gap: 12 },
+    row: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 16 },
+    label: { flex: 1, fontSize: 14, color: mobileColors.text },
+    heading: { fontSize: 12, color: mobileColors.textMuted, fontWeight: '500' },
+    detail: { fontSize: 12, lineHeight: 18, color: mobileColors.textMuted },
+    error: { fontSize: 12, lineHeight: 18, color: mobileColors.danger },
+  })
+  return { mobileColors, styles }
+}

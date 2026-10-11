@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { ClipboardText } from 'phosphor-react-native'
@@ -6,7 +8,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent'
 import {
   readMobileMarkdownEditableSourceBlocks,
@@ -57,6 +59,7 @@ export function MobileSourceBlockMoreActions({
 }
 
 function CollapsedSourceBlockAction({ onPress }: { onPress: () => void }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={mobileText('editor.sourceBlock.edit')}
@@ -92,6 +95,7 @@ function MobileSourceBlockEditor({
   onUpdateNoteContent: (noteId: string, content: string) => void
   sourceContent: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const [content, setContent] = useState(block.content)
   const [infoSuffix, setInfoSuffix] = useState(block.infoSuffix)
   const [language, setLanguage] = useState(block.language)
@@ -152,6 +156,7 @@ function MobileSourceBlockEditor({
 }
 
 function EditorHeader({ block }: { block: MobileMarkdownEditableSourceBlock }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.header}>
       <ClipboardText color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
@@ -169,6 +174,7 @@ function SourceBlockPicker({
   blocks: MobileMarkdownEditableSourceBlock[]
   onSelectBlock: (key: string) => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (blocks.length <= 1) return null
 
   return (
@@ -206,76 +212,79 @@ function sourceBlockKindLabel(block: MobileMarkdownEditableSourceBlock): string 
   return mobileText('editor.formatting.codeBlock')
 }
 
-const styles = StyleSheet.create({
-  actionIcon: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  actionRow: {
-    minWidth: 0,
-    borderRadius: 6,
-  },
-  actionRowContent: {
-    minHeight: 36,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  actionText: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  contentInput: {
-    minHeight: 180,
-  },
-  editor: {
-    gap: mobileSpace.md,
-    borderColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: mobileSpace.md,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: mobileSpace.sm,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-  picker: {
-    gap: mobileSpace.xs,
-  },
-  pickerRow: {
-    minHeight: 34,
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderRadius: 6,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.xs,
-  },
-  pickerRowSelected: {
-    backgroundColor: mobileColors.selected,
-  },
-  pickerTitle: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  rowPressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  title: {
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionIcon: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    actionRow: {
+      minWidth: 0,
+      borderRadius: 6,
+    },
+    actionRowContent: {
+      minHeight: 36,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    actionText: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    contentInput: {
+      minHeight: 180,
+    },
+    editor: {
+      gap: mobileSpace.md,
+      borderColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: mobileSpace.md,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: mobileSpace.sm,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+    picker: {
+      gap: mobileSpace.xs,
+    },
+    pickerRow: {
+      minHeight: 34,
+      alignItems: 'center',
+      flexDirection: 'row',
+      borderRadius: 6,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.xs,
+    },
+    pickerRowSelected: {
+      backgroundColor: mobileColors.selected,
+    },
+    pickerTitle: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    rowPressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    title: {
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

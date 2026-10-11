@@ -1,7 +1,9 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors } from '../../ui/tokens'
+
 import { MobileButton } from '../../ui/MobileButton'
 import { mobileWorkspaceActionGroupLayoutContract } from './MobileWorkspaceActionSheetModel'
 
@@ -90,33 +92,38 @@ function SectionActions({
   upLabel: string
   upTestID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.actions}>
-      <MoveButton disabled={!canMoveUp} label={upLabel} testID={upTestID} onPress={onMoveUp} />
-      <MoveButton disabled={!canMoveDown} label={downLabel} testID={downTestID} onPress={onMoveDown} />
+      <ActionButton disabled={!canMoveUp} label={upLabel} testID={upTestID} onPress={onMoveUp} />
+      <ActionButton disabled={!canMoveDown} label={downLabel} testID={downTestID} onPress={onMoveDown} />
       {trailingAction}
     </View>
   )
 }
 
-function MoveButton({
+function ActionButton({
+  danger = false,
   disabled,
   label,
   onPress,
   testID,
 }: {
-  disabled: boolean
+  danger?: boolean
+  disabled?: boolean
   label: string
   onPress: () => void
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <MobileButton
       accessibilityLabel={label}
       disabled={disabled}
       label={label}
-      style={styles.actionButton}
+      style={[styles.actionButton, danger ? styles.deleteButton : null]}
       testID={testID}
+      tone={danger ? 'danger' : 'default'}
       variant="secondary"
       onPress={onPress}
     />
@@ -125,7 +132,7 @@ function MoveButton({
 
 function DeleteViewButton({ onPress }: { onPress: () => void }) {
   return (
-    <DeleteButton
+    <ActionButton danger
       label={mobileText('sidebar.action.deleteView')}
       testID="workspace-delete-view-action"
       onPress={onPress}
@@ -135,7 +142,7 @@ function DeleteViewButton({ onPress }: { onPress: () => void }) {
 
 function DeleteTypeButton({ onPress }: { onPress: () => void }) {
   return (
-    <DeleteButton
+    <ActionButton danger
       label={mobileText('sidebar.action.deleteType')}
       testID="workspace-delete-type-action"
       onPress={onPress}
@@ -143,43 +150,24 @@ function DeleteTypeButton({ onPress }: { onPress: () => void }) {
   )
 }
 
-function DeleteButton({
-  label,
-  onPress,
-  testID,
-}: {
-  label: string
-  onPress: () => void
-  testID: string
-}) {
-  return (
-    <MobileButton
-      accessibilityLabel={label}
-      label={label}
-      style={[styles.actionButton, styles.deleteButton]}
-      testID={testID}
-      tone="danger"
-      variant="secondary"
-      onPress={onPress}
-    />
-  )
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actions: {
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileWorkspaceActionGroupLayoutContract.gap,
+    },
+    actionButton: {
+      borderRadius: mobileWorkspaceActionGroupLayoutContract.radius,
+      minHeight: mobileWorkspaceActionGroupLayoutContract.minHeight,
+      paddingHorizontal: mobileWorkspaceActionGroupLayoutContract.paddingHorizontal,
+      paddingVertical: mobileWorkspaceActionGroupLayoutContract.paddingVertical,
+    },
+    deleteButton: {
+      backgroundColor: mobileColors.dangerSoft,
+    },
+  })
+  return { mobileColors, styles }
 }
-
-const styles = StyleSheet.create({
-  actions: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileWorkspaceActionGroupLayoutContract.gap,
-  },
-  actionButton: {
-    borderRadius: mobileWorkspaceActionGroupLayoutContract.radius,
-    minHeight: mobileWorkspaceActionGroupLayoutContract.minHeight,
-    paddingHorizontal: mobileWorkspaceActionGroupLayoutContract.paddingHorizontal,
-    paddingVertical: mobileWorkspaceActionGroupLayoutContract.paddingVertical,
-  },
-  deleteButton: {
-    backgroundColor: mobileColors.dangerSoft,
-  },
-})

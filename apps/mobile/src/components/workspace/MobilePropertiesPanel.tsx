@@ -1,3 +1,4 @@
+import { useMobileStyles, useMobileColors } from '../../ui/theme/useMobileTheme'
 import { Plus, WarningCircle, X } from 'phosphor-react-native'
 import type { ReactNode } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
@@ -8,7 +9,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePropertyRow } from '../../ui/MobilePropertyRow'
-import { mobileColors } from '../../ui/tokens'
+
 import { mobileFrontmatterState, needsMobileFrontmatterNotice } from '../../workspace/mobileFrontmatterState'
 import {
   type MobileInspectorPropertySlot,
@@ -25,21 +26,11 @@ import type {
   MobilePropertyDisplayMode,
   MobilePropertyValue,
   MobileRelationship,
-  MobileTone,
   MobileTypeDefinitions,
 } from '../../workspace/mobileWorkspaceModel'
 import { Text } from '../ui/text'
 import { MobileFrontmatterStateNotice } from './MobileFrontmatterStateNotice'
-import {
-  actionStyles,
-  emptyStateStyles,
-  panelStyles,
-  propertyDisplayStyles,
-  propertyStyles,
-  referenceStyles,
-  relationshipStyles,
-  typeStyles,
-} from './MobilePropertiesPanel.styles'
+import { createPropertyPanelStyles } from './MobilePropertiesPanel.styles'
 import {
   mobileInspectorPlaceholderActionLabel,
   mobileInspectorReferenceRowLayoutContract,
@@ -70,6 +61,9 @@ type MobilePropertiesPanelProps = {
 }
 
 export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { panelStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const {
     compact,
     fullWidth = false,
@@ -334,6 +328,8 @@ function TypePropertyRow({
   onCreateMissingType: (typeName: string) => void
   onOpenChangeNoteType: () => void
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { typeStyles } = themeStyles
   return (
     <MobilePropertyRow
       label="Type"
@@ -358,6 +354,9 @@ function TypePropertyRow({
 }
 
 function MissingTypeButton({ onPress, typeName }: { onPress: () => void; typeName: string }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { typeStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const label = mobileText('inspector.properties.missingTypeAria').replace('{type}', typeName)
 
   return (
@@ -396,6 +395,8 @@ function EditableChipValue({
 }
 
 function EditableTagsValue({ labels, onPress }: { labels: string[]; onPress: () => void }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
   if (labels.length > 0) {
     return (
       <Pressable accessibilityLabel="Tags" accessibilityRole="button" testID="property-tags-edit" onPress={onPress}>
@@ -430,6 +431,8 @@ function EditablePropertyRow({
   propertyDisplayModes?: Record<string, MobilePropertyDisplayMode> | null
   property: MobileProperty
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
   const testId = `property-row-${testIdSegment(property.key)}`
   const display = mobilePropertyDisplay(
     property.key,
@@ -463,6 +466,8 @@ function EditablePropertyRow({
 }
 
 function EditablePropertyValueDisplay({ display }: { display: MobilePropertyDisplay }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyDisplayStyles } = themeStyles
   if (display.kind === 'list' && display.listItems.length > 0) {
     return (
       <View style={propertyDisplayStyles.listValue}>
@@ -482,13 +487,15 @@ function EditablePropertyValueDisplay({ display }: { display: MobilePropertyDisp
   }
 
   return (
-    <Text numberOfLines={1} style={editablePropertyTextStyle(display.kind)}>
+    <Text numberOfLines={1} style={editablePropertyTextStyle(themeStyles, display.kind)}>
       {display.text}
     </Text>
   )
 }
 
 function EditableColorValue({ colorValue, text }: { colorValue?: string; text: string }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyDisplayStyles, propertyStyles } = themeStyles
   return (
     <View style={propertyDisplayStyles.colorValue}>
       <View
@@ -504,7 +511,8 @@ function EditableColorValue({ colorValue, text }: { colorValue?: string; text: s
   )
 }
 
-function editablePropertyTextStyle(kind: MobilePropertyDisplay['kind']) {
+function editablePropertyTextStyle(themeStyles: ReturnType<typeof createPropertyPanelStyles>, kind: MobilePropertyDisplay['kind']) {
+  const { propertyStyles, propertyDisplayStyles } = themeStyles
   return [
     propertyStyles.editableText,
     kind === 'number' ? propertyDisplayStyles.numberText : null,
@@ -513,6 +521,8 @@ function editablePropertyTextStyle(kind: MobilePropertyDisplay['kind']) {
 }
 
 function PropertiesEmptyState() {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { emptyStateStyles } = themeStyles
   return (
     <View style={emptyStateStyles.emptyState}>
       <Text style={emptyStateStyles.emptyTitle}>{mobileText('inspector.empty.noNoteSelected')}</Text>
@@ -530,6 +540,9 @@ function PlaceholderPropertyRow({
   onPress: () => void
   slot: MobileInspectorPropertySlot
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const sourceSegment = slot.source === 'typeDerived' ? 'type-derived' : 'suggested'
   const testID = `property-placeholder-${sourceSegment}-${testIdSegment(slot.key)}`
 
@@ -568,6 +581,8 @@ function PropertySection({
   layoutProbeId?: string
   testID?: string
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
   const metricId = layoutProbeId ?? testID
 
   return (
@@ -603,6 +618,9 @@ function PropertyActionRow({
   onPress: () => void
   testID: string
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { actionStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const visibleLabel = label.replace(/^\+\s*/, '')
   const metricId = layoutProbeId ?? testID
 
@@ -637,6 +655,9 @@ function PlaceholderRelationshipSection({
   onPress: () => void
   slot: MobileInspectorRelationshipSlot
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles, actionStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const sourceSegment = slot.source === 'typeDerived' ? 'type-derived' : 'suggested'
   const testID = `relationship-placeholder-${sourceSegment}-${testIdSegment(slot.key)}`
 
@@ -685,6 +706,9 @@ function RelationshipValues({
   onEnterNeighborhood?: (noteId: string) => void
   onSelectNote: (noteId: string) => void
 }) {
+  const colors = useMobileColors()
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { relationshipStyles } = themeStyles
   const rowSegments = mobileRelationshipValueMetricSegments(relationship.values)
 
   return (
@@ -696,7 +720,7 @@ function RelationshipValues({
           <View
             key={rowSegment}
             {...propertyProbe(layoutProbe, `properties.relationship.${rowSegment}`, 'row')}
-            style={[relationshipStyles.row, relationshipRowTone(value.typeTone)]}
+            style={[relationshipStyles.row, { backgroundColor: noteTypeSoftColor(value.typeTone, colors) }]}
             testID={`relationship-row-${rowSegment}`}
           >
             <Pressable
@@ -723,7 +747,7 @@ function RelationshipValues({
               <Text
                 numberOfLines={1}
                 {...propertyProbe(layoutProbe, `properties.relationship.${rowSegment}`, 'text')}
-                style={[relationshipStyles.text, relationshipTextTone(value.typeTone)]}
+                style={[relationshipStyles.text, { color: noteTypeColor(value.typeTone, colors) }]}
                 testID={`relationship-row-${rowSegment}-text`}
               >
                 {value.title}
@@ -763,6 +787,8 @@ function ReferenceGroups({
   typeDefinitions?: MobileTypeDefinitions
   onSelectNote: (noteId: string) => void
 }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { referenceStyles } = themeStyles
   if (groups.length === 0) return null
 
   return (
@@ -796,6 +822,9 @@ function ReferenceValues({
   typeDefinitions?: MobileTypeDefinitions
   onSelectNote: (noteId: string) => void
 }) {
+  const colors = useMobileColors()
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { relationshipStyles, referenceStyles } = themeStyles
   return (
     <View style={relationshipStyles.values}>
       {group.notes.map((note) => (
@@ -804,7 +833,7 @@ function ReferenceValues({
           accessibilityLabel={note.title}
           accessibilityRole="button"
           {...propertyProbe(layoutProbe, referenceRowMetricId(group, note), 'row')}
-          style={[referenceStyles.row, relationshipRowTone(note.typeTone)]}
+          style={[referenceStyles.row, { backgroundColor: noteTypeSoftColor(note.typeTone, colors) }]}
           testID={`inspector-reference-row-${testIdSegment(note.title)}`}
           onPress={() => onSelectNote(note.id)}
         >
@@ -815,7 +844,7 @@ function ReferenceValues({
             type={note.type}
             typeDefinitions={typeDefinitions}
           />
-          <Text numberOfLines={1} style={[referenceStyles.text, relationshipTextTone(note.typeTone)]}>
+          <Text numberOfLines={1} style={[referenceStyles.text, { color: noteTypeColor(note.typeTone, colors) }]}>
             {note.title}
           </Text>
         </Pressable>
@@ -843,6 +872,8 @@ function relationshipHeading(relationship: MobileRelationship): string {
 }
 
 function TagWrap({ labels }: { labels: string[] }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
   return (
     <View style={propertyStyles.tagWrap} testID="property-tags-wrap">
       {labels.map((label) => (
@@ -853,15 +884,9 @@ function TagWrap({ labels }: { labels: string[] }) {
 }
 
 function WorkspaceBadge({ label }: { label: string }) {
+  const themeStyles = useMobileStyles(createPropertyPanelStyles)
+  const { propertyStyles } = themeStyles
   return <Text style={propertyStyles.workspaceBadge}>{label}</Text>
-}
-
-function relationshipRowTone(tone: MobileTone) {
-  return { backgroundColor: noteTypeSoftColor(tone) }
-}
-
-function relationshipTextTone(tone: MobileTone) {
-  return { color: noteTypeColor(tone) }
 }
 
 function relationshipValueSegment(value: MobileRelationship['values'][number], index: number) {

@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../ui/theme/useMobileTheme'
+import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react'
 import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import Reanimated from 'react-native-reanimated'
@@ -18,7 +20,7 @@ import {
   type ReadOnlyWorkspaceRepository,
   type ReadOnlyWorkspaceRequest,
 } from '../workspace/readOnlyWorkspaceRepository'
-import { mobileColors } from '../ui/tokens'
+
 import { desktopPanelParity } from '../ui/desktopParity'
 import { MobileIconButton } from '../ui/MobileIconButton'
 import { mobileText } from '../i18n/mobileText'
@@ -102,6 +104,7 @@ export function TabletWorkspace({
   wysiwygWikilinkInsertProbe?: boolean
   wysiwygMutationProbe?: boolean
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const controller = useTabletWorkspaceController({ repository, repositoryRequest, snapshot })
   const onCreateNote = controller.snapshot.sync.kind === 'noVault' || controller.snapshot.sync.kind === 'readOnly'
     ? onOpenNativeVault ?? controller.onOpenCreateNote
@@ -164,6 +167,7 @@ function useTabletScreenMode(forceDesktopPanels: boolean) {
 }
 
 function TabletWorkspaceChrome(props: TabletWorkspaceChromeProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const {
     commandPaletteProbe,
     compactTablet,
@@ -391,6 +395,7 @@ function adjacentVisibleNoteId(
 }
 
 function TabletLeftChromeHost(props: TabletSidebarHostProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const strip = (
     <Reanimated.View
       style={[styles.leftChromeHost, props.gestures.leftChromeMotionStyle]}
@@ -427,6 +432,7 @@ function TabletSidebarHost({
   onSelectSidebarItem,
   snapshot,
 }: TabletSidebarHostProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (!gestures.renderSidebar) return null
 
   return (
@@ -467,6 +473,7 @@ function TabletSidebarHost({
 }
 
 function TabletNoteListHost(props: TabletPanelHostProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const { gestures } = props
   if (!gestures.renderNoteList) return null
 
@@ -522,6 +529,7 @@ function tabletNoteListBulkActions(props: TabletPanelHostProps) {
 }
 
 function TabletNoteListSidebarAction({ gestures }: { gestures: TabletPanelGestures }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <MobileIconButton
       accessibilityLabel={mobileText(gestures.showSidebar ? 'sidebar.action.collapse' : 'sidebar.action.expand')}
@@ -610,6 +618,7 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
 }
 
 function TabletEditorChromeToggle({ gestures }: { gestures: TabletPanelGestures }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   const chromeVisible = gestures.showSidebar || gestures.noteListVisible
   const Icon = chromeVisible ? CaretLeft : CaretRight
 
@@ -625,6 +634,7 @@ function TabletEditorChromeToggle({ gestures }: { gestures: TabletPanelGestures 
 }
 
 function TabletPropertiesPanelHost(props: TabletPropertiesPanelHostProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const { gestures } = props
   const referenceGroups = useMobileInspectorReferenceGroups(props.selectedNote, props.snapshot)
 
@@ -923,33 +933,36 @@ function actionSheetViewHandlers(props: ActionSheetHostProps) {
   }
 }
 
-const styles = StyleSheet.create({
-  shell: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: mobileColors.app,
-    overflow: 'hidden',
-  },
-  shellRoot: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: mobileColors.app,
-  },
-  panelHost: {
-    alignSelf: 'stretch',
-    height: '100%',
-  },
-  propertiesPanelHost: {
-    width: desktopPanelParity.inspectorWidth,
-  },
-  leftChromeHost: {
-    alignSelf: 'stretch',
-    flexDirection: 'row',
-    height: '100%',
-  },
-  leftChromeViewport: {
-    height: '100%',
-    flexShrink: 0,
-    overflow: 'hidden',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    shell: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: mobileColors.app,
+      overflow: 'hidden',
+    },
+    shellRoot: {
+      flex: 1,
+      flexDirection: 'column',
+      backgroundColor: mobileColors.app,
+    },
+    panelHost: {
+      alignSelf: 'stretch',
+      height: '100%',
+    },
+    propertiesPanelHost: {
+      width: desktopPanelParity.inspectorWidth,
+    },
+    leftChromeHost: {
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      height: '100%',
+    },
+    leftChromeViewport: {
+      height: '100%',
+      flexShrink: 0,
+      overflow: 'hidden',
+    },
+  })
+  return { mobileColors, styles }
+}

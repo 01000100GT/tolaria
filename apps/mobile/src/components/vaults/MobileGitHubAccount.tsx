@@ -1,17 +1,20 @@
+import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { Linking, View } from 'react-native'
 import { ArrowSquareOut, GithubLogo, SignOut } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
-import { mobileColors } from '../../ui/tokens'
+
 import type { useGitHubAccount } from '../../workspace/git/useGitHubAccount'
-import { vaultManagerStyles as styles } from './vaultManagerStyles'
+import { createVaultManagerStyles } from './vaultManagerStyles'
 import { MobileDeviceCode } from './MobileDeviceCode'
 import { MobileGitHubRepositories } from './MobileGitHubRepositories'
 
 type GitHubAccountProps = { account: ReturnType<typeof useGitHubAccount>; disabled: boolean; clone: (url: string) => Promise<void> }
 
 export function MobileGitHubAccount({ account, disabled, clone }: GitHubAccountProps) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const mobileColors = useMobileColors()
   const locked = disabled || account.busy
   return <View style={styles.section}>
     <Text style={styles.label}>{mobileText('mobile.vaults.github')}</Text>

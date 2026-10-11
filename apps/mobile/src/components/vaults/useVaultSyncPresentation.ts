@@ -1,18 +1,20 @@
 import { useContext } from 'react'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors } from '../../ui/tokens'
+import { useMobileColors } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { MobileVaultControlsContext, MobileVaultDisplayContext } from '../../workspace/MobileVaultContext'
 import type { MobileSyncStatus } from '../../workspace/mobileWorkspaceModel'
 import type { VaultSyncState } from '../../workspace/git/useMobileVaults'
 
 export function useVaultSyncPresentation(sync: MobileSyncStatus) {
+  const colors = useMobileColors()
   const controls = useContext(MobileVaultControlsContext)
   const display = useContext(MobileVaultDisplayContext)
   if (!controls || display?.source !== 'native') return null
   const git = controls.git && display.rootUri === controls.rootUri
   const state = vaultSyncStatus(git, controls.status, sync)
   const label = controls.busy ? mobileText('status.sync.syncing') : state.label
-  const color = statusColor(state.status)
+  const color = statusColor(state.status, colors)
   return { label, color, retry: state.retry, open: controls.open, sync: git || state.retry ? controls.sync : undefined, busy: controls.busy }
 }
 
@@ -21,7 +23,7 @@ export function vaultSyncStatus(git: boolean, current: VaultSyncState, sync: Mob
   return { status, label: statusLabel(git, status), retry: status === 'saveFailed' }
 }
 
-function statusColor(status: VaultSyncState) {
+function statusColor(status: VaultSyncState, mobileColors: MobileColors) {
   return ['failed', 'saveFailed', 'diverged'].includes(status) ? mobileColors.danger : mobileColors.textMuted
 }
 

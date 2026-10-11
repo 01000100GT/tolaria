@@ -1,9 +1,11 @@
+import { useMobileStyles } from './theme/useMobileTheme'
+import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../components/ui/text'
 import { type MobileLayoutProbe, probeProps } from '../qa/mobileLayoutProbe'
 import { desktopPropertyParity } from './desktopParity'
-import { mobileColors, mobileSpace, mobileType } from './tokens'
+import { mobileSpace, mobileType } from './tokens'
 
 export function MobilePropertyRow({
   accessibilityLabel,
@@ -22,6 +24,7 @@ export function MobilePropertyRow({
   testID?: string
   value: ReactNode
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const metricId = layoutProbeId ?? testID
   const content = (
     <>
@@ -68,34 +71,37 @@ function propertyProbe(layoutProbe: MobileLayoutProbe | undefined, metricId: str
   return metricId ? probeProps(layoutProbe, `${metricId}.${part}`) : {}
 }
 
-const styles = StyleSheet.create({
-  label: {
-    width: 86,
-    color: mobileColors.textMuted,
-    fontSize: desktopPropertyParity.labelTextSize,
-  },
-  row: {
-    minHeight: desktopPropertyParity.rowMinHeight,
-    maxHeight: 96,
-    flexShrink: 0,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
-  },
-  value: {
-    flex: 1,
-    alignItems: 'flex-end',
-    flexShrink: 1,
-    maxHeight: 96,
-    minWidth: 0,
-  },
-  valueText: {
-    color: mobileColors.text,
-    fontSize: mobileType.caption,
-    fontWeight: '400',
-    textAlign: 'right',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    label: {
+      width: 86,
+      color: mobileColors.textMuted,
+      fontSize: desktopPropertyParity.labelTextSize,
+    },
+    row: {
+      minHeight: desktopPropertyParity.rowMinHeight,
+      maxHeight: 96,
+      flexShrink: 0,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
+    },
+    value: {
+      flex: 1,
+      alignItems: 'flex-end',
+      flexShrink: 1,
+      maxHeight: 96,
+      minWidth: 0,
+    },
+    valueText: {
+      color: mobileColors.text,
+      fontSize: mobileType.caption,
+      fontWeight: '400',
+      textAlign: 'right',
+    },
+  })
+  return { mobileColors, styles }
+}

@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
 import {
   TextAlignCenter,
@@ -8,7 +10,7 @@ import {
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileMarkdownTableAlignment } from '../../workspace/mobileMarkdownTables'
 
 type MobileTableAlignmentControlsProps = {
@@ -24,6 +26,7 @@ export function MobileTableAlignmentControls({
   columnCount,
   onChangeAlignment,
 }: MobileTableAlignmentControlsProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (columnCount <= 0) return null
 
   return (
@@ -49,6 +52,7 @@ function ColumnAlignmentRow({
   columnIndex: number
   onChangeAlignment: (columnIndex: number, alignment: MobileMarkdownTableAlignment) => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const label = tableColumnAlignmentLabel(columnIndex)
 
   return (
@@ -83,6 +87,7 @@ function AlignmentButton({
   onPress: () => void
   selected: boolean
 }) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   const color = selected ? mobileColors.blue : mobileColors.textMuted
 
   return (
@@ -129,39 +134,42 @@ function tableAlignmentLabel(alignment: MobileMarkdownTableAlignment): string {
   return mobileText('editor.table.alignDefault')
 }
 
-const styles = StyleSheet.create({
-  group: {
-    gap: mobileSpace.xs,
-  },
-  label: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  option: {
-    height: 26,
-    width: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-  },
-  optionPressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  optionSelected: {
-    backgroundColor: mobileColors.selected,
-  },
-  options: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  row: {
-    minHeight: 34,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    group: {
+      gap: mobileSpace.xs,
+    },
+    label: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    option: {
+      height: 26,
+      width: 26,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+    },
+    optionPressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    optionSelected: {
+      backgroundColor: mobileColors.selected,
+    },
+    options: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    row: {
+      minHeight: 34,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+  })
+  return { mobileColors, styles }
+}

@@ -1,3 +1,4 @@
+import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { ArrowClockwise, GitCommit } from 'phosphor-react-native'
@@ -5,12 +6,14 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors } from '../../ui/tokens'
+
 import { useMobileSettings } from '../../settings/useMobileSettings'
 import type { useMobileVaults } from '../../workspace/git/useMobileVaults'
-import { vaultManagerStyles as styles } from './vaultManagerStyles'
+import { createVaultManagerStyles } from './vaultManagerStyles'
 
 export function MobileGitControls({ manager }: { manager: ReturnType<typeof useMobileVaults> }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const mobileColors = useMobileColors()
   const [message, setMessage] = useState('')
   const preferences = useMobileSettings()
   if (!manager.active.git) return null

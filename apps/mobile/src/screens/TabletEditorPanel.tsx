@@ -1,3 +1,4 @@
+import { useMobileStyles, useMobileColors } from '../ui/theme/useMobileTheme'
 import { Code, DotsThree, SidebarSimple, Star } from 'phosphor-react-native'
 import {
   ScrollView,
@@ -17,7 +18,7 @@ import { MobileIconButton } from '../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
 import { noteTypeColor } from '../components/workspace/mobileWorkspaceTone'
 import { desktopEditorParity, desktopToolbarActionParity } from '../ui/desktopParity'
-import { mobileColors } from '../ui/tokens'
+
 import { MobileLayoutProbeReadout } from '../qa/MobileLayoutProbeReadout'
 import { useMobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import type { MobileEditorBlock, MobileNote } from '../workspace/mobileWorkspaceModel'
@@ -28,7 +29,7 @@ import { useMobileAttachmentLinkOpener } from '../workspace/mobileAttachmentOpen
 import { useRegisteredMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteActionMode } from '../workspace/mobileNoteActionMode'
 import { EmptyEditorPanel, MobileFilePreviewFallback, MobileNoteReadFallback } from './TabletEditorPanelChrome'
-import { panelStyles } from './TabletEditorPanelStyles'
+import { createEditorPanelStyles } from './TabletEditorPanelStyles'
 import type {
   EditorContentProps,
   EditorEditingMode,
@@ -42,6 +43,8 @@ import type {
 export type { EditorEditingMode } from './TabletEditorPanel.types'
 
 export function TabletEditorPanel(props: TabletEditorPanelProps) {
+  const themeStyles = useMobileStyles(createEditorPanelStyles)
+  const { panelStyles } = themeStyles
   const {
     blocks,
     bullets,
@@ -66,15 +69,6 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     tableOfContentsTarget = null,
     typeDefinitions,
     vaultRootUri = null,
-    wysiwygAutocompleteProbe = false,
-    wysiwygExternalLinkProbe = false,
-    wysiwygFormatCommandProbe = false,
-    wysiwygInputTransformProbe = false,
-    wysiwygMarkdownBlockProbe = false,
-    wysiwygMathEditProbe = false,
-    wysiwygTableCommandMutationProbe = false,
-    wysiwygWikilinkInsertProbe = false,
-    wysiwygMutationProbe = false,
   } = props
   const [editingMode, setEditingMode] = useState<EditorEditingMode>(initialEditingMode)
   const { onScroll, onTargetLayout, setScrollViewNode } = useTableOfContentsScroll(
@@ -121,15 +115,15 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     tableOfContentsTarget,
     typeDefinitions,
     vaultRootUri,
-    wysiwygAutocompleteProbe,
-    wysiwygExternalLinkProbe,
-    wysiwygFormatCommandProbe,
-    wysiwygInputTransformProbe,
-    wysiwygMarkdownBlockProbe,
-    wysiwygMathEditProbe,
-    wysiwygTableCommandMutationProbe,
-    wysiwygMutationProbe,
-    wysiwygWikilinkInsertProbe,
+    wysiwygAutocompleteProbe: props.wysiwygAutocompleteProbe ?? false,
+    wysiwygExternalLinkProbe: props.wysiwygExternalLinkProbe ?? false,
+    wysiwygFormatCommandProbe: props.wysiwygFormatCommandProbe ?? false,
+    wysiwygInputTransformProbe: props.wysiwygInputTransformProbe ?? false,
+    wysiwygMarkdownBlockProbe: props.wysiwygMarkdownBlockProbe ?? false,
+    wysiwygMathEditProbe: props.wysiwygMathEditProbe ?? false,
+    wysiwygTableCommandMutationProbe: props.wysiwygTableCommandMutationProbe ?? false,
+    wysiwygMutationProbe: props.wysiwygMutationProbe ?? false,
+    wysiwygWikilinkInsertProbe: props.wysiwygWikilinkInsertProbe ?? false,
   }
 
   return (
@@ -164,6 +158,8 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
 }
 
 function EditorPanelBody({ compact, contentProps, fileMode, note, noteRead, onScroll, onScrollViewRef }: EditorPanelBodyProps) {
+  const themeStyles = useMobileStyles(createEditorPanelStyles)
+  const { panelStyles } = themeStyles
   if (noteRead && noteRead.status !== 'ready') return <MobileNoteReadFallback state={noteRead} />
   if (fileMode === 'binary') {
     return (
@@ -183,7 +179,7 @@ function EditorPanelBody({ compact, contentProps, fileMode, note, noteRead, onSc
 
   return (
     <ScrollView
-      contentContainerStyle={readModeContentStyle(note, compact)}
+      contentContainerStyle={readModeContentStyle(themeStyles, note, compact)}
       onScroll={onScroll}
       ref={onScrollViewRef}
       scrollEventThrottle={16}
@@ -292,10 +288,11 @@ function EditorToolbarIcon({
   note,
   typeDefinitions,
 }: Pick<EditorToolbarProps, 'fileMode' | 'note' | 'typeDefinitions'>) {
+  const colors = useMobileColors()
   if (fileMode === 'markdown' && note.icon?.trim()) {
     return (
       <MobileNoteIcon
-        color={noteTypeColor(note.typeTone)}
+        color={noteTypeColor(note.typeTone, colors)}
         icon={note.icon}
         size={desktopToolbarActionParity.iconSize}
         testID="editor-toolbar-note-icon"
@@ -320,6 +317,7 @@ function EditorToolbarActions(props: EditorToolbarProps) {
 }
 
 function FileToolbarActions(props: EditorToolbarProps) {
+  const mobileColors = useMobileColors()
   return (
     <>
       <MobileIconButton
@@ -348,6 +346,7 @@ function MarkdownToolbarActions({
   onToggleSourceMode,
   propertiesVisible,
 }: EditorToolbarProps) {
+  const mobileColors = useMobileColors()
   const sourceModeActive = editingMode === 'source'
 
   return (
@@ -398,6 +397,7 @@ function PropertiesToolbarAction({
   onToggleProperties: () => void
   propertiesVisible?: boolean
 }) {
+  const mobileColors = useMobileColors()
   return (
     <MobileIconButton
       accessibilityLabel={mobileText(
@@ -532,7 +532,8 @@ function editorToolbarChipLabel(fileMode: EditorFileMode): string | null {
   return null
 }
 
-function readModeContentStyle(note: MobileNote, compact: boolean) {
+function readModeContentStyle(themeStyles: ReturnType<typeof createEditorPanelStyles>, note: MobileNote, compact: boolean) {
+  const { panelStyles } = themeStyles
   return [
     panelStyles.content,
     note.noteWidth === 'wide' ? panelStyles.contentWide : null,

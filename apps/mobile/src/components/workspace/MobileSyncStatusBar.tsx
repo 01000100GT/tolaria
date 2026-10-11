@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ArrowClockwise, FolderOpen, GearSix, GitCommit, Tray } from 'phosphor-react-native'
 import { StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { desktopStatusBarParity } from '../../ui/desktopParity'
-import { mobileColors } from '../../ui/tokens'
+
 import type { MobileSyncStatus } from '../../workspace/mobileWorkspaceModel'
 import { useVaultSyncPresentation } from '../vaults/useVaultSyncPresentation'
 import { useMobileSettings } from '../../settings/useMobileSettings'
@@ -19,10 +21,12 @@ export function MobileSyncStatusBar({
   retryFailedEdit?: () => void
   sync: MobileSyncStatus
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { styles, mobileColors } = themeStyles
   const vault = useVaultSyncPresentation(sync)
   const preferences = useMobileSettings()
-  const action = statusBarAction(onOpenLocalVault)
-  const presentation = statusPresentation(sync, vault, Boolean(retryFailedEdit))
+  const action = statusBarAction(themeStyles, onOpenLocalVault)
+  const presentation = statusPresentation(themeStyles, sync, vault, Boolean(retryFailedEdit))
 
   return (
     <View style={styles.syncBar} testID="sync-status-bar">
@@ -46,6 +50,8 @@ export function MobileSyncStatusBar({
 }
 
 function GitActions({ vault }: { vault: ReturnType<typeof useVaultSyncPresentation> }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { mobileColors } = themeStyles
   if (!vault?.sync) return null
   const sync = vault.sync
   return <>
@@ -54,13 +60,15 @@ function GitActions({ vault }: { vault: ReturnType<typeof useVaultSyncPresentati
   </>
 }
 
-function statusPresentation(sync: MobileSyncStatus, vault: ReturnType<typeof useVaultSyncPresentation>, readFailed: boolean) {
+function statusPresentation(themeStyles: ReturnType<typeof createThemeStyles>, sync: MobileSyncStatus, vault: ReturnType<typeof useVaultSyncPresentation>, readFailed: boolean) {
+  const { mobileColors } = themeStyles
   if (readFailed) return { color: mobileColors.danger, label: mobileText('mobile.editor.readFailed'), detail: null }
   if (vault) return { color: vault.color, label: vault.label, detail: null }
-  return { color: syncStatusColor(sync), label: syncStatusLabel(sync), detail: syncStatusDetail(sync) }
+  return { color: syncStatusColor(themeStyles, sync), label: syncStatusLabel(sync), detail: syncStatusDetail(sync) }
 }
 
-function statusBarAction(onOpenLocalVault: (() => void) | undefined) {
+function statusBarAction(themeStyles: ReturnType<typeof createThemeStyles>, onOpenLocalVault: (() => void) | undefined) {
+  const { mobileColors } = themeStyles
   if (!onOpenLocalVault) {
     return {
       icon: <Tray color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />,
@@ -76,7 +84,8 @@ function statusBarAction(onOpenLocalVault: (() => void) | undefined) {
   }
 }
 
-function syncStatusColor(sync: MobileSyncStatus) {
+function syncStatusColor(themeStyles: ReturnType<typeof createThemeStyles>, sync: MobileSyncStatus) {
+  const { mobileColors } = themeStyles
   return {
     noVault: mobileColors.textMuted, readOnly: mobileColors.textMuted,
     conflict: mobileColors.danger, writeFailed: mobileColors.danger,
@@ -106,34 +115,37 @@ function syncStatusLabel(sync: MobileSyncStatus) {
   return mobileText(labels[sync.kind])
 }
 
-const styles = StyleSheet.create({
-  syncBar: {
-    alignItems: 'center',
-    backgroundColor: mobileColors.sidebar,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: mobileColors.border,
-    flexDirection: 'row',
-    gap: desktopStatusBarParity.primaryGap,
-    height: desktopStatusBarParity.height,
-    justifyContent: 'space-between',
-    minHeight: desktopStatusBarParity.height,
-    paddingHorizontal: desktopStatusBarParity.paddingHorizontal,
-  },
-  syncDetailText: {
-    color: mobileColors.textMuted,
-    fontSize: desktopStatusBarParity.fontSize,
-  },
-  syncStatusGroup: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    gap: desktopStatusBarParity.sectionGap,
-    minWidth: 0,
-  },
-  syncStatusText: {
-    color: mobileColors.textMuted,
-    flexShrink: 1,
-    fontSize: desktopStatusBarParity.fontSize,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    syncBar: {
+      alignItems: 'center',
+      backgroundColor: mobileColors.sidebar,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: mobileColors.border,
+      flexDirection: 'row',
+      gap: desktopStatusBarParity.primaryGap,
+      height: desktopStatusBarParity.height,
+      justifyContent: 'space-between',
+      minHeight: desktopStatusBarParity.height,
+      paddingHorizontal: desktopStatusBarParity.paddingHorizontal,
+    },
+    syncDetailText: {
+      color: mobileColors.textMuted,
+      fontSize: desktopStatusBarParity.fontSize,
+    },
+    syncStatusGroup: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      gap: desktopStatusBarParity.sectionGap,
+      minWidth: 0,
+    },
+    syncStatusText: {
+      color: mobileColors.textMuted,
+      flexShrink: 1,
+      fontSize: desktopStatusBarParity.fontSize,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

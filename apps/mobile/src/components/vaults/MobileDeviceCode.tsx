@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useState } from 'react'
 import * as Clipboard from 'expo-clipboard'
 import { Check, Copy } from 'phosphor-react-native'
@@ -5,9 +7,9 @@ import { StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { MobileButton } from '../../ui/MobileButton'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors } from '../../ui/tokens'
 
 export function MobileDeviceCode({ code }: { code: string }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
   const copy = async () => {
@@ -33,9 +35,12 @@ export function MobileDeviceCode({ code }: { code: string }) {
   </View>
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 8 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' },
-  code: { fontSize: 24, fontWeight: '600', color: mobileColors.text, paddingVertical: 8 },
-  error: { fontSize: 12, color: mobileColors.danger },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    container: { gap: 8 },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' },
+    code: { fontSize: 24, fontWeight: '600', color: mobileColors.text, paddingVertical: 8 },
+    error: { fontSize: 12, color: mobileColors.danger },
+  })
+  return { mobileColors, styles }
+}

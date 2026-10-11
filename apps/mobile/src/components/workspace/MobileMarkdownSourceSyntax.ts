@@ -1,12 +1,11 @@
-import type { StyleProp, TextStyle } from 'react-native'
-import { editorStyles } from './MobileMarkdownSourceEditorStyles'
+type MarkdownSyntaxKind = 'syntaxMeta' | 'syntaxPropertyKey' | 'syntaxHeading' | 'syntaxCodeFence' | 'syntaxQuote' | 'syntaxListMarker' | 'syntaxTable' | 'syntaxInlineCode' | 'syntaxWikilink' | 'syntaxAttachment' | 'syntaxStrong' | 'syntaxEmphasis'
 
 type MarkdownSource = string
 type MarkdownSourceLine = string
 type MarkdownLexeme = string
 
 type MarkdownSyntaxToken = {
-  style?: StyleProp<TextStyle>
+  kind?: MarkdownSyntaxKind
   text: string
 }
 
@@ -19,15 +18,15 @@ export function markdownSyntaxTokens(content: MarkdownSource): MarkdownSyntaxTok
 }
 
 function markdownSyntaxLineTokens(line: MarkdownSourceLine): MarkdownSyntaxToken[] {
-  if (/^\s*---\s*$/u.test(line)) return [{ style: editorStyles.syntaxMeta, text: line }]
+  if (/^\s*---\s*$/u.test(line)) return [{ kind: 'syntaxMeta', text: line }]
 
   const frontmatterMatch = /^([A-Za-z0-9_-]+)(:\s*)/u.exec(line)
   if (frontmatterMatch) {
     const key = frontmatterMatch[1] ?? ''
     const separator = frontmatterMatch[2] ?? ''
     return [
-      { style: editorStyles.syntaxPropertyKey, text: key },
-      { style: editorStyles.syntaxMeta, text: separator },
+      { kind: 'syntaxPropertyKey', text: key },
+      { kind: 'syntaxMeta', text: separator },
       ...markdownInlineSyntaxTokens(line.slice(key.length + separator.length)),
     ]
   }
@@ -35,54 +34,54 @@ function markdownSyntaxLineTokens(line: MarkdownSourceLine): MarkdownSyntaxToken
   const headingMatch = /^(\s{0,3}#{1,6}\s+)(.*)$/u.exec(line)
   if (headingMatch) {
     return [
-      { style: editorStyles.syntaxMeta, text: headingMatch[1] ?? '' },
-      { style: editorStyles.syntaxHeading, text: headingMatch[2] ?? '' },
+      { kind: 'syntaxMeta', text: headingMatch[1] ?? '' },
+      { kind: 'syntaxHeading', text: headingMatch[2] ?? '' },
     ]
   }
 
-  if (/^\s*```/u.test(line)) return [{ style: editorStyles.syntaxCodeFence, text: line }]
+  if (/^\s*```/u.test(line)) return [{ kind: 'syntaxCodeFence', text: line }]
 
   const blockquoteMatch = /^(\s*>+\s?)(.*)$/u.exec(line)
   if (blockquoteMatch) {
     return [
-      { style: editorStyles.syntaxMeta, text: blockquoteMatch[1] ?? '' },
-      { style: editorStyles.syntaxQuote, text: blockquoteMatch[2] ?? '' },
+      { kind: 'syntaxMeta', text: blockquoteMatch[1] ?? '' },
+      { kind: 'syntaxQuote', text: blockquoteMatch[2] ?? '' },
     ]
   }
 
   const listMatch = /^(\s*(?:[-*+]|\d+[.)])\s+)(.*)$/u.exec(line)
   if (listMatch) {
     return [
-      { style: editorStyles.syntaxListMarker, text: listMatch[1] ?? '' },
+      { kind: 'syntaxListMarker', text: listMatch[1] ?? '' },
       ...markdownInlineSyntaxTokens(listMatch[2] ?? ''),
     ]
   }
 
-  if (line.includes('|')) return markdownInlineSyntaxTokens(line, editorStyles.syntaxTable)
+  if (line.includes('|')) return markdownInlineSyntaxTokens(line, 'syntaxTable')
 
   return markdownInlineSyntaxTokens(line)
 }
 
-function markdownInlineSyntaxTokens(line: MarkdownSourceLine, baseStyle?: StyleProp<TextStyle>): MarkdownSyntaxToken[] {
+function markdownInlineSyntaxTokens(line: MarkdownSourceLine, baseKind?: MarkdownSyntaxKind): MarkdownSyntaxToken[] {
   const tokens: MarkdownSyntaxToken[] = []
   const syntaxPattern = /(`[^`]+`|\[\[[^\]]+\]\]|!\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*)/gu
   let cursor = 0
 
   for (const match of line.matchAll(syntaxPattern)) {
     const index = match.index ?? 0
-    if (index > cursor) tokens.push({ style: baseStyle, text: line.slice(cursor, index) })
-    tokens.push({ style: markdownInlineTokenStyle(match[0]), text: match[0] })
+    if (index > cursor) tokens.push({ kind: baseKind, text: line.slice(cursor, index) })
+    tokens.push({ kind: markdownInlineTokenKind(match[0]), text: match[0] })
     cursor = index + match[0].length
   }
 
-  if (cursor < line.length) tokens.push({ style: baseStyle, text: line.slice(cursor) })
-  return tokens.length > 0 ? tokens : [{ style: baseStyle, text: line }]
+  if (cursor < line.length) tokens.push({ kind: baseKind, text: line.slice(cursor) })
+  return tokens.length > 0 ? tokens : [{ kind: baseKind, text: line }]
 }
 
-function markdownInlineTokenStyle(token: MarkdownLexeme): StyleProp<TextStyle> {
-  if (token.startsWith('`')) return editorStyles.syntaxInlineCode
-  if (token.startsWith('[[')) return editorStyles.syntaxWikilink
-  if (token.startsWith('![')) return editorStyles.syntaxAttachment
-  if (token.startsWith('**')) return editorStyles.syntaxStrong
-  return editorStyles.syntaxEmphasis
+function markdownInlineTokenKind(token: MarkdownLexeme): MarkdownSyntaxKind {
+  if (token.startsWith('`')) return 'syntaxInlineCode'
+  if (token.startsWith('[[')) return 'syntaxWikilink'
+  if (token.startsWith('![')) return 'syntaxAttachment'
+  if (token.startsWith('**')) return 'syntaxStrong'
+  return 'syntaxEmphasis'
 }

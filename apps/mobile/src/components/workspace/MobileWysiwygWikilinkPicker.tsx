@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
@@ -7,7 +9,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import type { MobileNote, MobileTypeDefinitions } from '../../workspace/mobileWorkspaceModel'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
 import {
@@ -43,6 +45,7 @@ export function MobileWysiwygWikilinkPicker({
   sourceNote = null,
   typeDefinitions,
 }: MobileWysiwygWikilinkPickerProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState(initialQuery)
   const suggestions = useMemo(
     () => mobileWysiwygWikilinkPickerSuggestions(notes, query, kind),
@@ -141,37 +144,40 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  content: {
-    gap: mobileSpace.md,
-    padding: mobileSpace.md,
-  },
-  empty: {
-    color: mobileColors.textMuted,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.md,
-  },
-  emoji: {
-    fontSize: 20,
-    lineHeight: 24,
-  },
-  host: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    padding: mobileSpace.md,
-  },
-  panel: {
-    maxHeight: 420,
-    borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: mobileColors.text,
-    shadowOffset: { height: 12, width: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-  },
-  suggestionList: {
-    gap: 0,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    content: {
+      gap: mobileSpace.md,
+      padding: mobileSpace.md,
+    },
+    empty: {
+      color: mobileColors.textMuted,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.md,
+    },
+    emoji: {
+      fontSize: 20,
+      lineHeight: 24,
+    },
+    host: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'flex-end',
+      padding: mobileSpace.md,
+    },
+    panel: {
+      maxHeight: 420,
+      borderWidth: StyleSheet.hairlineWidth,
+      shadowColor: mobileColors.text,
+      shadowOffset: { height: 12, width: 0 },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+    },
+    suggestionList: {
+      gap: 0,
+    },
+  })
+  return { mobileColors, styles }
+}

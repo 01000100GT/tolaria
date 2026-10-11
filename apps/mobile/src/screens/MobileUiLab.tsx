@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../ui/theme/useMobileTheme'
+import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Linking, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -86,7 +88,7 @@ import {
 } from '../workspace/localVaultMarkdown'
 import { Text } from '../components/ui/text'
 import { mobileText } from '../i18n/mobileText'
-import { mobileColors, mobileSpace, mobileType } from '../ui/tokens'
+import { mobileSpace, mobileType } from '../ui/tokens'
 import {
   mobileSnapshotWithRequestedSelectedNote,
   requestedSelectedNoteId,
@@ -106,6 +108,7 @@ type DevVaultLoadState =
   | { state: DevVaultWorkspaceState; status: 'ready' }
 
 export function MobileUiLab() {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   const { width } = useWindowDimensions()
   const isWideEnoughForTablet = width >= 900
   const searchParams = useMobileUiSearchParams()
@@ -455,6 +458,7 @@ function DevVaultStatusScreen({
   state: Exclude<DevVaultLoadState, { status: 'ready' }>
   url: string | null
 }) {
+  const { devVaultStyles } = useMobileStyles(createThemeStyles)
   const title = state.status === 'error'
     ? mobileText('ai.workspace.status.error')
     : mobileText('status.vault.reloading')
@@ -606,25 +610,28 @@ function envValue(name: string) {
   return processGlobal.process?.env?.[name] ?? null
 }
 
-const devVaultStyles = StyleSheet.create({
-  detail: {
-    maxWidth: 520,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.body,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: mobileSpace.sm,
-    backgroundColor: mobileColors.app,
-    padding: mobileSpace.xxl,
-  },
-  title: {
-    color: mobileColors.text,
-    fontSize: mobileType.title,
-    fontWeight: '600',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const devVaultStyles = StyleSheet.create({
+    detail: {
+      maxWidth: 520,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.body,
+      lineHeight: 22,
+      textAlign: 'center',
+    },
+    root: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: mobileSpace.sm,
+      backgroundColor: mobileColors.app,
+      padding: mobileSpace.xxl,
+    },
+    title: {
+      color: mobileColors.text,
+      fontSize: mobileType.title,
+      fontWeight: '600',
+    },
+  })
+  return { mobileColors, devVaultStyles }
+}

@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { CheckCircle } from 'phosphor-react-native'
@@ -5,7 +7,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import { MobileWorkspaceSuggestionList } from './MobileWorkspaceSuggestionList'
 import {
   mobileWorkspaceFormSheetMaxSuggestions,
@@ -40,6 +42,7 @@ export function MobileSortPicker({
   testIDPrefix?: string
   onSelect: (value: string) => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const customSort = mobileCustomSortFromValue(selectedSort)
   const [customField, setCustomField] = useState(customSort.field)
   const builtInSort = builtInSortFromValue(selectedSort)
@@ -145,6 +148,7 @@ function SortOptionButton({
   testID: string
   onPress: () => void
 }) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   return (
     <MobileButton
       accessibilityLabel={label}
@@ -171,6 +175,7 @@ function CustomDirectionButton({
   selected: boolean
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <MobileButton
       accessibilityLabel={label}
@@ -207,51 +212,54 @@ function isSortDirection(value: string | undefined): value is MobileSortDirectio
   return value === 'asc' || value === 'desc'
 }
 
-const styles = StyleSheet.create({
-  customDirectionRow: {
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  customSort: {
-    gap: mobileSpace.xs,
-    paddingTop: mobileSpace.xs,
-  },
-  directionButton: {
-    minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: mobileColors.control,
-    justifyContent: 'center',
-    borderRadius: mobileWorkspaceSortPickerLayoutContract.optionRadius,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  label: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  section: {
-    gap: mobileSpace.xs,
-  },
-  sortButton: {
-    minWidth: 0,
-    minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
-    flex: 1,
-    justifyContent: 'flex-start',
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.borderStrong,
-    borderWidth: 1,
-    borderRadius: mobileWorkspaceSortPickerLayoutContract.optionRadius,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  sortButtonSelected: {
-    backgroundColor: mobileColors.primarySoft,
-    borderColor: mobileColors.primary,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: mobileWorkspaceSortPickerLayoutContract.gap,
-  },
-  optionRows: {
-    gap: mobileWorkspaceSortPickerLayoutContract.gap,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    customDirectionRow: {
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    customSort: {
+      gap: mobileSpace.xs,
+      paddingTop: mobileSpace.xs,
+    },
+    directionButton: {
+      minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
+      flex: 1,
+      alignItems: 'center',
+      backgroundColor: mobileColors.control,
+      justifyContent: 'center',
+      borderRadius: mobileWorkspaceSortPickerLayoutContract.optionRadius,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    label: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    section: {
+      gap: mobileSpace.xs,
+    },
+    sortButton: {
+      minWidth: 0,
+      minHeight: mobileWorkspaceSortPickerLayoutContract.optionMinHeight,
+      flex: 1,
+      justifyContent: 'flex-start',
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.borderStrong,
+      borderWidth: 1,
+      borderRadius: mobileWorkspaceSortPickerLayoutContract.optionRadius,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    sortButtonSelected: {
+      backgroundColor: mobileColors.primarySoft,
+      borderColor: mobileColors.primary,
+    },
+    optionRow: {
+      flexDirection: 'row',
+      gap: mobileWorkspaceSortPickerLayoutContract.gap,
+    },
+    optionRows: {
+      gap: mobileWorkspaceSortPickerLayoutContract.gap,
+    },
+  })
+  return { mobileColors, styles }
+}

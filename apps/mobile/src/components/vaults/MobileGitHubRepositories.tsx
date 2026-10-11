@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, View } from 'react-native'
 import { GitBranch, GithubLogo, Globe, LockKey, X } from 'phosphor-react-native'
@@ -8,7 +10,7 @@ import { MobileButton } from '../../ui/MobileButton'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors } from '../../ui/tokens'
+
 import { filterGitHubRepositories } from '../../workspace/git/githubRepositorySearch'
 import type { GitHubRepository } from '../../workspace/git/githubAuth'
 import type { useGitHubAccount } from '../../workspace/git/useGitHubAccount'
@@ -16,6 +18,7 @@ import type { useGitHubAccount } from '../../workspace/git/useGitHubAccount'
 type Props = { account: ReturnType<typeof useGitHubAccount>; disabled: boolean; clone: (url: string) => Promise<void> }
 
 export function MobileGitHubRepositories({ account, clone, disabled }: Props) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const repositories = useMemo(() => filterGitHubRepositories(account.repositories, query), [account.repositories, query])
@@ -52,6 +55,7 @@ export function MobileGitHubRepositories({ account, clone, disabled }: Props) {
 }
 
 function RepositoryRow({ repository, disabled, onPress }: { repository: GitHubRepository; disabled: boolean; onPress: () => void }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const VisibilityIcon = repository.private ? LockKey : Globe
   const visibilityLabel = mobileText(repository.private ? 'mobile.vaults.privateRepository' : 'mobile.vaults.publicRepository')
   const [owner, name] = repository.full_name.split('/')
@@ -66,15 +70,18 @@ function RepositoryRow({ repository, disabled, onPress }: { repository: GitHubRe
   </Button>
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, padding: 24, backgroundColor: '#00000040', alignItems: 'center', justifyContent: 'center' },
-  panel: { width: '100%', maxWidth: 560, height: '85%', maxHeight: 640, borderRadius: 8, overflow: 'hidden' },
-  search: { padding: 16 },
-  list: { flex: 1 },
-  repository: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, minHeight: 64, height: 'auto', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: mobileColors.border },
-  identity: { flex: 1, minWidth: 0, gap: 4 },
-  name: { color: mobileColors.text, fontSize: 15, fontWeight: '500' },
-  owner: { color: mobileColors.textMuted, fontSize: 12 },
-  empty: { color: mobileColors.textMuted, textAlign: 'center', padding: 24 },
-  error: { color: mobileColors.danger, paddingHorizontal: 16, paddingBottom: 12 },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    backdrop: { flex: 1, padding: 24, backgroundColor: mobileColors.overlay, alignItems: 'center', justifyContent: 'center' },
+    panel: { width: '100%', maxWidth: 560, height: '85%', maxHeight: 640, borderRadius: 8, overflow: 'hidden' },
+    search: { padding: 16 },
+    list: { flex: 1 },
+    repository: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, minHeight: 64, height: 'auto', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: mobileColors.border },
+    identity: { flex: 1, minWidth: 0, gap: 4 },
+    name: { color: mobileColors.text, fontSize: 15, fontWeight: '500' },
+    owner: { color: mobileColors.textMuted, fontSize: 12 },
+    empty: { color: mobileColors.textMuted, textAlign: 'center', padding: 24 },
+    error: { color: mobileColors.danger, paddingHorizontal: 16, paddingBottom: 12 },
+  })
+  return { mobileColors, styles }
+}

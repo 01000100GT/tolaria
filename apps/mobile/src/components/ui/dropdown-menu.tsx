@@ -1,8 +1,10 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import * as Primitive from '@rn-primitives/dropdown-menu'
 import type { ComponentProps, ReactNode } from 'react'
 import { ScrollView, StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { mobileColors, mobileRadius, mobileSpace } from '../../ui/tokens'
+import { mobileRadius, mobileSpace } from '../../ui/tokens'
 import { cn } from './utils'
 
 export const DropdownMenu = Primitive.Root
@@ -13,6 +15,7 @@ type ContentProps = Omit<ComponentProps<typeof Primitive.Content>, 'children' | 
 type ItemProps = Omit<ComponentProps<typeof Primitive.Item>, 'style'> & { style?: StyleProp<ViewStyle> }
 
 export function DropdownMenuContent({ children, style, ...props }: ContentProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const insets = useSafeAreaInsets()
   const { height } = useWindowDimensions()
   const maxHeight = Math.min(360, height - insets.top - insets.bottom - 80)
@@ -30,31 +33,35 @@ export function DropdownMenuContent({ children, style, ...props }: ContentProps)
 }
 
 export function DropdownMenuItem({ className, style, ...props }: ItemProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return <Primitive.Item className={cn('active:bg-accent', className)} style={[styles.item, style]} {...props} />
 }
 
-const styles = StyleSheet.create({
-  content: {
-    minWidth: 200,
-    maxWidth: 300,
-    padding: mobileSpace.xs,
-    borderWidth: 1,
-    borderColor: mobileColors.border,
-    borderRadius: mobileRadius.md,
-    backgroundColor: mobileColors.card,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  item: {
-    minHeight: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: mobileSpace.sm,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.sm,
-    borderRadius: mobileRadius.sm,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    content: {
+      minWidth: 200,
+      maxWidth: 300,
+      padding: mobileSpace.xs,
+      borderWidth: 1,
+      borderColor: mobileColors.border,
+      borderRadius: mobileRadius.md,
+      backgroundColor: mobileColors.popover,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 8,
+    },
+    item: {
+      minHeight: 44,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: mobileSpace.sm,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.sm,
+      borderRadius: mobileRadius.sm,
+    },
+  })
+  return { mobileColors, styles }
+}

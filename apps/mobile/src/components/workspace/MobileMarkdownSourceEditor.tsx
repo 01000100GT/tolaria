@@ -1,3 +1,4 @@
+import { useMobileStyles, useMobileColors } from '../../ui/theme/useMobileTheme'
 import {
   Pressable,
   type NativeSyntheticEvent,
@@ -8,8 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { MobileChip } from '../../ui/MobileChip'
-import { mobileColors } from '../../ui/tokens'
-import { editorStyles } from './MobileMarkdownSourceEditorStyles'
+
+import { createSourceEditorStyles } from './MobileMarkdownSourceEditorStyles'
 import { markdownSyntaxTokens } from './MobileMarkdownSourceSyntax'
 import { useWorkspaceSyncEditor } from '../../workspace/workspaceSyncEditors'
 import {
@@ -138,6 +139,8 @@ export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProp
 }
 
 function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plainText'>) {
+  const themeStyles = useMobileStyles(createSourceEditorStyles)
+  const { editorStyles } = themeStyles
   const {
     blocks,
     bullets,
@@ -234,12 +237,15 @@ function SourceEditorInput({
   testID: string
   value: string
 }) {
+  const themeStyles = useMobileStyles(createSourceEditorStyles)
+  const { editorStyles } = themeStyles
+  const mobileColors = useMobileColors()
   return (
     <View style={[editorStyles.sourceInputHost, compact ? editorStyles.sourceInputHostCompact : null]}>
       <View pointerEvents="none" style={editorStyles.syntaxLayer}>
         <Text style={editorStyles.syntaxText}>
           {markdownSyntaxTokens(value).map((token, index) => (
-            <Text key={`${index}:${token.text}`} style={token.style}>{token.text}</Text>
+            <Text key={`${index}:${token.text}`} style={token.kind ? editorStyles[token.kind] : undefined}>{token.text}</Text>
           ))}
         </Text>
       </View>
@@ -264,6 +270,8 @@ function SourceEditorInput({
 }
 
 function MobileSourceFrontmatterIssueBanner({ issue }: { issue: MobileSourceFrontmatterIssue | null }) {
+  const themeStyles = useMobileStyles(createSourceEditorStyles)
+  const { editorStyles } = themeStyles
   if (!issue) return null
 
   return (
@@ -287,6 +295,9 @@ function MobilePlainTextSourceEditor({
   idleSave,
   sourceSelectionProbe,
 }: Pick<MobileMarkdownSourceEditorProps, 'compact' | 'idleSave' | 'note' | 'onRegisterEditorCommands' | 'onUpdateContent' | 'sourceSelectionProbe'>) {
+  const themeStyles = useMobileStyles(createSourceEditorStyles)
+  const { editorStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const { content, paused, save, updateContent } = useMobileSourceEditorDraft({
     noteId: note.id,
     idleSave,

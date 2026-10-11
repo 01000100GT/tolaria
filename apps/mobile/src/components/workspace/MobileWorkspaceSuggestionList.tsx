@@ -1,6 +1,8 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import { visibleMobileWorkspaceSuggestions, type MobileWorkspaceSuggestionItem } from './MobileWorkspaceSuggestionListModel'
 import { mobileWorkspaceSuggestionRowLayoutContract } from './MobileWorkspaceActionSheetModel'
 
@@ -19,6 +21,7 @@ export function MobileWorkspaceSuggestionList({
   testID: string
   testIDPrefix: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const suggestions = suggestionItems(labels, items)
   if (suggestions.length === 0) return null
   const visibleSuggestions = visibleMobileWorkspaceSuggestions(suggestions, maxVisibleItems)
@@ -64,44 +67,47 @@ function testIdSegment(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-const styles = StyleSheet.create({
-  list: {
-    gap: mobileSpace.xs,
-  },
-  meta: {
-    maxWidth: 140,
-    flexShrink: 0,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    textAlign: 'right',
-  },
-  pressable: {
-    alignSelf: 'stretch',
-    width: '100%',
-  },
-  row: {
-    minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
-    minWidth: 0,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    width: '100%',
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
-    paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
-  },
-  rowPressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  title: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    list: {
+      gap: mobileSpace.xs,
+    },
+    meta: {
+      maxWidth: 140,
+      flexShrink: 0,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      textAlign: 'right',
+    },
+    pressable: {
+      alignSelf: 'stretch',
+      width: '100%',
+    },
+    row: {
+      minHeight: mobileWorkspaceSuggestionRowLayoutContract.minHeight,
+      minWidth: 0,
+      alignSelf: 'stretch',
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      width: '100%',
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal,
+      paddingVertical: mobileWorkspaceSuggestionRowLayoutContract.paddingVertical,
+    },
+    rowPressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    title: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

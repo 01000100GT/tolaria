@@ -1,9 +1,11 @@
+import { useMobileStyles } from './theme/useMobileTheme'
+import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../components/ui/text'
 import { probeProps, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { desktopNoteItemParity } from './desktopParity'
-import { mobileColors, mobileSpace, mobileType } from './tokens'
+import { mobileSpace, mobileType } from './tokens'
 
 type MobileListRowProps = {
   chips?: ReactNode
@@ -35,13 +37,15 @@ const baseContentStyle = {
 } as const
 
 export function MobileListRow(props: MobileListRowProps) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { styles } = themeStyles
   const rowState = mobileListRowState(props)
 
   return (
     <View
       {...rowProbeProps(props.layoutProbe, props.metricId, 'frame')}
       testID={props.testID}
-      style={mobileListRowFrameStyle(props, rowState)}
+      style={mobileListRowFrameStyle(themeStyles, props, rowState)}
     >
       <Pressable
         {...rowProbeProps(props.layoutProbe, props.metricId, 'body')}
@@ -83,7 +87,8 @@ function mobileListRowState(props: MobileListRowProps): MobileListRowState {
   }
 }
 
-function mobileListRowFrameStyle(props: MobileListRowProps, state: MobileListRowState) {
+function mobileListRowFrameStyle(themeStyles: ReturnType<typeof createThemeStyles>, props: MobileListRowProps, state: MobileListRowState) {
+  const { styles } = themeStyles
   return [
     styles.frame,
     state.desktopSelected ? styles.selected : null,
@@ -97,60 +102,63 @@ function mobileListRowSelectedColors(props: MobileListRowProps, state: MobileLis
   } : null
 }
 
-const styles = StyleSheet.create({
-  base: baseContentStyle,
-  baseSelected: {
-    ...baseContentStyle,
-  },
-  frame: {
-    alignSelf: 'stretch',
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'transparent',
-    borderLeftWidth: 0,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  footer: {
-    marginTop: desktopNoteItemParity.contentGap,
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.sm,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-  meta: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  multiSelected: {
-    backgroundColor: mobileColors.primarySoft,
-  },
-  selected: {
-    borderLeftWidth: 0,
-  },
-  subtitle: {
-    marginTop: desktopNoteItemParity.contentGap,
-    color: mobileColors.textMuted,
-    fontSize: desktopNoteItemParity.snippetTextSize,
-    lineHeight: desktopNoteItemParity.snippetLineHeight,
-  },
-  title: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: desktopNoteItemParity.titleTextSize,
-    fontWeight: '500',
-    lineHeight: desktopNoteItemParity.titleLineHeight,
-  },
-  titleSelected: {
-    fontWeight: '600',
-  },
-})
-
 function rowProbeProps(layoutProbe: MobileLayoutProbe | undefined, metricId: string | undefined, segment: string) {
   return metricId ? probeProps(layoutProbe, `${metricId}.${segment}`) : {}
+}
+
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    base: baseContentStyle,
+    baseSelected: {
+      ...baseContentStyle,
+    },
+    frame: {
+      alignSelf: 'stretch',
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderLeftColor: 'transparent',
+      borderLeftWidth: 0,
+      overflow: 'hidden',
+      width: '100%',
+    },
+    footer: {
+      marginTop: desktopNoteItemParity.contentGap,
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.sm,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+    meta: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    multiSelected: {
+      backgroundColor: mobileColors.primarySoft,
+    },
+    selected: {
+      borderLeftWidth: 0,
+    },
+    subtitle: {
+      marginTop: desktopNoteItemParity.contentGap,
+      color: mobileColors.textMuted,
+      fontSize: desktopNoteItemParity.snippetTextSize,
+      lineHeight: desktopNoteItemParity.snippetLineHeight,
+    },
+    title: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: desktopNoteItemParity.titleTextSize,
+      fontWeight: '500',
+      lineHeight: desktopNoteItemParity.titleLineHeight,
+    },
+    titleSelected: {
+      fontWeight: '600',
+    },
+  })
+  return { mobileColors, styles }
 }

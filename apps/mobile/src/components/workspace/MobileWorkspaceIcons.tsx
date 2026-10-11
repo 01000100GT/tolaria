@@ -7,6 +7,7 @@ import {
 } from './MobileWorkspaceIconResolver'
 import { mobileTypeConfiguredIcon, mobileTypeIconCandidates } from './MobileWorkspaceIconNames'
 import { noteTypeColor } from './mobileWorkspaceTone'
+import { useMobileColors } from '../../ui/theme/useMobileTheme'
 
 export function MobileTypeIcon({
   size,
@@ -21,7 +22,8 @@ export function MobileTypeIcon({
   type: string
   typeDefinitions: MobileTypeDefinitions | null | undefined
 }) {
-  const color = noteTypeColor(tone)
+  const colors = useMobileColors()
+  const color = noteTypeColor(tone, colors)
 
   if (fileKind === 'binary') {
     return <FileDashedIcon color={color} size={size} />

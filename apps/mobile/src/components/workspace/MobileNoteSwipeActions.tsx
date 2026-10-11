@@ -1,8 +1,10 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ArchiveIcon, Star, Trash } from 'phosphor-react-native'
 import { StyleSheet, View } from 'react-native'
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors } from '../../ui/tokens'
+
 import { Button } from '../ui/button'
 import { fullSwipeNoteAction } from './mobileNoteSwipe'
 
@@ -19,6 +21,7 @@ type ActionProps = {
 }
 
 export function MobileNoteSwipeActions(props: ActionProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const left = props.side === 'left'
   const baseWidth = left ? 72 : 144
   const expansion = useAnimatedStyle(() => ({ width: Math.max(baseWidth, Math.abs(props.translation.value)) }))
@@ -55,12 +58,15 @@ export function MobileNoteSwipeActions(props: ActionProps) {
   )
 }
 
-const styles = StyleSheet.create({
-  actions: { position: 'absolute', top: 0, bottom: 0, flexDirection: 'row' },
-  left: { left: 0 },
-  right: { right: 0 },
-  action: { flex: 1, height: '100%', borderRadius: 0, padding: 0, alignItems: 'center', justifyContent: 'center' },
-  favorite: { backgroundColor: mobileColors.primary },
-  archive: { backgroundColor: mobileColors.green },
-  delete: { backgroundColor: mobileColors.danger },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actions: { position: 'absolute', top: 0, bottom: 0, flexDirection: 'row' },
+    left: { left: 0 },
+    right: { right: 0 },
+    action: { flex: 1, height: '100%', borderRadius: 0, padding: 0, alignItems: 'center', justifyContent: 'center' },
+    favorite: { backgroundColor: mobileColors.primary },
+    archive: { backgroundColor: mobileColors.green },
+    delete: { backgroundColor: mobileColors.danger },
+  })
+  return { mobileColors, styles }
+}

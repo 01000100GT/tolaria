@@ -1,9 +1,10 @@
+import { useMobileColors } from '../../ui/theme/useMobileTheme'
 import { useCallback, useMemo, useRef, type ReactNode } from 'react'
 import { View } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable'
 import { runOnJS, useSharedValue } from 'react-native-reanimated'
-import { mobileColors } from '../../ui/tokens'
+
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import { MobileNoteSwipeActions } from './MobileNoteSwipeActions'
 import { fullSwipeNoteAction, type MobileNoteSwipeAction } from './mobileNoteSwipe'
@@ -27,6 +28,7 @@ export function MobileSwipeableNoteRow(props: Props) {
 }
 
 function SwipeableNoteRow({ actions, children, note }: Props & { actions: MobileNoteRowActions }) {
+  const mobileColors = useMobileColors()
   const swipeable = useRef<SwipeableMethods>(null)
   const width = useSharedValue(0)
   const perform = useCallback((action: MobileNoteSwipeAction | 'delete') => {

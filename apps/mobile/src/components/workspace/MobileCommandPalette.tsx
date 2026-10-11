@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   Pressable,
@@ -13,7 +15,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import {
   mobileCommandGroupLabel,
   mobileCommandPaletteResults,
@@ -27,6 +29,7 @@ type MobileCommandPaletteProps = {
 }
 
 export function MobileCommandPalette({ commands, onClose }: MobileCommandPaletteProps) {
+  const { surfaceStyles, mobileColors, styles } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const results = useMemo(() => mobileCommandPaletteResults(commands, query), [commands, query])
@@ -103,6 +106,7 @@ function CommandResults({
   onHover: (index: number) => void
   onSelect: (command: MobileCommandPaletteCommand) => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (groups.length === 0) {
     return (
       <View style={styles.emptyState}>
@@ -159,6 +163,7 @@ function CommandRow({
   onHover: () => void
   onSelect: () => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityRole="button"
@@ -179,10 +184,12 @@ function CommandRow({
 }
 
 function Shortcut({ children }: { children: ReactNode }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return <Text numberOfLines={1} style={styles.shortcut}>{children}</Text>
 }
 
 function CommandFooter() {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.footer}>
       <Text style={styles.footerText}>{mobileText('command.footerNavigate')}</Text>
@@ -192,133 +199,136 @@ function CommandFooter() {
   )
 }
 
-const styles = StyleSheet.create({
-  emptyState: {
-    minHeight: mobileCommandPaletteLayoutContract.emptyMinHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: mobileSpace.lg,
-  },
-  emptyText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.body,
-  },
-  groupLabel: {
-    color: mobileColors.textMuted,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-    paddingBottom: mobileCommandPaletteLayoutContract.groupLabelPaddingBottom,
-    paddingHorizontal: mobileCommandPaletteLayoutContract.groupLabelPaddingHorizontal,
-    paddingTop: mobileCommandPaletteLayoutContract.groupLabelPaddingTop,
-  },
-  group: {
-    alignSelf: 'stretch',
-    width: '100%',
-  },
-  input: {
-    minHeight: mobileCommandPaletteLayoutContract.inputMinHeight,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderRadius: 0,
-    borderWidth: 0,
-    color: mobileColors.text,
-    fontSize: mobileCommandPaletteLayoutContract.inputTextSize,
-    paddingHorizontal: mobileCommandPaletteLayoutContract.inputPaddingHorizontal,
-    paddingVertical: mobileCommandPaletteLayoutContract.inputPaddingVertical,
-  },
-  results: {
-    alignItems: 'stretch',
-    paddingBottom: mobileSpace.sm,
-    paddingTop: mobileSpace.xs,
-    width: '100%',
-  },
-  resultsScroll: {
-    flexShrink: 1,
-    minHeight: 0,
-    alignSelf: 'stretch',
-    width: '100%',
-  },
-  row: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    borderRadius: mobileCommandPaletteLayoutContract.rowBorderRadius,
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    justifyContent: 'space-between',
-    minHeight: mobileCommandPaletteLayoutContract.rowMinHeight,
-    paddingHorizontal: mobileCommandPaletteLayoutContract.rowPaddingHorizontal,
-    paddingVertical: mobileCommandPaletteLayoutContract.rowPaddingVertical,
-    width: '100%',
-  },
-  rowPressable: {
-    alignSelf: 'stretch',
-    marginHorizontal: mobileCommandPaletteLayoutContract.rowMarginHorizontal,
-    width: 'auto',
-  },
-  rowLabel: {
-    flex: 1,
-    minWidth: 0,
-    color: mobileColors.text,
-    fontSize: mobileCommandPaletteLayoutContract.rowTextSize,
-    lineHeight: 18,
-  },
-  rowPressed: {
-    opacity: 0.78,
-  },
-  rowSelected: {
-    backgroundColor: mobileColors.control,
-  },
-  shortcut: {
-    color: mobileColors.textMuted,
-    fontSize: mobileCommandPaletteLayoutContract.shortcutTextSize,
-    lineHeight: 16,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.md,
-    borderTopColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileCommandPaletteLayoutContract.footerPaddingHorizontal,
-    paddingVertical: mobileCommandPaletteLayoutContract.footerPaddingVertical,
-  },
-  footerText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.micro,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    emptyState: {
+      minHeight: mobileCommandPaletteLayoutContract.emptyMinHeight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: mobileSpace.lg,
+    },
+    emptyText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.body,
+    },
+    groupLabel: {
+      color: mobileColors.textMuted,
+      fontSize: 11,
+      fontWeight: '500',
+      lineHeight: 14,
+      paddingBottom: mobileCommandPaletteLayoutContract.groupLabelPaddingBottom,
+      paddingHorizontal: mobileCommandPaletteLayoutContract.groupLabelPaddingHorizontal,
+      paddingTop: mobileCommandPaletteLayoutContract.groupLabelPaddingTop,
+    },
+    group: {
+      alignSelf: 'stretch',
+      width: '100%',
+    },
+    input: {
+      minHeight: mobileCommandPaletteLayoutContract.inputMinHeight,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderRadius: 0,
+      borderWidth: 0,
+      color: mobileColors.text,
+      fontSize: mobileCommandPaletteLayoutContract.inputTextSize,
+      paddingHorizontal: mobileCommandPaletteLayoutContract.inputPaddingHorizontal,
+      paddingVertical: mobileCommandPaletteLayoutContract.inputPaddingVertical,
+    },
+    results: {
+      alignItems: 'stretch',
+      paddingBottom: mobileSpace.sm,
+      paddingTop: mobileSpace.xs,
+      width: '100%',
+    },
+    resultsScroll: {
+      flexShrink: 1,
+      minHeight: 0,
+      alignSelf: 'stretch',
+      width: '100%',
+    },
+    row: {
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      borderRadius: mobileCommandPaletteLayoutContract.rowBorderRadius,
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      justifyContent: 'space-between',
+      minHeight: mobileCommandPaletteLayoutContract.rowMinHeight,
+      paddingHorizontal: mobileCommandPaletteLayoutContract.rowPaddingHorizontal,
+      paddingVertical: mobileCommandPaletteLayoutContract.rowPaddingVertical,
+      width: '100%',
+    },
+    rowPressable: {
+      alignSelf: 'stretch',
+      marginHorizontal: mobileCommandPaletteLayoutContract.rowMarginHorizontal,
+      width: 'auto',
+    },
+    rowLabel: {
+      flex: 1,
+      minWidth: 0,
+      color: mobileColors.text,
+      fontSize: mobileCommandPaletteLayoutContract.rowTextSize,
+      lineHeight: 18,
+    },
+    rowPressed: {
+      opacity: 0.78,
+    },
+    rowSelected: {
+      backgroundColor: mobileColors.control,
+    },
+    shortcut: {
+      color: mobileColors.textMuted,
+      fontSize: mobileCommandPaletteLayoutContract.shortcutTextSize,
+      lineHeight: 16,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.md,
+      borderTopColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileCommandPaletteLayoutContract.footerPaddingHorizontal,
+      paddingVertical: mobileCommandPaletteLayoutContract.footerPaddingVertical,
+    },
+    footerText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.micro,
+    },
+  })
 
-const surfaceStyles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(55, 53, 47, 0.14)',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 30,
-  },
-  paletteContainer: {
-    flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: mobileCommandPaletteLayoutContract.overlayPaddingTop,
-  },
-  palette: {
-    flexShrink: 1,
-    minHeight: 0,
-    maxHeight: mobileCommandPaletteLayoutContract.paletteMaxHeight,
-    maxWidth: mobileCommandPaletteLayoutContract.paletteMaxWidth,
-    width: '92%',
-    backgroundColor: mobileColors.card,
-    borderColor: mobileColors.borderStrong,
-    borderRadius: mobileCommandPaletteLayoutContract.paletteBorderRadius,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { height: 10, width: 0 },
-    shadowOpacity: 0.14,
-    shadowRadius: 28,
-  },
-})
+  const surfaceStyles = StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: mobileColors.overlay,
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 30,
+    },
+    paletteContainer: {
+      flex: 1,
+      minHeight: 0,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: mobileCommandPaletteLayoutContract.overlayPaddingTop,
+    },
+    palette: {
+      flexShrink: 1,
+      minHeight: 0,
+      maxHeight: mobileCommandPaletteLayoutContract.paletteMaxHeight,
+      maxWidth: mobileCommandPaletteLayoutContract.paletteMaxWidth,
+      width: '92%',
+      backgroundColor: mobileColors.card,
+      borderColor: mobileColors.borderStrong,
+      borderRadius: mobileCommandPaletteLayoutContract.paletteBorderRadius,
+      borderWidth: StyleSheet.hairlineWidth,
+      overflow: 'hidden',
+      shadowColor: '#000000',
+      shadowOffset: { height: 10, width: 0 },
+      shadowOpacity: 0.14,
+      shadowRadius: 28,
+    },
+  })
+  return { mobileColors, styles, surfaceStyles }
+}

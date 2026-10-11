@@ -309,6 +309,13 @@ Focused block type changes share the same block-type catalog in `src/utils/richE
 
 The React Native app in `apps/mobile` has its own UI abstraction layer. Mobile screens should compose Tolaria-native primitives from `apps/mobile/src/ui` instead of directly styling raw React Native controls in feature screens.
 
+`MobileThemeProvider` resolves installation appearance preferences and publishes
+desktop-derived palettes to both NativeWind/RNR and explicit native styles.
+`useMobileColors` supplies semantic roles; `useMobileStyles` memoizes a component's
+palette-dependent style factory. `useEditorAppearance` changes WebView CSS without
+resynchronizing the document. The generated palette is checked against desktop
+CSS in the scoped mobile unit suite; see ADR 0213.
+
 Current primitives:
 
 | Primitive | Purpose |

@@ -1,11 +1,13 @@
-import { type ReactNode } from 'react'
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
+import type { ReactNode } from 'react'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { FilePlus, LinkSimple, ListBullets, Star } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileChip } from '../../ui/MobileChip'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import type { MobileWorkspaceActionSheetProps } from './MobileWorkspaceActionSheet'
 import { MobileSourceBlockMoreActions } from './MobileSourceBlockMoreActions'
@@ -31,6 +33,7 @@ export function MoreActionsContent(props: MobileWorkspaceActionSheetProps) {
 }
 
 function MoreActionsScroll({ children }: { children?: ReactNode }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
       {children}
@@ -81,6 +84,7 @@ function MarkdownNoteMoreActionRows({
   note: MobileNote
   props: MobileWorkspaceActionSheetProps
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       <MoreActionRow
@@ -130,6 +134,7 @@ function DeepLinkActionRow({
   onClose: () => void
   onCopyDeepLink: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <MoreActionRow
       icon={<LinkSimple color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
@@ -150,6 +155,7 @@ function SelectedNoteSummary({
   note: MobileNote
   typeDefinitions: MobileWorkspaceActionSheetProps['typeDefinitions']
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.summary} testID="workspace-action-sheet-note-summary">
       <MobileTypeIcon size={desktopToolbarActionParity.iconSize} tone={note.typeTone} type={note.type} typeDefinitions={typeDefinitions} />
@@ -171,6 +177,7 @@ function MoreActionRow({
   onPress: () => void
   testID?: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [styles.actionRow, pressed ? styles.actionRowPressed : null]} testID={testID} onPress={onPress}>
       <View style={styles.actionRowContent}>
@@ -181,56 +188,59 @@ function MoreActionRow({
   )
 }
 
-const styles = StyleSheet.create({
-  actionIcon: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  actionRow: {
-    minWidth: 0,
-    alignSelf: 'stretch',
-    width: '100%',
-    borderRadius: 4,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.sm,
-  },
-  actionRowContent: {
-    minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: mobileSpace.sm,
-  },
-  actionRowPressed: {
-    backgroundColor: mobileColors.control,
-  },
-  actionText: {
-    minWidth: 0,
-    flex: 1,
-    flexShrink: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-  },
-  content: {
-    gap: mobileSpace.md,
-    padding: mobileSpace.md,
-  },
-  scrollArea: {
-    flexShrink: 1,
-  },
-  summary: {
-    minWidth: 0,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderBottomColor: mobileColors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingBottom: mobileSpace.md,
-  },
-  summaryTitle: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionIcon: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    actionRow: {
+      minWidth: 0,
+      alignSelf: 'stretch',
+      width: '100%',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.sm,
+    },
+    actionRowContent: {
+      minWidth: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: mobileSpace.sm,
+    },
+    actionRowPressed: {
+      backgroundColor: mobileColors.control,
+    },
+    actionText: {
+      minWidth: 0,
+      flex: 1,
+      flexShrink: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+    },
+    content: {
+      gap: mobileSpace.md,
+      padding: mobileSpace.md,
+    },
+    scrollArea: {
+      flexShrink: 1,
+    },
+    summary: {
+      minWidth: 0,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      paddingBottom: mobileSpace.md,
+    },
+    summaryTitle: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

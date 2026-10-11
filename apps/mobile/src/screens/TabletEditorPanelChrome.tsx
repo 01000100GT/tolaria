@@ -1,3 +1,4 @@
+import { useMobileStyles, useMobileColors } from '../ui/theme/useMobileTheme'
 import { ArrowClockwise, FileText, WarningCircle } from 'phosphor-react-native'
 import { ActivityIndicator, View } from 'react-native'
 import { MobileTypeIcon } from '../components/workspace/MobileWorkspaceIcons'
@@ -6,12 +7,15 @@ import { mobileText } from '../i18n/mobileText'
 import { MobilePanel, MobileToolbar, MobileToolbarTitle } from '../ui/MobilePanel'
 import { MobileButton } from '../ui/MobileButton'
 import { desktopToolbarActionParity } from '../ui/desktopParity'
-import { mobileColors } from '../ui/tokens'
+
 import type { MobileNote, MobileTypeDefinitions } from '../workspace/mobileWorkspaceModel'
-import { panelStyles } from './TabletEditorPanelStyles'
+import { createEditorPanelStyles } from './TabletEditorPanelStyles'
 import type { MobileNoteReadState } from '../workspace/mobileNoteRead'
 
 export function MobileNoteReadFallback({ state }: { state: MobileNoteReadState }) {
+  const themeStyles = useMobileStyles(createEditorPanelStyles)
+  const { panelStyles } = themeStyles
+  const mobileColors = useMobileColors()
   const failed = state.status === 'error'
   return (
     <View style={panelStyles.emptyState} testID={failed ? 'note-read-error' : 'note-read-loading'}>
@@ -40,6 +44,8 @@ export function MobileFilePreviewFallback({
   note: MobileNote
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const themeStyles = useMobileStyles(createEditorPanelStyles)
+  const { panelStyles } = themeStyles
   return (
     <View style={panelStyles.filePreviewFallback} testID="file-preview-fallback">
       <MobileTypeIcon
@@ -56,6 +62,9 @@ export function MobileFilePreviewFallback({
 }
 
 export function EmptyEditorPanel() {
+  const themeStyles = useMobileStyles(createEditorPanelStyles)
+  const { panelStyles } = themeStyles
+  const mobileColors = useMobileColors()
   return (
     <MobilePanel style={panelStyles.panel} testID="editor-panel">
       <MobileToolbar testID="editor-toolbar">

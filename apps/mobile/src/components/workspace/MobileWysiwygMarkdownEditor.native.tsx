@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { type EditorBridge, RichText, TenTapStartKit, useEditorBridge } from '@10play/tentap-editor'
 import { type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
@@ -9,7 +11,7 @@ import {
   nativeWysiwygMarkdownBlockProbePlainTextPayload,
   nativeWysiwygMarkdownBlockProbeTableGrowthJson,
 } from '../../qa/nativeWysiwygMarkdownBlockProbe'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import { mobileHtmlWithResolvedAttachmentUris } from '../../workspace/mobileAttachmentUris'
 import { readMobileClipboardText } from '../../workspace/mobileClipboard'
 import {
@@ -287,6 +289,7 @@ export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorPr
 }
 
 function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
+  const { nativeEditorStyles } = useMobileStyles(createThemeStyles)
   const {
     activateEditorChanges,
     editor,
@@ -1118,20 +1121,23 @@ function isSelectionSettableEditorBridge(editor: EditorBridge | null): editor is
   return typeof (editor as Partial<SelectionSettableEditorBridge> | null)?.setSelection === 'function'
 }
 
-const nativeEditorStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: mobileColors.editor,
-  },
-  richText: {
-    flex: 1,
-    backgroundColor: mobileColors.editor,
-  },
-  toolbarHost: {
-    backgroundColor: mobileColors.editor,
-    borderTopColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileSpace.md,
-    paddingTop: mobileSpace.xs,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const nativeEditorStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: mobileColors.editor,
+    },
+    richText: {
+      flex: 1,
+      backgroundColor: mobileColors.editor,
+    },
+    toolbarHost: {
+      backgroundColor: mobileColors.editor,
+      borderTopColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileSpace.md,
+      paddingTop: mobileSpace.xs,
+    },
+  })
+  return { mobileColors, nativeEditorStyles }
+}

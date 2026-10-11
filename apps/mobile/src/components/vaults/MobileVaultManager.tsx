@@ -1,3 +1,4 @@
+import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native'
 import { CloudArrowDown, FolderOpen, X } from 'phosphor-react-native'
@@ -7,17 +8,19 @@ import { MobileButton } from '../../ui/MobileButton'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePanel, MobileToolbar, MobileToolbarTitle, MobileToolbarSpacer } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors } from '../../ui/tokens'
+
 import type { useMobileVaults } from '../../workspace/git/useMobileVaults'
 import { githubRepositoryUrl } from '../../workspace/git/githubRepositoryUrl'
 import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
 import { MobileGitHubAccount } from './MobileGitHubAccount'
 import { MobileGitControls } from './MobileGitControls'
-import { vaultManagerStyles as styles } from './vaultManagerStyles'
+import { createVaultManagerStyles } from './vaultManagerStyles'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
 export function MobileVaultManager({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const mobileColors = useMobileColors()
   return <Modal visible={manager.opened} transparent animationType="fade" onRequestClose={manager.close}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
       <MobilePanel style={styles.panel} accessibilityViewIsModal testID="vault-manager">
@@ -43,6 +46,8 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
 }
 
 function CloneRepository({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const mobileColors = useMobileColors()
   const [url, setUrl] = useState('')
   return <View style={styles.section}>
     <MobileTextInput label={mobileText('mobile.vaults.repositoryUrl')} value={url} onChangeText={setUrl} editable={!manager.busy} autoCorrect={false} keyboardType="url" testID="git-repository-url" />
@@ -55,6 +60,7 @@ function validRepository(url: string) {
 }
 
 function SavedVaults({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
   if (!manager.catalog.vaults.length) return null
   return <View style={styles.section}>
     <Text style={styles.label}>{mobileText('status.vault.availableHeader')}</Text>
@@ -63,6 +69,8 @@ function SavedVaults({ manager }: { manager: VaultManager }) {
 }
 
 function VaultOperationStatus({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const mobileColors = useMobileColors()
   return <View style={styles.section} accessibilityLiveRegion="polite">
     {manager.busy && <View style={styles.progress}><ActivityIndicator color={mobileColors.primary} /><Text style={styles.detail}>{progressLabel(manager.phase)}</Text></View>}
     {manager.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(manager.error)}</Text>}

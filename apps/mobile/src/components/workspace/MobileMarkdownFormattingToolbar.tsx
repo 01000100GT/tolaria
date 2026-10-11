@@ -1,7 +1,9 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
 import { Button } from '../ui/button'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 
@@ -34,6 +36,7 @@ export function MobileMarkdownFormattingToolbar({
   selected?: readonly MobileMarkdownFormatAction[]
   inTable?: boolean
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const visibleActions = new Set((actions ?? sourceMarkdownFormattingActions)
     .filter((action) => inTable || !nativeOnlyFormattingActions.has(action)))
 
@@ -81,21 +84,24 @@ function formattingProbeProps(
   return probeProps(layoutProbe, segment ? `${metricId}.${segment}` : metricId)
 }
 
-const styles = StyleSheet.create({
-  actionProbe: {
-    height: formattingToolbarTouchSize,
-    width: formattingToolbarTouchSize,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-  },
-  selected: { backgroundColor: mobileColors.primarySoft },
-  toolbarContent: {
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-    paddingBottom: mobileSpace.xs,
-  },
-  toolbarViewport: {
-    flexGrow: 0,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionProbe: {
+      height: formattingToolbarTouchSize,
+      width: formattingToolbarTouchSize,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+    },
+    selected: { backgroundColor: mobileColors.primarySoft },
+    toolbarContent: {
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      paddingBottom: mobileSpace.xs,
+    },
+    toolbarViewport: {
+      flexGrow: 0,
+    },
+  })
+  return { mobileColors, styles }
+}

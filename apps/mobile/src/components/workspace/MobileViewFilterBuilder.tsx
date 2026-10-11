@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { CheckCircle, Plus, WarningCircle, X } from 'phosphor-react-native'
@@ -5,7 +7,7 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type {
   MobileNote,
   MobileViewFilterCondition,
@@ -67,6 +69,7 @@ export function MobileViewFilterBuilder({
   onChange: FilterChange
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.builder} testID="workspace-view-filter-builder">
       <Text style={styles.label}>{mobileText('viewDialog.filtersLabel')}</Text>
@@ -96,6 +99,7 @@ function FilterGroupEditor({
   path: FilterPath
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const mode = groupMode(group)
   const nodes = groupNodes(group)
 
@@ -132,6 +136,7 @@ function GroupHeader({
   onRemove?: () => void
   onToggleMode: () => void
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.groupHeader}>
       <MobileButton
@@ -198,6 +203,7 @@ function FilterConditionEditor({
   path: FilterPath
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const pathId = testPath(path)
   const fieldSuggestions = mobileViewFieldSuggestions(notes, condition.field, typeDefinitions)
   const valueText = mobileViewFilterValueText(condition)
@@ -262,6 +268,7 @@ function OperatorPicker({
   onChange: ConditionChange
   pathId: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const regexSupported = mobileViewFilterRegexSupported(condition.op)
   const regexEnabled = regexSupported && condition.regex === true
 
@@ -297,6 +304,7 @@ function FilterValueFeedback({
   invalidRegex: boolean
   pathId: string
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   if (invalidRegex) {
     return (
       <View style={styles.feedbackRow} testID={`workspace-view-filter-regex-invalid-${pathId}`}>
@@ -328,6 +336,7 @@ function OperatorPill({
   onPress: () => void
   testID: string
 }) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   return (
     <MobileButton
       accessibilityLabel={label}
@@ -350,6 +359,7 @@ function GroupActions({
   onAddCondition: () => void
   onAddGroup: () => void
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.actions}>
       <MobileButton density="compact" icon={<Plus color={mobileColors.textMuted} size={12} />} label={mobileText('viewDialog.filter.addFilter')} variant="ghost" onPress={onAddCondition} />
@@ -369,6 +379,7 @@ function IconPressable({
   onPress: () => void
   testID: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable accessibilityLabel={accessibilityLabel} accessibilityRole="button" style={styles.iconButton} testID={testID} onPress={onPress}>
       {children}
@@ -431,110 +442,113 @@ function operatorLabel(operator: MobileViewFilterOp) {
   return mobileText(`viewDialog.filter.operator.${operator}`)
 }
 
-const styles = StyleSheet.create({
-  actions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.xs,
-  },
-  builder: {
-    gap: mobileWorkspaceFormSectionLayoutContract.gap,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: mobileWorkspaceFormSectionLayoutContract.padding,
-  },
-  condition: {
-    gap: mobileSpace.sm,
-    borderColor: mobileColors.border,
-    borderRadius: 6,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: mobileSpace.sm,
-  },
-  conditionHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-  conditionTitle: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.caption,
-    fontWeight: '600',
-  },
-  group: {
-    gap: mobileSpace.sm,
-  },
-  groupHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  groupHint: {
-    flex: 1,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  iconButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-    height: 24,
-    width: 24,
-  },
-  feedbackRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.xs,
-  },
-  invalidInput: {
-    borderColor: mobileColors.danger,
-  },
-  invalidText: {
-    color: mobileColors.danger,
-    fontSize: mobileType.caption,
-  },
-  label: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  modeButton: {
-    minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.borderStrong,
-    borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
-  },
-  nestedGroup: {
-    borderLeftColor: mobileColors.borderStrong,
-    borderLeftWidth: 2,
-    paddingLeft: mobileSpace.sm,
-  },
-  nodeList: {
-    gap: mobileSpace.sm,
-  },
-  operatorPill: {
-    minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
-  },
-  operatorPillActive: {
-    backgroundColor: mobileColors.primarySoft,
-    borderColor: mobileColors.primary,
-  },
-  operatorWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileWorkspaceFilterControlLayoutContract.gap,
-  },
-  valuePreview: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    paddingLeft: mobileSpace.xs,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.xs,
+    },
+    builder: {
+      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+    },
+    condition: {
+      gap: mobileSpace.sm,
+      borderColor: mobileColors.border,
+      borderRadius: 6,
+      borderWidth: StyleSheet.hairlineWidth,
+      padding: mobileSpace.sm,
+    },
+    conditionHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+    conditionTitle: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.caption,
+      fontWeight: '600',
+    },
+    group: {
+      gap: mobileSpace.sm,
+    },
+    groupHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    groupHint: {
+      flex: 1,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    iconButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+      height: 24,
+      width: 24,
+    },
+    feedbackRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+    },
+    invalidInput: {
+      borderColor: mobileColors.danger,
+    },
+    invalidText: {
+      color: mobileColors.danger,
+      fontSize: mobileType.caption,
+    },
+    label: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    modeButton: {
+      minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.borderStrong,
+      borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
+    },
+    nestedGroup: {
+      borderLeftColor: mobileColors.borderStrong,
+      borderLeftWidth: 2,
+      paddingLeft: mobileSpace.sm,
+    },
+    nodeList: {
+      gap: mobileSpace.sm,
+    },
+    operatorPill: {
+      minHeight: mobileWorkspaceFilterControlLayoutContract.minHeight,
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceFilterControlLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileWorkspaceFilterControlLayoutContract.paddingHorizontal,
+    },
+    operatorPillActive: {
+      backgroundColor: mobileColors.primarySoft,
+      borderColor: mobileColors.primary,
+    },
+    operatorWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileWorkspaceFilterControlLayoutContract.gap,
+    },
+    valuePreview: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      paddingLeft: mobileSpace.xs,
+    },
+  })
+  return { mobileColors, styles }
+}

@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { StyleSheet, View } from 'react-native'
 import { CheckCircle } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import { mobileWorkspaceFormSectionLayoutContract } from './MobileWorkspaceActionSheetModel'
 
 type MobileViewDisplayPropertiesPickerProps = {
@@ -24,6 +26,7 @@ export function MobileViewDisplayPropertiesPicker({
   selectedProperties,
   testIDPrefix = 'workspace-view-property',
 }: MobileViewDisplayPropertiesPickerProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const orderedOptions = orderedDisplayPropertyOptions(options, selectedProperties)
 
   return (
@@ -64,6 +67,7 @@ function PropertyOption({
   selected: boolean
   testIDPrefix: string
 }) {
+  const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   return (
     <MobileButton
       accessibilityLabel={label}
@@ -121,38 +125,41 @@ function testIdSegment(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '') || 'property'
 }
 
-const styles = StyleSheet.create({
-  empty: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  label: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '600',
-  },
-  option: {
-    minHeight: 32,
-    alignSelf: 'stretch',
-    justifyContent: 'flex-start',
-    backgroundColor: mobileColors.control,
-    borderColor: mobileColors.border,
-    borderRadius: 6,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  optionList: {
-    gap: mobileSpace.xs,
-  },
-  optionSelected: {
-    backgroundColor: mobileColors.primarySoft,
-    borderColor: mobileColors.primary,
-  },
-  picker: {
-    gap: mobileWorkspaceFormSectionLayoutContract.gap,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: mobileWorkspaceFormSectionLayoutContract.padding,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    empty: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    label: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '600',
+    },
+    option: {
+      minHeight: 32,
+      alignSelf: 'stretch',
+      justifyContent: 'flex-start',
+      backgroundColor: mobileColors.control,
+      borderColor: mobileColors.border,
+      borderRadius: 6,
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    optionList: {
+      gap: mobileSpace.xs,
+    },
+    optionSelected: {
+      backgroundColor: mobileColors.primarySoft,
+      borderColor: mobileColors.primary,
+    },
+    picker: {
+      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+    },
+  })
+  return { mobileColors, styles }
+}

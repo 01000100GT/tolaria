@@ -2,7 +2,7 @@ import type { EditorBridge } from '@10play/tentap-editor'
 import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent'
 import type { MobileEditorBlock, MobileNote } from '../../workspace/mobileWorkspaceModel'
-import { mobileTentapEditorCss } from './MobileWysiwygMarkdownEditorCss'
+import { injectMobileEditorAppearance, useEditorAppearance } from './useEditorAppearance'
 
 type TimerHandle = ReturnType<typeof setTimeout>
 
@@ -29,10 +29,6 @@ type SilentContentSettableEditorBridge = EditorBridge & {
   setContentSilently: (content: string) => void
 }
 
-type CssInjectableEditorBridge = EditorBridge & {
-  injectCSS: (css: string, tag?: string) => void
-}
-
 const nativeInitialContentRetryDelaysMs = [80, 240, 520, 1_100] as const
 const nativeInitialContentReadyDelayMs = 1_250
 
@@ -48,13 +44,12 @@ export function useEditorCssInjection({
   refs: NativeTentapEditorRefs
 }) {
   const { editorRef } = refs
+  const css = useEditorAppearance({ compact, noteWidth, editorRef })
 
   return useCallback(() => {
-    if (isCssInjectableEditorBridge(editorRef.current)) {
-      editorRef.current.injectCSS(mobileTentapEditorCss(compact, noteWidth), 'tolaria-editor')
-    }
+    injectMobileEditorAppearance(editorRef.current, css)
     syncNativeInitialEditorContent({ initialContent, readyDelayMs: nativeInitialContentReadyDelayMs, refs })
-  }, [compact, editorRef, initialContent, noteWidth, refs])
+  }, [css, editorRef, initialContent, refs])
 }
 
 export function useEditorBridgeRef(editorRef: MutableRefObject<EditorBridge | null>, editor: EditorBridge) {
@@ -240,10 +235,6 @@ function shouldSyncInitialContent(
   if (!isContentSettableEditorBridge(refs.editorRef.current)) return false
   if (syncedContent?.noteId === noteId && syncedContent.content === initialContent) return false
   return !refs.hasAcceptedEditorChangeRef.current
-}
-
-function isCssInjectableEditorBridge(editor: EditorBridge | null): editor is CssInjectableEditorBridge {
-  return typeof (editor as Partial<CssInjectableEditorBridge> | null)?.injectCSS === 'function'
 }
 
 function isSilentContentSettableEditorBridge(

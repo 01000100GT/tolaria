@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Table } from 'phosphor-react-native'
@@ -6,7 +8,7 @@ import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent'
 import {
   readMobileMarkdownTables,
@@ -59,6 +61,7 @@ export function MobileTableMoreActions({
 }
 
 function CollapsedTableAction({ onPress }: { onPress: () => void }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={mobileText('editor.table.edit')}
@@ -94,6 +97,7 @@ function MobileTableSourceEditor({
   table: MobileMarkdownTable
   tables: MobileMarkdownTable[]
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const [alignments, setAlignments] = useState(table.alignments)
   const [headers, setHeaders] = useState(table.headers)
   const [rows, setRows] = useState(table.rows)
@@ -161,6 +165,7 @@ function MobileTableSourceEditor({
 }
 
 function EditorHeader() {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.header}>
       <Table color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
@@ -184,6 +189,7 @@ function TableControls({
   onRemoveColumn: () => void
   onRemoveRow: () => void
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.controls}>
       <MobileButton density="status" label={mobileText('editor.table.addRow')} onPress={onAddRow} />
@@ -205,6 +211,7 @@ function TableFields({
   onChangeHeader: (columnIndex: number, value: string) => void
   rows: string[][]
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.fieldGroup}>
       {headers.map((header, columnIndex) => (
@@ -243,6 +250,7 @@ function TablePicker({
   table: MobileMarkdownTable
   tables: MobileMarkdownTable[]
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   if (tables.length <= 1) return null
 
   return (
@@ -345,93 +353,96 @@ function tableLabel({ index }: { index: number }): string {
   return `${mobileText('editor.formatting.table')} ${index + 1}`
 }
 
-const styles = StyleSheet.create({
-  actionIcon: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  actionRow: {
-    minWidth: 0,
-    borderRadius: 6,
-  },
-  actionRowContent: {
-    minHeight: 36,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  actionText: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  controls: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: mobileSpace.xs,
-  },
-  editor: {
-    gap: mobileSpace.md,
-    borderColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: mobileSpace.md,
-  },
-  fieldGroup: {
-    gap: mobileSpace.sm,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: mobileSpace.sm,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-  picker: {
-    gap: mobileSpace.xs,
-  },
-  pickerRow: {
-    minHeight: 34,
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderRadius: 6,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.xs,
-  },
-  pickerRowSelected: {
-    backgroundColor: mobileColors.selected,
-  },
-  pickerTitle: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  rowGroup: {
-    gap: mobileSpace.xs,
-    borderColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: mobileSpace.sm,
-  },
-  rowPressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  rowTitle: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  title: {
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionIcon: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    actionRow: {
+      minWidth: 0,
+      borderRadius: 6,
+    },
+    actionRowContent: {
+      minHeight: 36,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    actionText: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    controls: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.xs,
+    },
+    editor: {
+      gap: mobileSpace.md,
+      borderColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: mobileSpace.md,
+    },
+    fieldGroup: {
+      gap: mobileSpace.sm,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: mobileSpace.sm,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+    picker: {
+      gap: mobileSpace.xs,
+    },
+    pickerRow: {
+      minHeight: 34,
+      alignItems: 'center',
+      flexDirection: 'row',
+      borderRadius: 6,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.xs,
+    },
+    pickerRowSelected: {
+      backgroundColor: mobileColors.selected,
+    },
+    pickerTitle: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    rowGroup: {
+      gap: mobileSpace.xs,
+      borderColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: mobileSpace.sm,
+    },
+    rowPressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    rowTitle: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    title: {
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { ListBullets, TextHOne, TextHThree, TextHTwo } from 'phosphor-react-native'
 import type { ReactNode } from 'react'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import {
   buildMobileTableOfContents,
   type MobileTableOfContentsItem,
@@ -28,6 +30,8 @@ export function MobileTableOfContentsSheet({
   onClose,
   onSelectTarget,
 }: MobileTableOfContentsSheetProps) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { styles, mobileColors } = themeStyles
   if (!note) {
     return (
       <View style={styles.emptyState}>
@@ -86,6 +90,8 @@ function MobileTocRow({
   onPress: () => void
   onSelectTarget?: (target: MobileTableOfContentsTarget) => void
 }) {
+  const themeStyles = useMobileStyles(createThemeStyles)
+  const { styles } = themeStyles
   const selectTarget = () => {
     onSelectTarget?.(item)
     onPress()
@@ -103,65 +109,69 @@ function MobileTocRow({
       testID={`table-of-contents-row-${item.id}`}
       onPress={selectTarget}
     >
-      <View style={styles.iconSlot}>{tocIcon(item.level)}</View>
+      <View style={styles.iconSlot}>{tocIcon(themeStyles, item.level)}</View>
       <Text numberOfLines={1} style={styles.rowText}>{item.title}</Text>
     </Pressable>
   )
 }
 
-function tocIcon(level: MobileTableOfContentsLevel): ReactNode {
+function tocIcon(themeStyles: ReturnType<typeof createThemeStyles>, level: MobileTableOfContentsLevel): ReactNode {
+  const { mobileColors } = themeStyles
   if (level === 1) return <TextHOne color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
   if (level === 2) return <TextHTwo color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
   return <TextHThree color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
 }
 
-const styles = StyleSheet.create({
-  content: {
-    gap: mobileSpace.xs,
-    padding: mobileSpace.md,
-  },
-  emptyState: {
-    minHeight: 96,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: mobileSpace.md,
-  },
-  emptyText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.body,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    paddingBottom: mobileSpace.sm,
-  },
-  headerText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    fontWeight: '500',
-  },
-  iconSlot: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  row: {
-    minHeight: 32,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderRadius: 4,
-    paddingRight: mobileSpace.sm,
-    paddingVertical: mobileSpace.xs,
-  },
-  rowPressed: {
-    backgroundColor: mobileColors.control,
-  },
-  rowText: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    content: {
+      gap: mobileSpace.xs,
+      padding: mobileSpace.md,
+    },
+    emptyState: {
+      minHeight: 96,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: mobileSpace.md,
+    },
+    emptyText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.body,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      paddingBottom: mobileSpace.sm,
+    },
+    headerText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      fontWeight: '500',
+    },
+    iconSlot: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    row: {
+      minHeight: 32,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderRadius: 4,
+      paddingRight: mobileSpace.sm,
+      paddingVertical: mobileSpace.xs,
+    },
+    rowPressed: {
+      backgroundColor: mobileColors.control,
+    },
+    rowText: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+  })
+  return { mobileColors, styles }
+}

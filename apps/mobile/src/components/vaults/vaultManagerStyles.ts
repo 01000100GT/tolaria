@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 
-export const vaultManagerStyles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: '#00000040', justifyContent: 'center', alignItems: 'center', padding: mobileSpace.lg },
+export const createVaultManagerStyles = (mobileColors: MobileColors) => StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: mobileColors.overlay, justifyContent: 'center', alignItems: 'center', padding: mobileSpace.lg },
   panel: { width: '100%', maxWidth: 560, maxHeight: '90%', borderRadius: 8, overflow: 'hidden' },
   content: { padding: mobileSpace.lg, gap: mobileSpace.lg },
   section: { gap: mobileSpace.sm },

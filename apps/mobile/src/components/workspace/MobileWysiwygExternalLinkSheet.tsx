@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace } from '../../ui/tokens'
+import { mobileSpace } from '../../ui/tokens'
 import {
   nativeWysiwygCanSaveExternalLink,
   nativeWysiwygNormalizedExternalLink,
@@ -23,6 +25,7 @@ export function MobileWysiwygExternalLinkSheet({
   onClose,
   onRemove,
 }: MobileWysiwygExternalLinkSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const [url, setUrl] = useState(initialUrl)
   const normalizedUrl = useMemo(() => nativeWysiwygNormalizedExternalLink(url), [url])
   const canSave = nativeWysiwygCanSaveExternalLink(url)
@@ -70,33 +73,36 @@ export function MobileWysiwygExternalLinkSheet({
   )
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  content: {
-    gap: mobileSpace.md,
-    padding: mobileSpace.md,
-  },
-  footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-  },
-  host: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    padding: mobileSpace.md,
-  },
-  panel: {
-    borderColor: mobileColors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: mobileColors.text,
-    shadowOffset: { height: 12, width: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-  },
-  removeButton: {
-    alignSelf: 'flex-start',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    content: {
+      gap: mobileSpace.md,
+      padding: mobileSpace.md,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+    },
+    host: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'flex-end',
+      padding: mobileSpace.md,
+    },
+    panel: {
+      borderColor: mobileColors.border,
+      borderWidth: StyleSheet.hairlineWidth,
+      shadowColor: mobileColors.text,
+      shadowOffset: { height: 12, width: 0 },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+    },
+    removeButton: {
+      alignSelf: 'flex-start',
+    },
+  })
+  return { mobileColors, styles }
+}

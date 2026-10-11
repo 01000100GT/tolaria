@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo } from 'react'
 import { CheckCircle } from 'phosphor-react-native'
 import { ScrollView, StyleSheet, View } from 'react-native'
@@ -5,7 +7,7 @@ import { Button } from '../ui/button'
 import { pluralizeType } from '../../../../../src/shared/typeLabels'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileTypeDefinitions } from '../../workspace/mobileWorkspaceModel'
 import { MobileTypeIcon } from './MobileWorkspaceIcons'
 
@@ -18,6 +20,7 @@ export function MobileTypeVisibilityEditor({
   onToggleTypeVisibility,
   typeDefinitions,
 }: MobileTypeVisibilityEditorProps) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const typeEntries = useMemo(() => sortedTypeDefinitionEntries(typeDefinitions), [typeDefinitions])
 
   return (
@@ -61,6 +64,7 @@ export function MobileTypeVisibilityEditor({
 }
 
 function EmptyTypeVisibilityState() {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.emptyState}>
       <Text style={styles.emptyText}>{mobileText('command.noMatches')}</Text>
@@ -101,48 +105,51 @@ function slugifyTypeVisibilityId(typeName: string) {
   return typeName.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/g, '') || 'type'
 }
 
-const styles = StyleSheet.create({
-  content: {
-    gap: mobileSpace.md,
-    padding: mobileSpace.md,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 96,
-  },
-  emptyText: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.body,
-  },
-  visibilityDescription: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-    lineHeight: 16,
-  },
-  visibilityLabel: {
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  visibilityRow: {
-    alignItems: 'center',
-    borderRadius: 6,
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    padding: mobileSpace.sm,
-    height: 52,
-    justifyContent: 'flex-start',
-  },
-  visibilitySection: {
-    borderColor: mobileColors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    gap: mobileSpace.xs,
-    paddingTop: mobileSpace.md,
-  },
-  visibilityText: {
-    flex: 1,
-    gap: 2,
-    minWidth: 0,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    content: {
+      gap: mobileSpace.md,
+      padding: mobileSpace.md,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 96,
+    },
+    emptyText: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.body,
+    },
+    visibilityDescription: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+      lineHeight: 16,
+    },
+    visibilityLabel: {
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    visibilityRow: {
+      alignItems: 'center',
+      borderRadius: 6,
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      padding: mobileSpace.sm,
+      height: 52,
+      justifyContent: 'flex-start',
+    },
+    visibilitySection: {
+      borderColor: mobileColors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      gap: mobileSpace.xs,
+      paddingTop: mobileSpace.md,
+    },
+    visibilityText: {
+      flex: 1,
+      gap: 2,
+      minWidth: 0,
+    },
+  })
+  return { mobileColors, styles }
+}

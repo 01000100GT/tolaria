@@ -1,10 +1,12 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { CheckCircle } from 'phosphor-react-native'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 import { MobileTextInput } from '../../ui/MobileTextInput'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileNote, MobileSidebarIcon, MobileTone } from '../../workspace/mobileWorkspaceModel'
 import {
   mobileTypeSchemaPropertyValueText,
@@ -66,6 +68,7 @@ type MobileTypeSectionEditorProps = {
 }
 
 export function MobileTypeSectionEditor(props: MobileTypeSectionEditorProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.editor} testID="workspace-type-section-editor">
       <Text style={styles.typeName} testID="workspace-type-section-name">{props.typeName}</Text>
@@ -124,6 +127,7 @@ export function MobileTypeSectionEditor(props: MobileTypeSectionEditorProps) {
 }
 
 function TypeSchemaPropertiesEditor(props: MobileTypeSectionEditorProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.section} testID="workspace-type-schema-properties">
       <SectionLabel label={mobileText('inspector.title.properties')} />
@@ -168,6 +172,7 @@ function TypeSchemaPropertiesEditor(props: MobileTypeSectionEditorProps) {
 }
 
 function TypeSchemaRelationshipsEditor(props: MobileTypeSectionEditorProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.section} testID="workspace-type-schema-relationships">
       <SectionLabel label={mobileText('inspector.relationship.addRelationship').replace(/^\+\s*/, '')} />
@@ -218,6 +223,7 @@ function TypeSchemaRelationshipsEditor(props: MobileTypeSectionEditorProps) {
 }
 
 function SectionLabel({ label }: { label: string }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return <Text style={styles.label}>{label}</Text>
 }
 
@@ -232,6 +238,7 @@ function SchemaRow({
   testID: string
   value: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.schemaRow} testID={testID}>
       <Text numberOfLines={1} style={styles.schemaKey}>{label}</Text>
@@ -248,6 +255,7 @@ function VisibilityToggle({
   onChange: (value: boolean) => void
   visible: boolean
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <Pressable
       accessibilityLabel={mobileText('sidebar.section.showInSidebar')}
@@ -267,76 +275,79 @@ function VisibilityToggle({
   )
 }
 
-const styles = StyleSheet.create({
-  editor: {
-    gap: mobileSpace.md,
-  },
-  label: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  pressed: {
-    backgroundColor: mobileColors.graySoft,
-  },
-  rowText: {
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-  },
-  section: {
-    gap: mobileWorkspaceFormSectionLayoutContract.gap,
-    borderColor: mobileColors.border,
-    borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: mobileWorkspaceFormSectionLayoutContract.padding,
-  },
-  schemaInputs: {
-    gap: mobileSpace.sm,
-  },
-  schemaKey: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-    fontWeight: '500',
-  },
-  schemaRow: {
-    minHeight: 34,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderRadius: 6,
-    backgroundColor: mobileColors.graySoft,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.xs,
-  },
-  schemaValue: {
-    minWidth: 0,
-    flex: 1,
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-  templateInput: {
-    minHeight: 92,
-    fontFamily: 'Menlo',
-    fontSize: mobileType.caption,
-    lineHeight: 18,
-    paddingTop: mobileSpace.sm,
-  },
-  toggleRow: {
-    minHeight: 34,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: mobileSpace.sm,
-    borderRadius: 6,
-    paddingHorizontal: mobileSpace.sm,
-  },
-  typeName: {
-    color: mobileColors.textMuted,
-    fontSize: mobileType.caption,
-  },
-})
-
 function schemaSlug(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '') || 'field'
+}
+
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    editor: {
+      gap: mobileSpace.md,
+    },
+    label: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    pressed: {
+      backgroundColor: mobileColors.graySoft,
+    },
+    rowText: {
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+    },
+    section: {
+      gap: mobileWorkspaceFormSectionLayoutContract.gap,
+      borderColor: mobileColors.border,
+      borderRadius: mobileWorkspaceFormSectionLayoutContract.radius,
+      borderWidth: StyleSheet.hairlineWidth,
+      padding: mobileWorkspaceFormSectionLayoutContract.padding,
+    },
+    schemaInputs: {
+      gap: mobileSpace.sm,
+    },
+    schemaKey: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+      fontWeight: '500',
+    },
+    schemaRow: {
+      minHeight: 34,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderRadius: 6,
+      backgroundColor: mobileColors.graySoft,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.xs,
+    },
+    schemaValue: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+    templateInput: {
+      minHeight: 92,
+      fontFamily: 'Menlo',
+      fontSize: mobileType.caption,
+      lineHeight: 18,
+      paddingTop: mobileSpace.sm,
+    },
+    toggleRow: {
+      minHeight: 34,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.sm,
+      borderRadius: 6,
+      paddingHorizontal: mobileSpace.sm,
+    },
+    typeName: {
+      color: mobileColors.textMuted,
+      fontSize: mobileType.caption,
+    },
+  })
+  return { mobileColors, styles }
 }

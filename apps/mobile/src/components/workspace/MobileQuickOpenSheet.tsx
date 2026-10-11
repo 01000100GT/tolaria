@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { FilePlus } from 'phosphor-react-native'
 import {
@@ -14,7 +16,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import {
   mobileQuickOpenMoveIndex,
   mobileQuickOpenResults,
@@ -34,6 +36,7 @@ type MobileQuickOpenSheetProps = {
 }
 
 export function MobileQuickOpenSheet(props: MobileQuickOpenSheetProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const results = useMemo(
@@ -95,6 +98,7 @@ function QuickOpenResults({ canCreate, createTitle, notes, onCreate, onSelect, s
   selectedIndex: number
   typeDefinitions?: MobileTypeDefinitions
 }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <FlatList
       contentContainerStyle={styles.resultList}
@@ -105,7 +109,7 @@ function QuickOpenResults({ canCreate, createTitle, notes, onCreate, onSelect, s
       keyExtractor={(note) => note.id}
       ListEmptyComponent={<QuickOpenEmptyState canCreate={canCreate} createTitle={createTitle} onCreate={onCreate} />}
       renderItem={({ index, item: note }) => (
-        <MobileListRow chips={<QuickOpenNoteChips note={note} />} selected={index === selectedIndex} selectedBackgroundColor={noteTypeSoftColor(note.typeTone)} subtitle={note.snippet} testID={`workspace-search-result-${note.id}`} title={note.title} trailing={<MobileTypeIcon size={16} tone={note.typeTone} type={note.type} typeDefinitions={typeDefinitions} />} onPress={() => onSelect(note)} />
+        <MobileListRow chips={<QuickOpenNoteChips note={note} />} selected={index === selectedIndex} selectedBackgroundColor={noteTypeSoftColor(note.typeTone, mobileColors)} subtitle={note.snippet} testID={`workspace-search-result-${note.id}`} title={note.title} trailing={<MobileTypeIcon size={16} tone={note.typeTone} type={note.type} typeDefinitions={typeDefinitions} />} onPress={() => onSelect(note)} />
       )}
       removeClippedSubviews
       style={styles.resultScroll}
@@ -116,6 +120,7 @@ function QuickOpenResults({ canCreate, createTitle, notes, onCreate, onSelect, s
 }
 
 function QuickOpenEmptyState({ canCreate, createTitle, onCreate }: { canCreate: boolean; createTitle: string; onCreate: () => void }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <>
       <View style={styles.emptyState}><Text style={styles.emptyText}>{mobileText('noteList.empty.noMatching')}</Text></View>
@@ -125,6 +130,7 @@ function QuickOpenEmptyState({ canCreate, createTitle, onCreate }: { canCreate: 
 }
 
 function QuickOpenCreateAction({ onPress, title }: { onPress: () => void; title: string }) {
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const label = mobileText('noteList.quickOpenCreate').replace('{title}', title)
   return (
     <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [styles.actionRow, pressed ? styles.actionRowPressed : null]} testID="workspace-search-create-note" onPress={onPress}>
@@ -135,6 +141,7 @@ function QuickOpenCreateAction({ onPress, title }: { onPress: () => void; title:
 }
 
 function QuickOpenNoteChips({ note }: { note: MobileNote }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.chipRow}>
       <MobileChip density="list" label={note.type} tone={chipTone(note.typeTone)} />
@@ -144,14 +151,17 @@ function QuickOpenNoteChips({ note }: { note: MobileNote }) {
   )
 }
 
-const styles = StyleSheet.create({
-  actionRow: { alignItems: 'center', alignSelf: 'stretch', flexDirection: 'row', gap: mobileSpace.sm, minWidth: 0, paddingHorizontal: mobileSpace.sm, paddingVertical: mobileSpace.sm, width: '100%' },
-  actionRowPressed: { backgroundColor: mobileColors.control },
-  actionText: { color: mobileColors.text, flex: 1, flexShrink: 1, fontSize: mobileType.body, minWidth: 0 },
-  chipRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: mobileSpace.xs },
-  content: { alignSelf: 'stretch', flexShrink: 1, gap: mobileSpace.md, minHeight: 0, padding: mobileSpace.lg },
-  emptyState: { alignItems: 'center', justifyContent: 'center', minHeight: 96 },
-  emptyText: { color: mobileColors.textMuted, fontSize: mobileType.body },
-  resultList: { borderColor: mobileColors.border, borderTopWidth: StyleSheet.hairlineWidth },
-  resultScroll: { flexShrink: 1, minHeight: 0 },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionRow: { alignItems: 'center', alignSelf: 'stretch', flexDirection: 'row', gap: mobileSpace.sm, minWidth: 0, paddingHorizontal: mobileSpace.sm, paddingVertical: mobileSpace.sm, width: '100%' },
+    actionRowPressed: { backgroundColor: mobileColors.control },
+    actionText: { color: mobileColors.text, flex: 1, flexShrink: 1, fontSize: mobileType.body, minWidth: 0 },
+    chipRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: mobileSpace.xs },
+    content: { alignSelf: 'stretch', flexShrink: 1, gap: mobileSpace.md, minHeight: 0, padding: mobileSpace.lg },
+    emptyState: { alignItems: 'center', justifyContent: 'center', minHeight: 96 },
+    emptyText: { color: mobileColors.textMuted, fontSize: mobileType.body },
+    resultList: { borderColor: mobileColors.border, borderTopWidth: StyleSheet.hairlineWidth },
+    resultScroll: { flexShrink: 1, minHeight: 0 },
+  })
+  return { mobileColors, styles }
+}

@@ -1,9 +1,10 @@
+import { useMobileStyles } from './theme/useMobileTheme'
+import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Platform, StyleSheet, type StyleProp, type ViewStyle } from 'react-native'
 import { Button, type ButtonProps } from '../components/ui/button'
 import { Text } from '../components/ui/text'
 import { cn } from '../components/ui/utils'
-import { mobileColors } from './tokens'
 
 type MobileButtonVariant = 'primary' | 'secondary' | 'ghost'
 type MobileButtonDensity = 'default' | 'compact' | 'status'
@@ -25,6 +26,7 @@ type MobileButtonProps = {
 }
 
 export function MobileButton(props: MobileButtonProps) {
+  const { styles, buttonDensityStyles, buttonVariantStyles, labelDensityStyles, labelColorStyles } = useMobileStyles(createThemeStyles)
   const {
     accessibilityLabel,
     accessibilityRole,
@@ -106,89 +108,92 @@ const labelDensityClassNames: Record<MobileButtonDensity, string> = {
   status: 'text-xs font-medium',
 }
 
-const styles = StyleSheet.create({
-  base: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  default: {
-    minHeight: 36,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  compact: {
-    minHeight: 32,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  labelDefault: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  labelCompact: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  labelDanger: {
-    color: mobileColors.red,
-  },
-  labelStatus: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  labelGhost: {
-    color: mobileColors.textMuted,
-  },
-  labelPrimary: {
-    color: mobileColors.textInverse,
-  },
-  labelSecondary: {
-    color: mobileColors.text,
-  },
-  primary: {
-    backgroundColor: mobileColors.primary,
-  },
-  secondary: {
-    backgroundColor: mobileColors.control,
-  },
-  status: {
-    minHeight: 0,
-    height: 24,
-    borderRadius: 4,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    base: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 6,
+    },
+    default: {
+      minHeight: 36,
+      borderRadius: 6,
+      paddingHorizontal: 12,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    compact: {
+      minHeight: 32,
+      borderRadius: 6,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    labelDefault: {
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    labelCompact: {
+      fontSize: 12,
+      fontWeight: '500',
+    },
+    labelDanger: {
+      color: mobileColors.red,
+    },
+    labelStatus: {
+      fontSize: 12,
+      fontWeight: '500',
+    },
+    labelGhost: {
+      color: mobileColors.textMuted,
+    },
+    labelPrimary: {
+      color: mobileColors.textInverse,
+    },
+    labelSecondary: {
+      color: mobileColors.text,
+    },
+    primary: {
+      backgroundColor: mobileColors.primary,
+    },
+    secondary: {
+      backgroundColor: mobileColors.control,
+    },
+    status: {
+      minHeight: 0,
+      height: 24,
+      borderRadius: 4,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
+  })
 
-const buttonDensityStyles = {
-  compact: styles.compact,
-  default: styles.default,
-  status: styles.status,
-} as const
+  const buttonDensityStyles = {
+    compact: styles.compact,
+    default: styles.default,
+    status: styles.status,
+  } as const
 
-const labelColorStyles = {
-  ghost: styles.labelGhost,
-  primary: styles.labelPrimary,
-  secondary: styles.labelSecondary,
-} as const
+  const labelColorStyles = {
+    ghost: styles.labelGhost,
+    primary: styles.labelPrimary,
+    secondary: styles.labelSecondary,
+  } as const
 
-const labelDensityStyles = {
-  compact: styles.labelCompact,
-  default: styles.labelDefault,
-  status: styles.labelStatus,
-} as const
+  const labelDensityStyles = {
+    compact: styles.labelCompact,
+    default: styles.labelDefault,
+    status: styles.labelStatus,
+  } as const
 
-const buttonVariantStyles = {
-  ghost: styles.ghost,
-  primary: styles.primary,
-  secondary: styles.secondary,
-} as const
+  const buttonVariantStyles = {
+    ghost: styles.ghost,
+    primary: styles.primary,
+    secondary: styles.secondary,
+  } as const
+  return { mobileColors, styles, buttonDensityStyles, labelColorStyles, labelDensityStyles, buttonVariantStyles }
+}

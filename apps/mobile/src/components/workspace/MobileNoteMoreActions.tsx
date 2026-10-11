@@ -1,3 +1,5 @@
+import { useMobileStyles } from '../../ui/theme/useMobileTheme'
+import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import {
@@ -23,7 +25,7 @@ import {
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
+import { mobileSpace, mobileType } from '../../ui/tokens'
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import {
   isMobileMarkdownActionNote,
@@ -87,6 +89,7 @@ function NonMarkdownFileActionRows({
   onOpenReplaceInNote,
   onRevealFile,
 }: Pick<NoteMoreActionRowsProps, 'note' | 'onClose' | 'onCopyFilePath' | 'onDeleteNote' | 'onEnterNeighborhood' | 'onOpenFileInDefaultApp' | 'onOpenFindInNote' | 'onOpenReplaceInNote' | 'onRevealFile'>) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       {isMobileTextLikeActionNote(note) ? (
@@ -134,6 +137,7 @@ function NoteHistoryActionRows({
   onRedoWorkspaceEdit: () => void
   onUndoWorkspaceEdit: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       {canUndoWorkspaceEdit ? (
@@ -175,6 +179,7 @@ function NoteStateActionRows({
   onSetOrganized: (organized: boolean) => void
   onToggleFavorite: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       <NoteFlagActionRow
@@ -221,22 +226,16 @@ function NoteEditorActionRows({
   onOpenFindInNote: () => void
   onOpenReplaceInNote: () => void
 }) {
-  return (
-    <>
-      <ActionRow
-        icon={<MagnifyingGlass color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
-        label={mobileText('command.note.findInNote')}
-        testID="workspace-action-find-in-note"
-        onPress={onOpenFindInNote}
-      />
-      <ActionRow
-        icon={<TextAa color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
-        label={mobileText('command.note.replaceInNote')}
-        testID="workspace-action-replace-in-note"
-        onPress={onOpenReplaceInNote}
-      />
-    </>
-  )
+  const { mobileColors } = useMobileStyles(createThemeStyles)
+  const actions = [
+    { Icon: MagnifyingGlass, label: 'command.note.findInNote', id: 'find', onPress: onOpenFindInNote },
+    { Icon: TextAa, label: 'command.note.replaceInNote', id: 'replace', onPress: onOpenReplaceInNote },
+  ] as const
+  return actions.map(({ Icon, label, id, onPress }) => <ActionRow
+    key={id}
+    icon={<Icon color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
+    label={mobileText(label)} testID={`workspace-action-${id}-in-note`} onPress={onPress}
+  />)
 }
 
 function NoteNavigationActionRows({
@@ -248,6 +247,7 @@ function NoteNavigationActionRows({
   onClose: () => void
   onEnterNeighborhood: (noteId: string) => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <ActionRow
       icon={<MapTrifold color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />}
@@ -270,6 +270,7 @@ function NoteIconActionRows({
   onOpenSetNoteIcon: () => void
   onRemoveNoteIcon: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       <ActionRow
@@ -307,6 +308,7 @@ function NoteFileActionRows({
   onRevealFile: () => void
   onRenameNoteFileToTitle: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       <ActionRow
@@ -350,6 +352,7 @@ function NotePathActionRows({
   onCopyFilePath,
   onRevealFile,
 }: Pick<NoteMoreActionRowsProps, 'onClose' | 'onCopyFilePath' | 'onRevealFile'>) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <>
       <ActionRow
@@ -383,6 +386,7 @@ function NoteWidthActionRow({
   onClose: () => void
   onToggleNoteWidth: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <ActionRow
       icon={noteWide
@@ -430,6 +434,7 @@ function DeleteActionRow({
   onClose: () => void
   onDeleteNote: () => void
 }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
     <ActionRow
       destructive
@@ -457,6 +462,7 @@ function ActionRow({
   onPress: () => void
   testID?: string
 }) {
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <Pressable accessibilityLabel={label} accessibilityRole="button" style={({ pressed }) => [styles.actionRow, pressed ? styles.actionRowPressed : null]} testID={testID} onPress={onPress}>
       <View style={styles.actionRowContent}>
@@ -467,36 +473,39 @@ function ActionRow({
   )
 }
 
-const styles = StyleSheet.create({
-  actionIcon: {
-    width: desktopToolbarActionParity.iconSize,
-    alignItems: 'center',
-  },
-  actionRow: {
-    minWidth: 0,
-    alignSelf: 'stretch',
-    width: '100%',
-    borderRadius: 4,
-    paddingHorizontal: mobileSpace.sm,
-    paddingVertical: mobileSpace.sm,
-  },
-  actionRowContent: {
-    minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: mobileSpace.sm,
-  },
-  actionRowPressed: {
-    backgroundColor: mobileColors.control,
-  },
-  actionText: {
-    minWidth: 0,
-    flex: 1,
-    flexShrink: 1,
-    color: mobileColors.text,
-    fontSize: mobileType.body,
-  },
-  actionTextDestructive: {
-    color: mobileColors.red,
-  },
-})
+function createThemeStyles(mobileColors: MobileColors) {
+  const styles = StyleSheet.create({
+    actionIcon: {
+      width: desktopToolbarActionParity.iconSize,
+      alignItems: 'center',
+    },
+    actionRow: {
+      minWidth: 0,
+      alignSelf: 'stretch',
+      width: '100%',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.sm,
+      paddingVertical: mobileSpace.sm,
+    },
+    actionRowContent: {
+      minWidth: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: mobileSpace.sm,
+    },
+    actionRowPressed: {
+      backgroundColor: mobileColors.control,
+    },
+    actionText: {
+      minWidth: 0,
+      flex: 1,
+      flexShrink: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.body,
+    },
+    actionTextDestructive: {
+      color: mobileColors.red,
+    },
+  })
+  return { mobileColors, styles }
+}

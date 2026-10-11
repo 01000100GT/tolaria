@@ -1,9 +1,9 @@
 import type { MobileTone } from '../../workspace/mobileWorkspaceModel'
-import { mobileColors } from '../../ui/tokens'
+import { mobilePalettes, type MobileColors } from '../../ui/theme/mobilePalette'
 
 export { chipTone, statusTone, tagTone, type MobileTagTone } from '../../workspace/mobileNoteDisplay'
 
-export function noteTypeColor(tone: MobileTone) {
+export function noteTypeColor(tone: MobileTone, mobileColors: MobileColors = mobilePalettes.light) {
   if (tone === 'blue') return mobileColors.blue
   if (tone === 'green') return mobileColors.green
   if (tone === 'orange') return mobileColors.orange
@@ -14,7 +14,7 @@ export function noteTypeColor(tone: MobileTone) {
   return mobileColors.textMuted
 }
 
-export function noteTypeSoftColor(tone: MobileTone) {
+export function noteTypeSoftColor(tone: MobileTone, mobileColors: MobileColors = mobilePalettes.light) {
   if (tone === 'blue') return mobileColors.blueSoft
   if (tone === 'green') return mobileColors.greenSoft
   if (tone === 'orange') return mobileColors.orangeSoft

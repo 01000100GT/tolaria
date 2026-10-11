@@ -480,6 +480,9 @@ importers:
       babel-preset-expo:
         specifier: ^54.0.11
         version: 54.0.12(@babel/core@7.29.6)(@babel/runtime@7.29.7)(expo@54.0.36)(react-refresh@0.18.0)
+      postcss:
+        specifier: 8.5.25
+        version: 8.5.25
       prettier-plugin-tailwindcss:
         specifier: ^0.5.14
         version: 0.5.14(prettier@3.9.6)
