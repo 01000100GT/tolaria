@@ -1202,5 +1202,18 @@
   "editor.formatting.headings": "Zahałoŭki",
   "editor.formatting.lists": "Spisy",
   "editor.formatting.insert": "Ustavić",
-  "editor.formatting.more": "Bolš farmatavańnia"
+  "editor.formatting.more": "Bolš farmatavańnia",
+  "mobile.settings.saveFailed": "Nie ŭdałosia zachavać nałady. Papiarednija nałady nie źmianilisia.",
+  "mobile.settings.loadFailed": "Nie ŭdałosia pračytać nałady. Paŭtarycie sprobu pierad źmienami.",
+  "mobile.settings.autoGitForeground": "AutoGit pracuje paśla 30-sekundnaj paŭzy ŭ redahavańni, kali Tolaria aktyŭnaja.",
+  "mobile.settings.scale": "Pamier interfejsu",
+  "mobile.settings.scaleDefault": "Standartny",
+  "mobile.settings.scaleLarger": "Bolšy (110%)",
+  "mobile.git.commitMessage": "Paviedamleńnie kamitu",
+  "mobile.git.commitAndSync": "Zrabić kamit i sinchranizavać",
+  "mobile.git.uncommitted": "U ručnym režymie zrabić kamit lakalnych źmienaŭ treba pierad sinchranizacyjaj.",
+  "mobile.git.emptyCommitMessage": "Uviadzicie paviedamleńnie kamitu.",
+  "mobile.git.localCommit": "Kamit stvorany lakalna",
+  "mobile.git.auto": "Aŭtamatyčny",
+  "mobile.git.manual": "Ručny"
 }

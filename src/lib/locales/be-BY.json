@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub не адказаў своечасова. Паўтарыце спробу, калі ваша злучэнне будзе стабільным.",
   "mobile.vaults.credentialFailed": "Не ўдалося прачытаць або абнавіць вашы захаваныя даныя для ўваходу ў GitHub. Паўтарыце спробу.",
   "mobile.vaults.saveFailed": "Не ўдалося захаваць лакальныя змены. Паўтарыце спробу захавання, перш чым пераключаць або сінхранізаваць сховішчы.",
-  "mobile.vaults.connectedAs": "Падключана як {login}"
+  "mobile.vaults.connectedAs": "Падключана як {login}",
+  "mobile.settings.saveFailed": "Не ўдалося захаваць налады. Вашы папярэднія выбары засталіся без зменаў.",
+  "mobile.settings.loadFailed": "Не ўдалося прачытаць налады. Паўтарыце спробу, перш чым змяняць налады.",
+  "mobile.settings.autoGitForeground": "AutoGit запускаецца пасля 30-секунднай паўзы ў рэдагаванні, калі Tolaria актыўная.",
+  "mobile.settings.scale": "Памер інтэрфейсу",
+  "mobile.settings.scaleDefault": "Стандартны",
+  "mobile.settings.scaleLarger": "Большы (110%)",
+  "mobile.git.commitMessage": "Паведамленне каміта",
+  "mobile.git.commitAndSync": "Зрабіць фіксацыю і сінхранізаваць",
+  "mobile.git.uncommitted": "Зафіксуйце свае лакальныя змены перад сінхранізацыяй у ручным рэжыме.",
+  "mobile.git.emptyCommitMessage": "Увядзіце паведамленне аб фіксацыі.",
+  "mobile.git.localCommit": "Фіксавана лакальна",
+  "mobile.git.auto": "Аўтаматычна",
+  "mobile.git.manual": "Уручную"
 }

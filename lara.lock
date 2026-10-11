@@ -1205,3 +1205,16 @@ files:
     mobile.vaults.credentialFailed: 4eba5a7232ecd752be47dc911e50b528
     mobile.vaults.saveFailed: 842e9ec5582d70d26c2838f147d7049e
     mobile.vaults.connectedAs: 4b5043f870431a18a158664675e94cc6
+    mobile.settings.saveFailed: 6c7c9c0a5a352435d55583fc3095d6e8
+    mobile.settings.loadFailed: ca5e1b7315367613388915f91785a4cf
+    mobile.settings.autoGitForeground: f3d51fb15349a4ae1ad8daa999a93931
+    mobile.settings.scale: 168bab01e06b4267f0bb861ade5ffd42
+    mobile.settings.scaleDefault: eb6d8ae6f20283755b339c0dc273988b
+    mobile.settings.scaleLarger: 7ae8c2d708f86350f8a623bf6dcb04db
+    mobile.git.commitMessage: 70e1850bd2f17ec3ce4af02796fc7043
+    mobile.git.commitAndSync: 20f5083e1b1f9e9e687f33f0f5c59b12
+    mobile.git.uncommitted: 2c879e52c84a087238096145c82c8fc7
+    mobile.git.emptyCommitMessage: 40cf486fdcafe0a357e44e58f5949fa1
+    mobile.git.localCommit: 70757f4bf8ab23fd7cd2ccf7005ef2f6
+    mobile.git.auto: 086247a9b57fde6eefee2a0c4752242d
+    mobile.git.manual: e1ba155a9f2e8c3be94020eef32a0301

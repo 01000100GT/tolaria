@@ -4,8 +4,8 @@ import { withSavedWorkspace } from './workspaceWriteQueue'
 type SavedVaultOperation = {
   editors: ReturnType<typeof createWorkspaceSyncEditors>
   rootUri?: string
-  // Return cancelled only when the operation has not changed any workspace files.
-  run: () => Promise<undefined | 'cancelled'>
+  // Unchanged permits Git metadata writes, but guarantees note files are intact.
+  run: () => Promise<undefined | 'cancelled' | 'unchanged'>
   refresh: (selectedNoteId?: string) => void
 }
 
@@ -19,7 +19,8 @@ export async function runSavedVaultOperation({ editors, rootUri, run, refresh }:
     if (rootUri) await withSavedWorkspace(rootUri, async () => {})
     saved = true
     cancelReplacement = editors.beginReplacement()
-    cancelled = await run() === 'cancelled'
+    const result = await run()
+    cancelled = result === 'cancelled' || result === 'unchanged'
   } finally {
     if (cancelled) cancelReplacement()
     // Changed or possibly changed files require fresh editors, even after failure.

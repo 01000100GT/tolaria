@@ -1,0 +1,33 @@
+export type MobileSettings = {
+  autoGit: boolean
+  analytics: boolean
+  theme: 'system' | 'light' | 'dark'
+  uiScale: 1 | 1.1
+}
+
+export const defaultMobileSettings: MobileSettings = {
+  autoGit: false, analytics: false, theme: 'system', uiScale: 1.1,
+}
+
+export function parseMobileSettings(raw: string | null): MobileSettings {
+  if (raw === null) return { ...defaultMobileSettings }
+  const value: unknown = JSON.parse(raw)
+  if (!isRecord(value)) throw new Error('invalidSettings')
+  return {
+    autoGit: setting(value.autoGit, [true, false], defaultMobileSettings.autoGit),
+    analytics: setting(value.analytics, [true, false], defaultMobileSettings.analytics),
+    theme: setting(value.theme, ['system', 'light', 'dark'], defaultMobileSettings.theme),
+    uiScale: setting(value.uiScale, [1, 1.1], defaultMobileSettings.uiScale),
+  }
+}
+
+function setting<T extends string | number | boolean>(value: unknown, allowed: T[], fallback: T): T {
+  if (value === undefined) return fallback
+  const match = allowed.find((candidate) => candidate === value)
+  if (match === undefined) throw new Error('invalidSettings')
+  return match
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}

@@ -23,6 +23,7 @@ import { publishNativeWysiwygMutationProof } from './MobileWysiwygMutationProbe.
 import { publishNativeWysiwygTableCommandMutationProof } from './MobileWysiwygTableCommandMutationProbe.native'
 import { createEditorSaveGate } from '../../workspace/editorSaveGate'
 import { useWorkspaceSyncEditor } from '../../workspace/workspaceSyncEditors'
+import { readReadyEditorDocument } from '../../workspace/readyEditorDocument'
 
 type JsonReadableEditorBridge = EditorBridge & {
   getJSON: () => Promise<unknown>
@@ -68,15 +69,7 @@ async function readEditorJson(options: FlushEditorDocumentOptions) {
   const editor = options.refs.editorRef.current
   if (!isJsonReadableEditorBridge(editor)) throw new Error('editorNotReady')
 
-  let timeout: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      editor.getJSON(),
-      new Promise<never>((_resolve, reject) => { timeout = setTimeout(() => reject(new Error('editorReadTimedOut')), 10_000) }),
-    ])
-  } finally {
-    clearTimeout(timeout)
-  }
+  return readReadyEditorDocument({ isReady: () => editor.getEditorState().isReady === true, read: () => editor.getJSON() })
 }
 
 function writeEditorJsonToMarkdown(options: FlushEditorDocumentOptions, json: unknown) {

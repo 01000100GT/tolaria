@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub tidak merespons tepat waktu. Coba lagi saat koneksi Anda stabil.",
   "mobile.vaults.credentialFailed": "Tidak dapat membaca atau memperbarui info masuk GitHub Anda yang tersimpan. Silakan coba lagi.",
   "mobile.vaults.saveFailed": "Tidak dapat menyimpan perubahan lokal. Coba simpan lagi sebelum beralih atau menyinkronkan vault.",
-  "mobile.vaults.connectedAs": "Terhubung sebagai {login}"
+  "mobile.vaults.connectedAs": "Terhubung sebagai {login}",
+  "mobile.settings.saveFailed": "Tidak dapat menyimpan pengaturan. Pilihan Anda sebelumnya tidak berubah.",
+  "mobile.settings.loadFailed": "Tidak dapat membaca pengaturan. Coba lagi sebelum mengubah preferensi.",
+  "mobile.settings.autoGitForeground": "AutoGit berjalan setelah jeda pengeditan selama 30 detik saat Tolaria aktif.",
+  "mobile.settings.scale": "Ukuran antarmuka",
+  "mobile.settings.scaleDefault": "Standar",
+  "mobile.settings.scaleLarger": "Lebih besar (110%)",
+  "mobile.git.commitMessage": "Pesan commit",
+  "mobile.git.commitAndSync": "Lakukan commit dan sinkronkan",
+  "mobile.git.uncommitted": "Lakukan commit perubahan lokal Anda sebelum menyinkronkan dalam mode manual.",
+  "mobile.git.emptyCommitMessage": "Masukkan pesan commit.",
+  "mobile.git.localCommit": "Dikomit secara lokal",
+  "mobile.git.auto": "Otomatis",
+  "mobile.git.manual": "Manual"
 }

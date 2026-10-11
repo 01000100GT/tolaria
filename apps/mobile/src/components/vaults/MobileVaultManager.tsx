@@ -12,6 +12,7 @@ import type { useMobileVaults } from '../../workspace/git/useMobileVaults'
 import { githubRepositoryUrl } from '../../workspace/git/githubRepositoryUrl'
 import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
 import { MobileGitHubAccount } from './MobileGitHubAccount'
+import { MobileGitControls } from './MobileGitControls'
 import { vaultManagerStyles as styles } from './vaultManagerStyles'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
@@ -27,6 +28,7 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
         </MobileToolbar>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <VaultOperationStatus manager={manager} />
+          <MobileGitControls manager={manager} />
           <View style={styles.section}>
             <MobileButton disabled={manager.busy} label={mobileText('status.vault.openLocal')} icon={<FolderOpen size={16} color={mobileColors.text} />} onPress={() => { void manager.openFolder() }} />
             <Text style={styles.detail}>{mobileText(optionalNativeWorkspaceAccessModule() ? 'mobile.vaults.localCopy' : 'mobile.vaults.sessionFolder')}</Text>
@@ -66,7 +68,7 @@ function VaultOperationStatus({ manager }: { manager: VaultManager }) {
     {manager.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(manager.error)}</Text>}
     {manager.catalog.error && <Text style={styles.error}>{mobileText('mobile.vaults.catalogFailed')}</Text>}
     {manager.status === 'diverged' && <Text style={styles.error}>{mobileText('mobile.vaults.diverged')}</Text>}
-    {(manager.active.git || manager.status === 'saveFailed') && <MobileButton disabled={manager.busy} label={mobileText(manager.status === 'saveFailed' ? 'pulse.retry' : 'status.sync.now')} onPress={() => { void manager.sync() }} testID="vault-manager-retry" />}
+    {manager.status === 'saveFailed' && <MobileButton disabled={manager.busy} label={mobileText('pulse.retry')} onPress={() => { void manager.sync() }} testID="vault-manager-retry" />}
   </View>
 }
 

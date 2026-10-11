@@ -11,7 +11,8 @@ export { githubRepositoryUrl } from './githubRepositoryUrl'
 export function createGitVault(options: GitVaultContext) {
   const context = { ...options, cache: options.cache ?? {} }
   return {
-    checkpoint: (author: GitAuthor) => checkpoint(context, author),
+    checkpoint: (author: GitAuthor, message?: string) => checkpoint(context, author, message),
+    requireClean: () => requireClean(context),
     integrate: (remoteOid: string) => integrate(context, remoteOid),
     relationship: (remoteOid: string) => relationship(context, remoteOid),
     recover: () => recoverGitCheckout(context),
@@ -22,16 +23,26 @@ async function changes(context: GitVaultContext) {
   return (await git.statusMatrix(context)).filter(([, head, worktree, stage]) => head !== worktree || head !== stage)
 }
 
-async function checkpoint(context: GitVaultContext, author: GitAuthor) {
+async function refreshedChanges(context: GitVaultContext) {
   await recoverGitCheckout(context)
   // Do not trust second-resolution stat matches for rapid equal-length edits.
   await git.add({ ...context, filepath: '.', parallel: false })
-  const changed = await changes(context)
+  return changes(context)
+}
+
+async function requireClean(context: GitVaultContext) {
+  if ((await refreshedChanges(context)).length) throw new Error('uncommittedChanges')
+  return { changedFiles: 0, oid: await git.resolveRef({ ...context, ref: 'HEAD' }) }
+}
+
+async function checkpoint(context: GitVaultContext, author: GitAuthor, message = 'Update vault from Tolaria mobile') {
+  if (!message.trim()) throw new Error('emptyCommitMessage')
+  const changed = await refreshedChanges(context)
   for (const [filepath, , worktree] of changed) {
     if (worktree === 0) await git.remove({ ...context, filepath })
   }
   const oid = changed.length
-    ? await git.commit({ ...context, author, message: 'Update vault from Tolaria mobile' })
+    ? await git.commit({ ...context, author, message: message.trim() })
     : await git.resolveRef({ ...context, ref: 'HEAD' })
   return { changedFiles: changed.length, oid }
 }

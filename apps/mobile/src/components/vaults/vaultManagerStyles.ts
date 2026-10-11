@@ -11,6 +11,6 @@ export const vaultManagerStyles = StyleSheet.create({
   detail: { fontSize: 12, lineHeight: 18, color: mobileColors.textMuted },
   error: { fontSize: 12, lineHeight: 18, color: mobileColors.danger },
   code: { fontSize: 24, fontWeight: '600', color: mobileColors.text, textAlign: 'center', paddingVertical: mobileSpace.sm },
-  vault: { alignItems: 'flex-start', minHeight: 44 },
+  vault: { alignItems: 'center', justifyContent: 'flex-start', minHeight: 44 },
   progress: { gap: mobileSpace.sm, flexDirection: 'row', alignItems: 'center' },
 })

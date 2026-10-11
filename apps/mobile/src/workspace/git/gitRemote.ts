@@ -6,6 +6,7 @@ import { createGitTaskRunner } from './gitTaskRunner'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
 export type GitRemoteOptions = GitVaultContext & {
+  checkpoint?: boolean
   http: HttpClient
   token?: string
   onPhase?: (phase: GitSyncPhase) => void
@@ -36,20 +37,20 @@ async function syncUnlocked(options: GitRemoteOptions, author: GitAuthor) {
   if (!ref) throw new Error('detachedHead')
   const vault = createGitVault(context)
   emitPhase(options, 'checkpoint')
-  const checkpoint = await vault.checkpoint(author)
+  const checkpoint = options.checkpoint === false ? await vault.requireClean() : await vault.checkpoint(author)
   emitPhase(options, 'fetch')
   const connection = transport({ ...options, cache: context.cache }, url)
   await git.fetch({ ...connection, url, ref, singleBranch: true, tags: false })
   const remoteOid = await git.resolveRef({ ...context, ref: `refs/remotes/origin/${ref}` })
   emitPhase(options, 'checkout')
   const integrated = await vault.integrate(remoteOid)
-  if (integrated === 'diverged') return { kind: 'diverged' as const, changedFiles: checkpoint.changedFiles }
+  if (integrated === 'diverged') return { kind: 'diverged' as const, changedFiles: checkpoint.changedFiles, workspaceChanged: false }
   if (integrated === 'ahead') {
     emitPhase(options, 'push')
     const pushed = await git.push({ ...connection, url, ref, force: false })
     if (!pushed.ok) throw new Error('pushRejected')
   }
-  return { kind: 'synced' as const, changedFiles: checkpoint.changedFiles }
+  return { kind: 'synced' as const, changedFiles: checkpoint.changedFiles, workspaceChanged: integrated === 'updated' }
 }
 
 function emitPhase(options: GitRemoteOptions, phase: GitSyncPhase) {

@@ -6,6 +6,7 @@ import { MobileVaultControlsContext } from './MobileVaultContext'
 import { WorkspaceSyncEditorsContext } from './workspaceSyncEditors'
 import { useMobileVaults } from './git/useMobileVaults'
 import { WorkspaceLoadBoundary } from './WorkspaceLoadBoundary'
+import { MobileSettingsSheet } from '../settings/MobileSettingsSheet'
 
 export function MobileVaultProvider({ children }: { children: ReactNode }) {
   const manager = useMobileVaults()
@@ -27,6 +28,7 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
           {children}
         </WorkspaceLoadBoundary>
         <MobileVaultManager manager={manager} />
+        <MobileSettingsSheet gitAvailable={Boolean(active.git)} />
       </MobileVaultControlsContext.Provider>
     </NativeWorkspaceContext.Provider>
   </WorkspaceSyncEditorsContext.Provider>

@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub đã không phản hồi kịp thời. Hãy thử lại khi kết nối của bạn ổn định.",
   "mobile.vaults.credentialFailed": "Không thể đọc hoặc cập nhật thông tin đăng nhập GitHub đã lưu của bạn. Vui lòng thử lại.",
   "mobile.vaults.saveFailed": "Không thể lưu các thay đổi cục bộ. Thử lưu lại trước khi chuyển đổi hoặc đồng bộ hóa các vault.",
-  "mobile.vaults.connectedAs": "Đã kết nối với tư cách {login}"
+  "mobile.vaults.connectedAs": "Đã kết nối với tư cách {login}",
+  "mobile.settings.saveFailed": "Không thể lưu cài đặt. Các lựa chọn trước đây của bạn vẫn không thay đổi.",
+  "mobile.settings.loadFailed": "Không thể đọc cài đặt. Thử lại trước khi thay đổi tùy chọn.",
+  "mobile.settings.autoGitForeground": "AutoGit chạy sau 30 giây tạm dừng chỉnh sửa khi Tolaria đang hoạt động.",
+  "mobile.settings.scale": "Kích thước giao diện",
+  "mobile.settings.scaleDefault": "Tiêu chuẩn",
+  "mobile.settings.scaleLarger": "Lớn hơn (110%)",
+  "mobile.git.commitMessage": "Thông báo commit",
+  "mobile.git.commitAndSync": "Gửi commit và đồng bộ",
+  "mobile.git.uncommitted": "Hãy commit các thay đổi cục bộ của bạn trước khi đồng bộ ở chế độ thủ công.",
+  "mobile.git.emptyCommitMessage": "Nhập thông báo commit.",
+  "mobile.git.localCommit": "Đã commit cục bộ",
+  "mobile.git.auto": "Tự động",
+  "mobile.git.manual": "Thủ công"
 }

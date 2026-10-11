@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub hat nicht rechtzeitig geantwortet. Versuchen Sie es erneut, wenn Ihre Verbindung stabil ist.",
   "mobile.vaults.credentialFailed": "Ihre gespeicherte GitHub-Anmeldung konnte nicht gelesen oder aktualisiert werden. Bitte versuchen Sie es erneut.",
   "mobile.vaults.saveFailed": "Lokale Änderungen konnten nicht gespeichert werden. Versuchen Sie erneut, die Änderungen zu speichern, bevor Sie Vaults wechseln oder synchronisieren.",
-  "mobile.vaults.connectedAs": "Angemeldet als {login}"
+  "mobile.vaults.connectedAs": "Angemeldet als {login}",
+  "mobile.settings.saveFailed": "Die Einstellungen konnten nicht gespeichert werden. Ihre vorherigen Einstellungen bleiben unverändert.",
+  "mobile.settings.loadFailed": "Die Einstellungen konnten nicht gelesen werden. Versuchen Sie es erneut, bevor Sie die Einstellungen ändern.",
+  "mobile.settings.autoGitForeground": "AutoGit wird nach einer 30-sekündigen Bearbeitungspause ausgeführt, während Tolaria aktiv ist.",
+  "mobile.settings.scale": "Größe der Benutzeroberfläche",
+  "mobile.settings.scaleDefault": "Standard",
+  "mobile.settings.scaleLarger": "Größer (110 %)",
+  "mobile.git.commitMessage": "Commit-Nachricht",
+  "mobile.git.commitAndSync": "Commit ausführen und synchronisieren",
+  "mobile.git.uncommitted": "Committen Sie Ihre lokalen Änderungen, bevor Sie im manuellen Modus synchronisieren.",
+  "mobile.git.emptyCommitMessage": "Geben Sie eine Commit-Nachricht ein.",
+  "mobile.git.localCommit": "Lokal committet",
+  "mobile.git.auto": "Automatisch",
+  "mobile.git.manual": "Manuell"
 }

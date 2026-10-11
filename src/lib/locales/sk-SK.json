@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub neodpovedal včas. Skúste to znova, keď bude vaše pripojenie stabilné.",
   "mobile.vaults.credentialFailed": "Nepodarilo sa prečítať ani aktualizovať vaše uložené prihlasovacie údaje na GitHub. Skúste to znova.",
   "mobile.vaults.saveFailed": "Nepodarilo sa uložiť lokálne zmeny. Pred prepnutím alebo synchronizáciou trezorov skúste uložiť znova.",
-  "mobile.vaults.connectedAs": "Pripojený ako {login}"
+  "mobile.vaults.connectedAs": "Pripojený ako {login}",
+  "mobile.settings.saveFailed": "Nepodarilo sa uložiť nastavenia. Vaše predchádzajúce voľby zostávajú nezmenené.",
+  "mobile.settings.loadFailed": "Nepodarilo sa načítať nastavenia. Skúste to znova pred zmenou predvolieb.",
+  "mobile.settings.autoGitForeground": "AutoGit sa spustí po 30-sekundovej prestávke v editácii, keď je Tolaria aktívna.",
+  "mobile.settings.scale": "Veľkosť rozhrania",
+  "mobile.settings.scaleDefault": "Štandardné",
+  "mobile.settings.scaleLarger": "Väčšie (110 %)",
+  "mobile.git.commitMessage": "Správa k commitu",
+  "mobile.git.commitAndSync": "Zaviesť zmeny a synchronizovať",
+  "mobile.git.uncommitted": "Pred synchronizáciou v manuálnom režime potvrďte svoje lokálne zmeny.",
+  "mobile.git.emptyCommitMessage": "Zadajte správu ku commitu.",
+  "mobile.git.localCommit": "Zaviazané lokálne",
+  "mobile.git.auto": "Automatické",
+  "mobile.git.manual": "Manuálne"
 }

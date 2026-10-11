@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub 未及时响应。请在连接稳定时重试。",
   "mobile.vaults.credentialFailed": "无法读取或更新您已保存的 GitHub 登录信息。请重试。",
   "mobile.vaults.saveFailed": "无法保存本地更改。在切换或同步知识库之前，请重试保存。",
-  "mobile.vaults.connectedAs": "已以 {login} 的身份连接"
+  "mobile.vaults.connectedAs": "已以 {login} 的身份连接",
+  "mobile.settings.saveFailed": "无法保存设置。您之前的选择保持不变。",
+  "mobile.settings.loadFailed": "无法读取设置。请在更改偏好设置前重试。",
+  "mobile.settings.autoGitForeground": "当 Tolaria 处于活动状态时，AutoGit 会在编辑暂停 30 秒后运行。",
+  "mobile.settings.scale": "界面大小",
+  "mobile.settings.scaleDefault": "标准",
+  "mobile.settings.scaleLarger": "较大（110%）",
+  "mobile.git.commitMessage": "提交消息",
+  "mobile.git.commitAndSync": "提交并同步",
+  "mobile.git.uncommitted": "在手动模式下同步之前，请先提交您的本地更改。",
+  "mobile.git.emptyCommitMessage": "请输入提交消息。",
+  "mobile.git.localCommit": "已在本地提交",
+  "mobile.git.auto": "自动",
+  "mobile.git.manual": "手动"
 }

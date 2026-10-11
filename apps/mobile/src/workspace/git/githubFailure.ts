@@ -1,4 +1,6 @@
 const messages = {
+  uncommittedChanges: 'mobile.git.uncommitted',
+  emptyCommitMessage: 'mobile.git.emptyCommitMessage',
   githubAuthorizationExpired: 'mobile.vaults.authFailed',
   githubAuthorizationFailed: 'mobile.vaults.authFailed',
   githubNotConfigured: 'mobile.vaults.notConfigured',

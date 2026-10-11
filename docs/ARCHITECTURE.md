@@ -32,9 +32,16 @@ When deciding where to persist a piece of data, ask: **"Would the user want this
 | N/A | Per-vault Git setup prompt opt-out |
 | Type `_sidebar_label` overrides | Whether this installation auto-pluralizes type labels |
 | N/A | Registered workspace labels, aliases, mount state, and default new-note destination |
+| N/A | Mobile AutoGit, appearance, interface scale and analytics consent |
 | Any user-visible customization of how content is organized or displayed | Any machine-specific or credential-type setting |
 
 **Rule:** If the information is about *how the content is structured or presented* and the user would expect it to be consistent wherever they open their vault, store it in the vault (frontmatter of the relevant note, using the `_field` underscore convention for system properties). If it's about *this specific installation of the app*, store it in app config JSON under `$XDG_CONFIG_HOME/com.tolaria.app/` (defaulting to `$HOME/.config/com.tolaria.app/` on Unix platforms), or in localStorage for renderer-only transient layout state.
+
+Mobile installation preferences use the app-owned document configuration
+directory with validated pending-file publication and backup recovery (ADR 0212).
+Managed Git vaults retain the existing save/operation queues. Manual sync requires
+an explicit local commit; opt-in AutoGit schedules foreground idle checkpoints
+and synchronization without promising background execution.
 
 Examples:
 - ✅ Vault: `_pinned_properties` in a Type note (every device should show the same pinned properties)

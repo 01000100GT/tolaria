@@ -30,6 +30,7 @@ function statusLabel(git: boolean, status: VaultSyncState) {
   if (status === 'failed') return mobileText('status.sync.failed')
   if (!git) return mobileText('mobile.vaults.localOnly')
   const labels = {
+    committed: 'mobile.git.localCommit',
     local: 'mobile.vaults.localOnly', pending: 'status.sync.notSynced', synced: 'status.sync.synced',
     diverged: 'status.sync.conflict',
   } as const

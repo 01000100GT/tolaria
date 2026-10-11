@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub не відповів вчасно. Повторіть спробу, коли ваше з'єднання буде стабільним.",
   "mobile.vaults.credentialFailed": "Не вдалося прочитати або оновити збережені дані для входу в GitHub. Повторіть спробу.",
   "mobile.vaults.saveFailed": "Не вдалося зберегти локальні зміни. Повторіть спробу збереження, перш ніж перемикати або синхронізувати сховища.",
-  "mobile.vaults.connectedAs": "Підключено як {login}"
+  "mobile.vaults.connectedAs": "Підключено як {login}",
+  "mobile.settings.saveFailed": "Не вдалося зберегти налаштування. Ваші попередні вибори залишилися без змін.",
+  "mobile.settings.loadFailed": "Не вдалося прочитати налаштування. Повторіть спробу, перш ніж змінювати налаштування.",
+  "mobile.settings.autoGitForeground": "AutoGit запускається після 30-секундної паузи в редагуванні, коли Tolaria активна.",
+  "mobile.settings.scale": "Розмір інтерфейсу",
+  "mobile.settings.scaleDefault": "Стандартний",
+  "mobile.settings.scaleLarger": "Більший (110%)",
+  "mobile.git.commitMessage": "Повідомлення про коміт",
+  "mobile.git.commitAndSync": "Виконати коміт і синхронізувати",
+  "mobile.git.uncommitted": "Виконайте коміт локальних змін перед синхронізацією в ручному режимі.",
+  "mobile.git.emptyCommitMessage": "Введіть повідомлення про коміт.",
+  "mobile.git.localCommit": "Виконано коміт локально",
+  "mobile.git.auto": "Автоматично",
+  "mobile.git.manual": "Вручну"
 }

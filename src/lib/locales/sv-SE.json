@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub svarade inte i tid. Försök igen när din anslutning är stabil.",
   "mobile.vaults.credentialFailed": "Det gick inte att läsa eller uppdatera din sparade GitHub-inloggning. Försök igen.",
   "mobile.vaults.saveFailed": "Det gick inte att spara lokala ändringar. Försök att spara igen innan du byter eller synkroniserar valvs.",
-  "mobile.vaults.connectedAs": "Ansluten som {login}"
+  "mobile.vaults.connectedAs": "Ansluten som {login}",
+  "mobile.settings.saveFailed": "Det gick inte att spara inställningarna. Dina tidigare val är oförändrade.",
+  "mobile.settings.loadFailed": "Det gick inte att läsa inställningarna. Försök igen innan du ändrar inställningarna.",
+  "mobile.settings.autoGitForeground": "AutoGit körs efter en 30 sekunders paus i redigeringen när Tolaria är aktivt.",
+  "mobile.settings.scale": "Gränssnittsstorlek",
+  "mobile.settings.scaleDefault": "Standard",
+  "mobile.settings.scaleLarger": "Större (110 %)",
+  "mobile.git.commitMessage": "Commit-meddelande",
+  "mobile.git.commitAndSync": "Bekräfta och synkronisera",
+  "mobile.git.uncommitted": "Gör en commit av dina lokala ändringar innan du synkroniserar i manuellt läge.",
+  "mobile.git.emptyCommitMessage": "Ange ett commit-meddelande.",
+  "mobile.git.localCommit": "Kommittat lokalt",
+  "mobile.git.auto": "Automatiskt",
+  "mobile.git.manual": "Manuellt"
 }

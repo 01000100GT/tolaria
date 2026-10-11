@@ -2,6 +2,19 @@
 
 Key abstractions and domain models in Tolaria.
 
+## Mobile Installation Settings
+
+`apps/mobile/src/settings/` owns validated, installation-local preferences.
+`mobileSettingsController` publishes changes only after persistence succeeds and
+refuses writes after an unreadable load. Native storage retains the last valid
+backup through interrupted publication, including when the current file is
+corrupt. `MobileSettingsProvider` supplies settings and the settings sheet;
+`components/ui/switch.tsx` is a thin native RNR Switch composition (ADR 0212).
+`mobileAutoGit` is a pure debounced scheduler; `useMobileAutoGit` connects it to
+foreground state, editor dirt and the existing vault operation/save boundary.
+Manual mode refuses dirty syncs and exposes user-authored local commits. AutoGit
+is opt-in and foreground-only. The footer and vault manager expose both paths.
+
 ## Mobile Git Working Copies
 
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
@@ -78,10 +91,12 @@ vault switching and manual sync, while a separate memoized workspace context
 prevents progress updates from re-indexing the vault. `savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
 and remounts from disk; a pre-barrier failure instead resumes the existing draft.
-A confirmed no-change folder-picker cancellation also resumes that draft without
+A confirmed no-change folder-picker cancellation or Git result also resumes that draft without
 re-indexing or remounting. It restores the frozen editor's callback generation;
 replacement IDs are never reused, and an older cancellation cannot undo a newer
 replacement. Failures after import or Git starts still require the disk refresh.
+`gitRemote` reports whether checkout changed document files; local commits and
+push-only/no-op syncs preserve the mounted editor under ADR 0212.
 `managedGitStorage.native.ts` keeps app-owned working copies and a credential-free
 catalog. Catalog publication renames a validated pending file and retains a
 recoverable backup. `githubAccountState.ts` isolates cancellation and ordered

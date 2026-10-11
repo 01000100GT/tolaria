@@ -10,14 +10,20 @@ import { useGitHubAccount } from './useGitHubAccount'
 import { useManagedVaultCatalog, type ActiveVault } from './useManagedVaultCatalog'
 import type { GitSyncPhase } from './gitRemote'
 import { githubFailure } from './githubFailure'
+import { createGitVault, type GitAuthor } from './gitVault'
+import { withSavedWorkspace } from './workspaceWriteQueue'
+import { useMobileSettings } from '../../settings/useMobileSettings'
+import { useMobileAutoGit } from './useMobileAutoGit'
 
-export type VaultSyncState = 'local' | 'pending' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
+export type VaultSyncState = 'local' | 'pending' | 'committed' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | null
+type VaultTask = () => Promise<ActiveVault | null | 'cancelled' | 'unchanged'>
 
 export function useMobileVaults() {
   const local = useLocalWorkspaceRestore()
   const catalog = useManagedVaultCatalog()
   const account = useGitHubAccount()
+  const preferences = useMobileSettings()
   const [editors] = useState(createWorkspaceSyncEditors)
   const [override, setOverride] = useState<ActiveVault | null>(null)
   const active = override ?? catalog.restored ?? { selection: catalog.error ? null : local.selection, git: null }
@@ -27,6 +33,7 @@ export function useMobileVaults() {
   const [phase, setPhase] = useState<GitSyncPhase | 'clone' | null>(null)
   const [status, setStatus] = useState<VaultSyncState>('pending')
   const [error, setError] = useState<VaultError>(null)
+  const [lastCommitId, setLastCommitId] = useState<string | null>(null)
   const running = useRef(false)
   const restorePending = local.restorePending || catalog.pending
   useEffect(() => editors.subscribeDirty(() => setStatus('pending')), [editors])
@@ -45,23 +52,22 @@ export function useMobileVaults() {
     setOpened(false)
   }
 
-  const perform = async (task: () => Promise<ActiveVault | null | 'cancelled'>) => {
+  const perform = async (task: VaultTask, present = true) => {
     if (running.current || restorePending) return
     running.current = true
     editors.setBlocked(true)
     setBusy(true)
-    setOpened(true)
+    if (present) setOpened(true)
     setError(null)
     let next = active
     let saved = false
+    let failed = false
     try {
       await runSavedVaultOperation({
         editors, rootUri: active.selection?.vaultRootUri,
         run: async () => {
           saved = true
-          const result = await task()
-          if (result === 'cancelled') return result
-          next = result ?? active
+          return resolveVaultTask(task, active, (result) => { next = result })
         },
         refresh: (selectedNoteId) => {
           setOverride(refreshedVault(next, active, selectedNoteId))
@@ -69,13 +75,16 @@ export function useMobileVaults() {
         },
       })
     } catch (failure) {
-      setError(saved ? githubFailure(failure) : 'mobile.vaults.saveFailed')
-      setStatus(saved ? 'failed' : 'saveFailed')
+      failed = true
+      const result = vaultFailure(saved, failure)
+      setError(result.error)
+      setStatus(result.status)
       setOpened(true)
     } finally {
       running.current = false
       setBusy(false)
       setPhase(null)
+      if (!present && !failed) editors.setBlocked(false)
     }
   }
 
@@ -83,6 +92,7 @@ export function useMobileVaults() {
     const selection = await managedGitSelection(vault)
     await activateManagedGitVault(vault.id)
     setStatus('pending')
+    setLastCommitId(null)
     return { git: vault, selection }
   }
   const openFolder = () => perform(async () => {
@@ -99,25 +109,58 @@ export function useMobileVaults() {
     await catalog.reload()
     return select(vault)
   })
-  const sync = () => perform(async () => {
+  const syncTask = async (checkpoint: boolean) => {
     if (!active.git) { setStatus('local'); return null }
     const session = await account.currentSession()
     const { syncGitVault } = await import('./gitRemote')
     const result = await syncGitVault({
       ...managedGitConnection(active.git), http: nativeGitHttp,
+      checkpoint,
       token: session?.accessToken, onPhase: setPhase,
-    }, session
-      ? { name: session.login, email: `${session.userId}+${session.login}@users.noreply.github.com` }
-      : { name: 'Tolaria mobile', email: 'mobile@tolaria.app' })
+    }, mobileGitAuthor(session))
     setStatus(result.kind)
-    return null
+    return result.workspaceChanged ? null : 'unchanged' as const
+  }
+  const sync = () => perform(() => syncTask(preferences.settings.autoGit))
+  const commit = (message: string, push = false) => perform(async () => {
+    if (!active.git) return 'cancelled'
+    setPhase('checkpoint')
+    const connection = managedGitConnection(active.git)
+    const result = await withSavedWorkspace(connection.operationKey ?? connection.dir, () => createGitVault(connection).checkpoint(mobileGitAuthor(account.session), message))
+    setLastCommitId(result.oid.slice(0, 8))
+    setStatus('committed')
+    return push ? syncTask(false) : 'unchanged'
+  })
+
+  useMobileAutoGit({
+    blocked: busy || opened || preferences.opened || restorePending || status === 'diverged', editors,
+    enabled: preferences.ready && preferences.settings.autoGit && Boolean(active.git),
+    rootUri: active.selection?.vaultRootUri,
+    sync: () => perform(() => syncTask(true), false),
   })
 
   return {
     account, active, busy, catalog, close, clone, editors, error, open, opened,
-    openFolder, phase, restorePending, revision, status, sync,
+    openFolder, phase, restorePending, revision, status, sync, commit, lastCommitId,
     select: (vault: ManagedGitVault) => perform(() => select(vault)),
   }
+}
+
+async function resolveVaultTask(task: VaultTask, active: ActiveVault, select: (next: ActiveVault) => void) {
+  const result = await task()
+  if (result === 'cancelled' || result === 'unchanged') return result
+  select(result ?? active)
+}
+
+function vaultFailure(saved: boolean, failure: unknown): { error: VaultError; status: VaultSyncState } {
+  if (!saved) return { error: 'mobile.vaults.saveFailed', status: 'saveFailed' }
+  return { error: githubFailure(failure), status: 'failed' }
+}
+
+function mobileGitAuthor(session: { login: string; userId: number } | null): GitAuthor {
+  return session
+    ? { name: session.login, email: `${session.userId}+${session.login}@users.noreply.github.com` }
+    : { name: 'Tolaria mobile', email: 'mobile@tolaria.app' }
 }
 
 function refreshedVault(next: ActiveVault, previous: ActiveVault, selectedNoteId?: string): ActiveVault {

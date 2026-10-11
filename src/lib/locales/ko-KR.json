@@ -1202,5 +1202,18 @@
   "mobile.vaults.requestTimeout": "GitHub가 제시간에 응답하지 않았습니다. 연결이 안정되면 다시 시도하세요.",
   "mobile.vaults.credentialFailed": "저장된 GitHub 로그인 정보를 읽거나 업데이트할 수 없습니다. 다시 시도해 주세요.",
   "mobile.vaults.saveFailed": "로컬 변경 사항을 저장할 수 없습니다. 볼트를 전환하거나 동기화하기 전에 저장을 다시 시도하세요.",
-  "mobile.vaults.connectedAs": "{login}(으)로 연결됨"
+  "mobile.vaults.connectedAs": "{login}(으)로 연결됨",
+  "mobile.settings.saveFailed": "설정을 저장할 수 없습니다. 이전 선택 사항은 변경되지 않았습니다.",
+  "mobile.settings.loadFailed": "설정을 읽을 수 없습니다. 환경 설정을 변경하기 전에 다시 시도하세요.",
+  "mobile.settings.autoGitForeground": "Tolaria가 활성화된 상태에서 편집이 30초 동안 중단되면 AutoGit이 실행됩니다.",
+  "mobile.settings.scale": "인터페이스 크기",
+  "mobile.settings.scaleDefault": "표준",
+  "mobile.settings.scaleLarger": "더 크게(110%)",
+  "mobile.git.commitMessage": "커밋 메시지",
+  "mobile.git.commitAndSync": "커밋 및 동기화",
+  "mobile.git.uncommitted": "수동 모드에서 동기화하기 전에 로컬 변경 사항을 커밋하세요.",
+  "mobile.git.emptyCommitMessage": "커밋 메시지를 입력하세요.",
+  "mobile.git.localCommit": "로컬에서 커밋됨",
+  "mobile.git.auto": "자동",
+  "mobile.git.manual": "수동"
 }

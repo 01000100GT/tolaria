@@ -50,10 +50,10 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
 | 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Pending |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
-| 15 | Explain and verify local Git and remote sync behavior | Code inspected; native remote QA pending |
+| 15 | Explain and verify local Git and remote sync behavior | Native disposable-remote probe passes; explicit manual commit verified on disk |
 | 16 | Type-visibility picker has properly aligned native option rows | Implemented; native measured regression passes |
-| 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Pending |
-| 18 | Essential settings chosen from an audit of desktop settings | Pending |
+| 17 | Visible sync controls/status, automatic Git and manual commits with user messages | Implemented; native manual commit/settings persistence pass; automatic remote UI QA pending |
+| 18 | Essential settings chosen from an audit of desktop settings | Git settings implemented; appearance/scale/privacy implementation pending |
 | 19 | Note-row swipes: favorite on left, delete/archive on right; full swipe favorites or archives, never deletes | Implemented; two native tablet tests pass; phone QA pending |
 | 20 | Desktop-matched dark mode throughout native chrome, dialogs and editor | Pending |
 
@@ -191,3 +191,39 @@ measurements, commits and remaining limitations as each batch completes.
   from two findings to zero; all other zero baselines remain zero.
 - Localization: no UI copy changes. PostHog: no event needed for optimizing
   existing actions; no document content or identifiers leave the device.
+
+### Git controls and installation settings
+
+- The footer exposes Settings, Sync and Commit. Manual mode is the default:
+  Sync refuses uncommitted changes before network activity; Commit accepts the
+  user's message without contacting a remote; Commit and sync combines them.
+- AutoGit is opt-in, coalesces edits after thirty foreground idle seconds, and
+  checks the remote every two active minutes. Blocking dialogs/operations and
+  divergent history pause automation. This is not background-sync support.
+- Settings publish only after a validated atomic write succeeds. Regression
+  tests cover duplicate startup loads, failed persistence, interrupted rename,
+  corrupt current files with a valid backup, and unrecoverable settings.
+- Confirmed no-document-change Git results resume the existing editor without
+  resetting selection or re-indexing. Unknown failures still refresh safely.
+- Native QA caught a 33-point commit-message field; the new Git controls now
+  allocate 44-point touch surfaces. The native switch measures 44 by 26 points,
+  and its preference survives process termination/relaunch. A native cold-start
+  sync also exposed a WebView readiness race: document reads now wait for the
+  bridge and fail closed on a bounded timeout, never substituting empty content.
+- `TabletGitSettingsTests` passes the settings test and, after the readiness
+  fix, the manual sync/commit test. The disposable app-owned repository contains
+  `iPad manual commit QA` as a real commit with the original custom frontmatter;
+  its working tree is clean. No original user vault or GitHub remote was changed.
+- ADR 0212 documents settings storage, foreground automation, explicit manual
+  commits, confirmed no-change editor resumption, and the RNR Switch dependency.
+- Localization: thirteen keys translated by Lara into all configured targets;
+  the additional Belarusian Latin catalog is maintained explicitly. All 21
+  catalogs validate against 1,217 English keys. Analytics consent/event wiring
+  remains pending before release, so this batch alone is not releasable.
+- Final scoped suite: 1,352 tests pass. All 32 scorable touched/new files have
+  CodeScene 10 and no findings; declarative files have no scorable code and no
+  warnings. Staged CLI delta checks 32 files with no issues. Individual local
+  scans report zero findings at every severity, with all five TS, three Swift
+  or four JSON analyzers successfully processing their exact target. Existing
+  zero baselines remain zero. The exact manifest is `git-settings-manifest.txt`;
+  per-file records end in `-git-after.json` and `-git-after-cs.json`.

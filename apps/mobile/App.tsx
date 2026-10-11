@@ -7,6 +7,7 @@ import { MobileUiLab } from './src/screens/MobileUiLab'
 import { mobileColors } from './src/ui/tokens'
 import { useNativeGitProbe } from './src/qa/nativeGitProbe'
 import { MobileVaultProvider } from './src/workspace/MobileVaultProvider'
+import { MobileSettingsProvider } from './src/settings/MobileSettingsProvider'
 
 export function App() {
   useNativeGitProbe()
@@ -15,7 +16,7 @@ export function App() {
       <SafeAreaProvider>
         <SafeAreaView edges={['left', 'right']} style={{ backgroundColor: mobileColors.app, flex: 1 }}>
           <StatusBar style="dark" />
-          <MobileVaultProvider><MobileUiLab /></MobileVaultProvider>
+          <MobileSettingsProvider><MobileVaultProvider><MobileUiLab /></MobileVaultProvider></MobileSettingsProvider>
         </SafeAreaView>
         <PortalHost />
       </SafeAreaProvider>
