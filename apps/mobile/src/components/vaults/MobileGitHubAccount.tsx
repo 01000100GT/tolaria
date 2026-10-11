@@ -14,7 +14,7 @@ export function MobileGitHubAccount({ account, disabled, clone }: GitHubAccountP
   return <View style={styles.section}>
     <Text style={styles.label}>{mobileText('mobile.vaults.github')}</Text>
     {!account.configured && <Text style={styles.detail}>{mobileText('mobile.vaults.notConfigured')}</Text>}
-    {account.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText('mobile.vaults.authFailed')}</Text>}
+    {account.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(account.error)}</Text>}
     {account.session ? <>
       <Text style={styles.detail}>{mobileText('mobile.vaults.connectedAs').replace('{login}', account.session.login)}</Text>
       <View style={styles.row}>

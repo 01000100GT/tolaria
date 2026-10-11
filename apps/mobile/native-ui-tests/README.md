@@ -54,3 +54,14 @@ touch drag, section selection, header dismissal, and properties access. The
 sidebar remains 260 points wide while the editor starts at x=340 and retains at
 least 520 points, entirely inside the screen. `TabletPanelGestureTests` explicitly
 sets landscape rather than depending on whichever orientation a prior test left.
+
+`TabletVaultManagerTests` uses the installed app's isolated native vault copy.
+It opens/closes the manager, rejects an invalid repository URL without contacting
+a remote, and fails if credential restoration reports a Keychain access error.
+The app (unlike the disposable test runner) must be built with normal simulator
+signing enabled. `CODE_SIGNING_ALLOWED=NO` drops the simulator app identity and
+can produce Keychain error -34018 even when all filesystem probes pass. Use
+`CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- ONLY_ACTIVE_ARCH=YES` with the
+simulator destination. Let Xcode generate simulator identity entitlements; do not
+copy those identities into production app configuration. The optional
+`TOLARIA_QA` compilation flag is for local optimized probes only (ADR 0208).

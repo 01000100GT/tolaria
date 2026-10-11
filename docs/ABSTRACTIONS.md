@@ -15,6 +15,15 @@ device authorization and checks the resulting account identity; no client secret
 belongs in the mobile bundle. See ADR 0194 and the mobile October assessment for
 integration status and remaining native-provider work. This layer is not an
 iCloud synchronizer and must not label local disk writes as remote synchronization.
+`githubRequest.ts` bounds the complete JSON exchange, including the response
+body, and settles cancellation even if a transport ignores its abort signal.
+Device-code, token, identity, and repository requests share that boundary.
+`githubAccountState.ts` retains the visible account until secure credential
+deletion succeeds; network and storage failures are not reported as expired
+authorization. `githubFailure.ts` maps only known error identifiers to localized
+copy, never raw responses or credentials. `useMobileVaults` distinguishes the
+save barrier from the subsequent remote operation. Failed local saves expose a
+retry through the same serialized write queue, including local-only vaults.
 `assert-native-git.mjs` exercises real smart-HTTP transport through Hermes and
 Expo's filesystem on the booted iOS simulator, using disposable repositories only.
 Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in large-vault fixture and separate

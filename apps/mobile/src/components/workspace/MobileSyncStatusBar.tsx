@@ -29,7 +29,7 @@ export function MobileSyncStatusBar({
         {presentation.detail && <Text numberOfLines={1} style={styles.syncDetailText} testID="sync-status-detail">{presentation.detail}</Text>}
       </View>
       {retryFailedEdit && <MobileButton density="status" icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('pulse.retry')} onPress={retryFailedEdit} testID="workspace-edit-retry" variant="ghost" />}
-      {vault?.sync && <MobileButton density="status" disabled={vault.busy} icon={<Tray color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('status.sync.now')} onPress={() => { void vault.sync?.() }} variant="ghost" />}
+      {vault?.sync && <MobileButton density="status" disabled={vault.busy} icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText(vault.retry ? 'pulse.retry' : 'status.sync.now')} onPress={() => { void vault.sync?.() }} testID="vault-sync-retry" variant="ghost" />}
       <MobileButton
         density="status"
         icon={action.icon}

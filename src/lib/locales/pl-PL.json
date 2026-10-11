@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Wysyłanie zmian lokalnych...",
   "mobile.vaults.saving": "Zapisywanie edytora...",
   "mobile.vaults.authFailed": "Autoryzacja GitHub nie powiodła się lub wygasła. Zaloguj się ponownie, aby kontynuować.",
+  "mobile.vaults.networkFailed": "Nie udało się połączyć z GitHubem. Sprawdź połączenie i spróbuj ponownie.",
+  "mobile.vaults.requestTimeout": "GitHub nie odpowiedział na czas. Spróbuj ponownie, gdy połączenie będzie stabilne.",
+  "mobile.vaults.credentialFailed": "Nie udało się odczytać ani zaktualizować Twoich zapisanych danych logowania do GitHub. Spróbuj ponownie.",
+  "mobile.vaults.saveFailed": "Nie udało się zapisać lokalnych zmian. Spróbuj ponownie zapisać zmiany przed przełączeniem lub synchronizacją vaultów.",
   "mobile.vaults.connectedAs": "Połączono jako {login}"
 }

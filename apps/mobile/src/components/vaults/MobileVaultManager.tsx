@@ -63,10 +63,10 @@ function SavedVaults({ manager }: { manager: VaultManager }) {
 function VaultOperationStatus({ manager }: { manager: VaultManager }) {
   return <View style={styles.section} accessibilityLiveRegion="polite">
     {manager.busy && <View style={styles.progress}><ActivityIndicator color={mobileColors.primary} /><Text style={styles.detail}>{progressLabel(manager.phase)}</Text></View>}
-    {manager.error && <Text style={styles.error}>{mobileText('mobile.vaults.requestFailed')}</Text>}
+    {manager.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(manager.error)}</Text>}
     {manager.catalog.error && <Text style={styles.error}>{mobileText('mobile.vaults.catalogFailed')}</Text>}
     {manager.status === 'diverged' && <Text style={styles.error}>{mobileText('mobile.vaults.diverged')}</Text>}
-    {manager.active.git && <MobileButton disabled={manager.busy} label={mobileText('status.sync.now')} onPress={() => { void manager.sync() }} />}
+    {(manager.active.git || manager.status === 'saveFailed') && <MobileButton disabled={manager.busy} label={mobileText(manager.status === 'saveFailed' ? 'pulse.retry' : 'status.sync.now')} onPress={() => { void manager.sync() }} testID="vault-manager-retry" />}
   </View>
 }
 

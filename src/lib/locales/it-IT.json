@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Invio delle modifiche locali in corso...",
   "mobile.vaults.saving": "Salvataggio dell'editor in corso...",
   "mobile.vaults.authFailed": "L'autorizzazione di GitHub non è riuscita o è scaduta. Accedi di nuovo per continuare.",
+  "mobile.vaults.networkFailed": "Impossibile connettersi a GitHub. Controlla la connessione e riprova.",
+  "mobile.vaults.requestTimeout": "GitHub non ha risposto in tempo. Riprova quando la connessione è stabile.",
+  "mobile.vaults.credentialFailed": "Impossibile leggere o aggiornare le tue credenziali di accesso a GitHub salvate. Riprova.",
+  "mobile.vaults.saveFailed": "Impossibile salvare le modifiche locali. Riprova a salvare prima di cambiare o sincronizzare i vault.",
   "mobile.vaults.connectedAs": "Connesso come {login}"
 }

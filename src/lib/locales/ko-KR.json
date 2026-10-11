@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "로컬 변경 사항을 푸시하는 중...",
   "mobile.vaults.saving": "편집기 저장 중...",
   "mobile.vaults.authFailed": "GitHub 인증에 실패했거나 인증이 만료되었습니다. 계속하려면 다시 로그인하세요.",
+  "mobile.vaults.networkFailed": "GitHub에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하세요.",
+  "mobile.vaults.requestTimeout": "GitHub가 제시간에 응답하지 않았습니다. 연결이 안정되면 다시 시도하세요.",
+  "mobile.vaults.credentialFailed": "저장된 GitHub 로그인 정보를 읽거나 업데이트할 수 없습니다. 다시 시도해 주세요.",
+  "mobile.vaults.saveFailed": "로컬 변경 사항을 저장할 수 없습니다. 볼트를 전환하거나 동기화하기 전에 저장을 다시 시도하세요.",
   "mobile.vaults.connectedAs": "{login}(으)로 연결됨"
 }

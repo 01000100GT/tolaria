@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Đang đẩy các thay đổi cục bộ...",
   "mobile.vaults.saving": "Đang lưu trình soạn thảo...",
   "mobile.vaults.authFailed": "Xác thực GitHub không thành công hoặc đã hết hạn. Đăng nhập lại để tiếp tục.",
+  "mobile.vaults.networkFailed": "Không thể kết nối với GitHub. Kiểm tra kết nối của bạn và thử lại.",
+  "mobile.vaults.requestTimeout": "GitHub đã không phản hồi kịp thời. Hãy thử lại khi kết nối của bạn ổn định.",
+  "mobile.vaults.credentialFailed": "Không thể đọc hoặc cập nhật thông tin đăng nhập GitHub đã lưu của bạn. Vui lòng thử lại.",
+  "mobile.vaults.saveFailed": "Không thể lưu các thay đổi cục bộ. Thử lưu lại trước khi chuyển đổi hoặc đồng bộ hóa các vault.",
   "mobile.vaults.connectedAs": "Đã kết nối với tư cách {login}"
 }

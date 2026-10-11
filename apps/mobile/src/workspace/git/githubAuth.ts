@@ -20,9 +20,9 @@ type TokenResponse = {
 }
 export type GitHubRepository = { id: number; full_name: string; clone_url: string; private: boolean }
 
-export async function beginGitHubSignIn(clientId: string, request: GitHubRequest = fetch): Promise<GitHubDeviceCode> {
+export async function beginGitHubSignIn(clientId: string, request: GitHubRequest = fetch, signal?: AbortSignal): Promise<GitHubDeviceCode> {
   if (!clientId.trim()) throw new Error('githubNotConfigured')
-  const code = await githubForm<GitHubDeviceCode>('device/code', { client_id: clientId, scope: 'repo' }, request)
+  const code = await githubForm<GitHubDeviceCode>('device/code', { client_id: clientId, scope: 'repo' }, request, signal)
   validateDeviceCode(code)
   return code
 }
@@ -49,26 +49,26 @@ export async function finishGitHubSignIn(
       device_code: code.device_code,
       grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
     }, request, signal)
-    if (result.access_token) return identifyGitHubSession(result, request)
+    if (result.access_token) return identifyGitHubSession(result, request, signal)
     if (result.error === 'slow_down') interval += 5000
     else if (result.error !== 'authorization_pending') throw new Error('githubAuthorizationFailed')
   }
   throw new Error('githubAuthorizationExpired')
 }
 
-export async function refreshGitHubSession(session: GitHubSession, clientId: string, request: GitHubRequest = fetch) {
+export async function refreshGitHubSession(session: GitHubSession, clientId: string, request: GitHubRequest = fetch, signal?: AbortSignal) {
   if (!session.expiresAt || session.expiresAt > Date.now() + 60_000) return session
   if (!session.refreshToken) throw new Error('githubAuthorizationExpired')
   const tokens = await githubForm<TokenResponse>('oauth/access_token', {
     client_id: clientId, grant_type: 'refresh_token', refresh_token: session.refreshToken,
-  }, request)
+  }, request, signal)
   if (!tokens.access_token) throw new Error('githubAuthorizationExpired')
-  return identifyGitHubSession(tokens, request)
+  return identifyGitHubSession(tokens, request, signal)
 }
 
-async function identifyGitHubSession(tokens: TokenResponse, request: GitHubRequest): Promise<GitHubSession> {
+async function identifyGitHubSession(tokens: TokenResponse, request: GitHubRequest, signal?: AbortSignal): Promise<GitHubSession> {
   const accessToken = requiredAccessToken(tokens)
-  const user = await githubApi<{ id: number; login: string }>('user', accessToken, request)
+  const user = await githubApi<{ id: number; login: string }>('user', accessToken, request, signal)
   validateGitHubIdentity(user)
   return {
     accessToken,
@@ -92,8 +92,8 @@ function tokenExpiry(tokens: TokenResponse) {
   return tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined
 }
 
-export async function listGitHubRepositories(session: GitHubSession, page = 1, request: GitHubRequest = fetch) {
-  return githubApi<GitHubRepository[]>(`user/repos?sort=updated&per_page=100&page=${page}`, session.accessToken, request)
+export async function listGitHubRepositories(session: GitHubSession, page = 1, request: GitHubRequest = fetch, signal?: AbortSignal) {
+  return githubApi<GitHubRepository[]>(`user/repos?sort=updated&per_page=100&page=${page}`, session.accessToken, request, signal)
 }
 
 function waitForPoll(ms: number, signal: AbortSignal) {

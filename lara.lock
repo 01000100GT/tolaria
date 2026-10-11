@@ -1195,4 +1195,8 @@ files:
     mobile.vaults.push: ed642ff7fa8977240a49343a72602b2e
     mobile.vaults.saving: 16fad28eaaaba7669c199475fd7d9ef0
     mobile.vaults.authFailed: 6c6512798939546ee12e8d906339906f
+    mobile.vaults.networkFailed: 5ba0a318cc021d75cadd3013a8b38249
+    mobile.vaults.requestTimeout: d477ed8c8eb3ee1e9cd774f05ffc4282
+    mobile.vaults.credentialFailed: 4eba5a7232ecd752be47dc911e50b528
+    mobile.vaults.saveFailed: 842e9ec5582d70d26c2838f147d7049e
     mobile.vaults.connectedAs: 4b5043f870431a18a158664675e94cc6

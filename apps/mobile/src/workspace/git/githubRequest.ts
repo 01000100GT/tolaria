@@ -1,34 +1,43 @@
 export type GitHubRequest = typeof fetch
 
-export async function githubApi<T>(path: string, token: string, request: GitHubRequest): Promise<T> {
-  const response = await boundedRequest(request, `https://api.github.com/${path}`, {
+export function githubApi<T>(path: string, token: string, request: GitHubRequest, signal?: AbortSignal): Promise<T> {
+  return boundedRequest<T>(request, `https://api.github.com/${path}`, {
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}` },
+    signal,
   })
-  if (!response.ok) throw new Error(response.status === 401 ? 'githubAuthorizationExpired' : 'githubRequestFailed')
-  return response.json()
 }
 
 export async function githubForm<T>(path: string, fields: Record<string, string>, request: GitHubRequest, signal?: AbortSignal): Promise<T> {
-  const response = await boundedRequest(request, `https://github.com/login/${path}`, {
+  return boundedRequest<T>(request, `https://github.com/login/${path}`, {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(fields).toString(),
     signal,
   })
-  if (!response.ok) throw new Error('githubRequestFailed')
-  return response.json()
 }
 
-async function boundedRequest(request: GitHubRequest, url: string, options: RequestInit) {
+async function boundedRequest<T>(request: GitHubRequest, url: string, options: RequestInit): Promise<T> {
+  if (options.signal?.aborted) throw new Error('cancelled')
   const controller = new AbortController()
-  const abort = () => controller.abort()
-  const timeout = setTimeout(abort, 30_000)
+  let rejectStopped!: (error: Error) => void
+  const stopped = new Promise<never>((_, reject) => { rejectStopped = reject })
+  const stop = (reason: string) => { rejectStopped(new Error(reason)); controller.abort() }
+  const abort = () => stop('cancelled')
+  const timeout = setTimeout(() => stop('githubRequestTimeout'), 30_000)
   options.signal?.addEventListener('abort', abort, { once: true })
-  if (options.signal?.aborted) abort()
   try {
-    return await request(url, { ...options, signal: controller.signal, redirect: 'error' })
+    return await Promise.race([requestJson<T>(request, url, { ...options, signal: controller.signal, redirect: 'error' }), stopped])
   } finally {
     clearTimeout(timeout)
     options.signal?.removeEventListener('abort', abort)
   }
+}
+
+async function requestJson<T>(request: GitHubRequest, url: string, options: RequestInit): Promise<T> {
+  let response: Response
+  try { response = await request(url, options) }
+  catch { throw new Error('githubNetworkFailed') }
+  if (!response.ok) throw new Error(response.status === 401 ? 'githubAuthorizationExpired' : 'githubRequestFailed')
+  try { return await response.json() }
+  catch { throw new Error('githubRequestFailed') }
 }

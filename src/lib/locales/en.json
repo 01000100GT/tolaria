@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Pushing local changes...",
   "mobile.vaults.saving": "Saving editor...",
   "mobile.vaults.authFailed": "GitHub authorization failed or expired. Sign in again to continue.",
+  "mobile.vaults.networkFailed": "Could not connect to GitHub. Check your connection and retry.",
+  "mobile.vaults.requestTimeout": "GitHub did not respond in time. Retry when your connection is stable.",
+  "mobile.vaults.credentialFailed": "Could not read or update your saved GitHub sign-in. Please retry.",
+  "mobile.vaults.saveFailed": "Could not save local changes. Retry saving before switching or syncing vaults.",
   "mobile.vaults.connectedAs": "Connected as {login}"
 }

@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Skickar lokala ändringar...",
   "mobile.vaults.saving": "Sparar redigeraren …",
   "mobile.vaults.authFailed": "GitHub-behörigheten misslyckades eller har löpt ut. Logga in igen för att fortsätta.",
+  "mobile.vaults.networkFailed": "Det gick inte att ansluta till GitHub. Kontrollera din anslutning och försök igen.",
+  "mobile.vaults.requestTimeout": "GitHub svarade inte i tid. Försök igen när din anslutning är stabil.",
+  "mobile.vaults.credentialFailed": "Det gick inte att läsa eller uppdatera din sparade GitHub-inloggning. Försök igen.",
+  "mobile.vaults.saveFailed": "Det gick inte att spara lokala ändringar. Försök att spara igen innan du byter eller synkroniserar valvs.",
   "mobile.vaults.connectedAs": "Ansluten som {login}"
 }

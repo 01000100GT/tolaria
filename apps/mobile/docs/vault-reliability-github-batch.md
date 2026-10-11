@@ -110,3 +110,101 @@ separately; this scoped batch does not certify all inherited mobile branch code.
 Structural move/backlink transactions and binary-file Undo are not solved by
 this preparation layer. GitHub onboarding/live remote verification remains the
 next batch, not implied by the note-action checks above.
+
+Batch 1 was committed as `e9d02efc4` and pushed to
+`origin/mobile-ui-foundation` through normal hooks: 1,283 mobile tests passed,
+along with mobile lint/typecheck and web export. The final native delete/Undo
+regression passed in 25.91 seconds; its disposable note was removed afterward.
+
+## Batch 2: Authentication and Save Failure Recovery
+
+GitHub JSON requests now have a deadline covering headers and body. Cancellation
+settles the caller even when a transport ignores abort; already-cancelled work
+never starts. Device-code creation, token/identity lookup, refresh, and repository
+listing propagate cancellation. Unknown transport/response text never becomes UI
+copy. Credential deletion must succeed before the visible account is cleared.
+No session is handed out while credential deletion is pending. Errors distinguish
+authorization, network, timeout, and secure-storage failures.
+Local save failures take precedence over "Local only" and can retry through the
+existing editor/disk save barrier without requiring a Git remote. Remote work
+cannot start until that barrier succeeds.
+
+Exact code manifest, relative to `apps/mobile/`:
+
+| Code file | Classification | CodeScene before / after |
+| --- | --- | --- |
+| `src/workspace/git/githubRequest.ts` | Existing | 10 / 10 |
+| `src/workspace/git/githubAuth.ts` | Existing | 10 / 10 |
+| `src/workspace/git/githubAccountState.ts` | Existing | 10 / 10 |
+| `src/workspace/git/useGitHubAccount.ts` | Existing | 10 / 10 |
+| `src/workspace/git/useMobileVaults.ts` | Existing | 10 / 10 |
+| `src/components/vaults/useVaultSyncPresentation.ts` | Existing | 10 / 10 |
+| `src/components/vaults/MobileGitHubAccount.tsx` | Existing | 10 / 10 |
+| `src/components/vaults/MobileVaultManager.tsx` | Existing | 10 / 10 |
+| `src/components/workspace/MobileSyncStatusBar.tsx` | Existing | 10 / 10 |
+| `src/workspace/git/githubFailure.ts` | New | - / no scorable code, zero findings |
+| `src/workspace/git/githubRequest.test.ts` | New | - / 10 |
+| `src/workspace/git/githubAccountRecovery.test.ts` | New | - / 10 |
+| `src/workspace/git/githubCancellation.test.ts` | New | - / 10 |
+| `src/components/vaults/vaultSyncFailure.test.ts` | New | - / 10 |
+| `native-ui-tests/TabletVaultManagerTests.swift` | New | - / 10 |
+
+- CodeScene: project API remains Hotspot 10 / Average 9.991289158049293.
+  Staged CLI delta checks all 15 code files with `no-issues-found`. Repository
+  publication was extracted to keep the account state at 10. MCP gates remain
+  unavailable under the owner-approved exception, not passing.
+- Codacy local: all nine existing files started at zero and remain zero. Every
+  new file has zero whole-file findings at all severities. The 73 per-analyzer
+  result rows in `github-analyzer-matrix.json` confirm every expected analyzer
+  completed on exactly one file. Same analyzer identities/configurations as
+  batch 1; five per TS file and three per Swift file. No skipped/partial target
+  counts as passing. Cloud baselines/parity/exact-SHA results remain unavailable.
+- Tests: red failures reproduced, then 35 focused tests across eight files pass,
+  including cancellation during identity verification, stalled JSON bodies,
+  failed sign-out/retry, safe error mapping, and local-save status/retry. Existing
+  saved-vault tests confirm failed writes keep drafts mounted and prevent remote
+  work until retry succeeds. Mobile lint/typecheck pass.
+- Native transport probe: real Hermes/Expo clone, push, pull, binary preservation,
+  deletion, path containment, external-edit exclusion, and checkout recovery
+  pass against disposable loopback repositories. Native cross-launch text
+  recovery passes all five phases, including exact frontmatter and preservation
+  of conflicting external edits; cleanup passes. This is not live GitHub QA.
+- Localization: four English keys translated by `pnpm l10n:translate` into all
+  19 Lara targets; the extra Belarusian Latin catalog was updated separately.
+  `pnpm l10n:validate` passes all 21 catalogs / 1,199 keys. Product names retained.
+- PostHog: no event needed for recovery/error-handling repairs; no new product
+  action or mobile consent change. ADRs: none; no dependency/storage redesign.
+  Docs: this release record and `docs/ABSTRACTIONS.md`.
+- Full desktop/Rust coverage not rerun under the experimental mobile workflow;
+  neither Android nor physical iPad nor private GitHub authorization is certified.
+  The prior 6,000-file Git performance limitation remains open.
+
+### Simulator Signing Finding
+
+The copied optimized QA executable had been built with
+`CODE_SIGNING_ALLOWED=NO`. Its UI and filesystem tests ran, but iOS logged
+`-34018`, explicitly reporting no `application-identifier` or
+`keychain-access-groups` entitlement. This is a failed credential-storage check,
+not an expired GitHub session and not a passing onboarding result.
+
+Build the app through Xcode with simulator signing enabled and
+`ONLY_ACTIVE_ARCH=YES`; do not reuse the signing-disabled app for account QA.
+The UI-test runner may remain unsigned because it does not own credentials.
+Do not add simulator identity values to production app entitlements. A native
+vault-manager regression now checks credential restoration, invalid-URL rejection,
+and modal dismissal. The normal Xcode signed build passes that regression in
+15.383 seconds (`vault-manager-signed.xcresult`), and computer-use inspection
+confirms the credential error is absent. Executable and bundle hashes are in
+`signed-native-artifact-sha256.txt`. No production entitlement was changed.
+
+Additional manual folder-picker QA exposed a separate existing failure: cancelling
+the Files picker leaves the manager busy. This is not a passing folder workflow;
+it is the next repair, separate from the verified authentication-request batch.
+
+### Live GitHub Unblock
+
+Provide the **public** OAuth Client ID with Device Flow enabled, or configure
+`EXPO_PUBLIC_GITHUB_CLIENT_ID` locally. No client secret belongs in the bundle or
+chat. The owner must authorize the device flow and designate a disposable private
+repository before live push/pull and divergence testing. No real vault remote
+has been modified by these batches.

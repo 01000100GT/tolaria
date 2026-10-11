@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "ローカルの変更をプッシュしています...",
   "mobile.vaults.saving": "エディターを保存しています...",
   "mobile.vaults.authFailed": "GitHubの認証に失敗したか、期限が切れています。続行するには再度サインインしてください。",
+  "mobile.vaults.networkFailed": "GitHubに接続できませんでした。接続を確認して、もう一度お試しください。",
+  "mobile.vaults.requestTimeout": "GitHubが時間内に応答しませんでした。接続が安定してから再試行してください。",
+  "mobile.vaults.credentialFailed": "保存済みのGitHubサインイン情報を読み取ったり更新したりできませんでした。もう一度お試しください。",
+  "mobile.vaults.saveFailed": "ローカルの変更を保存できませんでした。ボールトを切り替えたり同期したりする前に、もう一度保存を試みてください。",
   "mobile.vaults.connectedAs": "{login}として接続しました"
 }

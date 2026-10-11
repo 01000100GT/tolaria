@@ -9,8 +9,10 @@ import { runSavedVaultOperation } from './savedVaultOperation'
 import { useGitHubAccount } from './useGitHubAccount'
 import { useManagedVaultCatalog, type ActiveVault } from './useManagedVaultCatalog'
 import type { GitSyncPhase } from './gitRemote'
+import { githubFailure } from './githubFailure'
 
-export type VaultSyncState = 'local' | 'pending' | 'synced' | 'diverged' | 'failed'
+export type VaultSyncState = 'local' | 'pending' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
+type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | null
 
 export function useMobileVaults() {
   const local = useLocalWorkspaceRestore()
@@ -24,14 +26,14 @@ export function useMobileVaults() {
   const [busy, setBusy] = useState(false)
   const [phase, setPhase] = useState<GitSyncPhase | 'clone' | null>(null)
   const [status, setStatus] = useState<VaultSyncState>('pending')
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<VaultError>(null)
   const running = useRef(false)
   const restorePending = local.restorePending || catalog.pending
   useEffect(() => editors.subscribeDirty(() => setStatus('pending')), [editors])
   useEffect(() => {
     if (!local.restoreFailed && !catalog.error) return
     if (catalog.pending || catalog.restored) return
-    setError(true)
+    setError('mobile.vaults.requestFailed')
     setOpened(true)
   }, [local.restoreFailed, catalog.error, catalog.pending, catalog.restored])
 
@@ -49,20 +51,21 @@ export function useMobileVaults() {
     editors.setBlocked(true)
     setBusy(true)
     setOpened(true)
-    setError(false)
+    setError(null)
     let next = active
+    let saved = false
     try {
       await runSavedVaultOperation({
         editors, rootUri: active.selection?.vaultRootUri,
-        run: async () => { next = await task() ?? active },
+        run: async () => { saved = true; next = await task() ?? active },
         refresh: (selectedNoteId) => {
           setOverride(refreshedVault(next, active, selectedNoteId))
           setRevision((value) => value + 1)
         },
       })
-    } catch {
-      setError(true)
-      setStatus('failed')
+    } catch (failure) {
+      setError(saved ? githubFailure(failure) : 'mobile.vaults.saveFailed')
+      setStatus(saved ? 'failed' : 'saveFailed')
       setOpened(true)
     } finally {
       running.current = false
@@ -92,7 +95,7 @@ export function useMobileVaults() {
     return select(vault)
   })
   const sync = () => perform(async () => {
-    if (!active.git) return null
+    if (!active.git) { setStatus('local'); return null }
     const session = await account.currentSession()
     const { syncGitVault } = await import('./gitRemote')
     const result = await syncGitVault({

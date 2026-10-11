@@ -8,10 +8,10 @@ const clientId = process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID ?? ''
 export function useGitHubAccount() {
   const [account] = useState(() => createGitHubAccountState({
     restore: readGitHubSession, save: saveGitHubSession, clear: clearGitHubSession,
-    begin: () => beginGitHubSignIn(clientId),
+    begin: (signal) => beginGitHubSignIn(clientId, fetch, signal),
     finish: (code, signal) => finishGitHubSignIn(clientId, code, signal),
-    refresh: (session) => refreshGitHubSession(session, clientId),
-    list: listGitHubRepositories,
+    refresh: (session, signal) => refreshGitHubSession(session, clientId, fetch, signal),
+    list: (session, page, signal) => listGitHubRepositories(session, page, fetch, signal),
   }))
   const state = useSyncExternalStore(account.subscribe, account.snapshot, account.snapshot)
   useEffect(() => { void account.restore(); return account.cancelSignIn }, [account])

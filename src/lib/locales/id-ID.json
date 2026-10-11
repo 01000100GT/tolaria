@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Mendorong perubahan lokal...",
   "mobile.vaults.saving": "Menyimpan editor...",
   "mobile.vaults.authFailed": "Otorisasi GitHub gagal atau kedaluwarsa. Masuk lagi untuk melanjutkan.",
+  "mobile.vaults.networkFailed": "Tidak dapat terhubung ke GitHub. Periksa koneksi Anda dan coba lagi.",
+  "mobile.vaults.requestTimeout": "GitHub tidak merespons tepat waktu. Coba lagi saat koneksi Anda stabil.",
+  "mobile.vaults.credentialFailed": "Tidak dapat membaca atau memperbarui info masuk GitHub Anda yang tersimpan. Silakan coba lagi.",
+  "mobile.vaults.saveFailed": "Tidak dapat menyimpan perubahan lokal. Coba simpan lagi sebelum beralih atau menyinkronkan vault.",
   "mobile.vaults.connectedAs": "Terhubung sebagai {login}"
 }

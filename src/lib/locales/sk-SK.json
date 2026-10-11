@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Prebieha pushovanie lokálnych zmien...",
   "mobile.vaults.saving": "Ukladá sa editor...",
   "mobile.vaults.authFailed": "Autorizácia GitHubu zlyhala alebo vypršala. Ak chcete pokračovať, prihláste sa znova.",
+  "mobile.vaults.networkFailed": "Nepodarilo sa pripojiť k GitHubu. Skontrolujte pripojenie a skúste to znova.",
+  "mobile.vaults.requestTimeout": "GitHub neodpovedal včas. Skúste to znova, keď bude vaše pripojenie stabilné.",
+  "mobile.vaults.credentialFailed": "Nepodarilo sa prečítať ani aktualizovať vaše uložené prihlasovacie údaje na GitHub. Skúste to znova.",
+  "mobile.vaults.saveFailed": "Nepodarilo sa uložiť lokálne zmeny. Pred prepnutím alebo synchronizáciou trezorov skúste uložiť znova.",
   "mobile.vaults.connectedAs": "Pripojený ako {login}"
 }

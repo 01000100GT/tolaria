@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "正在推送本地更改……",
   "mobile.vaults.saving": "正在保存编辑器……",
   "mobile.vaults.authFailed": "GitHub 授权失败或已过期。请重新登录以继续。",
+  "mobile.vaults.networkFailed": "无法连接到 GitHub。请检查您的网络连接，然后重试。",
+  "mobile.vaults.requestTimeout": "GitHub 未及时响应。请在连接稳定时重试。",
+  "mobile.vaults.credentialFailed": "无法读取或更新您已保存的 GitHub 登录信息。请重试。",
+  "mobile.vaults.saveFailed": "无法保存本地更改。在切换或同步知识库之前，请重试保存。",
   "mobile.vaults.connectedAs": "已以 {login} 的身份连接"
 }

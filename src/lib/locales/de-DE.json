@@ -1193,5 +1193,9 @@
   "mobile.vaults.push": "Lokale Änderungen werden gepusht …",
   "mobile.vaults.saving": "Editor wird gespeichert …",
   "mobile.vaults.authFailed": "Die GitHub-Autorisierung ist fehlgeschlagen oder abgelaufen. Melden Sie sich erneut an, um fortzufahren.",
+  "mobile.vaults.networkFailed": "Verbindung zu GitHub konnte nicht hergestellt werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "mobile.vaults.requestTimeout": "GitHub hat nicht rechtzeitig geantwortet. Versuchen Sie es erneut, wenn Ihre Verbindung stabil ist.",
+  "mobile.vaults.credentialFailed": "Ihre gespeicherte GitHub-Anmeldung konnte nicht gelesen oder aktualisiert werden. Bitte versuchen Sie es erneut.",
+  "mobile.vaults.saveFailed": "Lokale Änderungen konnten nicht gespeichert werden. Versuchen Sie erneut, die Änderungen zu speichern, bevor Sie Vaults wechseln oder synchronisieren.",
   "mobile.vaults.connectedAs": "Angemeldet als {login}"
 }
