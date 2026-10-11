@@ -125,13 +125,23 @@ export function PhoneWorkspace(props: PhoneWorkspaceProps) {
 function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
   const {
     commandPaletteProbe = false,
-    controller,
+    controller: baseController,
     initialState = 'list',
     keyboardShortcutProbe = false,
     onOpenNativeVault,
   } = props
   const options = phoneWorkspaceEditorOptions(props)
   const { clearGestureHandoff, gestureHandoffState, phoneState, previousPhoneState, setPhoneState } = usePhoneState(initialState)
+  const createAndOpenNote = useCallback(() => {
+    baseController.onOpenCreateNote()
+    if (baseController.snapshot.sync.kind !== 'noVault' && baseController.snapshot.sync.kind !== 'readOnly') {
+      setPhoneState('editor')
+    }
+  }, [baseController, setPhoneState])
+  const controller = useMemo(
+    () => ({ ...baseController, onOpenCreateNote: createAndOpenNote }),
+    [baseController, createAndOpenNote],
+  )
   const [sourceModeRequest, setSourceModeRequest] = useState(0)
   const { width } = useWindowDimensions()
   const dragPreview = usePhoneDragPreview(phoneState, width, clearGestureHandoff)

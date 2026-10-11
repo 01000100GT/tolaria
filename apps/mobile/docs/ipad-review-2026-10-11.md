@@ -44,7 +44,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 6 | Inline find in note, with visible match navigation/highlighting | Pending |
 | 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
 | 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
-| 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Implemented; native relationship-add and inspector checks pass; real-vault backlink QA pending |
+| 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Implemented; native relationship-add, inspector, on-disk backlink geometry and navigation pass |
 | 10 | Breadcrumbs use the note's configured type icon and color | Implemented; native typed icon verified |
 | 11 | Favorite and other local actions respond without avoidable delay | Bounded flag edits and lazy settings suggestions implemented; native model timings recorded |
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
@@ -417,3 +417,54 @@ measurements, commits and remaining limitations as each batch completes.
   Demo-vault directories remain clean. The simulator's disposable Spotlight
   index was retained on Jupiter to recover local disk space without deleting
   app documents or user vault data.
+
+### Phone creation and on-disk backlink verification
+
+- Native testing exposed a phone-only navigation omission: new notes were
+  created and selected, but the list stayed on screen. The phone shell now wraps
+  the shared create action with its editor transition. Plus, Cmd+N and command
+  palette reuse that path. No-vault/read-only flows still open the vault picker;
+  document creation and persistence remain in the shared controller.
+- Red: both browser plus/shortcut flows and the native create test failed to
+  reach the editor. Green: three browser entry points pass, with no title dialog
+  and a body-only document retaining its type frontmatter. Three existing phone
+  note/editor action checks also pass. Final Release simulator result
+  `phone-create-and-swipes-final.xcresult` passes note creation/typing/reopening
+  and both row-swipe regressions.
+- `native-backlink.xcresult` passes against real files in an isolated app-owned
+  vault. The backlink row is over 200 points wide and at least 28 points high;
+  its icon is vertically centered within one point and inset at least six
+  points. Following it opens the referring file and its full body. The screenshot
+  confirms horizontal icon/text layout. This is not an authenticated GitHub test.
+- Existing `PhoneWorkspace.tsx`: CodeScene 10 -> 10, local findings 0 -> 0.
+  Both new Swift files score 10 with no findings. The parameterized browser spec
+  is unscorable with no findings. All 16 expected per-file analyzer runs complete
+  with zero findings/errors; hashes match `phone-create-analyzer-evidence.json`.
+  Exact paths/classification are in `phone-create-final-manifest.json`. Staged
+  delta checks all four code files with no issues. Mobile lint/typecheck pass.
+- Localization: no UI copy changes. PostHog: no event needed for repairing
+  navigation of an existing create action. No new component, dependency or ADR;
+  native QA and ABSTRACTIONS documentation are updated. Demo-vault dirt is empty.
+- Simulator cleanup: the disposable Git vault, catalog and test settings are
+  retained under `retained-disposable-git-ui-fixture` in the evidence directory.
+  The original simulator configuration matches its pre-test backup exactly.
+  No user vault files were modified. Builds and scanner temporary files remain
+  on Jupiter; approximately four GiB of local disk space is available.
+
+## Remaining acceptance blockers
+
+- Slash commands and inline find/highlight navigation still require changes to
+  the generated TenTap bundle. The local analyzer rejects that bundle's size;
+  the separately requested source-scan/build/native-QA exception is not yet
+  approved. These two features are not implemented or claimed complete.
+- The Mac is locked, so manual source-editor hardware-arrow verification remains
+  unavailable. XCTest's hardware-key simulation also failed an ordinary native
+  text-field control; do not treat that experiment as a passing editor check.
+- Authenticated repository-picker and foreground AutoGit remote UI verification
+  need an authorized GitHub session/test repository. Native local-Git transport
+  probes, manual commit persistence and settings checks passed, but are not a
+  substitute for those authenticated workflows.
+- Cloud Codacy parity/exact-SHA verification and CodeScene MCP remain unavailable
+  under the owner-approved exception above. This is an implementation handoff on
+  the mobile branch, not a production release or a claim that all twenty items
+  have passed final acceptance.

@@ -373,7 +373,7 @@ Workspace surfaces now sit one level above those primitives:
 | `nativeWysiwyg*Probe.ts` | Native Expo simulator proof models for mobile editor behavior that must be verified outside React Native Web |
 | `TabletWorkspace` | Tablet shell that owns selected-note state, panel layout, action-sheet forms, and editable snapshot state |
 | `tabletPanelResize` | Reconciles current pane visibility with a resized window and the existing readable-editor minimum; preserves hidden panes when widening |
-| `PhoneWorkspace` | Phone shell that reuses the tablet controller/repository boundary while adapting navigation to list, sidebar, editor, and properties screens |
+| `PhoneWorkspace` | Phone shell that reuses the tablet controller/repository boundary while adapting navigation to list, sidebar, editor, and properties screens; new-note commands share a create-and-open transition without changing the no-vault/read-only picker path |
 | `MobileWorkspaceSidebar` | Sidebar groups, counts, and folder tree |
 | `MobileNoteListPanel` | Note-list toolbar, rows, chips, and empty state |
 | `MobileCommandPalette` / `mobileCommandPalette.ts` | Desktop-ID-preserving mobile command search over existing workspace callbacks, including selected-note file utilities and retargeting; uses the shared keyboard-aware viewport with a constrained results scroller |

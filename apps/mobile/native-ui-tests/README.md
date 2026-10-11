@@ -57,6 +57,17 @@ touch targets, Undo through the Edit group, and the tablet's direct outline
 button. On iPhone, run the group and Undo tests only; the outline remains in Edit
 to avoid crowding the phone toolbar. All edits use the disposable fixture.
 
+`PhoneNoteCreationTests` runs on iPhone and checks that the plus button opens a
+new note directly, without a title dialog, and retains typed content and default
+frontmatter after returning to the list. Browser coverage also exercises Cmd+N
+and the command palette; it does not substitute for native typing/navigation.
+
+`TabletVaultBacklinkTests` requires an isolated on-disk vault with `review.md`
+and `codex-prepared-action-qa.md`, titled `Codex Prepared Action QA`, containing
+`[[review]]` and `Original full body for native Undo.`. It measures the backlink
+row and icon alignment, then follows the reference to its source. Restore the
+previous simulator vault configuration after testing; never seed the user vault.
+
 `TabletCommandPaletteKeyboardTests` checks the palette's full bounds against the
 software keyboard in both orientations, preserves its 540-point tablet width,
 and types and selects a real navigation command after rotation. A continuous
