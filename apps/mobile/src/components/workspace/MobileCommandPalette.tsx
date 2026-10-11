@@ -11,6 +11,7 @@ import { Text } from '../ui/text'
 import { Input } from '../ui/input'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
+import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { mobileColors, mobileSpace, mobileType } from '../../ui/tokens'
 import {
@@ -54,38 +55,40 @@ export function MobileCommandPalette({ commands, onClose }: MobileCommandPalette
   }
 
   return (
-    <View style={styles.overlay} testID="mobile-command-palette">
-      <Pressable accessibilityLabel={mobileText('common.cancel')} style={styles.backdrop} testID="mobile-command-palette-backdrop" onPress={onClose} />
-      <MobilePanel style={styles.palette} testID="mobile-command-palette-panel">
-        <MobileToolbar testID="mobile-command-palette-toolbar">
-          <MobileToolbarTitle title={mobileText('menu.view.commandPalette')} />
-          <MobileToolbarSpacer />
-          <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={onClose} />
-        </MobileToolbar>
-        <Input
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoFocus
-          clearButtonMode="while-editing"
-          placeholder={mobileText('command.palettePlaceholder')}
-          placeholderTextColor={mobileColors.textFaint}
-          spellCheck={false}
-          style={styles.input}
-          testID="mobile-command-palette-input"
-          value={query}
-          onChangeText={handleQueryChange}
-          onKeyPress={handleKeyPress}
-          onSubmitEditing={selectActiveCommand}
-        />
-        <CommandResults
-          groups={results.groups}
-          selectedIndex={selectedIndex}
-          onHover={setSelectedIndex}
-          onSelect={selectCommand}
-        />
-        <CommandFooter />
-      </MobilePanel>
-    </View>
+    <MobileKeyboardAvoidingView style={surfaceStyles.overlay} testID="mobile-command-palette">
+      <Pressable accessibilityLabel={mobileText('common.cancel')} style={surfaceStyles.backdrop} testID="mobile-command-palette-backdrop" onPress={onClose} />
+      <View style={surfaceStyles.paletteContainer} pointerEvents="box-none">
+        <MobilePanel accessibilityViewIsModal style={surfaceStyles.palette} testID="mobile-command-palette-panel">
+          <MobileToolbar testID="mobile-command-palette-toolbar">
+            <MobileToolbarTitle title={mobileText('menu.view.commandPalette')} />
+            <MobileToolbarSpacer />
+            <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={onClose} />
+          </MobileToolbar>
+          <Input
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoFocus
+            clearButtonMode="while-editing"
+            placeholder={mobileText('command.palettePlaceholder')}
+            placeholderTextColor={mobileColors.textFaint}
+            spellCheck={false}
+            style={styles.input}
+            testID="mobile-command-palette-input"
+            value={query}
+            onChangeText={handleQueryChange}
+            onKeyPress={handleKeyPress}
+            onSubmitEditing={selectActiveCommand}
+          />
+          <CommandResults
+            groups={results.groups}
+            selectedIndex={selectedIndex}
+            onHover={setSelectedIndex}
+            onSelect={selectCommand}
+          />
+          <CommandFooter />
+        </MobilePanel>
+      </View>
+    </MobileKeyboardAvoidingView>
   )
 }
 
@@ -190,10 +193,6 @@ function CommandFooter() {
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(55, 53, 47, 0.14)',
-  },
   emptyState: {
     minHeight: mobileCommandPaletteLayoutContract.emptyMinHeight,
     alignItems: 'center',
@@ -228,27 +227,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: mobileCommandPaletteLayoutContract.inputPaddingHorizontal,
     paddingVertical: mobileCommandPaletteLayoutContract.inputPaddingVertical,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: mobileCommandPaletteLayoutContract.overlayPaddingTop,
-    zIndex: 30,
-  },
-  palette: {
-    maxHeight: mobileCommandPaletteLayoutContract.paletteMaxHeight,
-    maxWidth: mobileCommandPaletteLayoutContract.paletteMaxWidth,
-    width: '92%',
-    backgroundColor: mobileColors.card,
-    borderColor: mobileColors.borderStrong,
-    borderRadius: mobileCommandPaletteLayoutContract.paletteBorderRadius,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { height: 10, width: 0 },
-    shadowOpacity: 0.14,
-    shadowRadius: 28,
-  },
   results: {
     alignItems: 'stretch',
     paddingBottom: mobileSpace.sm,
@@ -256,6 +234,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   resultsScroll: {
+    flexShrink: 1,
+    minHeight: 0,
     alignSelf: 'stretch',
     width: '100%',
   },
@@ -306,5 +286,39 @@ const styles = StyleSheet.create({
   footerText: {
     color: mobileColors.textMuted,
     fontSize: mobileType.micro,
+  },
+})
+
+const surfaceStyles = StyleSheet.create({
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(55, 53, 47, 0.14)',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 30,
+  },
+  paletteContainer: {
+    flex: 1,
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: mobileCommandPaletteLayoutContract.overlayPaddingTop,
+  },
+  palette: {
+    flexShrink: 1,
+    minHeight: 0,
+    maxHeight: mobileCommandPaletteLayoutContract.paletteMaxHeight,
+    maxWidth: mobileCommandPaletteLayoutContract.paletteMaxWidth,
+    width: '92%',
+    backgroundColor: mobileColors.card,
+    borderColor: mobileColors.borderStrong,
+    borderRadius: mobileCommandPaletteLayoutContract.paletteBorderRadius,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { height: 10, width: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 28,
   },
 })

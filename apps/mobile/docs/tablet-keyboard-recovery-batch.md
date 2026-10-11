@@ -132,7 +132,7 @@ the primary paths; dragging the form body dismisses the keyboard as configured.
 `mobile:lint`, `mobile:typecheck`, focused action-sheet/command tests, and locale
 validation pass. The normal scoped commit/push hooks remain enabled.
 
-CodeScene staged delta: `no-issues-found`, all eight eligible files checked
+CodeScene staged delta: `no-issues-found`, all nine eligible files checked
 (`codescene-staged.json`); no warnings. The MCP safeguard remains unavailable,
 not reported as a passing MCP result. Project scores immediately before commit
 remain Hotspot 10.0 / Average 9.991289158049293 against floors 10.0 / 9.99.
@@ -147,3 +147,69 @@ the new keyboard wrapper was not yet listed. The inventory now explicitly record
 its desktop viewport reference, native-only rationale, and native assertions.
 The data-only inventory has no scorable CodeScene functions before or after; it
 must retain zero findings, not be represented as a 10-point code score.
+
+### Command palette follow-through
+
+The keyboard checkpoint was committed and pushed as `c98da99fb` with normal
+hooks: mobile lint/types, 1,264 tests across 205 files, Expo web export, and the
+project CodeScene threshold check passed. The web export is a build gate only,
+not the native QA evidence. The unavailable dashboard gates remain excepted.
+
+Manual native inspection then reproduced command results hidden behind the full
+software keyboard. `palette-red.xcresult` records the failing native panel-bound
+assertion. The palette now reuses `MobileKeyboardAvoidingView`, constrains the
+result scroller, and retains its existing desktop-derived width, spacing, input,
+and typography. Surface and content styles are separated within the same file
+to keep the CodeScene method-size gate at 10; no dependency or new UI copy.
+
+`TabletCommandPaletteKeyboardTests` checks the whole palette above the actual
+software keyboard, the existing 540-point width, both rotation directions,
+search input, and a real tap on Go to All Notes followed by the exact note-list
+title. The first post-fix run passed geometry but exposed a test query relying
+on a flattened accessibility ancestor; the final assertion uses the existing
+`note-list-toolbar-title` test ID and still verifies the exact displayed label.
+
+This follow-through's code manifest, relative to `apps/mobile/`, is below. The
+severity and analyzer identities are the same as the preceding table. Complete
+branch and untracked inventories are `palette-branch-manifest.txt` and
+`palette-untracked-manifest.txt`; full per-file reports retain every tool row.
+
+| File | Kind | Baseline | B | E9 | O | T | L | CodeScene |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `src/components/workspace/MobileCommandPalette.tsx` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `native-ui-tests/TabletCommandPaletteKeyboardTests.swift` | N | New | - | - | 0 | 0 | 0 | New -> 10 |
+
+Local reports: `before-command-palette.json`,
+`palette-MobileCommandPalette-tsx.json`, and `palette-scroll-tests-final.json`.
+Every relevant analyzer must complete and retain zero findings at every severity;
+no remote dashboard result is inferred. Focused command-model/parity tests pass
+(28 tests). Final native and staged-delta results follow after verification.
+Localization: no UI copy changes. PostHog: no event needed for correcting the
+keyboard layout of existing commands. ADRs: none. Docs: this record, the native
+test README, and the keyboard/command-palette abstraction descriptions. The
+same scoped exception, expiry, and no-release-approval restriction apply.
+
+Final native result: `palette-scroll.xcresult` passes both orientations in 43.2
+seconds, including a real result-list drag that moves the command row more than
+60 points without executing it or dismissing the keyboard. This was added after
+a CUA mouse drag unexpectedly selected a command; the deterministic native touch
+assertion is the scroll evidence. `palette-verified.xcresult` also passed the
+preceding geometry/navigation checks. At landscape 1376 x 1032, palette bounds
+are x=418, y=100, width=540, height=431; the software keyboard begins at y=585.875.
+In portrait, palette width remains 540 and its existing 520-point maximum height
+fits above the keyboard. Final bundle: `palette-verified.js` with Hermes `-O`.
+
+Manual inspection on the app-local Laputa copy confirms the new palette above
+the full software keyboard. No note content was changed there. That copy contains
+5,867 open and 169 archived notes; it is not the original user vault. Some XCTest
+rotation screenshots retain stale image orientation/cropping, so numeric native
+frames and the separately observed Simulator window are the geometry evidence,
+not those malformed screenshots alone.
+
+Final CodeScene staged delta: `no-issues-found`, both code files checked
+(`palette-codescene-staged.json`); file scores 10/10 and project scores unchanged
+at 10.0 / 9.991289158049293. Local per-file scans completed without findings or
+analyzer errors. Typecheck and 28 focused command/parity tests pass. Normal scoped
+commit/push hooks remain enabled. Demo fixture Git status remains clean. Full
+desktop/Rust coverage, Android, physical-device and floating-keyboard QA were not
+run; this checkpoint does not waive those launch requirements.

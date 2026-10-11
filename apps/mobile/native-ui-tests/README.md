@@ -41,3 +41,10 @@ For a standalone build with an embedded current-source bundle, Metro is not
 required: generate the project with `create-project.rb` and run `xcodebuild test`
 against the installed bundle. Retain the `.xcresult`, and identify the tested
 source/bundle in the batch evidence. Do not count a browser capture as this test.
+
+`TabletCommandPaletteKeyboardTests` checks the palette's full bounds against the
+software keyboard in both orientations, preserves its 540-point tablet width,
+and types and selects a real navigation command after rotation. A continuous
+result-list drag must scroll without executing a command or closing the keyboard.
+Target existing
+test IDs when asserting native labels; iOS may flatten intermediate view ancestry.
