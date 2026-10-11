@@ -48,3 +48,9 @@ and types and selects a real navigation command after rotation. A continuous
 result-list drag must scroll without executing a command or closing the keyboard.
 Target existing
 test IDs when asserting native labels; iOS may flatten intermediate view ancestry.
+
+`TabletPortraitNavigationTests` verifies sidebar reveal by button and native
+touch drag, section selection, header dismissal, and properties access. The
+sidebar remains 260 points wide while the editor starts at x=340 and retains at
+least 520 points, entirely inside the screen. `TabletPanelGestureTests` explicitly
+sets landscape rather than depending on whichever orientation a prior test left.

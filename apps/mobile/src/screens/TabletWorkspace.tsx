@@ -387,13 +387,19 @@ function adjacentVisibleNoteId(
 }
 
 function TabletLeftChromeHost(props: TabletSidebarHostProps) {
-  return (
+  const strip = (
     <Reanimated.View
       style={[styles.leftChromeHost, props.gestures.leftChromeMotionStyle]}
       testID="tablet-left-panel-strip"
     >
       <TabletSidebarHost {...props} />
       <TabletNoteListHost {...props} />
+    </Reanimated.View>
+  )
+  if (props.compactTablet) return strip
+  return (
+    <Reanimated.View style={[styles.leftChromeViewport, props.gestures.leftChromeViewportStyle]}>
+      {strip}
     </Reanimated.View>
   )
 }
@@ -432,6 +438,7 @@ function TabletSidebarHost({
         layoutProbe={layoutProbe}
         sections={snapshot.sidebarSections}
         title={snapshot.source?.label}
+        onCollapse={gestures.showEditorList}
         onCreateFolder={onOpenCreateFolder}
         onCreateType={onOpenCreateType}
         onCreateView={onOpenCreateView}
@@ -442,8 +449,14 @@ function TabletSidebarHost({
         onOpenTypeActions={onOpenTypeActions}
         onOpenTypeVisibility={onOpenTypeVisibility}
         onOpenViewActions={onOpenViewActions}
-        onSelectFolder={onSelectFolder}
-        onSelectItem={onSelectSidebarItem}
+        onSelectFolder={(selection) => {
+          onSelectFolder(selection)
+          gestures.finishSidebarNavigation()
+        }}
+        onSelectItem={(selection) => {
+          onSelectSidebarItem(selection)
+          gestures.finishSidebarNavigation()
+        }}
       />
     </View>
   )
@@ -488,7 +501,10 @@ function tabletNoteListPanelProps(props: TabletPanelHostProps): ComponentProps<t
     onOpenCreateNote: props.onOpenCreateNote,
     onOpenSearch: props.onOpenSearch,
     onOpenVault: props.onOpenNativeVault,
-    onSelectNote: props.onSelectNote,
+    onSelectNote: (noteId) => {
+      props.onSelectNote(noteId)
+      props.gestures.finishSidebarNavigation()
+    },
   }
 }
 
@@ -925,5 +941,10 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     flexDirection: 'row',
     height: '100%',
+  },
+  leftChromeViewport: {
+    height: '100%',
+    flexShrink: 0,
+    overflow: 'hidden',
   },
 })

@@ -180,6 +180,13 @@ and settled accessibility state. Offsets always use desktop panel tokens. Native
 interaction QA is mandatory; web tests cannot verify native responder arbitration.
 See ADR 0195.
 
+When the adaptive iPad window cannot fit both left panes plus the 520-point
+editor minimum, the animated left strip is clipped to the 340-point list slot.
+Revealing the 260-point sidebar leaves an 80-point list preview rather than
+compressing the editor. Selecting a scope or note restores the full list; the
+sidebar header can also dismiss it. The same UI-thread offsets drive buttons
+and drags, and wide/compact layouts retain their existing dimensions.
+
 `apps/mobile/native-ui-tests/` adds an independent XCUITest runner for actual
 native panel drags and toolbar actions. `test-ios-panel-gestures.mjs` generates
 the project outside the repository, reinstalls only the disposable runner to avoid

@@ -33,6 +33,13 @@ Assessment started 2026-10-10. Target: iPad and Android tablets, phone later.
   establish keyboard correctness for every other overlay or for Android.
 - The table and evidence below are chronological, starting with the recovered
   baseline; later batches supersede the earlier observations.
+- Selected-note recovery is committed and pushed as `7cd29568d`: failed reads
+  show Retry, unloaded content is not writable, and stale replies cannot replace
+  drafts. Actual native missing-file/retry/edit QA preserves frontmatter. Scoped
+  hooks pass 1,274 tests across 206 files; no desktop/Rust suite was run.
+- Portrait sidebar reveal now keeps the readable editor width while preserving
+  desktop panel dimensions. Four native navigation/rotation tests and the 181
+  layout metrics pass. This does not establish Stage Manager or Android behavior.
 
 ### Repository text-batch follow-through
 
@@ -62,7 +69,7 @@ October desktop parity. Numeric native layout checks protect rendering, but the
 expected values and mobile constants are still duplicated. Consolidating the
 desktop-owned contract remains open, as do newer desktop behavior differences.
 
-### Remaining hydration error handling
+### Hydration error handling, resolved October 11
 
 The frontmatter audit also reproduced and fixed silent loss of tags after the
 eighth value when editing the tags property. Initial snapshots and subsequent
@@ -70,19 +77,18 @@ hydration/editing now retain every tag; the actual form conversion/write-plan
 round trip has regression coverage. The edit orchestrator was first refactored
 from CodeScene 8.28 to 10.0 without changing behavior.
 
-`useHydrateSelectedNote` in `useTabletWorkspaceController.ts` attaches a success
-handler to `readNoteContent` without a rejection handler. A storage recovery
-conflict can therefore reject asynchronously without a user-facing retry/recovery
-state; the render error boundary does not cover that promise. The save/read guards
-protect bytes but do not finish the UX. Track this for the UI/controller batch;
-do not silently substitute empty content or remove the conflict guard.
+The former `useHydrateSelectedNote` attached only a success handler to
+`readNoteContent`. The shared `useMobileNoteRead` now handles failure and retry,
+cancels obsolete replies, and gates editor mounting. The mutation boundary also
+rejects content-dependent edits against unloaded notes. See the October 11
+keyboard/recovery record for before/after tests and native filesystem evidence.
+Bulk actions on metadata-only notes still need an explicit load-then-edit flow;
+failing closed is not equivalent to completing that UX.
 
 ### Next batch acceptance checks
 
-1. Fix keyboard-aware form sizing first (native reproduction below), then finish
-   the recovery UX using existing Tolaria components. A rejected selected-
-   note read must leave the draft intact, expose a recovery action, and never
-   fall through to an editable empty note. A failed sync must distinguish local
+1. Keyboard-aware form sizing and selected-note read recovery are verified in
+   the October 11 batch. Continue the remaining recovery UX: a failed sync must distinguish local
    save failure, unavailable network/authentication, and divergent history.
    Prove retry and vault switching in the native app after injected failures;
    checking the filesystem guards alone is not sufficient.

@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
-import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated'
 import { desktopPanelParity } from '../ui/desktopParity'
 import { tabletLeftPanelStageAfterDrag, tabletLeftPanelStageOffset, type TabletLeftPanelStage } from './tabletWorkspacePanelTransitions'
 import { createTabletPanGesture, tabletPanelSpring, type TabletPanelPosition, type TabletPanSession } from './tabletNativePanGesture'
 import { tabletPanelPositionAfterResize } from './tabletPanelResize'
+import { tabletLeftChromeMinWidth } from './tabletWorkspaceScreenMode'
 
 export type TabletPanelGestureOptions = {
   compactTablet: boolean
@@ -65,10 +66,8 @@ export function useTabletPanelGestures(options: TabletPanelGestureOptions) {
   }, [compactTablet, position.stage, propertiesReplaceSidebar, restoreLeft, settle, width])
   const showSidebar = position.stage === 'all' && !compactTablet
   const noteListVisible = position.stage !== 'editor'
-  const leftChromeMotionStyle = useAnimatedStyle(() => ({
-    marginRight: left.value,
-    transform: [{ translateX: left.value }],
-  }))
+  const sidebarOverList = sidebarReplacesList(options, width)
+  const leftChromeMotion = useLeftChromeMotion(left, compactTablet, sidebarOverList)
   const propertiesMotionStyle = useAnimatedStyle(() => ({
     marginLeft: -properties.value,
     transform: [{ translateX: properties.value }],
@@ -77,7 +76,10 @@ export function useTabletPanelGestures(options: TabletPanelGestureOptions) {
   return {
     hideLeftChrome: useCallback(() => showLeftStage('editor'), [showLeftStage]),
     hideProperties,
-    leftChromeMotionStyle,
+    ...leftChromeMotion,
+    finishSidebarNavigation: useCallback(() => {
+      if (sidebarOverList) showLeftStage('list')
+    }, [showLeftStage, sidebarOverList]),
     leftChromeVisible: true,
     noteListVisible,
     panGesture,
@@ -99,6 +101,23 @@ export function useTabletPanelGestures(options: TabletPanelGestureOptions) {
     toggleSidebar: useCallback(() => showLeftStage(showSidebar ? 'list' : 'all'), [showLeftStage, showSidebar]),
     toggleSidebarAndNoteList: useCallback(() => showLeftStage(noteListVisible ? 'editor' : 'all'), [noteListVisible, showLeftStage]),
   }
+}
+
+function sidebarReplacesList(options: TabletPanelGestureOptions, width: number) {
+  return !options.compactTablet && options.propertiesReplaceSidebar && width < tabletLeftChromeMinWidth
+}
+
+function useLeftChromeMotion(left: SharedValue<number>, compact: boolean, sidebarOverList: boolean) {
+  const stripWidth = desktopPanelParity.noteListWidth + (compact ? 0 : desktopPanelParity.sidebarWidth)
+  const maximumWidth = sidebarOverList ? desktopPanelParity.noteListWidth : stripWidth
+  const leftChromeViewportStyle = useAnimatedStyle(() => ({
+    width: Math.max(0, Math.min(maximumWidth, stripWidth + left.value)),
+  }))
+  const leftChromeMotionStyle = useAnimatedStyle(() => {
+    const transform = [{ translateX: left.value }]
+    return compact ? { marginRight: left.value, transform } : { width: stripWidth, transform }
+  })
+  return { leftChromeMotionStyle, leftChromeViewportStyle }
 }
 
 function useWindowResize(width: number, onResize: () => void) {

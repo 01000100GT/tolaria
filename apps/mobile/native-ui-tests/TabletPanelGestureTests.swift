@@ -3,6 +3,7 @@ import XCTest
 final class TabletPanelGestureTests: XCTestCase {
   func testRealContinuousPanelDrag() throws {
     continueAfterFailure = false
+    XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
     app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&tabletPanels=all&qaRun=xctest"]
     app.launch()

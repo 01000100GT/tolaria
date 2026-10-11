@@ -275,3 +275,54 @@ Final staged CodeScene delta: `no-issues-found`, all 13 eligible files checked
 zero findings and zero errors. Complete branch/untracked inventories are
 `recovery-branch-manifest.txt` and `recovery-untracked-manifest.txt`. Demo fixture
 Git status is clean; the disposable simulator note is absent after autosave.
+
+Recovery checkpoint pushed as `7cd29568d` with normal hooks: mobile lint/types,
+1,274 tests across 206 files, Expo web export, and project CodeScene floors pass.
+
+### Portrait sidebar follow-through
+
+`panels-red.xcresult` reproduces a 432-point editor after opening the sidebar in
+portrait, below the existing 520-point minimum. The adaptive iPad layout now
+reveals the unchanged 260-point sidebar within the 340-point navigation slot,
+leaving an 80-point note-list preview. The editor stays 692 points wide on the
+1032-point portrait simulator. Section/folder/note selection restores the full
+list; the previously unwired sidebar-header collapse action now works. Wide
+tablet snap widths and the separate compact layout are retained. No visual token
+or dependency changes; no new ADR is needed for this bounded layout correction.
+
+`panels-verified.xcresult` passes four actual native tests in 73.3 seconds:
+portrait toolbar navigation, portrait touch dragging, the existing continuous
+landscape panel sequence, and repeated rotation with note selection preserved.
+The initial combined run passed portrait/rotation but failed landscape because
+the intentionally failing earlier test left the simulator in portrait. The
+landscape test now sets its own orientation explicitly; that setup regression is
+fixed, not ignored. Manual CUA clicks also verify sidebar reveal and selecting a
+folder returns the full list. `panels-native-layout.log` passes all 181 native
+all-panels/WYSIWYG metrics. `panels-tests.log` passes 35 focused transition,
+resize, screen-mode, and intent tests; final mobile typecheck also passes.
+
+Code manifest (relative to `apps/mobile/`), with the same analyzer identities and
+zero-at-every-severity definition as earlier tables:
+
+| File | Kind | Baseline | B | E9 | O | T | L | CodeScene |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `src/screens/useTabletPanelGestures.ts` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `src/screens/TabletWorkspace.tsx` | E | All 0 | 0 | 0 | 0 | 0 | 0 | 10 -> 10 |
+| `native-ui-tests/TabletPanelGestureTests.swift` | E | All 0 | - | - | 0 | 0 | 0 | 10 -> 10 |
+| `native-ui-tests/TabletPortraitNavigationTests.swift` | N | New | - | - | 0 | 0 | 0 | New -> 10 |
+
+Per-file evidence: `panels-before-*`, `panels-after-*`; all expected analyzers
+completed, with no errors or findings. Complete branch/untracked inventories:
+`panels-branch-manifest.txt`, `panels-untracked-manifest.txt`. Staged CodeScene
+delta is `no-issues-found`, all four eligible files checked. Project CodeScene
+remains Hotspot 10.0 / Average 9.991289158049293, passing 10.0 / 9.99 floors.
+An intermediate complexity finding was resolved by naming the adaptive-sidebar
+predicate; no suppression was added. Current native JS bundle is
+`panels-verified.js`, compiled with Hermes `-O` into the existing native executable.
+
+Localization: no UI copy changes. PostHog: no event needed for correcting existing
+navigation geometry/button wiring. Docs: this record, resumption assessment,
+native-test README, and `docs/ABSTRACTIONS.md`. Desktop/Rust coverage, Android,
+physical-device, hardware-keyboard delivery, and Stage Manager window resizing
+are not certified by this batch. The absent dashboard/MCP checks remain covered
+only by the temporary scoped exception, not reported as passing remote checks.
