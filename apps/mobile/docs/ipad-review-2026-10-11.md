@@ -152,9 +152,33 @@ measurements, commits and remaining limitations as each batch completes.
   GitHub login remains intact. Editor checks above use disposable fixture data.
 - Native CFNetwork logs show the user's clone request received HTTP 200 and
   214,529,014 bytes, then was cancelled at 120,017 ms. The transport's fixed
-  120-second deadline aborted a progressing large download. Replacing this with
-  a bounded idle-read timeout is the next fix; large authenticated clone and
-  automatic remote UI checks remain pending.
+  120-second deadline aborted a progressing large download. The transport now
+  applies that deadline to network waits, pausing it during consumer processing
+  and resetting it for each read. Explicit cancellation and redirect rejection
+  remain intact, and early termination cancels the unfinished response stream.
+- Red: progressing-download and slow-consumer tests fail with the original
+  deadline. Green: all seven streaming/transport tests pass, including stalled
+  bodies, stalled response headers, early cancellation and binary request bytes.
+  No new UI copy, dependency, Git history policy or remote mutation is introduced.
+  PostHog: no new event needed for repairing an existing clone operation.
+- Release simulator build succeeds with the fix. Live large authenticated clone
+  and automatic remote UI checks remain pending because the Mac is locked.
+  No real Laputa note was changed or added during this batch, so there is no
+  user-vault QA content to remove. Do not interpret the transport regression
+  tests as proof that the full large-vault clone has completed.
+- Final manifest: `git-stream-scan-manifest.json`, containing the exact four
+  changed paths plus branch-wide tracked/untracked manifests. Existing
+  `gitFetchClient.ts` remains CodeScene 10 and local Codacy zero; new
+  `gitFetchStreaming.test.ts` scores 10 with zero findings. Both files have five
+  successful, one-file analyzer rows: Biome, ESLint9, Opengrep, Trivy and Lizard,
+  with zero findings at every severity and no errors. Staged CLI CodeScene delta
+  passes both files. No suppressions or analyzer-limit changes were introduced.
+- The scoped 1,409-test mobile suite includes these regressions. Release iPad
+  build is installed and launched with `source=native-vault`, preserving the
+  authenticated app data rather than leaving the fixture screen as the default.
+  Exact QA markers are absent from app Documents. No `~/Laputa` file was changed.
+  Cloud verification remains unavailable under the recorded exception; native
+  clone, source scrolling and automatic-sync UI QA are not marked complete.
 
 ### Saved views and sidebar types
 

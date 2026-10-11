@@ -101,7 +101,11 @@ push-only/no-op syncs preserve the mounted editor under ADR 0212.
 catalog. Catalog publication renames a validated pending file and retains a
 recoverable backup. `githubAccountState.ts` isolates cancellation and ordered
 SecureStore writes from React. Native Git HTTP uses Expo's streaming fetch with
-redirects disabled. The footer distinguishes local-only folders, pending sync,
+redirects disabled. Its 120-second timeout bounds connection/header waits and
+each pending body read, rather than the total pack download. The timer pauses
+while Git processes a delivered chunk; caller cancellation remains active and
+early consumer termination cancels the reader. Large progressing clones are not
+aborted solely for taking more than two minutes. The footer distinguishes local-only folders, pending sync,
 success, failure, and divergence; edits clear the previous successful sync state.
 `gitCheckoutRecovery.ts` persists checkout intent before replacing files and
 advances the branch only after checkout succeeds. Managed-vault activation and
