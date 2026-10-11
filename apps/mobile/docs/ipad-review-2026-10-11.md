@@ -39,7 +39,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 1 | One-tap copy of GitHub device authorization code | Implemented; native live device-code copy/cancel check passes |
 | 2 | Searchable, aligned, scrollable repository picker for large lists | Implemented with virtualized rows; search tests pass; authenticated native picker QA pending |
 | 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Implemented; native screenshot verified |
-| 4 | Editor-focused arrow keys never change selected note | In progress |
+| 4 | Editor-focused arrow keys never change selected note | Implemented; native rich-text and source hardware-arrow checks pass; source edits/frontmatter survive cold launch |
 | 5 | Restore desktop-style editor slash commands | Pending |
 | 6 | Inline find in note, with visible match navigation/highlighting | Pending |
 | 7 | Desktop-compatible type discovery, plural labels and custom sidebar names | Implemented; model tests and native type navigation pass |
@@ -451,15 +451,37 @@ measurements, commits and remaining limitations as each batch completes.
   No user vault files were modified. Builds and scanner temporary files remain
   on Jupiter; approximately four GiB of local disk space is available.
 
+### Source hardware keyboard acceptance follow-up
+
+- With the Mac unlocked, computer-use input verified Up and Down in the native
+  source editor, first with the in-memory fixture and then with an isolated
+  on-disk Git vault. Simulator must actually be foreground for hardware input;
+  accessibility focus alone did not deliver keys. The initial no-op attempts
+  were not counted as passing checks.
+- Up moved from the third test line to the second: typing `x` changed only the
+  second line to `Second source linxe`. Down returned to the third line:
+  typing `z` produced `Third source linez`. The selected note remained Native
+  Git review while both notes were visible in All Notes.
+- Reading `review.md` from the simulator's app-owned filesystem confirmed the
+  exact edits and unchanged `type: Essay`, `status: Draft`, and
+  `custom: preserved` frontmatter. Terminating and relaunching Tolaria retained
+  the same document and properties. Screenshot evidence:
+  `source-hardware-arrows-on-disk.png` in the existing Jupiter evidence folder.
+- The temporary Git vault/catalog are retained outside the simulator after QA;
+  the original vault configuration is restored. No remote was contacted and no
+  user vault was edited. Keyboard capture is restored to its initial off state.
+- This follow-up changes documentation only. No new UI copy, analytics event,
+  dependency or ADR; no code-file analyzer manifest entries or coverage changes.
+  Project CodeScene still reports Hotspot 10.0 / Average 9.991289158049293.
+  Codacy cloud roster lookup still fails with missing authentication after retry;
+  the existing exception remains applicable, not a passing cloud verification.
+
 ## Remaining acceptance blockers
 
 - Slash commands and inline find/highlight navigation still require changes to
   the generated TenTap bundle. The local analyzer rejects that bundle's size;
   the separately requested source-scan/build/native-QA exception is not yet
   approved. These two features are not implemented or claimed complete.
-- The Mac is locked, so manual source-editor hardware-arrow verification remains
-  unavailable. XCTest's hardware-key simulation also failed an ordinary native
-  text-field control; do not treat that experiment as a passing editor check.
 - Authenticated repository-picker and foreground AutoGit remote UI verification
   need an authorized GitHub session/test repository. Native local-Git transport
   probes, manual commit persistence and settings checks passed, but are not a
