@@ -13,17 +13,25 @@ import {
 } from '../workspace/mobileWorkspaceSuggestions'
 import type { TabletReadOnlyForm } from './tabletWorkspaceTypes'
 
+type TypeSuggestionForm = Pick<TabletReadOnlyForm, 'typeName' | 'typePropertyQuery' | 'typeSchemaPropertyName' | 'typeSchemaRelationshipName' | 'typeSchemaRelationshipTarget'>
+
 export function typeSectionSuggestionOptions({
+  enabled = true,
   notes,
   readOnlyForm,
   sourceNote,
   workspaceSnapshot,
 }: {
+  enabled?: boolean
   notes: MobileNote[]
-  readOnlyForm: TabletReadOnlyForm
+  readOnlyForm: TypeSuggestionForm
   sourceNote: MobileNote | null
   workspaceSnapshot: MobileWorkspaceSnapshot
 }) {
+  if (!enabled) return {
+    typePropertyOptions: [], typeSchemaPropertyNameOptions: [],
+    typeSchemaRelationshipNameOptions: [], typeRelationshipTargetOptions: [], typeSortPropertyOptions: [],
+  }
   const typedSourceNote = typeSchemaSuggestionNote(sourceNote, readOnlyForm.typeName)
   const editableNotes = editableTypePropertyNotes(readOnlyForm, workspaceSnapshot)
 
@@ -68,7 +76,7 @@ function typeSchemaSuggestionNote(
 }
 
 function editableTypePropertyNotes(
-  form: TabletReadOnlyForm,
+  form: TypeSuggestionForm,
   snapshot: MobileWorkspaceSnapshot,
 ): MobileNote[] {
   const normalizedType = normalizedLabel(form.typeName)

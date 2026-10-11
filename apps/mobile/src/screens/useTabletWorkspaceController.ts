@@ -166,6 +166,7 @@ type WorkspaceActionsContext = {
   applyEdit: ApplyWorkspaceEdit
   closeAction: () => void
   navigation: TabletWorkspaceNavigation
+  openAction: MobileWorkspaceAction | null
   readOnlyForm: TabletReadOnlyForm
   repositoryRequest?: ReadOnlyWorkspaceRequest
   selectedNote: MobileNote | null
@@ -213,6 +214,7 @@ export function useTabletWorkspaceController({
     applyEdit,
     closeAction,
     navigation,
+    openAction,
     readOnlyForm,
     repositoryRequest,
     selectedNote,
@@ -609,6 +611,7 @@ function createWorkspaceActions(context: WorkspaceActionsContext) {
     applyEdit,
     closeAction,
     navigation,
+    openAction,
     readOnlyForm,
     repositoryRequest,
     setOpenAction,
@@ -657,9 +660,9 @@ function createWorkspaceActions(context: WorkspaceActionsContext) {
       vaultRootUri: repositoryRequest?.vaultRootUri,
     }),
     ...favoriteWorkspaceActions({ applyEdit, readOnlyForm, workspaceSnapshot }),
-    ...primaryNoteListWorkspaceActions({ applyEdit, closeAction, readOnlyForm, updateReadOnlyForm, workspaceSnapshot }),
-    ...savedViewWorkspaceActions({ applyEdit, closeAction, readOnlyForm, updateReadOnlyForm, workspaceSnapshot }),
-    ...typeSectionWorkspaceActions({ applyEdit, closeAction, readOnlyForm, updateReadOnlyForm, workspaceSnapshot }),
+    ...primaryNoteListWorkspaceActions({ applyEdit, closeAction, readOnlyForm, suggestionsEnabled: openAction === 'editPrimaryListProperties', updateReadOnlyForm, workspaceSnapshot }),
+    ...savedViewWorkspaceActions({ applyEdit, closeAction, openAction, readOnlyForm, updateReadOnlyForm, workspaceSnapshot }),
+    ...typeSectionWorkspaceActions({ applyEdit, closeAction, openAction, readOnlyForm, updateReadOnlyForm, workspaceSnapshot }),
   }
 }
 
@@ -682,10 +685,13 @@ function selectedViewCommandActions({
 function savedViewWorkspaceActions({
   applyEdit,
   closeAction,
+  openAction,
   readOnlyForm,
   updateReadOnlyForm,
   workspaceSnapshot,
-}: Pick<WorkspaceActionsContext, 'applyEdit' | 'closeAction' | 'readOnlyForm' | 'updateReadOnlyForm' | 'workspaceSnapshot'>) {
+}: Pick<WorkspaceActionsContext, 'applyEdit' | 'closeAction' | 'openAction' | 'readOnlyForm' | 'updateReadOnlyForm' | 'workspaceSnapshot'>) {
+  const suggestionsEnabled = openAction === 'createView' || openAction === 'editView'
+  const editableNotes = suggestionsEnabled ? editableViewPropertyNotes(readOnlyForm, workspaceSnapshot) : []
   return {
     canMoveViewDown: canMoveMobileSavedView(workspaceSnapshot.views ?? [], readOnlyForm.editingViewId, 'down'),
     canMoveViewUp: canMoveMobileSavedView(workspaceSnapshot.views ?? [], readOnlyForm.editingViewId, 'up'),
@@ -706,16 +712,16 @@ function savedViewWorkspaceActions({
     onViewPropertyQueryChange: (value: string) => updateReadOnlyForm('viewPropertyQuery', value),
     onViewSortChange: (value: string) => updateReadOnlyForm('viewSort', value),
     onViewToneChange: (value: MobileTone) => updateReadOnlyForm('viewTone', value),
-    viewPropertyOptions: mobileListPropertySuggestions(
-      editableViewPropertyNotes(readOnlyForm, workspaceSnapshot),
+    viewPropertyOptions: suggestionsEnabled ? mobileListPropertySuggestions(
+      editableNotes,
       readOnlyForm.viewPropertyQuery,
       workspaceSnapshot.typeDefinitions,
-    ),
-    viewSortPropertyOptions: mobileSortablePropertySuggestions(
-      editableViewPropertyNotes(readOnlyForm, workspaceSnapshot),
+    ) : [],
+    viewSortPropertyOptions: suggestionsEnabled ? mobileSortablePropertySuggestions(
+      editableNotes,
       '',
       workspaceSnapshot.typeDefinitions,
-    ),
+    ) : [],
   }
 }
 
@@ -740,10 +746,11 @@ function moveSelectedView({
 function typeSectionWorkspaceActions({
   applyEdit,
   closeAction,
+  openAction,
   readOnlyForm,
   updateReadOnlyForm,
   workspaceSnapshot,
-}: Pick<WorkspaceActionsContext, 'applyEdit' | 'closeAction' | 'readOnlyForm' | 'updateReadOnlyForm' | 'workspaceSnapshot'>) {
+}: Pick<WorkspaceActionsContext, 'applyEdit' | 'closeAction' | 'openAction' | 'readOnlyForm' | 'updateReadOnlyForm' | 'workspaceSnapshot'>) {
   const notes = workspaceNotes(workspaceSnapshot)
   const sourceNote = typeSchemaSourceNote(workspaceSnapshot, readOnlyForm.typeName)
 
@@ -786,6 +793,7 @@ function typeSectionWorkspaceActions({
       typeName,
     }),
     ...typeSectionSuggestionOptions({
+      enabled: openAction === 'editTypeSection',
       notes,
       readOnlyForm,
       sourceNote,

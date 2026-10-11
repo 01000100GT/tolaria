@@ -349,9 +349,16 @@ function applyMobileNoteEditResult(
   edit: MobileNoteEdit,
 ): MobileWorkspaceEditResult {
   const notePool = workspaceNotePool(snapshot)
-  const notes = snapshot.notes.map((note) => applyMobileNoteEdit(note, notePool, edit, snapshot.typeDefinitions))
-  const allNotes = snapshot.allNotes?.map((note) => applyMobileNoteEdit(note, notePool, edit, snapshot.typeDefinitions))
-  const rebuiltSnapshot = rebuildSnapshot({ ...snapshot, allNotes, notes }, notes, allNotes)
+  const target = workspaceNoteById(snapshot, edit.noteId)
+  if (!target) return { snapshot, writes: [] }
+  const edited = applyMobileNoteEdit(target, notePool, edit, snapshot.typeDefinitions)
+  const replaceTarget = (note: MobileNote) => note.id === edited.id ? edited : note
+  const notes = snapshot.notes.map(replaceTarget)
+  const allNotes = snapshot.allNotes?.map(replaceTarget)
+  const updated = { ...snapshot, allNotes, notes }
+  const rebuiltSnapshot = isNoteFlagEdit(edit)
+    ? snapshotWithResolvedNotes(updated, notes, allNotes ?? notes)
+    : rebuildSnapshot(updated, notes, allNotes)
   const previousNote = edit.type === 'hydrateNoteContent' ? workspaceNoteById(snapshot, edit.noteId) : null
   const nextSnapshot = preserveHydratedNoteTimestamps(rebuiltSnapshot, previousNote)
 
@@ -359,6 +366,10 @@ function applyMobileNoteEditResult(
     snapshot: nextSnapshot,
     writes: saveNoteWrites(snapshot, nextSnapshot, edit),
   }
+}
+
+function isNoteFlagEdit(edit: MobileNoteEdit) {
+  return edit.type === 'toggleFavorite' || edit.type === 'setArchived' || edit.type === 'setOrganized'
 }
 
 function updateMobileNoteProperty(
@@ -775,6 +786,10 @@ function rebuildSnapshot(
   })
   const resolvedNoteById = new Map(resolvedAllNotes.map((note) => [note.id, note]))
   const resolvedNotes = notes.map((note) => resolvedNoteById.get(note.id) ?? note)
+  return snapshotWithResolvedNotes(snapshot, resolvedNotes, resolvedAllNotes)
+}
+
+function snapshotWithResolvedNotes(snapshot: MobileWorkspaceSnapshot, resolvedNotes: MobileNote[], resolvedAllNotes: MobileNote[]): MobileWorkspaceSnapshot {
   const selectedNote = resolvedNotes.find((note) => note.id === snapshot.selectedNoteId) ?? resolvedNotes[0] ?? null
 
   return {

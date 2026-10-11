@@ -46,7 +46,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | 8 | Saved views apply their actual persisted filters | Implemented; parser and native filtered navigation pass |
 | 9 | Discoverable property addition, aligned backlinks, adding values to existing relationships | Pending |
 | 10 | Breadcrumbs use the note's configured type icon and color | Implemented; native typed icon verified |
-| 11 | Favorite and other local actions respond without avoidable delay | Pending |
+| 11 | Favorite and other local actions respond without avoidable delay | Bounded flag edits and lazy settings suggestions implemented; native model timings recorded |
 | 12 | Rich-editor formatting commands match source-editor capabilities | Implemented shared tablet strip; native formatting test passes |
 | 13 | Right-aligned breadcrumb actions and a reduced overflow menu | Pending |
 | 14 | Tablet UI approximately ten percent larger while retaining hierarchy | Pending |
@@ -165,3 +165,29 @@ measurements, commits and remaining limitations as each batch completes.
 - The generated TenTap HTML exceeds the local analyzer's 150 KB limit on both
   attempts. No change to that generated file has been made; additional owner
   approval was requested for source-scanning/build/native-QA compensation.
+
+### Local interaction performance
+
+- Favorite, archive and organized edits derive the target once, preserving
+  unrelated note identities, relationships and timestamps. A 1,000-note fixture
+  regressed from 1,004-1,006 document parses per flag edit to at most four.
+  Hydration retains its existing reconciliation path and custom frontmatter.
+- Closed view/type/list settings no longer calculate their suggestions. Open
+  and archived counts use one unsorted pass and are memoized across selection
+  renders. Navigation dispatch now uses Maps rather than inherited object keys;
+  its two baseline Semgrep Error findings are removed without suppression.
+- Three new navigation/suggestion regressions failed before the fix and pass
+  afterward. The focused navigation/flag/hydration set has 19 passing tests.
+- Native Release benchmark on the already imported 6,036-note app-local copy:
+  favorite model update 33 ms; type filtering/counts 18 ms for 853 matches.
+  These are model timings, not tap-to-paint claims. The probe does not write its
+  throwaway edit result. Native mouse interaction also verified type navigation
+  and visible favorite/sidebar updates.
+- Native Git probe before/after passes clone, checkpoint, push, pull, binary and
+  deletion preservation, checkout recovery and external-edit protection using a
+  disposable loopback remote. `native-performance-after.log` records evidence.
+- All nine scorable files in `performance-manifest.txt` finish at CodeScene 10,
+  with zero findings from every relevant local analyzer. Navigation improves
+  from two findings to zero; all other zero baselines remain zero.
+- Localization: no UI copy changes. PostHog: no event needed for optimizing
+  existing actions; no document content or identifiers leave the device.

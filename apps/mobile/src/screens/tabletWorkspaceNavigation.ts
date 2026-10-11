@@ -89,16 +89,16 @@ export type TabletNavigationHistoryDirection = 'back' | 'forward'
 
 const tabletNavigationHistoryLimit = 100
 
-const sidebarSectionResolvers: Record<string, SidebarNotesResolver> = {
-  favorites: (_snapshot, notes, selection) => notesForFavoriteSelection(notes, selection),
-  types: (snapshot, notes, selection) => notesForTypeSelection(snapshot, notes, selection),
-  views: (snapshot, _notes, selection) => notesForSavedView(snapshot, selection),
-}
-const noteListPropertyResolvers: Record<string, NoteListPropertyResolver> = {
-  primary: (snapshot, selection) => primaryNoteListPropertiesForSelection(snapshot, selection),
-  types: (snapshot, selection) => typeDefinitionForSelection(snapshot, selection)?.listPropertiesDisplay ?? [],
-  views: (snapshot, selection) => savedViewForSelection(snapshot, selection)?.definition.listPropertiesDisplay ?? [],
-}
+const sidebarSectionResolvers = new Map<string, SidebarNotesResolver>([
+  ['favorites', (_snapshot, notes, selection) => notesForFavoriteSelection(notes, selection)],
+  ['types', (snapshot, notes, selection) => notesForTypeSelection(snapshot, notes, selection)],
+  ['views', (snapshot, _notes, selection) => notesForSavedView(snapshot, selection)],
+])
+const noteListPropertyResolvers = new Map<string, NoteListPropertyResolver>([
+  ['primary', (snapshot, selection) => primaryNoteListPropertiesForSelection(snapshot, selection)],
+  ['types', (snapshot, selection) => typeDefinitionForSelection(snapshot, selection)?.listPropertiesDisplay ?? []],
+  ['views', (snapshot, selection) => savedViewForSelection(snapshot, selection)?.definition.listPropertiesDisplay ?? []],
+])
 
 export function emptyTabletNavigationHistory(): TabletNavigationHistory {
   return { backStack: [], forwardStack: [] }
@@ -180,6 +180,7 @@ export function useTabletWorkspaceNavigation(snapshot: MobileWorkspaceSnapshot, 
   const [noteListFilter, setNoteListFilter] = useState<MobileNoteListFilter>('open')
   const [selectedNoteId, setSelectedNoteId] = useState<NoteId | null>(initialSelectedNoteId(snapshot))
   const noteListProperties = useMemo(() => noteListPropertiesForSelection(snapshot, sidebarSelection), [sidebarSelection, snapshot])
+  const noteListFilterCounts = useMemo(() => noteListFilterCountsForSelection(snapshot, sidebarSelection), [sidebarSelection, snapshot])
   const { noteListNeighborhood, notes } = useNavigationVisibleNotes({
     noteListFilter,
     noteListProperties,
@@ -218,7 +219,7 @@ export function useTabletWorkspaceNavigation(snapshot: MobileWorkspaceSnapshot, 
     noteListProperties,
     noteListNeighborhood,
     noteListFilter,
-    noteListFilterCounts: noteListFilterCountsForSelection(snapshot, sidebarSelection),
+    noteListFilterCounts,
     noteListFilterVisible: shouldShowNoteListFilter(sidebarSelection),
     noteListSubtitle: noteListSubtitle({
       filterVisible: shouldShowNoteListFilter(sidebarSelection),
@@ -505,7 +506,7 @@ export function notesForSidebarSelection(
     return notes.filter((note) => noteMatchesArchiveFilter(note, options.noteListFilter) && noteBelongsToFolder(note, selection))
   }
 
-  const sectionResolver = sidebarSectionResolvers[selection.sectionId]
+  const sectionResolver = sidebarSectionResolvers.get(selection.sectionId)
   const sectionNotes = sectionResolver?.(snapshot, notes, selection) ?? primaryNotesForSelection(snapshot, notes, selection)
   return selection.sectionId === 'types'
     ? sectionNotes.filter((note) => noteMatchesArchiveFilter(note, options.noteListFilter))
@@ -518,10 +519,18 @@ export function noteListFilterCountsForSelection(
 ): Record<MobileNoteListFilter, number> {
   if (!shouldShowNoteListFilter(selection)) return { archived: 0, open: 0 }
 
-  return {
-    archived: notesForSidebarSelection(snapshot, selection, { noteListFilter: 'archived' }).length,
-    open: notesForSidebarSelection(snapshot, selection, { noteListFilter: 'open' }).length,
+  const counts = { archived: 0, open: 0 }
+  for (const note of workspaceNotes(snapshot)) {
+    if (!noteMatchesCountSelection(note, selection)) continue
+    if (note.archived) counts.archived += 1
+    else counts.open += 1
   }
+  return counts
+}
+
+function noteMatchesCountSelection(note: MobileNote, selection: TabletSidebarSelection) {
+  if (selection.kind === 'folder') return noteBelongsToFolder(note, selection)
+  return selection.kind === 'item' && isMobileMarkdownNote(note) && noteMatchesType(note, selection)
 }
 
 function shouldShowNoteListFilter(selection: TabletSidebarSelection): boolean {
@@ -628,7 +637,7 @@ export function noteListPropertiesForSelection(
   selection: TabletSidebarSelection,
 ) {
   if (selection.kind !== 'item') return []
-  return noteListPropertyResolvers[selection.sectionId]?.(snapshot, selection) ?? []
+  return noteListPropertyResolvers.get(selection.sectionId)?.(snapshot, selection) ?? []
 }
 
 function primaryNoteListPropertiesForSelection(

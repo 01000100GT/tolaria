@@ -31,12 +31,14 @@ export function primaryNoteListWorkspaceActions({
   applyEdit,
   closeAction,
   readOnlyForm,
+  suggestionsEnabled = true,
   updateReadOnlyForm,
   workspaceSnapshot,
 }: {
   applyEdit: ApplyWorkspaceEdit
   closeAction: () => void
   readOnlyForm: TabletReadOnlyForm
+  suggestionsEnabled?: boolean
   updateReadOnlyForm: ReadOnlyFormUpdater
   workspaceSnapshot: MobileWorkspaceSnapshot
 }) {
@@ -51,11 +53,11 @@ export function primaryNoteListWorkspaceActions({
       closeAction,
       readOnlyForm,
     }),
-    primaryPropertyOptions: mobileListPropertySuggestions(
+    primaryPropertyOptions: suggestionsEnabled ? mobileListPropertySuggestions(
       primaryNoteListPropertyNotes(readOnlyForm.primaryItemId, workspaceSnapshot),
       readOnlyForm.primaryPropertyQuery,
       workspaceSnapshot.typeDefinitions,
-    ),
+    ) : [],
   }
 }
 

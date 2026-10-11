@@ -1,5 +1,8 @@
 import { restoreNativeWorkspace } from '../workspace/nativeWorkspaceAccess'
 import { buildLocalVaultWorkspaceSnapshot } from '../workspace/localVaultSnapshot'
+import { applyMobileWorkspaceEditWithWrites } from '../workspace/mobileWorkspaceEditing'
+import type { MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
+import { noteListFilterCountsForSelection, notesForSidebarSelection } from '../screens/tabletWorkspaceNavigation'
 
 /** Read-only timing on the already imported app-local copy; reports no note data. */
 export async function nativeVaultReadBenchmark() {
@@ -13,10 +16,26 @@ export async function nativeVaultReadBenchmark() {
     vaultLabel: workspace.label,
     vaultPath: workspace.uri,
   })
+  const snapshotMs = Math.round(performance.now() - readFinished)
   return {
     fileCount: workspace.index.files.length,
     noteCount: snapshot.allNotes?.length ?? snapshot.notes.length,
     nativeReadMs: Math.round(readFinished - started),
-    snapshotMs: Math.round(performance.now() - readFinished),
+    snapshotMs,
+    interactions: measureReadOnlyInteractions(snapshot),
   }
+}
+
+function measureReadOnlyInteractions(snapshot: MobileWorkspaceSnapshot) {
+  const note = snapshot.notes.find((candidate) => candidate.rawContent !== undefined)
+  if (!note) return null
+  const start = performance.now()
+  // Compute a throwaway edit result only. Never persist benchmark changes.
+  applyMobileWorkspaceEditWithWrites(snapshot, { type: 'toggleFavorite', noteId: note.id })
+  const favoriteMs = performance.now() - start
+  const selection = { kind: 'item', sectionId: 'types', id: 'benchmark', label: note.type, typeName: note.type } as const
+  const selectStart = performance.now()
+  const notes = notesForSidebarSelection(snapshot, selection)
+  noteListFilterCountsForSelection(snapshot, selection)
+  return { favoriteMs: Math.round(favoriteMs), typeSelectionMs: Math.round(performance.now() - selectStart), matchedCount: notes.length }
 }
