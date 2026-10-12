@@ -3,7 +3,8 @@ import XCTest
 // Opt-in integration acceptance for the owner's authorized simulator session.
 // Clones only; never commits, changes AutoGit, or pushes to the real repository.
 final class TabletAuthenticatedRepositoryTests: XCTestCase {
-  func testAuthenticatedPickerAndLaputaClone() {
+  func testAuthenticatedPickerAndLaputaClone() throws {
+    try XCTSkipUnless(ProcessInfo.processInfo.environment["TOLARIA_QA_AUTHENTICATED_CLONE"] == "1", "Requires explicit read-only clone authorization and an existing GitHub session")
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")

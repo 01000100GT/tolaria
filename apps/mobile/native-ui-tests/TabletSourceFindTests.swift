@@ -1,7 +1,8 @@
 import XCTest
 
 final class TabletSourceFindTests: XCTestCase {
-  func testFindScrollsLongSourceAndPreservesFrontmatter() {
+  func testFindScrollsLongSourceAndPreservesFrontmatter() throws {
+    try XCTSkipUnless(ProcessInfo.processInfo.environment["TOLARIA_QA_SOURCE_FIND"] == "1", "Requires an isolated host-prepared source vault")
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")

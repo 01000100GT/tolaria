@@ -3,7 +3,8 @@ import XCTest
 // The host runner seeds only disposable local-qa-alpha/beta copies and restores
 // the previous catalog afterwards; this test never edits an existing user note.
 final class TabletVaultCatalogTests: XCTestCase {
-  func testSwitchRestoreAndForgetWithoutDeletingVaults() {
+  func testSwitchRestoreAndForgetWithoutDeletingVaults() throws {
+    try XCTSkipUnless(ProcessInfo.processInfo.environment["TOLARIA_QA_VAULT_CATALOG"] == "1", "Requires disposable host-prepared catalog entries")
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")

@@ -91,3 +91,21 @@ can produce Keychain error -34018 even when all filesystem probes pass. Use
 simulator destination. Let Xcode generate simulator identity entitlements; do not
 copy those identities into production app configuration. The optional
 `TOLARIA_QA` compilation flag is for local optimized probes only (ADR 0208).
+
+Tests that depend on prepared on-disk data or an authenticated remote skip by
+default, before launching the app. Enable only the relevant variable in the
+test runner environment (the Xcode scheme's Test action) and select that test:
+
+- `TOLARIA_QA_SOURCE_FIND=1`: `TabletSourceFindTests`, with an isolated active
+  vault containing a long source note and `QA_UNIQUE_END_TOKEN` at its end.
+  It replaces that marker, so never run it against the user's vault.
+- `TOLARIA_QA_VAULT_CATALOG=1`: `TabletVaultCatalogTests`, with disposable
+  `local-qa-alpha` and `local-qa-beta` entries and their matching note titles.
+- `TOLARIA_QA_AUTHENTICATED_CLONE=1`: `TabletAuthenticatedRepositoryTests`, with
+  an existing authorized GitHub session and explicit permission to clone Laputa.
+  It does not enable AutoGit or push, but can download a large repository.
+
+Back up the simulator catalog before preparing these fixtures, restore it after
+the test, and remove only the disposable copies created for that run. Retain
+before/after file hashes for any existing user vault. A skipped integration test
+is not a passing integration check.

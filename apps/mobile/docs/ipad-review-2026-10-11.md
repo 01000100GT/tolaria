@@ -731,3 +731,14 @@ measurements, commits and remaining limitations as each batch completes.
   project Hotspot 10.0 / Average 9.9912958288353 remain above 10.0 / 9.99 floors.
   The unavailable MCP safeguard is not reported as passed; CLI delta is the
   recorded compensating check under the owner-approved exception.
+- Commits `e3cde4dac` and `db7d1e934` passed normal mobile hooks and were pushed
+  to `origin/mobile-ui-foundation`. Both hooks passed lint, typecheck and all
+  1,423 tests / 244 files; pre-push also exported the web bundle. The CLI change
+  set against the prior mobile remote checked 38 eligible paths with no issues.
+  Post-push project health remains 10.0 / 9.9912958288353. Cloud Codacy exact-SHA
+  verification remains unavailable under the recorded exception.
+- A final test-only safeguard makes the authenticated clone and two prepared-
+  vault tests explicit environment opt-ins, documented in the native test README.
+  `integration-optin-default.xcresult` verifies that all three skip before app
+  launch when not enabled. Those skips are harness-safety evidence, not new
+  integration passes; the earlier source/catalog acceptance results stand.
