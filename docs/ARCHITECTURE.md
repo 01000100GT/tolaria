@@ -940,6 +940,12 @@ The mock layer includes sample entries across all entity types, full markdown co
 
 Browser smoke tests can also override `window.__mockHandlers` before the app boots. The AutoGit smoke bridge uses that path directly for seeded saves so the mocked git dirty-state stays synchronized even when the optional browser vault API is serving note content.
 
+### VaultBackend seam and the web target
+
+`src/lib/vaultBackend/` defines `VaultBackend`, the storage seam a remote vault plugs into (ADR 0185). It has two paths: `files` (list, read, write with a base revision, rename, delete, search, attachments) and `collab` (`openDoc(path)` returning the live document an editor binds to; `null` on desktop and in the mock). `createCommandVaultBackend` implements the file path over both the Tauri `invoke` and `mockInvoke`, absorbing their argument differences. Existing callers still use the direct `isTauri()` branches; they migrate incrementally, reads first.
+
+`apps/web/` is the Tolaria Web build target. `pnpm build:web` builds the same `index.html` and `src/` into `apps/web/dist` with no Tauri runtime, and `pnpm preview:web` serves it on loopback. Until the remote backend exists it runs on this mock layer. `pnpm build` and the Tauri bundle are unaffected. See `docs/web/s1-tauri-inventory.md` for the command inventory, migration path and server surface.
+
 ## State Management
 
 No Redux or global context. State lives in the root `App.tsx` and custom hooks:
