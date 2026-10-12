@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-This folder contains Architecture Decision Records (ADRs) for the Laputa app.
+This folder contains Architecture Decision Records (ADRs) for the Tolaria app.
 
 ## Format
 
