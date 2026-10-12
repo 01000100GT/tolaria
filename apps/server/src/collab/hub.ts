@@ -1,4 +1,5 @@
 import { NoteCodec } from '../../../../packages/markdown-yjs/src/index.ts'
+import { RejectedChange } from '../../../../packages/protocol/src/collabWire.ts'
 import { COLLAB_CLOSE, type CollabAccess } from '../../../../packages/protocol/src/index.ts'
 import type { DocId, DocIndex } from '../docIndex.ts'
 import type { VaultChange } from '../gitSync.ts'
@@ -111,8 +112,9 @@ export class CollabHub {
   private receive(entry: Open, { socket, peer }: { socket: Socket; peer: Peer }, data: Uint8Array): void {
     try {
       entry.session.room.receive(peer, data)
-    } catch {
-      socket.close(COLLAB_CLOSE.invalidMessage, 'invalid message')
+    } catch (error) {
+      if (error instanceof RejectedChange) socket.close(COLLAB_CLOSE.rejectedChange, 'the change is not valid for this document')
+      else socket.close(COLLAB_CLOSE.invalidMessage, 'invalid message')
     }
   }
 

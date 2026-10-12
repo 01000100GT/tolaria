@@ -16,18 +16,32 @@ interface AwarenessChange {
 
 /**
  * The live document of one note and everyone connected to it. Changes from one peer are
- * applied to the server's copy and relayed to the others; so is presence.
+ * applied to the server's copy and relayed to the others; so is presence. A change is first
+ * tried on a scratch copy and applied only if the result passes the room's check.
  */
+/** Says why a document is not acceptable, or null when it is. */
+export type DocCheck = (doc: Y.Doc) => string | null
+
 export class Room {
   readonly doc = new Y.Doc()
   readonly awareness = new Awareness(this.doc)
+  /**
+   * A copy of the document on which a peer's change is tried first. It follows every change
+   * the document accepts, and is rebuilt after a change that was turned down.
+   */
+  private trial = new Y.Doc()
+  private readonly check: DocCheck
   /** Each peer with the awareness client ids it announced, to withdraw them when it leaves. */
   private readonly peers = new Map<Peer, Set<number>>()
 
-  constructor() {
+  constructor(check: DocCheck = () => null) {
+    this.check = check
     // The server takes part in the document, not in presence.
     this.awareness.setLocalState(null)
-    this.doc.on('update', (update: Uint8Array, origin: unknown) => this.broadcast(updateMessage(update), origin))
+    this.doc.on('update', (update: Uint8Array, origin: unknown) => {
+      Y.applyUpdate(this.trial, update)
+      this.broadcast(updateMessage(update), origin)
+    })
     this.awareness.on('update', (change: AwarenessChange, origin: unknown) => this.relayAwareness(change, origin))
   }
 
@@ -45,8 +59,23 @@ export class Room {
   /** Applies a message from a peer. Throws when the bytes are not a valid message. */
   receive(peer: Peer, data: Uint8Array): void {
     if (!this.peers.has(peer)) return
-    const { reply } = receive(data, this, { origin: peer, readOnly: peer.readOnly })
+    const sender = { origin: peer, readOnly: peer.readOnly, accept: (update: Uint8Array) => this.accepts(update) }
+    const { reply } = receive(data, this, sender)
     if (reply) peer.send(reply)
+  }
+
+  /** Tries a peer's change on the copy: the document itself only ever gets changes that pass. */
+  private accepts(update: Uint8Array): boolean {
+    try {
+      Y.applyUpdate(this.trial, update)
+      if (this.check(this.trial) === null) return true
+    } catch {
+      // An update that cannot be applied is turned down like one that fails the check.
+    }
+    this.trial.destroy()
+    this.trial = new Y.Doc()
+    Y.applyUpdate(this.trial, Y.encodeStateAsUpdate(this.doc))
+    return false
   }
 
   leave(peer: Peer): void {
@@ -58,6 +87,7 @@ export class Room {
 
   destroy(): void {
     this.peers.clear()
+    this.trial.destroy()
     this.awareness.destroy()
     this.doc.destroy()
   }

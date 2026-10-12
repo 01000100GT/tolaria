@@ -2,7 +2,7 @@ import * as decoding from 'lib0/decoding'
 import * as encoding from 'lib0/encoding'
 import * as awarenessProtocol from 'y-protocols/awareness'
 import * as syncProtocol from 'y-protocols/sync'
-import type * as Y from 'yjs'
+import * as Y from 'yjs'
 import { COLLAB_MAX_MESSAGE_BYTES, COLLAB_MESSAGE } from './index.ts'
 
 /**
@@ -21,6 +21,19 @@ export interface Sender {
   origin: object
   /** A read-only sender may ask for the document but not change it. */
   readOnly: boolean
+  /**
+   * Decides whether a change may be applied. Given the update before it touches the document;
+   * returning false makes `receive` throw `RejectedChange`. Absent: every change is applied.
+   */
+  accept?(update: Uint8Array): boolean
+}
+
+/** Thrown by `receive` for a change the receiver's `accept` turned down. Nothing was applied. */
+export class RejectedChange extends Error {
+  constructor() {
+    super('the change was rejected')
+    this.name = 'RejectedChange'
+  }
 }
 
 /** What an incoming message was, and the answer to send back when it asks for one. */
@@ -58,7 +71,13 @@ const SYNC_CHANGES = new Map<number, 'sync-step2' | 'update'>([
   [syncProtocol.messageYjsUpdate, 'update'],
 ])
 
-function readSync(decoder: decoding.Decoder, { doc }: Shared, { origin, readOnly }: Sender): Received {
+function applyChange(update: Uint8Array, doc: Y.Doc, { origin, accept }: Sender): void {
+  if (accept && !accept(update)) throw new RejectedChange()
+  Y.applyUpdate(doc, update, origin)
+}
+
+function readSync(decoder: decoding.Decoder, { doc }: Shared, sender: Sender): Received {
+  const { readOnly } = sender
   const step = decoding.readVarUint(decoder)
   if (step === syncProtocol.messageYjsSyncStep1) {
     const reply = message(COLLAB_MESSAGE.sync, (encoder) => syncProtocol.readSyncStep1(decoder, encoder, doc))
@@ -67,7 +86,7 @@ function readSync(decoder: decoding.Decoder, { doc }: Shared, { origin, readOnly
   const kind = SYNC_CHANGES.get(step)
   if (!kind) return { kind: 'unknown' }
   // Step 2 and update both carry changes: a read-only sender's are dropped.
-  if (!readOnly) syncProtocol.readUpdate(decoder, doc, origin)
+  if (!readOnly) applyChange(decoding.readVarUint8Array(decoder), doc, sender)
   return { kind }
 }
 

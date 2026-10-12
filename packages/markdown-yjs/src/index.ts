@@ -1,4 +1,5 @@
 export { patchBlocks, patchText } from './blockPatch.ts'
+export { type DocVocabulary, docVocabulary, vocabularyViolation } from './docVocabulary.ts'
 export { installHeadlessDom } from './headlessDom.ts'
 export { hasConflict, type LineMatch, type MergeChunk, matchLines, merge3 } from './lineMerge.ts'
 export { blocksToMarkdown, createHeadlessEditor, type HeadlessEditor, markdownToBlocks, type NoteBlock } from './markdownBlocks.ts'

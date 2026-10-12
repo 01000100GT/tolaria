@@ -46,6 +46,7 @@ describe.each(corpus)('$name', ({ name, markdown }) => {
     Y.applyUpdate(replica, Y.encodeStateAsUpdate(await docOf(markdown)))
 
     expect(codec.read(replica)).toBe(codec.serialize(note))
+    expect(codec.violation(replica)).toBeNull()
   })
 
   it('serializes to a fixed point', async () => {

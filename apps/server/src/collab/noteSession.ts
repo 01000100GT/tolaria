@@ -43,7 +43,7 @@ function utf8(bytes: Uint8Array): string {
  * changes that reach the file from git (`fileChanged`), so both stay one note.
  */
 export class NoteSession {
-  readonly room = new Room()
+  readonly room: Room
   readonly docId: DocId
   path: VaultPath
   private readonly services: SessionServices
@@ -59,6 +59,7 @@ export class NoteSession {
     this.docId = docId
     this.path = path
     this.services = services
+    this.room = new Room((doc) => services.codec.violation(doc))
     this.scheduler = new FlushScheduler(services.policy, () => this.background(() => this.flush()), services.timers)
   }
 

@@ -9,6 +9,7 @@ import {
   DOC_META_MAP,
 } from '../../protocol/src/index.ts'
 import { patchBlocks, patchText } from './blockPatch.ts'
+import { type DocVocabulary, docVocabulary, vocabularyViolation } from './docVocabulary.ts'
 import { preserveSource, type SourceVersions } from './sourcePreserve.ts'
 import { blocksToMarkdown, createHeadlessEditor, type HeadlessEditor, markdownToBlocks, type NoteBlock } from './markdownBlocks.ts'
 
@@ -39,9 +40,16 @@ export interface ParsedNote {
 
 export class NoteCodec {
   private readonly editor: HeadlessEditor
+  private readonly vocabulary: DocVocabulary
 
   constructor(editor: HeadlessEditor = createHeadlessEditor()) {
     this.editor = editor
+    this.vocabulary = docVocabulary(editor)
+  }
+
+  /** Why a document is not one this codec can hold, or null when it is made of known parts. */
+  violation(doc: Y.Doc): string | null {
+    return vocabularyViolation(doc, this.vocabulary)
   }
 
   async parse(markdown: string): Promise<ParsedNote> {

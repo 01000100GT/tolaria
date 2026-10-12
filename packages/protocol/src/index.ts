@@ -59,6 +59,8 @@ export const COLLAB_CLOSE = {
   invalidMessage: 4400,
   /** The note of this document was deleted. */
   gone: 4410,
+  /** A change the connection sent is not a valid change to this kind of document. */
+  rejectedChange: 4422,
 } as const
 
 export type CollabAccess = 'read' | 'write'

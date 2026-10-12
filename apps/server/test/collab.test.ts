@@ -103,6 +103,37 @@ describe('a room', () => {
     expect(ada.doc.getMap('meta').toJSON()).toEqual(luca.doc.getMap('meta').toJSON())
   })
 
+  it.each([
+    ['a node type the editor does not have', (doc: Y.Doc) => doc.getXmlFragment('blocks').insert(0, [new Y.XmlElement('script')])],
+    [
+      'an attribute the node does not have',
+      (doc: Y.Doc) => (doc.getXmlFragment('blocks').get(0) as Y.XmlElement).setAttribute('onclick', 'alert(1)'),
+    ],
+    [
+      'a mark the editor does not have',
+      (doc: Y.Doc) => {
+        const walker = doc.getXmlFragment('blocks').createTreeWalker((node) => node instanceof Y.XmlText)
+        ;(walker.next().value as Y.XmlText).format(0, 1, { blink: true })
+      },
+    ],
+    ['a shared type the format does not have', (doc: Y.Doc) => doc.getMap('extra').set('key', 'value')],
+  ])('turns down a change that adds %s, and closes that connection', async (_name, deface) => {
+    const mallory = await harness.client()
+    const ada = await harness.client()
+    const before = ada.markdown()
+
+    deface(mallory.doc)
+    await settle()
+    mallory.provider.destroy()
+    ada.type('Alpha', ' still fine')
+    await settle()
+
+    expect(mallory.sockets[0].closeCode).toBe(4422)
+    expect(ada.sockets[0].closeCode).toBeNull()
+    expect(ada.markdown()).toBe(before.replace('# Alpha', '# Alpha still fine'))
+    expect([...(await harness.session()).doc.share.keys()].sort()).toEqual(['blocks', 'frontmatter', 'meta'])
+  })
+
   it('closes the connection of a client that sends bytes that are no message', async () => {
     const ada = await harness.client()
 
