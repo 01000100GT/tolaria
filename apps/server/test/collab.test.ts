@@ -90,6 +90,19 @@ describe('a room', () => {
     expect(viewer.markdown()).toContain('edited')
   })
 
+  it('puts back the meta map when a client writes to it', async () => {
+    const ada = await harness.client()
+    const luca = await harness.client()
+    const revision = (await harness.vault.read(NOTE as VaultPath)).etag
+
+    ada.doc.getMap<string>('meta').set('baseRevision', 'forged')
+    ada.doc.getMap<string>('meta').set('conflictCopy', 'somewhere-else.md')
+    await settle()
+
+    expect(luca.doc.getMap('meta').toJSON()).toEqual({ format: 'tolaria.blocknote/1', baseRevision: revision })
+    expect(ada.doc.getMap('meta').toJSON()).toEqual(luca.doc.getMap('meta').toJSON())
+  })
+
   it('closes the connection of a client that sends bytes that are no message', async () => {
     const ada = await harness.client()
 

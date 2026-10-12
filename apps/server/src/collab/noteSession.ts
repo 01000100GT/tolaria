@@ -1,6 +1,6 @@
 import * as Y from 'yjs'
 import { type NoteCodec, type NoteVersion, reconcile, setRevision } from '../../../../packages/markdown-yjs/src/index.ts'
-import { DOC_META, DOC_META_MAP } from '../../../../packages/protocol/src/index.ts'
+import { DOC_FORMAT, DOC_META, DOC_META_MAP } from '../../../../packages/protocol/src/index.ts'
 import type { DocId } from '../docIndex.ts'
 import { blobEtag, type VaultPath } from '../paths.ts'
 import type { StoredFile, Vault } from '../vault.ts'
@@ -51,6 +51,8 @@ export class NoteSession {
   private base: Base = { markdown: '', revision: '', canonical: '' }
   /** Etag of the content a flush is writing right now: the change it causes is our own. */
   private writing: string | null = null
+  /** Path of the conflict copy of the last fork, as announced in `meta`. */
+  private conflictCopy: string | null = null
   private work: Promise<unknown> = Promise.resolve()
 
   private constructor({ docId, path }: SessionTarget, services: SessionServices) {
@@ -73,11 +75,16 @@ export class NoteSession {
       await session.adopt({ markdown: utf8(file.bytes), revision: file.etag })
     }
     session.doc.on('update', (_update: Uint8Array, origin: unknown) => session.edited(origin))
+    session.meta.observe((event) => session.guardMeta(event.transaction.origin))
     return session
   }
 
   get doc(): Y.Doc {
     return this.room.doc
+  }
+
+  private get meta(): Y.Map<string> {
+    return this.doc.getMap<string>(DOC_META_MAP)
   }
 
   /** True while the document holds edits that are not in the file. */
@@ -145,6 +152,27 @@ export class NoteSession {
     this.room.destroy()
   }
 
+  /**
+   * `meta` is the server's to write: clients read the revision and the conflict copy from it.
+   * A change to it from anyone else is put back at once, and the correction goes to everyone.
+   */
+  private guardMeta(origin: unknown): void {
+    if (origin === SERVER_ORIGIN) return
+    const owned = new Map<string, string>([
+      [DOC_META.format, DOC_FORMAT],
+      [DOC_META.baseRevision, this.base.revision],
+    ])
+    if (this.conflictCopy) owned.set(DOC_META.conflictCopy, this.conflictCopy)
+    this.doc.transact(() => {
+      for (const key of [...this.meta.keys()]) {
+        if (!owned.has(key)) this.meta.delete(key)
+      }
+      for (const [key, value] of owned) {
+        if (this.meta.get(key) !== value) this.meta.set(key, value)
+      }
+    }, SERVER_ORIGIN)
+  }
+
   private edited(origin: unknown): void {
     if (origin !== SERVER_ORIGIN) this.scheduler.touch()
   }
@@ -201,7 +229,8 @@ export class NoteSession {
     this.background(async () => {
       const copy = await vault.write(this.path, Buffer.from(markdown), { kind: 'match', etag: stale.revision })
       log(`collab: ${this.path} changed on both sides; live edits saved as ${copy.path}`)
-      this.doc.transact(() => this.doc.getMap<string>(DOC_META_MAP).set(DOC_META.conflictCopy, copy.path), SERVER_ORIGIN)
+      this.conflictCopy = copy.path
+      this.doc.transact(() => this.meta.set(DOC_META.conflictCopy, copy.path), SERVER_ORIGIN)
     })
   }
 
