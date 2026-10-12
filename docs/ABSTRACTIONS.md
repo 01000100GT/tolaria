@@ -17,6 +17,17 @@ is opt-in and foreground-only. The footer and vault manager expose both paths.
 
 ## Mobile Git Working Copies
 
+`managedLocalVaults.ts` validates local catalog entries and contained relative
+directories. `managedLocalStorage.native.ts` registers imports, migrates the
+legacy local copy in place, and resolves current sandbox paths on activation.
+Local and Git records share `updateManagedGitCatalog` and its serialized atomic
+publication. `useManagedVaultCatalog` is the single restoration owner;
+`useMobileVaults` saves pending editor work before add, switch, and forget.
+`MobileSavedVaults` renders both kinds and confirms metadata-only removal.
+Settings shares `MobileGitHubAccount` with the manager rather than creating a
+second authorization session. Consented `mobile_vault_catalog_used` events carry
+only action and kind, never vault names, paths, URLs, or content. See ADR 0216.
+
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
 authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
 checkpoints and commit-graph classification. `gitRemote.ts` performs serialized

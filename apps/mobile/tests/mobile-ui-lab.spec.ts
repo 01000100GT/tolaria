@@ -103,7 +103,7 @@ async function captureUiState({
   projectName,
 }: {
   description: string
-  page: import('@playwright/test').Page
+  page: Page
   projectName: string
 }) {
   await mkdir(screenshotDir, { recursive: true })
@@ -174,6 +174,7 @@ test.describe('mobile UI lab screenshots', () => {
   test('enforces tablet desktop-parity visual invariants', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'tablet-landscape', 'Desktop parity assertions use the full-width tablet reference layout.')
 
+    await useDesktopReferenceScale(page)
     await page.goto('/')
 
     await assertTabletDesktopParity(page)
@@ -182,6 +183,7 @@ test.describe('mobile UI lab screenshots', () => {
   test('enforces measured sidebar row layout invariants', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'tablet-landscape', 'Sidebar row metrics use the full-width tablet reference layout.')
 
+    await useDesktopReferenceScale(page)
     await page.goto('/?layoutProbe=1')
 
     await assertSidebarRuntimeLayoutProbe(page)
@@ -302,6 +304,12 @@ test.describe('mobile UI lab screenshots', () => {
     })
   })
 })
+
+async function useDesktopReferenceScale(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('tolaria-mobile-settings', JSON.stringify({ uiScale: 1 }))
+  })
+}
 
 async function swipeHorizontally(
   page: Page,

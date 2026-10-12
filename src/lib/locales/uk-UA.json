@@ -938,6 +938,8 @@
   "status.vault.default": "Сховище",
   "status.vault.createEmpty": "Створити порожнє сховище",
   "status.vault.openLocal": "Відкрити локальну теку",
+  "mobile.status.open": "Відкрити",
+  "mobile.status.minutesAgo": "{minutes} хв тому",
   "status.vault.cloneGit": "Клонувати репозиторій Git",
   "status.vault.cloneGettingStarted": "Клонувати ознайомче сховище",
   "status.vault.availableHeader": "Доступні сховища",

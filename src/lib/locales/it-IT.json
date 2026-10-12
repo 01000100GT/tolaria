@@ -938,6 +938,8 @@
   "status.vault.default": "Vault",
   "status.vault.createEmpty": "Crea vault vuoto",
   "status.vault.openLocal": "Apri cartella locale",
+  "mobile.status.open": "Apri",
+  "mobile.status.minutesAgo": "{minutes} min fa",
   "status.vault.cloneGit": "Clona repository Git",
   "status.vault.cloneGettingStarted": "Clona il vault Getting Started",
   "status.vault.availableHeader": "Vault disponibili",

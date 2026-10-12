@@ -938,6 +938,8 @@
   "status.vault.default": "Brankas",
   "status.vault.createEmpty": "Buat brankas kosong",
   "status.vault.openLocal": "Buka folder lokal",
+  "mobile.status.open": "Buka",
+  "mobile.status.minutesAgo": "{minutes} m yang lalu",
   "status.vault.cloneGit": "Kloning repositori Git",
   "status.vault.cloneGettingStarted": "Kloning Brankas Memulai",
   "status.vault.availableHeader": "Brankas yang tersedia",

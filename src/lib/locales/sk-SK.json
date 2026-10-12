@@ -938,6 +938,8 @@
   "status.vault.default": "Trezor",
   "status.vault.createEmpty": "Vytvoriť prázdny trezor",
   "status.vault.openLocal": "Otvoriť lokálny priečinok",
+  "mobile.status.open": "Otvoriť",
+  "mobile.status.minutesAgo": "Pred {minutes} min.",
   "status.vault.cloneGit": "Klonovať úložisko Git",
   "status.vault.cloneGettingStarted": "Klonovať trezor Getting Started",
   "status.vault.availableHeader": "Dostupné trezory",

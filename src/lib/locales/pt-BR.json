@@ -938,6 +938,8 @@
   "status.vault.default": "Cofre",
   "status.vault.createEmpty": "Criar cofre vazio",
   "status.vault.openLocal": "Abrir pasta local",
+  "mobile.status.open": "Abrir",
+  "mobile.status.minutesAgo": "{minutes} min atrás",
   "status.vault.cloneGit": "Clonar repositório Git",
   "status.vault.cloneGettingStarted": "Clonar cofre de introdução",
   "status.vault.availableHeader": "Vaults disponíveis",

@@ -120,10 +120,12 @@ public class TolariaWorkspaceAccessModule: Module {
     let label = source.deletingPathExtension().lastPathComponent
     guard !label.isEmpty else { throw WorkspaceFileError.invalidPath }
 
-    let managed = try managedWorkspaceURL()
+    let managed = try managedWorkspaceURL().deletingLastPathComponent()
+      .appendingPathComponent("Local Vaults", isDirectory: true)
+      .appendingPathComponent("local-" + UUID().uuidString.lowercased(), isDirectory: true)
+    try FileManager.default.createDirectory(at: managed.deletingLastPathComponent(), withIntermediateDirectories: true)
     try managedWorkspaceText(managed.absoluteString).recover()
     let indexJson = try importManagedWorkspace(from: source, to: managed)
-    UserDefaults.standard.set(label, forKey: managedWorkspaceLabelKey)
     return ["indexJson": indexJson, "label": label, "uri": managed.absoluteString]
   }
 

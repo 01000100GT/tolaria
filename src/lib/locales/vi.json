@@ -938,6 +938,8 @@
   "status.vault.default": "Kho",
   "status.vault.createEmpty": "Tạo kho trống",
   "status.vault.openLocal": "Mở thư mục cục bộ",
+  "mobile.status.open": "Mở",
+  "mobile.status.minutesAgo": "{minutes} phút trước",
   "status.vault.cloneGit": "Nhân bản kho Git",
   "status.vault.cloneGettingStarted": "Nhân bản kho Getting Started",
   "status.vault.availableHeader": "Các vault có sẵn",

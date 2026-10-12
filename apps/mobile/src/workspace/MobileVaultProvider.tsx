@@ -28,7 +28,7 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
           {children}
         </WorkspaceLoadBoundary>
         <MobileVaultManager manager={manager} />
-        <MobileSettingsSheet gitAvailable={Boolean(active.git)} />
+        <MobileSettingsSheet manager={manager} />
       </MobileVaultControlsContext.Provider>
     </NativeWorkspaceContext.Provider>
   </WorkspaceSyncEditorsContext.Provider>

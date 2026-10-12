@@ -889,6 +889,8 @@
   "status.vault.default": "Schovišča",
   "status.vault.createEmpty": "Stvaryć pustoje schovišča",
   "status.vault.openLocal": "Adkryć lakaĺnuju papku",
+  "mobile.status.open": "Adkryć",
+  "mobile.status.minutesAgo": "{minutes} chv tamu",
   "status.vault.cloneGit": "Klaniravać Git schovišča",
   "status.vault.cloneGettingStarted": "Klaniravać navučaĺnaje schovišča",
   "status.vault.availableHeader": "Dastupnyja schoviščy",

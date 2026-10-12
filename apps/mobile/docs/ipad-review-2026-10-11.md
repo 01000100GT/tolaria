@@ -60,7 +60,7 @@ mobile adaptation. Use isolated vault copies and disposable remotes for QA.
 | # | Requested result | Status |
 | --- | --- | --- |
 | 1 | One-tap copy of GitHub device authorization code | Implemented; native live device-code copy/cancel check passes |
-| 2 | Searchable, aligned, scrollable repository picker for large lists | Implemented with virtualized rows; search tests pass; authenticated native picker QA pending |
+| 2 | Searchable, aligned, scrollable repository picker for large lists | Implemented; authenticated native search/row geometry verified; full Laputa clone exceeded the ten-minute acceptance limit |
 | 3 | Panel backgrounds/dividers extend through top safe area; footer through bottom safe area | Implemented; native screenshot verified |
 | 4 | Editor-focused arrow keys never change selected note | Implemented; native rich-text and source hardware-arrow checks pass; source edits/frontmatter survive cold launch |
 | 5 | Restore desktop-style editor slash commands | Implemented; 15 supported commands, actual TenTap runtime tests and native touch-to-Markdown test pass |
@@ -607,14 +607,16 @@ measurements, commits and remaining limitations as each batch completes.
 
 ## Remaining acceptance blockers
 
-- Slash commands and inline find/highlight navigation still require changes to
-  the generated TenTap bundle. The local analyzer rejects that bundle's size;
-  the separately requested source-scan/build/native-QA exception is not yet
-  approved. These two features are not implemented or claimed complete.
-- Authenticated repository-picker and foreground AutoGit remote UI verification
-  need an authorized GitHub session/test repository. Native local-Git transport
-  probes, manual commit persistence and settings checks passed, but are not a
-  substitute for those authenticated workflows.
+- Rich-text slash commands and inline Find/Replace pass native checks. The
+  generated-bundle exception is approved above. Long-source Find also passes
+  independently on an isolated on-disk note, including scroll and frontmatter
+  preservation; neither result implies large-vault Git acceptance.
+- Authenticated repository search and row geometry work with the existing
+  GitHub session. A real Laputa clone did not complete within ten minutes; the
+  partial QA clone was stopped, without changing the existing vault or remote.
+  Large-repository clone progress/performance and subsequent no-change sync are
+  not accepted yet. Foreground AutoGit remote UI acceptance is also pending;
+  the native disposable-remote transport probe is not its substitute.
 - Cloud Codacy parity/exact-SHA verification and CodeScene MCP remain unavailable
   under the owner-approved exception above. This is an implementation handoff on
   the mobile branch, not a production release or a claim that all twenty items
@@ -655,3 +657,77 @@ measurements, commits and remaining limitations as each batch completes.
   shorter footer/copy; GitHub settings; remembered local/Git vault add/switch/
   forget; measured section/note responsiveness; authenticated clone/no-change
   sync, isolated automatic-sync UI and long-source find native acceptance.
+
+## October 12 account, vault, chrome and performance batch
+
+- All eight follow-up requests remain tracked: editor panel swipes, one phone
+  header and compact tablet footer shipped in the previous commit; this batch
+  adds panel-aware phone insets, a shorter phone footer/copy, Settings GitHub
+  controls, a persistent local/Git vault catalog, and bounded note hydration.
+- Local imports now have independent directories. Existing imports migrate in
+  place; switching uses the editor save barrier and forgetting only removes
+  catalog metadata. `catalog-green.xcresult` verifies switching, relaunch and
+  forgetting. Both disposable note files survived unchanged. The test catalog
+  was removed and the original local Laputa registration restored afterward.
+- Settings reuses the existing secure GitHub account controller. Native account
+  controls and Settings-to-vault-manager navigation pass in
+  `settings-green.xcresult`. No token storage or authorization protocol changes.
+- `phone-final-verification.xcresult` passes single-header navigation, compact
+  footer geometry and all four phone states. The phone footer is at most 55pt
+  including its reduced bottom inset. Screenshot pixel samples are exactly
+  RGB 255/255/255 above list/editor/properties and 247/246/243 above the sidebar;
+  footer pixels retain 247/246/243. Copy is "2m ago" and "Open", with full
+  accessibility labels retained. Tablet footer checks remain at most 34pt.
+- A 1,000-note regression first observed 1,001 frontmatter parses when opening
+  one note. Hydration now parses only the target and preserves other identities,
+  timestamps and zero-write semantics. The Release/Hermes read-only benchmark
+  on 6,036 notes measured 33ms hydration, 15ms type selection, 27ms favorite
+  calculation, 602ms native indexing and 967ms snapshot construction. These
+  are data-path measurements, not end-to-end screen-transition promises.
+- The two-note native smart-HTTP integration passes clone/push/pull, binary and
+  deletion preservation, save/checkout recovery, and a 16ms maximum timer delay.
+  The real approximately 467MiB GitHub repository exceeded the native clone
+  acceptance timeout. A separate read-only host shallow clone completed; that
+  is diagnostic evidence only and does not establish native clone readiness.
+- Browser checks passed eleven applicable navigation/screenshot/large-vault
+  flows and found a stale unscaled reference setup. The reference tests now
+  explicitly use Standard size, without relaxing tolerances. They also exposed
+  RNR web icon sizing overriding desktop tokens; flattening the existing icon
+  wrapper's styles fixes it. Both complete numeric parity checks then pass.
+- Local scans cover 29 exact code paths and 133 successful analyzer/file rows,
+  with zero findings at every severity and no tool errors. Managed Git storage
+  improves from two findings to zero by using Expo's existing UUID generator;
+  the browser spec's parser warning is removed by reusing its imported type.
+  All scorable files score CodeScene 10, preserving existing 10 baselines.
+  The exact manifest and individual results are in `followup-final-manifest.json`
+  under the October 12 Jupiter evidence directory. Cloud/MCP limitations remain
+  explicitly covered by the existing time-bounded exception, not reported clean.
+- Localization: the two short phone labels are in the shared English catalog;
+  Lara translation ran and validation passes all 21 catalogs / 1,219 keys.
+  PostHog: `mobile_vault_catalog_used` carries only action and local/Git kind;
+  layout fixes and hydration optimization do not add noisy events.
+- ADR 0216 documents the local-vault catalog/storage change. ARCHITECTURE and
+  ABSTRACTIONS describe the account/catalog and hydration boundaries. No new
+  dependency. Only scoped mobile checks run, not desktop/Rust release coverage.
+- SHA-256 comparisons show all 7,155 host Laputa files and 6,036 existing
+  simulator Laputa files unchanged, with no added files. Demo-vault dirt is empty.
+  Direct computer-use QA is blocked by the locked Mac; automated native checks
+  and screenshots remain available. This is not a full release acceptance claim.
+- `source-find-final.xcresult` passes Find/Replace on a 65-paragraph disposable
+  on-disk note. The source syntax layer scrolls more than 400pt to the final
+  match, the inline Find field remains hittable, and replacement changes exactly
+  the requested token with the complete frontmatter and other text unchanged.
+  The native screenshot shows the highlighted match above the keyboard. The
+  fixture and incomplete QA clone were moved out of the app; the original
+  catalog was restored byte-for-byte. `laputa-integrity-final.json` records the
+  post-cleanup SHA-256 comparison and restored catalog.
+- The final Release binary is installed on both simulators. The phone header
+  and safe-area tests pass again in `phone-shipped-build.xcresult`. The actual
+  Files-provider import picker and real large-vault AutoGit UI are not claimed
+  as newly verified by the catalog tests.
+- `tablet-shipped-build.xcresult` passes editor-interior panel drags and footer
+  geometry in both orientations on the final binary. CodeScene's staged delta
+  checked all 29 eligible files in the 55-path batch with no issues. Current
+  project Hotspot 10.0 / Average 9.9912958288353 remain above 10.0 / 9.99 floors.
+  The unavailable MCP safeguard is not reported as passed; CLI delta is the
+  recorded compensating check under the owner-approved exception.

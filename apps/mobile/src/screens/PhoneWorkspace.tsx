@@ -380,9 +380,12 @@ function PhoneWorkspaceRoot({
   transitionSwipeHandlers,
   onOpenNativeVault,
 }: PhoneWorkspaceRootProps) {
-  const { styles } = useMobileStyles(createThemeStyles)
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const insets = useSafeAreaInsets()
+  const topColor = phoneState === 'sidebar' ? mobileColors.sidebar : mobileColors.card
   return (
     <View {...phoneLayoutProbe('phone.root')} style={styles.root}>
+      <View testID="phone-top-inset" style={{ height: insets.top, backgroundColor: topColor }} />
       <PhoneWorkspaceTransition
         dragX={dragPreview.dragX}
         gestureHandoffActive={gestureHandoffState === phoneState}
@@ -409,7 +412,9 @@ function PhoneWorkspaceRoot({
           tableOfContentsTarget={tableOfContentsTarget}
         />
       </PhoneWorkspaceTransition>
-      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
+      <View testID="phone-footer" style={{ paddingBottom: Math.max(0, insets.bottom - 12), backgroundColor: mobileColors.sidebar }}>
+        <MobileSyncStatusBar compact sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
+      </View>
       <WorkspaceActionSheetHost
         {...controller}
         editorCommands={editorCommandRegistry.commands}

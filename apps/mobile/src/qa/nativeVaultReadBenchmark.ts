@@ -28,14 +28,17 @@ export async function nativeVaultReadBenchmark() {
 
 function measureReadOnlyInteractions(snapshot: MobileWorkspaceSnapshot) {
   const note = snapshot.notes.find((candidate) => candidate.rawContent !== undefined)
-  if (!note) return null
+  if (!note || note.rawContent === undefined) return null
   const start = performance.now()
   // Compute a throwaway edit result only. Never persist benchmark changes.
   applyMobileWorkspaceEditWithWrites(snapshot, { type: 'toggleFavorite', noteId: note.id })
   const favoriteMs = performance.now() - start
+  const hydrateStart = performance.now()
+  applyMobileWorkspaceEditWithWrites(snapshot, { type: 'hydrateNoteContent', noteId: note.id, rawContent: note.rawContent })
+  const hydrateMs = Math.round(performance.now() - hydrateStart)
   const selection = { kind: 'item', sectionId: 'types', id: 'benchmark', label: note.type, typeName: note.type } as const
   const selectStart = performance.now()
   const notes = notesForSidebarSelection(snapshot, selection)
   noteListFilterCountsForSelection(snapshot, selection)
-  return { favoriteMs: Math.round(favoriteMs), typeSelectionMs: Math.round(performance.now() - selectStart), matchedCount: notes.length }
+  return { favoriteMs: Math.round(favoriteMs), hydrateMs, typeSelectionMs: Math.round(performance.now() - selectStart), matchedCount: notes.length }
 }

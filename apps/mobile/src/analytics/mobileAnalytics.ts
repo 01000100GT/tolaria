@@ -3,6 +3,7 @@ export type MobileAnalyticsEvent =
   | { name: 'mobile_setting_changed'; setting: 'theme' | 'uiScale' | 'autoGit' }
   | { name: 'mobile_git_operation_requested'; operation: 'commit' | 'sync' | 'autoSync' }
   | { name: 'mobile_editor_tool_opened'; tool: 'find' | 'replace' | 'slash' }
+  | { name: 'mobile_vault_catalog_used'; action: 'add' | 'switch' | 'forget'; kind: 'local' | 'git' }
 
 export type MobileAnalyticsBody = { event: MobileAnalyticsEvent['name']; distinct_id: string; properties: Record<string, string | boolean> }
 type Dependencies = {
@@ -46,5 +47,6 @@ function eventProperties(event: MobileAnalyticsEvent): Record<string, string> {
   if (event.name === 'mobile_note_swipe_used') return { action: event.action }
   if (event.name === 'mobile_setting_changed') return { setting: event.setting }
   if (event.name === 'mobile_editor_tool_opened') return { tool: event.tool }
+  if (event.name === 'mobile_vault_catalog_used') return { action: event.action, kind: event.kind }
   return { operation: event.operation }
 }

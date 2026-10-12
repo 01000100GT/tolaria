@@ -938,6 +938,8 @@
   "status.vault.default": "Сховішча",
   "status.vault.createEmpty": "Стварыць пустое сховішча",
   "status.vault.openLocal": "Адкрыць лакальную папку",
+  "mobile.status.open": "Адкрыць",
+  "mobile.status.minutesAgo": "{minutes} хв. таму",
   "status.vault.cloneGit": "Кланіраваць Git сховішча",
   "status.vault.cloneGettingStarted": "Кланіраваць навучальнае сховішча",
   "status.vault.availableHeader": "Даступныя сховішчы",

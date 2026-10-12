@@ -938,6 +938,8 @@
   "status.vault.default": "倉庫",
   "status.vault.createEmpty": "建立空倉庫",
   "status.vault.openLocal": "開啟本地資料夾",
+  "mobile.status.open": "開啟",
+  "mobile.status.minutesAgo": "{minutes} 分鐘前",
   "status.vault.cloneGit": "克隆 Git 倉庫",
   "status.vault.cloneGettingStarted": "克隆入門倉庫",
   "status.vault.availableHeader": "可用的 Vault",

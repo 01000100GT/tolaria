@@ -938,6 +938,8 @@
   "status.vault.default": "Vault",
   "status.vault.createEmpty": "빈 Vault 만들기",
   "status.vault.openLocal": "로컬 폴더 열기",
+  "mobile.status.open": "열기",
+  "mobile.status.minutesAgo": "{minutes}분 전",
   "status.vault.cloneGit": "Git 리포지토리 복제",
   "status.vault.cloneGettingStarted": "Getting Started Vault 복제",
   "status.vault.availableHeader": "사용 가능한 Vault",

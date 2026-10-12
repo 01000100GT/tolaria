@@ -938,6 +938,8 @@
   "status.vault.default": "Almacén",
   "status.vault.createEmpty": "Crear almacén vacío",
   "status.vault.openLocal": "Abrir carpeta local",
+  "mobile.status.open": "Abrir",
+  "mobile.status.minutesAgo": "Hace {minutes} min",
   "status.vault.cloneGit": "Clonar repositorio Git",
   "status.vault.cloneGettingStarted": "Clonar el almacén «Primeros pasos»",
   "status.vault.availableHeader": "Cajas fuertes disponibles",

@@ -356,9 +356,10 @@ function applyMobileNoteEditResult(
   const notes = snapshot.notes.map(replaceTarget)
   const allNotes = snapshot.allNotes?.map(replaceTarget)
   const updated = { ...snapshot, allNotes, notes }
+  const hydrationId = edit.type === 'hydrateNoteContent' || edit.type === 'hydrateTextFileContent' ? edit.noteId : undefined
   const rebuiltSnapshot = isNoteFlagEdit(edit)
     ? snapshotWithResolvedNotes(updated, notes, allNotes ?? notes)
-    : rebuildSnapshot(updated, notes, allNotes)
+    : rebuildSnapshot(updated, notes, allNotes, hydrationId)
   const previousNote = edit.type === 'hydrateNoteContent' ? workspaceNoteById(snapshot, edit.noteId) : null
   const nextSnapshot = preserveHydratedNoteTimestamps(rebuiltSnapshot, previousNote)
 
@@ -767,10 +768,12 @@ function rebuildSnapshot(
   snapshot: MobileWorkspaceSnapshot,
   notes: MobileNote[],
   allNotes = notes,
+  hydrationId?: NoteId,
 ): MobileWorkspaceSnapshot {
   const derivableAllNotes = snapshot.allNotes ? notesWithDetailedNotes(allNotes, notes) : allNotes
   const derivedById = new Map(
     derivableAllNotes
+      .filter((note) => hydrationId === undefined || note.id === hydrationId)
       .map((note) => [note.id, deriveMobileNote(note, snapshot.typeDefinitions)] as const)
       .filter((entry): entry is readonly [NoteId, DerivedNote] => entry[1] !== null),
   )

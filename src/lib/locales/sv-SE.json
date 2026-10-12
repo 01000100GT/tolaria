@@ -938,6 +938,8 @@
   "status.vault.default": "Valv",
   "status.vault.createEmpty": "Skapa tomt valv",
   "status.vault.openLocal": "Öppna lokal mapp",
+  "mobile.status.open": "Öppna",
+  "mobile.status.minutesAgo": "För {minutes} min sedan",
   "status.vault.cloneGit": "Klona Git-arkiv",
   "status.vault.cloneGettingStarted": "Klona Kom igång-valvet",
   "status.vault.availableHeader": "Tillgängliga valv",

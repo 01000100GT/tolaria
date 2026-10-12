@@ -938,6 +938,8 @@
   "status.vault.default": "Vault",
   "status.vault.createEmpty": "空の Vault を作成",
   "status.vault.openLocal": "ローカルフォルダーを開く",
+  "mobile.status.open": "開く",
+  "mobile.status.minutesAgo": "{minutes}分前",
   "status.vault.cloneGit": "Gitリポジトリをクローンする",
   "status.vault.cloneGettingStarted": "Getting Started Vault をクローンする",
   "status.vault.availableHeader": "利用可能なVault",

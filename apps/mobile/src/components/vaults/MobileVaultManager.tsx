@@ -11,10 +11,10 @@ import { MobileTextInput } from '../../ui/MobileTextInput'
 
 import type { useMobileVaults } from '../../workspace/git/useMobileVaults'
 import { githubRepositoryUrl } from '../../workspace/git/githubRepositoryUrl'
-import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
 import { MobileGitHubAccount } from './MobileGitHubAccount'
 import { MobileGitControls } from './MobileGitControls'
 import { createVaultManagerStyles } from './vaultManagerStyles'
+import { MobileSavedVaults } from './MobileSavedVaults'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
@@ -34,9 +34,9 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
           <MobileGitControls manager={manager} />
           <View style={styles.section}>
             <MobileButton disabled={manager.busy} label={mobileText('status.vault.openLocal')} icon={<FolderOpen size={16} color={mobileColors.text} />} onPress={() => { void manager.openFolder() }} />
-            <Text style={styles.detail}>{mobileText(optionalNativeWorkspaceAccessModule() ? 'mobile.vaults.localCopy' : 'mobile.vaults.sessionFolder')}</Text>
+            <Text style={styles.detail}>{mobileText('mobile.vaults.localCopy')}</Text>
           </View>
-          <SavedVaults manager={manager} />
+          <MobileSavedVaults manager={manager} />
           <MobileGitHubAccount account={manager.account} disabled={manager.busy} clone={manager.clone} />
           <CloneRepository manager={manager} />
         </ScrollView>
@@ -57,15 +57,6 @@ function CloneRepository({ manager }: { manager: VaultManager }) {
 
 function validRepository(url: string) {
   try { githubRepositoryUrl(url.trim()); return true } catch { return false }
-}
-
-function SavedVaults({ manager }: { manager: VaultManager }) {
-  const styles = useMobileStyles(createVaultManagerStyles)
-  if (!manager.catalog.vaults.length) return null
-  return <View style={styles.section}>
-    <Text style={styles.label}>{mobileText('status.vault.availableHeader')}</Text>
-    {manager.catalog.vaults.map((vault) => <MobileButton key={vault.id} disabled={manager.busy} label={vault.label} style={styles.vault} variant={manager.active.git?.id === vault.id ? 'secondary' : 'ghost'} onPress={() => { void manager.select(vault) }} />)}
-  </View>
 }
 
 function VaultOperationStatus({ manager }: { manager: VaultManager }) {

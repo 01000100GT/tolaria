@@ -31,7 +31,7 @@ export function MobileIconButton({
       hitSlop={hitSlop}
       onPress={onPress}
       size="icon"
-      style={styles[density]}
+      style={StyleSheet.flatten(styles[density])}
       testID={testID}
       variant={selected ? 'secondary' : 'ghost'}
     >

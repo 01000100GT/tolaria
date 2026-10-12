@@ -2,7 +2,7 @@ import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { Modal, ScrollView, StyleSheet, View } from 'react-native'
-import { X } from 'phosphor-react-native'
+import { FolderOpen, X } from 'phosphor-react-native'
 import { Text } from '../components/ui/text'
 import { Switch } from '../components/ui/switch'
 import { MobileButton } from '../ui/MobileButton'
@@ -14,19 +14,25 @@ import { useMobileSettings } from './useMobileSettings'
 import { MobileAppearanceSettings } from './MobileAppearanceSettings'
 import { MobilePrivacySettings } from './MobilePrivacySettings'
 import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
+import { MobileGitHubAccount } from '../components/vaults/MobileGitHubAccount'
+import type { useMobileVaults } from '../workspace/git/useMobileVaults'
 
-export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean }) {
+export function MobileSettingsSheet({ manager }: { manager: ReturnType<typeof useMobileVaults> }) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const preferences = useMobileSettings()
   const analytics = useMobileAnalytics()
   const disabled = !preferences.ready || preferences.saving
-  return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={preferences.close}>
+  const gitAvailable = Boolean(manager.active.git)
+  const close = () => { manager.account.cancelSignIn(); preferences.close() }
+  const openVaults = () => { close(); void manager.open() }
+  const clone = async (url: string) => { preferences.close(); await manager.clone(url) }
+  return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={close}>
     <View style={styles.backdrop}>
       <MobilePanel style={styles.panel} accessibilityViewIsModal testID="mobile-settings">
         <MobileToolbar>
           <MobileToolbarTitle title={mobileText('settings.title')} />
           <MobileToolbarSpacer />
-          <MobileIconButton accessibilityLabel={mobileText('settings.close')} onPress={preferences.close}><X size={18} color={mobileColors.textMuted} /></MobileIconButton>
+          <MobileIconButton accessibilityLabel={mobileText('settings.close')} onPress={close}><X size={18} color={mobileColors.textMuted} /></MobileIconButton>
         </MobileToolbar>
         <ScrollView contentContainerStyle={styles.content}>
           {preferences.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(preferences.error === 'load' ? 'mobile.settings.loadFailed' : 'mobile.settings.saveFailed')}</Text>}
@@ -42,6 +48,8 @@ export function MobileSettingsSheet({ gitAvailable }: { gitAvailable: boolean })
           </View>
           <Text style={styles.detail}>{mobileText(gitAvailable ? 'mobile.settings.autoGitForeground' : 'mobile.vaults.localOnly')}</Text>
           <MobilePrivacySettings />
+          <MobileGitHubAccount account={manager.account} disabled={manager.busy} clone={clone} />
+          <MobileButton label={mobileText('status.vault.manageWorkspaces')} icon={<FolderOpen size={18} color={mobileColors.text} />} onPress={openVaults} testID="settings-manage-vaults" />
         </ScrollView>
       </MobilePanel>
     </View>

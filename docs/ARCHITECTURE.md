@@ -219,13 +219,28 @@ rejected instead of becoming all-note views. Evaluation and serialization remain
 in `mobileSavedViews.ts`. Sidebar type discovery has no arbitrary count cap and
 uses the desktop pluralization helper, while explicit type labels take priority.
 
-`MobilePanelSafeArea` owns each tablet pane's top inset, background and divider;
-the footer owns the bottom inset. This keeps native system areas visually joined
-to their panels without placing interactive controls under system chrome.
+`MobilePanelSafeArea` owns each tablet pane's top inset, background and divider.
+The compact tablet footer shares the bottom system band with an empty central
+home-indicator lane. The phone shell colors its top inset from the active panel
+and reduces the footer's extra bottom inset while retaining clearance below its
+controls. These native system areas remain visually joined to their panels.
 `MobileGitHubRepositories` uses a bounded, searchable FlatList picker, and
 `MobileDeviceCode` copies authorization codes without routing secrets through the
 diagnostic clipboard helper. Inspector relationship groups expose their own add
 action, and native option rows use explicit styles on the RNR button primitive.
+
+The vault catalog remembers local imports alongside Git working copies (ADR
+0216). Each new local import has its own app-owned directory; the old single
+import is registered in place once. One mutually exclusive active pointer is
+restored before workspace loading. Forgetting changes only the catalog, never
+the vault's files. Settings reuses the vault manager's GitHub account controller
+and hands off vault operations through the existing editor-save barrier.
+
+Lazy note hydration reparses only the loaded target, resolves its relationships
+against the full note pool, and retains unrelated note object identities. It
+does not emit filesystem writes or change modified timestamps. The native
+read-only benchmark measures hydration separately from initial indexing and
+type filtering; these are data-path timings, not screen-transition timings.
 
 Storage verification can also run against an optimized local binary using the
 explicit `TOLARIA_QA` Swift condition (ADR 0208). A read-only native capability

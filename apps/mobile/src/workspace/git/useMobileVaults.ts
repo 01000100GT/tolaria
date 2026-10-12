@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pickNativeWorkspaceDirectory } from '../nativeWorkspacePicker'
-import { useLocalWorkspaceRestore } from '../useNativeWorkspace'
 import { createWorkspaceSyncEditors } from '../workspaceSyncEditors'
-import { activateManagedGitVault, cloneManagedGitVault, managedGitConnection, managedGitSelection } from './managedGitStorage'
+import { activateManagedGitVault, cloneManagedGitVault, forgetManagedVault, managedGitConnection, managedGitSelection } from './managedGitStorage'
+import { activateManagedLocalVault, rememberLocalVault } from './managedLocalStorage'
+import type { ManagedLocalVault } from './managedLocalVaults'
 import type { ManagedGitVault } from './managedGitVaults'
 import { nativeGitHttp } from './nativeGitHttp'
 import { runSavedVaultOperation } from './savedVaultOperation'
@@ -21,14 +22,13 @@ type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' 
 type VaultTask = () => Promise<ActiveVault | null | 'cancelled' | 'unchanged'>
 
 export function useMobileVaults() {
-  const local = useLocalWorkspaceRestore()
   const catalog = useManagedVaultCatalog()
   const account = useGitHubAccount()
   const preferences = useMobileSettings()
   const analytics = useMobileAnalytics()
   const [editors] = useState(createWorkspaceSyncEditors)
   const [override, setOverride] = useState<ActiveVault | null>(null)
-  const active = override ?? catalog.restored ?? { selection: catalog.error ? null : local.selection, git: null }
+  const active = override ?? catalog.restored ?? { selection: null, git: null }
   const [revision, setRevision] = useState(0)
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -37,14 +37,14 @@ export function useMobileVaults() {
   const [error, setError] = useState<VaultError>(null)
   const [lastCommitId, setLastCommitId] = useState<string | null>(null)
   const running = useRef(false)
-  const restorePending = local.restorePending || catalog.pending
+  const restorePending = catalog.pending
   useEffect(() => editors.subscribeDirty(() => setStatus('pending')), [editors])
   useEffect(() => {
-    if (!local.restoreFailed && !catalog.error) return
+    if (!catalog.error) return
     if (catalog.pending || catalog.restored) return
     setError('mobile.vaults.requestFailed')
     setOpened(true)
-  }, [local.restoreFailed, catalog.error, catalog.pending, catalog.restored])
+  }, [catalog.error, catalog.pending, catalog.restored])
 
   const open = useCallback(async () => { editors.setBlocked(true); setOpened(true) }, [editors])
   const close = () => {
@@ -101,16 +101,34 @@ export function useMobileVaults() {
   const openFolder = () => perform(async () => {
     const selection = await pickNativeWorkspaceDirectory(active.selection?.vaultRootUri)
     if (!selection) return 'cancelled'
-    await activateManagedGitVault(null)
+    const vault = await rememberLocalVault(selection)
+    await catalog.reload()
     setStatus('local')
-    return { selection, git: null }
+    analytics.capture({ name: 'mobile_vault_catalog_used', action: 'add', kind: 'local' })
+    return { selection: await activateManagedLocalVault(vault), git: null }
   })
   const clone = (url: string) => perform(async () => {
     setPhase('clone')
     const session = await account.currentSession()
     const vault = await cloneManagedGitVault(url, nativeGitHttp, session?.accessToken)
     await catalog.reload()
+    analytics.capture({ name: 'mobile_vault_catalog_used', action: 'add', kind: 'git' })
     return select(vault)
+  })
+  const selectLocal = (vault: ManagedLocalVault) => perform(async () => {
+    const selection = await activateManagedLocalVault(vault)
+    setStatus('local')
+    setLastCommitId(null)
+    analytics.capture({ name: 'mobile_vault_catalog_used', action: 'switch', kind: 'local' })
+    return { selection, git: null }
+  })
+  const forget = (id: string) => perform(async () => {
+    const kind = catalog.vaults.some(vault => vault.id === id) ? 'git' : 'local'
+    const isActive = active.git?.id === id || active.selection?.vaultAlias === id
+    await forgetManagedVault(id)
+    await catalog.reload()
+    analytics.capture({ name: 'mobile_vault_catalog_used', action: 'forget', kind })
+    return isActive ? { selection: null, git: null } : 'unchanged'
   })
   const syncTask = async (checkpoint: boolean) => {
     if (!active.git) { setStatus('local'); return null }
@@ -144,8 +162,12 @@ export function useMobileVaults() {
 
   return {
     account, active, busy, catalog, close, clone, editors, error, open, opened,
-    openFolder, phase, restorePending, revision, status, sync, commit, lastCommitId,
-    select: (vault: ManagedGitVault) => perform(() => select(vault)),
+    openFolder, phase, restorePending, revision, status, sync, commit, lastCommitId, selectLocal, forget,
+    select: (vault: ManagedGitVault) => perform(async () => {
+      const next = await select(vault)
+      analytics.capture({ name: 'mobile_vault_catalog_used', action: 'switch', kind: 'git' })
+      return next
+    }),
   }
 }
 

@@ -938,6 +938,8 @@
   "status.vault.default": "Coffre-fort",
   "status.vault.createEmpty": "Créer un coffre-fort vide",
   "status.vault.openLocal": "Ouvrir le dossier local",
+  "mobile.status.open": "Ouvrir",
+  "mobile.status.minutesAgo": "Il y a {minutes} min",
   "status.vault.cloneGit": "Cloner le dépôt Git",
   "status.vault.cloneGettingStarted": "Cloner le coffre-fort « Premiers pas »",
   "status.vault.availableHeader": "Coffres-forts disponibles",

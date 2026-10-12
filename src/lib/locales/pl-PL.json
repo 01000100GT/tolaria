@@ -938,6 +938,8 @@
   "status.vault.default": "Sejf",
   "status.vault.createEmpty": "Utwórz pusty sejf",
   "status.vault.openLocal": "Otwórz lokalny folder",
+  "mobile.status.open": "Otwórz",
+  "mobile.status.minutesAgo": "{minutes} min temu",
   "status.vault.cloneGit": "Klonuj repozytorium Git",
   "status.vault.cloneGettingStarted": "Klonuj sejf Wprowadzenie",
   "status.vault.availableHeader": "Dostępne skarbce",

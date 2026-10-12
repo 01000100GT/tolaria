@@ -938,6 +938,8 @@
   "status.vault.default": "Vault",
   "status.vault.createEmpty": "Create empty vault",
   "status.vault.openLocal": "Open local folder",
+  "mobile.status.open": "Open",
+  "mobile.status.minutesAgo": "{minutes}m ago",
   "status.vault.cloneGit": "Clone Git repo",
   "status.vault.cloneGettingStarted": "Clone Getting Started Vault",
   "status.vault.availableHeader": "Available vaults",

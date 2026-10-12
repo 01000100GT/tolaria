@@ -14,10 +14,12 @@ import { useMobileSettings } from '../../settings/useMobileSettings'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 
 export function MobileSyncStatusBar({
+  compact = false,
   onOpenLocalVault,
   retryFailedEdit,
   sync,
 }: {
+  compact?: boolean
   onOpenLocalVault?: () => void
   retryFailedEdit?: () => void
   sync: MobileSyncStatus
@@ -27,7 +29,7 @@ export function MobileSyncStatusBar({
   const vault = useVaultSyncPresentation(sync)
   const preferences = useMobileSettings()
   const action = statusBarAction(themeStyles, onOpenLocalVault)
-  const presentation = statusPresentation(themeStyles, sync, vault, Boolean(retryFailedEdit))
+  const presentation = statusPresentation(themeStyles, sync, vault, { readFailed: Boolean(retryFailedEdit), compact })
 
   return (
     <View style={styles.syncBar} testID="sync-status-bar">
@@ -38,11 +40,13 @@ export function MobileSyncStatusBar({
         {presentation.detail && <Text numberOfLines={1} style={styles.syncDetailText} testID="sync-status-detail">{presentation.detail}</Text>}
       </View>
       {retryFailedEdit && <MobileButton density="status" icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('pulse.retry')} onPress={retryFailedEdit} testID="workspace-edit-retry" variant="ghost" />}
-      <GitActions vault={vault} />
+      <GitActions vault={vault} compact={compact} />
       <MobileButton
+        testID="status-open-vaults"
         density="status"
         icon={action.icon}
-        label={vault ? mobileText('status.vault.manageWorkspaces') : action.label}
+        accessibilityLabel={vault ? mobileText('status.vault.manageWorkspaces') : action.label}
+        label={compact && (vault || onOpenLocalVault) ? mobileText('mobile.status.open') : vault ? mobileText('status.vault.manageWorkspaces') : action.label}
         onPress={vault ? () => { void vault.open() } : action.onPress}
         variant="ghost"
       />
@@ -50,22 +54,23 @@ export function MobileSyncStatusBar({
   )
 }
 
-function GitActions({ vault }: { vault: ReturnType<typeof useVaultSyncPresentation> }) {
+function GitActions({ vault, compact }: { vault: ReturnType<typeof useVaultSyncPresentation>; compact: boolean }) {
   const themeStyles = useMobileStyles(createThemeStyles)
   const { mobileColors } = themeStyles
   if (!vault?.sync) return null
   const sync = vault.sync
+  if (compact) return <MobileButton label="" density="status" variant="ghost" accessibilityLabel={mobileText(vault.retry ? 'pulse.retry' : 'status.sync.now')} disabled={vault.busy} onPress={() => { void sync() }} testID="vault-sync-retry" icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} />
   return <>
     <MobileButton density="status" disabled={vault.busy} icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText(vault.retry ? 'pulse.retry' : 'status.sync.now')} onPress={() => { void sync() }} testID="vault-sync-retry" variant="ghost" />
     <MobileButton density="status" disabled={vault.busy} icon={<GitCommit color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('status.commit.label')} onPress={() => { void vault.open() }} testID="vault-commit-open" variant="ghost" />
   </>
 }
 
-function statusPresentation(themeStyles: ReturnType<typeof createThemeStyles>, sync: MobileSyncStatus, vault: ReturnType<typeof useVaultSyncPresentation>, readFailed: boolean) {
+function statusPresentation(themeStyles: ReturnType<typeof createThemeStyles>, sync: MobileSyncStatus, vault: ReturnType<typeof useVaultSyncPresentation>, { readFailed, compact }: { readFailed: boolean; compact: boolean }) {
   const { mobileColors } = themeStyles
   if (readFailed) return { color: mobileColors.danger, label: mobileText('mobile.editor.readFailed'), detail: null }
   if (vault) return { color: vault.color, label: vault.label, detail: null }
-  return { color: syncStatusColor(themeStyles, sync), label: syncStatusLabel(sync), detail: syncStatusDetail(sync) }
+  return { color: syncStatusColor(themeStyles, sync), label: syncStatusLabel(sync), detail: syncStatusDetail(sync, compact) }
 }
 
 function statusBarAction(themeStyles: ReturnType<typeof createThemeStyles>, onOpenLocalVault: (() => void) | undefined) {
@@ -94,7 +99,7 @@ function syncStatusColor(themeStyles: ReturnType<typeof createThemeStyles>, sync
   }[sync.kind]
 }
 
-function syncStatusDetail(sync: MobileSyncStatus) {
+function syncStatusDetail(sync: MobileSyncStatus, compact: boolean) {
   const labels = {
     noVault: 'status.vault.openLocal', readOnly: 'status.sync.notSynced',
     conflict: 'status.sync.resolveConflicts', writeFailed: 'status.sync.failed',
@@ -102,7 +107,7 @@ function syncStatusDetail(sync: MobileSyncStatus) {
   } as const
   const label = labels[sync.kind]
   if (label) return mobileText(label)
-  if (sync.minutesAgo) return mobileText('status.sync.minutesAgo').replace('{minutes}', `${sync.minutesAgo}`)
+  if (sync.minutesAgo) return mobileText(compact ? 'mobile.status.minutesAgo' : 'status.sync.minutesAgo').replace('{minutes}', `${sync.minutesAgo}`)
 
   return mobileText('status.sync.justNow')
 }

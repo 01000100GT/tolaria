@@ -940,6 +940,8 @@ files:
     status.vault.default: 5b70a213f150f01f0776fa9481ef2ddf
     status.vault.createEmpty: f37c03f236fbf1516222360a936249e8
     status.vault.openLocal: a367344e0429a12a5cc9a6cecbbfcde5
+    mobile.status.open: c3bf447eabe632720a3aa1a7ce401274
+    mobile.status.minutesAgo: 6c0cef977fba600c9517c8a0c8dff73d
     status.vault.cloneGit: a7d0aef7c6237a36e54fd5a26e9c23fe
     status.vault.cloneGettingStarted: 9953a11a477b441976a626a9acf5d7df
     status.vault.availableHeader: 2be36e986c7859a439c30bc5696c15a9
