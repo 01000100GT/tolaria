@@ -15,12 +15,15 @@ interface Shape {
   attrs: Record<string, unknown>
 }
 
-function shapes(specs: { forEach(visit: (name: string, spec: object) => void): void }): Record<string, Shape> {
-  const found: Record<string, Shape> = {}
+function shape(spec: object): Shape {
+  const { content, group, attrs = {} } = spec as { content?: string; group?: string; attrs?: Record<string, { default?: unknown }> }
+  return { content, group, attrs: Object.fromEntries(Object.entries(attrs).map(([key, attr]) => [key, attr.default])) }
+}
+
+function shapes(specs: { forEach(visit: (name: string, spec: object) => void): void }): Map<string, Shape> {
+  const found = new Map<string, Shape>()
   specs.forEach((name, spec) => {
-    const { content, group, attrs = {} } = spec as { content?: string; group?: string; attrs?: Record<string, { default?: unknown }> }
-    const defaults = Object.fromEntries(Object.entries(attrs).map(([key, attr]) => [key, attr.default]))
-    found[name] = { content, group, attrs: defaults }
+    found.set(name, shape(spec))
   })
   return found
 }
