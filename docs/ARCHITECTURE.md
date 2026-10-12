@@ -1027,6 +1027,8 @@ Shortcut routing is explicit:
 
 Every qualifying push to `main` triggers the `alpha-release` workflow in `.circleci/config.yml`:
 
+A push does not qualify when its head commit only changes paths that never ship in the desktop app: `site/`, `.circleci/`, `.github/workflows/README.md`, and the Tolaria Web lane (`apps/`, `packages/`, `docs/web/`). `shouldSkipAlphaRelease` in `scripts/release-version.mjs` owns that list and emits `SKIP_RELEASE=true`, which halts every alpha build job.
+
 ```
 push to main
   → version job: compute calendar alpha version YYYY.M.D-alpha.N

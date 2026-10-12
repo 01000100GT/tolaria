@@ -7,6 +7,11 @@ const CALENDAR_STABLE_PATTERN = /^v(\d{4})-(\d{2})-(\d{2})$/
 const LEGACY_STABLE_PATTERN = /^stable-v(\d{4})\.(\d{1,2})\.(\d{1,2})$/
 const STABLE_BRIDGE_TAG = 'v2027-08-28'
 const STABLE_BRIDGE_OPERATOR_DATE = '2026-08-28'
+// Paths that never ship in the desktop app. A push that only touches these
+// skips the alpha build: CI/site plumbing, and the Tolaria Web lane
+// (apps/, packages/, docs/web/), which has its own deploy path.
+const NON_DESKTOP_PATH_PREFIXES = ['site/', '.circleci/', 'apps/', 'packages/', 'docs/web/']
+const NON_DESKTOP_PATHS = new Set(['.github/workflows/README.md'])
 
 function parseDateParts(parts, source) {
   const [year, month, day] = parts.map(Number)
@@ -113,6 +118,14 @@ export function computeStableRelease({ tag, today }) {
   return { channel: 'stable', displayVersion: tag.startsWith('v') ? tag : version, tag, version }
 }
 
+function isNonDesktopPath(path) {
+  return NON_DESKTOP_PATHS.has(path) || NON_DESKTOP_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
+}
+
+export function shouldSkipAlphaRelease(changedPaths) {
+  return changedPaths.length > 0 && changedPaths.every(isNonDesktopPath)
+}
+
 function gitLines(args) {
   const output = execFileSync('git', args, { encoding: 'utf8' }).trim()
   return output ? output.split('\n').filter(Boolean) : []
@@ -166,10 +179,7 @@ function alphaReleaseFromGit(today) {
     tagsAtHead: gitLines(['tag', '--points-at', 'HEAD']).filter((tag) => tag.startsWith('alpha-v')),
     today,
   })
-  const ignored = changed.every(
-    (path) => path.startsWith('site/') || path.startsWith('.circleci/') || path === '.github/workflows/README.md',
-  )
-  return { release, skipRelease: changed.length > 0 && ignored }
+  return { release, skipRelease: shouldSkipAlphaRelease(changed) }
 }
 
 function runStableCli(today, format) {
