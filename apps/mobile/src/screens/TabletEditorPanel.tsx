@@ -52,6 +52,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     initialEditingMode = 'wysiwyg',
     layoutProbe: layoutProbeEnabled = false,
     leading,
+    trailing,
     note,
     noteRead,
     notes,
@@ -133,6 +134,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         editing={effectiveEditing}
         fileMode={fileMode}
         leading={leading}
+        trailing={trailing}
         note={note}
         onOpenMoreActions={onOpenMoreActions}
         onOpenTableOfContents={onOpenTableOfContents}
@@ -253,6 +255,7 @@ function EditorToolbar({
   editing,
   fileMode,
   leading,
+  trailing,
   note,
   onOpenMoreActions,
   onOpenTableOfContents,
@@ -283,6 +286,7 @@ function EditorToolbar({
         onToggleSourceMode={onToggleSourceMode}
         propertiesVisible={propertiesVisible}
       />
+      {trailing}
     </MobileToolbar>
   )
 }

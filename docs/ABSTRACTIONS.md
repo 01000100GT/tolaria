@@ -221,6 +221,13 @@ and settled accessibility state. Offsets always use desktop panel tokens. Native
 interaction QA is mandatory; web tests cannot verify native responder arbitration.
 See ADR 0195.
 
+Editor-interior horizontal drags retain sequential panel navigation. Note-list
+rows own their quick actions; the formatting strip uses Gesture Handler's native
+scroll view to keep horizontal tool scrolling from moving panels. Phone navigation
+uses the editor toolbar's leading/trailing slots, not a second title bar. On iPad,
+the status bar shares the bottom safe-area strip with the centered home indicator;
+native portrait/landscape checks keep the controls outside its center lane.
+
 When the adaptive iPad window cannot fit both left panes plus the 520-point
 editor minimum, the animated left strip is clipped to the 340-point list slot.
 Revealing the 260-point sidebar leaves an 80-point list preview rather than

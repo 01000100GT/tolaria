@@ -928,14 +928,11 @@ function PhoneEditorScreen({
 
   return (
     <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.editor.screen')} style={styles.screen} testID="phone-editor-screen">
-      <PhoneEditorTopBar
-        title={controller.selectedNote?.title ?? ''}
-        onBack={openList}
-        onOpenCommandPalette={openCommandPalette}
-        onOpenProperties={openProperties}
-      />
+      {!controller.selectedNote && <PhoneTopBar title="" onBack={openList} />}
       <PhoneEditorBody
         controller={controller}
+        leading={<PhoneBackButton onBack={openList} />}
+        trailing={<PhoneEditorActions onOpenCommandPalette={openCommandPalette} onOpenProperties={openProperties} />}
         notes={suggestionNotes}
         onNavigateWikilink={handleNavigateWikilink}
         onRegisterEditorCommands={onRegisterEditorCommands}
@@ -947,20 +944,16 @@ function PhoneEditorScreen({
   )
 }
 
-function PhoneEditorTopBar({
-  onBack,
+function PhoneEditorActions({
   onOpenCommandPalette,
   onOpenProperties,
-  title,
 }: {
-  onBack: () => void
   onOpenCommandPalette: () => void
   onOpenProperties: () => void
-  title: string
 }) {
   const { mobileColors } = useMobileStyles(createThemeStyles)
   return (
-    <PhoneTopBar title={title} onBack={onBack}>
+    <>
       <MobileIconButton
         accessibilityLabel={mobileText('inspector.title.properties')}
         testID="phone-properties-action"
@@ -969,12 +962,14 @@ function PhoneEditorTopBar({
         <Info color={mobileColors.textMuted} size={18} />
       </MobileIconButton>
       <PhoneCommandPaletteButton onPress={onOpenCommandPalette} />
-    </PhoneTopBar>
+    </>
   )
 }
 
 function PhoneEditorBody({
   controller,
+  leading,
+  trailing,
   notes,
   onNavigateWikilink,
   onRegisterEditorCommands,
@@ -983,6 +978,8 @@ function PhoneEditorBody({
   tableOfContentsTarget,
 }: {
   controller: PhoneWorkspaceController
+  leading?: ReactNode
+  trailing?: ReactNode
   notes: MobileNote[]
   onNavigateWikilink: (target: string) => void
   onRegisterEditorCommands?: RegisterMobileEditorCommands
@@ -998,6 +995,8 @@ function PhoneEditorBody({
       blocks={controller.editorBlocks}
       bullets={controller.editorBullets}
       compact
+      leading={leading}
+      trailing={trailing}
       initialEditing={sourceModeRequested || options.initialEditorEditing}
       initialEditingMode={sourceModeRequested ? 'source' : options.initialEditorEditingMode}
       layoutProbe={options.layoutProbe}
@@ -1104,16 +1103,21 @@ function PhoneTopBar({
   onBack: () => void
   title: string
 }) {
-  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View style={styles.topBar} testID="phone-top-bar">
-      <MobileIconButton accessibilityLabel={mobileText('command.navigation.goBack')} testID="phone-back-action" onPress={onBack}>
-        <CaretLeft color={mobileColors.textMuted} size={18} />
-      </MobileIconButton>
+      <PhoneBackButton onBack={onBack} />
       <Text numberOfLines={1} style={styles.topBarTitle}>{title}</Text>
       <View style={styles.topBarActions}>{children}</View>
     </View>
   )
+}
+
+function PhoneBackButton({ onBack }: { onBack: () => void }) {
+  const { mobileColors } = useMobileStyles(createThemeStyles)
+  return <MobileIconButton accessibilityLabel={mobileText('command.navigation.goBack')} testID="phone-back-action" onPress={onBack}>
+    <CaretLeft color={mobileColors.textMuted} size={18} />
+  </MobileIconButton>
 }
 
 function usePhoneWikilinkNavigation({

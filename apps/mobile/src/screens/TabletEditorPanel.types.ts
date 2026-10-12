@@ -25,6 +25,7 @@ export type TabletEditorPanelProps = {
   initialEditingMode?: EditorEditingMode
   layoutProbe?: boolean
   leading?: ReactNode
+  trailing?: ReactNode
   note: MobileNote | null
   noteRead?: MobileNoteReadState
   notes: MobileNote[]
@@ -58,6 +59,7 @@ export type EditorToolbarProps = {
   editingMode: EditorEditingMode
   fileMode: EditorFileMode
   leading?: ReactNode
+  trailing?: ReactNode
   note: MobileNote
   onOpenMoreActions: () => void
   onOpenTableOfContents?: () => void

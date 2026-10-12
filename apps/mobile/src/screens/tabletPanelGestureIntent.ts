@@ -20,6 +20,7 @@ function targetsLeftPanels(geometry: TabletDragGeometry, { x, y = 0 }: Movement)
   'worklet'
   if (x <= 32) return true
   const listEnd = -geometry.minimumLeft + geometry.left
+  if (x >= listEnd) return true
   const sidebarEnd = Math.max(0, listEnd - desktopPanelParity.noteListWidth)
   if (x < sidebarEnd) return true
   return x < listEnd && y < desktopPanelParity.toolbarHeight + (geometry.topInset ?? 0)

@@ -91,6 +91,23 @@ existing implementation is not proof of working user-facing iPad sync.
 Record exact files, baseline/final analyzer results, regression tests, native
 measurements, commits and remaining limitations as each batch completes.
 
+### October 12 follow-up acceptance
+
+- Restore editor-interior left/right panel drags without consuming note-row
+  quick actions, vertical content scrolling, or formatting-toolbar scrolling.
+- Collapse the duplicated phone editor headers into one navigation/action bar.
+- Profile type selection and note opening against the large Laputa vault on
+  the native runtime, then address measured bottlenecks.
+- Expose GitHub account controls and remembered vault switching/add/remove in
+  Settings. Forgetting a vault must never delete its files.
+- Complete the remaining native source Find, authenticated repository picker,
+  real clone/read-only sync, and disposable-remote automatic sync checks.
+- Preserve Laputa content. Use fixture-backed screens or disposable repositories
+  for all mutation tests; do not commit or push test content to Laputa.
+- Starting CodeScene: Hotspot 10, Average 9.9912958288353, above 10 / 9.99 floors.
+  The existing owner-approved analyzer exceptions remain in force until their
+  recorded October 14 expiry, not indefinitely.
+
 ### Slash commands and inline Find/Replace
 
 - Rich-text slash commands use the production TenTap schema and keyboard
@@ -602,3 +619,39 @@ measurements, commits and remaining limitations as each batch completes.
   under the owner-approved exception above. This is an implementation handoff on
   the mobile branch, not a production release or a claim that all twenty items
   have passed final acceptance.
+
+## October 12 navigation follow-up evidence
+
+- Restored editor-interior horizontal panel navigation while preserving note-row
+  quick actions and formatting-strip scrolling. The focused intent regression
+  failed first; the native editor drag regression also failed on the previous
+  binary, then passed on the rebuilt Release app.
+- Phone editor navigation and editor actions now share one toolbar. Native tests
+  verify a single title, all six actions inside that toolbar, source/properties
+  navigation and returning to the list. Computer-use inspection confirms the
+  duplicate toolbar is gone; the title truncates without overlapping actions.
+- Tablet footer no longer reserves a second bottom safe-area row. Native frame
+  assertions pass in portrait and landscape: height at most 34pt, bottom edge
+  flush with the app, central home-indicator lane free of buttons.
+- Native acceptance: editor swipes, row actions, formatting scrolling, rich find,
+  slash commands and existing panel gestures pass. Phone header and row-action
+  tests pass (3 tests); tablet footer passes after correcting a test that sampled
+  frames before rotation completed. This supersedes the old slash/find blocker
+  above; long-source find acceptance is still pending.
+- Mobile lint/typecheck and 1,410 tests across 241 files pass. No desktop/Rust
+  suite or release coverage run: this is scoped experimental mobile work.
+- CodeScene: all nine scorable touched/new code files are 10.0; toolbar prop
+  types have no scorable code/findings. Existing files started at 10.0 or null.
+  Local Codacy: every code path has zero findings/errors; each TypeScript file
+  completed Biome, ESLint9, Semgrep, Trivy and Lizard; Swift completed Semgrep,
+  Trivy and Lizard. Cloud/MCP limitations retain the time-bounded exception.
+- Evidence directory: `/Volumes/Jupiter/Cache/tolaria-mobile-followup-20261012`.
+  Contains individual scan manifests/results, native result bundles, build logs
+  and pre-test SHA-256 manifests for both local and simulator Laputa contents.
+- Localization: no UI copy changes in this batch. PostHog: no event needed for
+  layout repairs or restored existing navigation. No dependency, ADR or model
+  change; abstractions documentation updated. No user-vault edits.
+- Remaining requested work is explicitly retained: phone notch background and
+  shorter footer/copy; GitHub settings; remembered local/Git vault add/switch/
+  forget; measured section/note responsiveness; authenticated clone/no-change
+  sync, isolated automatic-sync UI and long-source find native acceptance.

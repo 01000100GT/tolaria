@@ -15,11 +15,21 @@ it('keeps sequential panel navigation available from the note-list header', () =
   expect(tabletPanelGestureIntent({ ...context, left: -600 }, { x: 450, dx: -30, dy: 0 })).toBe('fail')
 })
 
-it('leaves note-row swipes to quick actions and editor drags to editing', () => {
+it('leaves note-row swipes to quick actions', () => {
   expect(tabletPanelGestureIntent(context, { x: 450, y: 200, dx: -30, dy: 0 })).toBe('fail')
   expect(tabletPanelGestureIntent(context, { x: 450, y: 200, dx: 30, dy: 0 })).toBe('fail')
-  expect(tabletPanelGestureIntent(context, { x: 800, y: 900, dx: -30, dy: 0 })).toBe('fail')
-  expect(tabletPanelGestureIntent(context, { x: 800, y: 200, dx: -30, dy: 0 })).toBe('fail')
+  expect(tabletPanelGestureIntent({ ...context, left: -260 }, { x: 200, y: 200, dx: 30, dy: 0 })).toBe('fail')
+})
+
+it('hides and restores the left panels from the editor interior at every snap point', () => {
+  for (const left of [0, -260, -600]) {
+    const geometry = { ...context, left }
+    expect(tabletPanelGestureIntent(geometry, { x: 800, y: 400, dx: -30, dy: 0 }))
+      .toBe(left === -600 ? 'fail' : 'left')
+    expect(tabletPanelGestureIntent(geometry, { x: 800, y: 400, dx: 30, dy: 0 }))
+      .toBe(left === 0 ? 'fail' : 'left')
+    expect(tabletPanelGestureIntent(geometry, { x: 800, y: 400, dx: 5, dy: -40 })).toBe('fail')
+  }
 })
 
 it('keeps sidebar drags and editor edge reveals available', () => {

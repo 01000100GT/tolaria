@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps 
 import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import Reanimated from 'react-native-reanimated'
 import { GestureDetector } from 'react-native-gesture-handler'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { MobilePanelSafeArea } from '../ui/MobilePanelSafeArea'
 import { CaretLeft, CaretRight, SidebarSimple } from 'phosphor-react-native'
 import { MobileCommandPalette } from '../components/workspace/MobileCommandPalette'
@@ -106,7 +105,7 @@ export function TabletWorkspace({
   wysiwygWikilinkInsertProbe?: boolean
   wysiwygMutationProbe?: boolean
 }) {
-  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { styles } = useMobileStyles(createThemeStyles)
   const controller = useTabletWorkspaceController({ repository, repositoryRequest, snapshot })
   const onCreateNote = controller.snapshot.sync.kind === 'noVault' || controller.snapshot.sync.kind === 'readOnly'
     ? onOpenNativeVault ?? controller.onOpenCreateNote
@@ -146,9 +145,7 @@ export function TabletWorkspace({
         {...controller}
         onOpenCreateNote={onCreateNote}
       />
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: mobileColors.sidebar }}>
-        <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
-      </SafeAreaView>
+      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
     </View>
   )
 }

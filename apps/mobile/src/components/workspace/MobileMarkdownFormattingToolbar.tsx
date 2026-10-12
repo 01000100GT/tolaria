@@ -1,7 +1,8 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { mobileText } from '../../i18n/mobileText'
 import { Button } from '../ui/button'
 
