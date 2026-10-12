@@ -36,7 +36,8 @@ function parseToday(today) {
 
 function parseStableTag(tag) {
   const match = CALENDAR_STABLE_PATTERN.exec(tag) ?? LEGACY_STABLE_PATTERN.exec(tag)
-  return match ? parseDateParts(match.slice(1), tag) : null
+  if (!match) return null
+  return parseDateParts(match.slice(1), tag)
 }
 
 function parseAlphaTag(tag) {
@@ -72,6 +73,21 @@ function releaseFromTag(tag, todayDate, recoveryBridgeDate) {
   return { channel: 'alpha', displayVersion, tag, version }
 }
 
+// The bridge is pending until an alpha has been published on or after the bridge date.
+function recoveryBridgeIsPending(alphaReleases, todayDate, recoveryBridgeDate) {
+  if (!recoveryBridgeDate) return false
+  const futureAlphaDates = alphaReleases.filter(({ date }) => date > todayDate).map(({ date }) => date)
+  const latestFutureAlpha = latestDate(futureAlphaDates)
+  return !latestFutureAlpha || latestFutureAlpha < recoveryBridgeDate
+}
+
+// A stable release already using today's date pushes the alpha to tomorrow so semver still increases.
+function regularAlphaDate(stableDates, todayDate) {
+  const latestValidStable = latestDate(stableDates.filter((value) => value <= todayDate))
+  const stableUsesToday = latestValidStable && compareDates(latestValidStable, todayDate) === 0
+  return stableUsesToday ? nextDay(todayDate) : todayDate
+}
+
 export function computeAlphaRelease({ alphaTags, stableTags, tagsAtHead, today }) {
   const todayDate = parseToday(today)
   const stableDates = stableTags.map(parseStableTag).filter(Boolean)
@@ -83,17 +99,8 @@ export function computeAlphaRelease({ alphaTags, stableTags, tagsAtHead, today }
     return releaseFromTag(tagsAtHead[0], todayDate, recoveryBridgeDate)
   }
 
-  const latestFutureAlpha = latestDate(
-    alphaReleases.filter(({ date }) => date > todayDate).map(({ date }) => date),
-  )
-  const needsRecoveryBridge =
-    recoveryBridgeDate && (!latestFutureAlpha || latestFutureAlpha < recoveryBridgeDate)
-  const latestValidStable = latestDate(stableDates.filter((value) => value <= todayDate))
-  const regularDate =
-    latestValidStable && compareDates(latestValidStable, todayDate) === 0
-      ? nextDay(todayDate)
-      : todayDate
-  const releaseDate = needsRecoveryBridge ? recoveryBridgeDate : regularDate
+  const needsRecoveryBridge = recoveryBridgeIsPending(alphaReleases, todayDate, recoveryBridgeDate)
+  const releaseDate = needsRecoveryBridge ? recoveryBridgeDate : regularAlphaDate(stableDates, todayDate)
   const core = calendarCore(releaseDate)
   const sequence = alphaReleases.filter(({ date }) => calendarCore(date) === core).length + 1
   const displaySequence = needsRecoveryBridge ? 0 : sequence
