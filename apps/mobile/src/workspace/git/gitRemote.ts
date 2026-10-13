@@ -3,12 +3,15 @@ import { createGitVault, githubRepositoryUrl, type GitAuthor, type GitVaultConte
 import { withWorkspaceOperation } from './workspaceOperationQueue'
 import { withSavedWorkspace } from './workspaceWriteQueue'
 import { createGitTaskRunner } from './gitTaskRunner'
+import { requireActiveSync } from '../syncCancellation'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
 export type GitRemoteOptions = GitVaultContext & {
   checkpoint?: boolean
   http: HttpClient
   token?: string
+  getToken?: () => Promise<string | undefined>
+  signal?: AbortSignal
   onPhase?: (phase: GitSyncPhase) => void
   operationKey?: string
 }
@@ -38,7 +41,9 @@ async function syncUnlocked(options: GitRemoteOptions, author: GitAuthor) {
   const vault = createGitVault(context)
   emitPhase(options, 'checkpoint')
   const checkpoint = options.checkpoint === false ? await vault.requireClean() : await vault.checkpoint(author)
-  const connection = transport({ ...options, cache: context.cache }, url)
+  requireActiveSync(options.signal)
+  const token = options.getToken ? await options.getToken() : options.token
+  const connection = transport({ ...options, token, cache: context.cache }, url)
   const result = await syncHeads(options, { ...connection, url, ref }, author)
   return { ...result, changedFiles: checkpoint.changedFiles }
 }
@@ -78,15 +83,20 @@ async function pushCurrentHead(options: GitRemoteOptions, connection: GitConnect
 }
 
 function emitPhase(options: GitRemoteOptions, phase: GitSyncPhase) {
+  requireActiveSync(options.signal)
   options.onPhase?.(phase)
+  requireActiveSync(options.signal)
 }
 
-function transport({ fs, dir, http, token, cache }: GitRemoteOptions, repositoryUrl: string) {
+function transport({ fs, dir, http, token, cache, signal }: GitRemoteOptions, repositoryUrl: string) {
   const { run } = createGitTaskRunner()
   return {
     fs,
     dir,
-    http,
+    http: { request: (request: Parameters<HttpClient['request']>[0]) => {
+      requireActiveSync(signal)
+      return http.request({ ...request, signal })
+    } },
     cache,
     onProgress: () => run(() => undefined),
     onAuth: (url: string) => {

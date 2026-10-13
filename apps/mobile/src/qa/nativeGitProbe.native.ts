@@ -17,8 +17,7 @@ export function useNativeGitProbe() {
           await runNativeWriteRecoveryProbe(endpoint, recoveryPhase)
           return
         }
-        const { runNativeGitProbe } = await import('./runNativeGitProbe')
-        await runNativeGitProbe(endpoint)
+        await runGitProbe(url, endpoint)
       } catch (error) {
         console.warn('[native-git-probe] Unable to run probe', error)
       }
@@ -27,6 +26,16 @@ export function useNativeGitProbe() {
     void Linking.getInitialURL().then(run).catch(() => undefined)
     return () => subscription.remove()
   }, [])
+}
+
+async function runGitProbe(url: string, endpoint: string) {
+  if (new URL(url).searchParams.get('backgroundSyncProbe') === '1') {
+    const { runNativeBackgroundSyncProbe } = await import('./nativeBackgroundSyncProbe')
+    await runNativeBackgroundSyncProbe(endpoint)
+    return
+  }
+  const { runNativeGitProbe } = await import('./runNativeGitProbe')
+  await runNativeGitProbe(endpoint)
 }
 
 function storageProbeAvailable() {

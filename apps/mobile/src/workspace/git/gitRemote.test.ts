@@ -123,3 +123,46 @@ it('bounds retries when a remote keeps moving and retains the combined local his
   await syncGitVault(first, author)
   expect(await readFile(join(first.dir, 'tablet.md'), 'utf8')).toBe('# Tablet\n')
 })
+
+it('checkpoints locally before refreshing credentials, even when refresh fails offline', async () => {
+  const { first } = await fixture()
+  await writeFile(join(first.dir, 'note.md'), '# Saved offline\n')
+  await expect(syncGitVault({ ...first, getToken: async () => { throw new Error('offline') } }, author)).rejects.toThrow('offline')
+  expect(await git.log(first)).toHaveLength(2)
+  expect((await git.statusMatrix(first)).every(([, head, worktree, stage]) => head === worktree && head === stage)).toBe(true)
+  expect(await syncGitVault(first, author)).toMatchObject({ kind: 'synced', changedFiles: 0 })
+})
+
+it('stops expired background work before network access and retains its checkpoint', async () => {
+  const { first } = await fixture()
+  await writeFile(join(first.dir, 'note.md'), '# Background draft\n')
+  const controller = new AbortController()
+  let requests = 0
+  const http = { request: (request: Parameters<typeof first.http.request>[0]) => {
+    requests += 1
+    return first.http.request(request)
+  } }
+  await expect(syncGitVault({ ...first, http, signal: controller.signal,
+    onPhase: phase => { if (phase === 'fetch') controller.abort() },
+  }, author)).rejects.toThrow('syncDeferred')
+  expect(requests).toBe(0)
+  expect(await git.log(first)).toHaveLength(2)
+  expect(await syncGitVault(first, author)).toMatchObject({ kind: 'synced', changedFiles: 0 })
+})
+
+it('carries cancellation to the HTTP adapter and stops before the next phase', async () => {
+  const { first, second } = await fixture()
+  await writeFile(join(first.dir, 'desktop.md'), '# Desktop\n')
+  await syncGitVault(first, author)
+  const controller = new AbortController()
+  const http = { request: async (request: Parameters<typeof second.http.request>[0]) => {
+    expect(request.signal).toBe(controller.signal)
+    const response = await second.http.request(request)
+    controller.abort()
+    return response
+  } }
+  await expect(syncGitVault({ ...second, http, signal: controller.signal }, author)).rejects.toThrow()
+  expect(await git.log(second)).toHaveLength(1)
+  expect(await syncGitVault(second, author)).toMatchObject({ kind: 'synced' })
+  expect(await readFile(join(second.dir, 'desktop.md'), 'utf8')).toBe('# Desktop\n')
+})

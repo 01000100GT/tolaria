@@ -18,6 +18,7 @@ import { useMobileAutoGit } from './useMobileAutoGit'
 import { useMobileAnalytics } from '../../analytics/useMobileAnalytics'
 import { isWorkspaceLinked, syncLinkedWorkspace } from '../linkedWorkspace'
 import { useLinkedFolderSync } from '../useLinkedFolderSync'
+import { requireActiveSync } from '../syncCancellation'
 
 export type VaultSyncState = 'local' | 'pending' | 'committed' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | 'mobile.vaults.folderUnavailable' | 'mobile.vaults.folderConflict' | null
@@ -57,7 +58,7 @@ export function useMobileVaults() {
     setOpened(false)
   }
 
-  const perform = async (task: VaultTask, present = true, operation?: 'commit' | 'sync' | 'autoSync') => {
+  const perform = async (task: VaultTask, present = true, operation?: 'commit' | 'sync' | 'autoSync', signal?: AbortSignal) => {
     if (running.current || restorePending) return
     running.current = true
     if (operation && active.git) analytics.capture({ name: 'mobile_git_operation_requested', operation })
@@ -82,6 +83,7 @@ export function useMobileVaults() {
         },
       })
     } catch (failure) {
+      if (signal?.aborted) { setStatus('pending'); return }
       failed = true
       const result = vaultFailure(saved, failure)
       setError(result.error)
@@ -141,16 +143,16 @@ export function useMobileVaults() {
     if (result.conflict) setOpened(true)
     return result.changed ? null : 'unchanged' as const
   }
-  const syncTask = async (checkpoint: boolean) => {
+  const syncTask = async (checkpoint: boolean, signal?: AbortSignal) => {
+    requireActiveSync(signal)
     if (linked && active.selection) return syncFolder(active.selection.vaultRootUri)
     if (!active.git) { setStatus('local'); return null }
-    const session = await account.currentSession()
     const { syncGitVault } = await import('./gitRemote')
     const result = await syncGitVault({
       ...managedGitConnection(active.git), http: nativeGitHttp,
-      checkpoint,
-      token: session?.accessToken, onPhase: setPhase,
-    }, mobileGitAuthor(session))
+      checkpoint, signal,
+      getToken: async () => (await account.currentSession())?.accessToken, onPhase: setPhase,
+    }, mobileGitAuthor(account.session))
     setStatus(result.kind)
     return result.workspaceChanged ? null : 'unchanged' as const
   }
@@ -169,14 +171,14 @@ export function useMobileVaults() {
     blocked: busy || opened || preferences.opened || restorePending || status === 'diverged', editors,
     enabled: preferences.ready && preferences.settings.autoGit && Boolean(active.git),
     rootUri: active.selection?.vaultRootUri,
-    sync: () => perform(() => syncTask(true), false, 'autoSync'),
+    sync: signal => perform(() => syncTask(true, signal), false, 'autoSync', signal),
   })
 
   useLinkedFolderSync({
     root: linked ? active.selection?.vaultRootUri : undefined,
     blocked: busy || opened || preferences.opened || restorePending || status === 'diverged' || status === 'failed',
     editors,
-    sync: () => perform(() => syncTask(false), false),
+    sync: signal => perform(() => syncTask(false, signal), false, undefined, signal),
   })
 
   return {

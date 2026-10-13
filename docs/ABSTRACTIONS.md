@@ -10,10 +10,16 @@ refuses writes after an unreadable load. Native storage retains the last valid
 backup through interrupted publication, including when the current file is
 corrupt. `MobileSettingsProvider` supplies settings and the settings sheet;
 `components/ui/switch.tsx` is a thin native RNR Switch composition (ADR 0212).
-`mobileAutoGit` is a pure debounced scheduler; `useMobileAutoGit` connects it to
-foreground state, editor dirt and the existing vault operation/save boundary.
+`mobileAutoGit` is a pure debounced scheduler; `useWorkspaceAutoSync` connects it
+to lifecycle state, editor dirt and the existing vault operation/save boundary.
+`workspaceSyncLifecycle` requests a final flush on departure, joining any active
+sync, and retries on foreground return. `WorkspaceBackgroundLease` owns finite
+UIKit execution time and releases it even if JavaScript cannot respond to expiry.
+Expiry cancels Git HTTP and later phases; durable local saves remain recoverable.
 Manual mode refuses dirty syncs and exposes user-authored local commits. AutoGit
-is opt-in and foreground-only. The footer and vault manager expose both paths.
+is opt-in, with foreground scheduling and a best-effort background flush (ADR
+0219). Local commits precede authentication/network access. The footer and vault
+manager expose both paths.
 
 ## Mobile Git Working Copies
 
@@ -154,7 +160,8 @@ working copy. `LinkedWorkspacePlan` performs three-way content comparison;
 symlinks or touching Git internals. `LinkedWorkspaceStore` keeps bookmarks and
 baselines outside vault content using stable container-relative identities.
 `linkedWorkspace.ts` joins the existing save queue; `useLinkedFolderSync` reuses
-the idle scheduler for foreground write-back, refresh and explicit retries.
+the shared lifecycle scheduler for foreground write-back, refresh, explicit
+retries and a bounded departure flush. iCloud delivery remains provider-owned.
 The status reports provider persistence, not cross-device delivery (ADR 0217).
 
 Asynchronous repository note reads join the existing per-root operation queue

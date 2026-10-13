@@ -1,11 +1,13 @@
 type AutoGitState = { enabled: boolean; foreground: boolean; blocked: boolean }
 
-export function createMobileAutoGit(run: () => Promise<unknown>, idleMs = 30_000) {
+type SyncOperation = { controller: AbortController; promise: Promise<void> }
+
+export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unknown>, idleMs = 30_000) {
   let state: AutoGitState = { enabled: false, foreground: true, blocked: false }
   let timer: ReturnType<typeof setTimeout> | undefined
   let version = 0
   let attempted = 0
-  let running = false
+  let running: SyncOperation | undefined
   let disposed = false
 
   function cancelTimer() {
@@ -19,22 +21,41 @@ export function createMobileAutoGit(run: () => Promise<unknown>, idleMs = 30_000
     if (version > attempted) timer = setTimeout(() => { void execute() }, idleMs)
   }
 
-  async function execute() {
+  function execute() {
     attempted = version
-    running = true
-    try { await run() } catch { /* The operation owner presents failures; retry only on a new trigger. */ }
-    finally { running = false; schedule() }
+    const controller = new AbortController()
+    const promise = Promise.resolve().then(() => run(controller.signal))
+      .catch(() => { /* The operation owner presents failures; retry only on a new trigger. */ })
+      .then(() => { running = undefined; schedule() })
+    running = { controller, promise }
+    return running
+  }
+
+  async function flush(signal?: AbortSignal) {
+    cancelTimer()
+    if (disposed || signal?.aborted) return
+    if (running) return followSync(running, signal)
+    if (!state.enabled || state.blocked) return
+    await followSync(execute(), signal)
   }
 
   return {
     dirty: () => { version += 1; schedule() },
+    flush,
     update: (next: AutoGitState) => {
       if (sameState(state, next)) return
       state = next
       schedule()
     },
-    dispose: () => { disposed = true; cancelTimer() },
+    dispose: () => { disposed = true; cancelTimer(); running?.controller.abort() },
   }
+}
+
+async function followSync(operation: SyncOperation, signal?: AbortSignal) {
+  const abort = () => operation.controller.abort()
+  signal?.addEventListener('abort', abort, { once: true })
+  try { await operation.promise }
+  finally { signal?.removeEventListener('abort', abort) }
 }
 
 function canSync(state: AutoGitState) {

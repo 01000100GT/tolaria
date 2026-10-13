@@ -41,9 +41,31 @@ private struct WorkspacePickerContext {
 public class TolariaWorkspaceAccessModule: Module {
   private var pickerContext: WorkspacePickerContext?
   private let gitMetadata = Result { try WorkspaceGitMetadata() }
+  private let backgroundSync = WorkspaceBackgroundLease { token in
+    UIApplication.shared.endBackgroundTask(UIBackgroundTaskIdentifier(rawValue: token))
+  }
 
   public func definition() -> ModuleDefinition {
     Name("TolariaWorkspaceAccess")
+    Events("workspaceSyncExpired")
+
+    AsyncFunction("beginWorkspaceSync") { (identifier: String) -> Bool in
+      self.backgroundSync.begin(identifier, request: { expiration in
+        let token = UIApplication.shared.beginBackgroundTask(withName: "Tolaria vault sync", expirationHandler: expiration)
+        return token == .invalid ? nil : token.rawValue
+      }, expired: { [weak self] in
+        self?.sendEvent("workspaceSyncExpired", ["identifier": identifier])
+      })
+    }.runOnQueue(.main)
+
+    AsyncFunction("endWorkspaceSync") { (identifier: String) in
+      self.backgroundSync.end(identifier)
+    }.runOnQueue(.main)
+
+    OnDestroy {
+      let lease = self.backgroundSync
+      DispatchQueue.main.async { lease.endAll() }
+    }
 
     Function("gitEntryInfo") { (uri: String) throws -> [String: Any] in
       return try self.gitMetadata.get().info(uri)
@@ -93,6 +115,10 @@ public class TolariaWorkspaceAccessModule: Module {
 
     #if DEBUG || TOLARIA_QA
     Constant("nativeStorageQAEnabled") { true }
+
+    AsyncFunction("runLinkedBackgroundProbe") { () throws -> Bool in
+      return try runLinkedWorkspaceBackgroundProof()
+    }
 
     AsyncFunction("runEntryRecoveryProbe") { (phase: String) throws -> [String: Any] in
       return try runWorkspaceEntryNativeProof(phase)

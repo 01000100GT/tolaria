@@ -88,6 +88,11 @@
 
 ## Physical iCloud test
 
+Installation update, October 13 at 12:31 UTC: the Release build at `50f9b1b5e`
+was successfully signed and installed in place. The iPad disconnected before
+launch verification. See `background-sync-2026-10-13.md`; no physical launch or
+cross-device iCloud verification is claimed.
+
 1. Start with a small disposable folder in iCloud Drive, containing a Markdown
    note. Make its files available locally in Files before selecting it.
 2. In Tolaria, open Manage vaults -> Open local folder and select that folder.

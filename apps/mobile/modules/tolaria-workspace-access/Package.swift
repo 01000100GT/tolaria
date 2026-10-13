@@ -9,7 +9,7 @@ let package = Package(
       name: "TolariaWorkspaceFiles",
       path: "ios",
       exclude: ["TolariaWorkspaceAccessModule.swift", "TolariaWorkspaceAccess.podspec"],
-      sources: ["WorkspaceFileSafety.swift", "CoordinatedWorkspaceFile.swift", "WorkspaceBookmarkStore.swift", "WorkspaceFileNativeProof.swift", "WorkspaceFileIndex.swift", "ManagedWorkspaceImport.swift", "WorkspaceTextRecovery.swift", "WorkspaceTextRecord.swift", "ManagedWorkspaceText.swift", "WorkspaceTextRecoveryNativeProof.swift", "WorkspaceEntryFingerprint.swift", "WorkspaceMutationCoordination.swift", "WorkspaceEntryRecovery.swift", "WorkspaceEntryNativeProof.swift", "ManagedWorkspacePath.swift", "WorkspaceGitMetadata.swift", "LinkedWorkspacePlan.swift", "LinkedWorkspaceTree.swift", "LinkedWorkspaceSession.swift", "LinkedWorkspaceStore.swift"]
+      sources: ["WorkspaceFileSafety.swift", "CoordinatedWorkspaceFile.swift", "WorkspaceBookmarkStore.swift", "WorkspaceFileNativeProof.swift", "WorkspaceFileIndex.swift", "ManagedWorkspaceImport.swift", "WorkspaceTextRecovery.swift", "WorkspaceTextRecord.swift", "ManagedWorkspaceText.swift", "WorkspaceTextRecoveryNativeProof.swift", "WorkspaceEntryFingerprint.swift", "WorkspaceMutationCoordination.swift", "WorkspaceEntryRecovery.swift", "WorkspaceEntryNativeProof.swift", "ManagedWorkspacePath.swift", "WorkspaceGitMetadata.swift", "LinkedWorkspacePlan.swift", "LinkedWorkspaceTree.swift", "LinkedWorkspaceSession.swift", "LinkedWorkspaceStore.swift", "WorkspaceBackgroundLease.swift"]
     ),
     .testTarget(name: "TolariaWorkspaceFilesTests", dependencies: ["TolariaWorkspaceFiles"], path: "tests"),
   ]

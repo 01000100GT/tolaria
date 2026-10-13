@@ -59,3 +59,51 @@ Merge batch:
   publication to retain code health. ADR 0218 and ABSTRACTIONS document it.
 - Native merge/lifecycle checks and the background batch are still pending.
   No desktop/Rust coverage or production promotion is claimed.
+
+Background batch and final native verification:
+
+- Added one shared lifecycle adapter for Git and linked-folder scheduling,
+  immediate departure flush, in-flight joining, native execution leases and
+  transport cancellation. Manual Git remains manual. Local commits now precede
+  credential refresh/network access. A denied/expired lease defers work; genuine
+  errors and conflicts retain the existing visible retry controls.
+- Red/green: `background-red.log`, `background-green.log`, `lease-red.log`,
+  `lease-green.log`, `cancellation-green.log`. The focused Git/lifecycle/folder
+  checks pass 150 tests / 37 files; Foundation tests pass 76 tests. Mobile lint
+  and typecheck pass. No desktop/Rust coverage or full desktop suite was run.
+- ARM64 optimized iOS Simulator build passes with the explicit local-only
+  `TOLARIA_QA` flag. `native-background-final-proof.log` passes all assertions:
+  independent local/remote commits merged with two parents; a pending editor
+  draft was flushed, committed and read back from the actual smart-HTTP remote
+  while AppState was `background`; linked-folder write-back preserved the draft
+  and frontmatter. Folder storage used a wholly isolated home/bookmark store.
+  `assert-native-background-sync.mjs` switches the simulator to Settings after
+  the probe reports ready. This is the native app, not a browser. Interactive
+  computer-use was unavailable because the Mac was locked; no unlock or security
+  bypass was attempted. No physical iPad or cross-device iCloud test is claimed.
+- CodeScene: all 22 background-batch code paths are 10.0 except Package.swift,
+  which is unscorable without findings. Existing scores stay at 10.0; new files
+  reach 10.0. The staged CLI delta is the compensating safeguard; MCP/cloud
+  limitations remain those recorded above. No generated bundle was changed.
+- Codacy: `background-analyzer-matrix.json` records 99 successful per-file/tool
+  rows with exact identities and zero findings at every severity. TypeScript:
+  Biome 2.5.6, ESLint9 9.39.5, Opengrep 1.26.0, Trivy 0.72.0, Lizard 1.23.0.
+  Swift: Opengrep, Trivy, Lizard. The MJS runner is routed to the latter three
+  plus ESLint9; Codacy does not route MJS to Biome, so a separate explicit Biome
+  2.5.6 lint of that exact path confirms 1 file checked, 0 errors/warnings/info,
+  0 skipped (`background-script-biome.json`). This is 100 completed analyzer
+  results, not a silently skipped target. Cloud parity is still unavailable.
+  The QA collector reuses the existing validated loopback sink; no rule bypass.
+- Exact branch inventory: `branch-manifest-background-commit.txt`; scoped file
+  classifications and analyzer evidence are retained in the evidence directory.
+  Existing touched files remain zero; every new file is zero. The old SHA-1
+  probe finding noted in the baseline is in an untouched file.
+- Localization: no UI copy changes. PostHog: existing Git sync events cover the
+  operation; no new event is needed for lifecycle-driven repetition or QA.
+- Refactoring: shared lifecycle hook replaces duplicated foreground hooks;
+  separated QA dispatch and lifecycle predicates retain CodeScene 10.0.
+  ADR 0219 and ABSTRACTIONS document finite background execution and limitations.
+- Hygiene: `native-integrity-final.json` verifies all 6,036 Laputa files unchanged,
+  no additions/removals, identical settings/catalog bytes and no probe residues.
+  Host Laputa was not touched. The physical iPad is disconnected; these new
+  merge/background changes have not been installed there.

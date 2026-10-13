@@ -2,6 +2,9 @@ import type { WorkspaceFileIndex } from './fileSystemWorkspaceRepository'
 import type { WorkspaceTextChange } from './workspaceTextBatch'
 
 export type NativeWorkspaceAccessModule = {
+  beginWorkspaceSync?: (identifier: string) => Promise<boolean>
+  endWorkspaceSync?: (identifier: string) => Promise<void>
+  addListener?: (event: 'workspaceSyncExpired', listener: (event: { identifier: string }) => void) => { remove: () => void }
   isWorkspaceLinked?: (root: string) => boolean
   syncLinkedWorkspace?: (root: string) => Promise<{ linked: boolean; changed: boolean; conflict: boolean }>
   gitEntryInfo?: (uri: string) => {
