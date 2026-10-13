@@ -3,6 +3,13 @@ import XCTest
 @testable import TolariaWorkspaceFiles
 
 final class LinkedWorkspaceSafetyTests: XCTestCase {
+  func testOnlyCurrentOrNonCloudFilesCanReconcile() {
+    XCTAssertFalse(linkedWorkspaceRequiresDownload(nil))
+    XCTAssertFalse(linkedWorkspaceRequiresDownload(.current))
+    XCTAssertTrue(linkedWorkspaceRequiresDownload(.notDownloaded))
+    XCTAssertTrue(linkedWorkspaceRequiresDownload(.downloaded))
+  }
+
   func testCloudPlaceholderDoesNotDeleteCachedNoteOrAdvanceBaseline() throws {
     try withDisposableWorkspace { root in
       let fixture = try LinkedWorkspaceFixture(root: root)

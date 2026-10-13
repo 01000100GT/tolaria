@@ -85,11 +85,15 @@ private func downloadedWorkspaceItemValues(_ file: URL) throws -> URLResourceVal
     throw WorkspaceFileError.coordinationFailed
   }
   guard let values = try workspaceItemValues(file) else { return nil }
-  if values.ubiquitousItemDownloadingStatus == .notDownloaded {
+  if linkedWorkspaceRequiresDownload(values.ubiquitousItemDownloadingStatus) {
     try FileManager.default.startDownloadingUbiquitousItem(at: file)
     throw WorkspaceFileError.coordinationFailed
   }
   return values
+}
+
+func linkedWorkspaceRequiresDownload(_ status: URLUbiquitousItemDownloadingStatus?) -> Bool {
+  status != nil && status != .current
 }
 
 private func workspaceItemValues(_ file: URL) throws -> URLResourceValues? {
