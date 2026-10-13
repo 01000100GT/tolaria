@@ -1,13 +1,15 @@
 import git, { type WalkerEntry } from 'isomorphic-git'
 import { Buffer } from 'buffer'
 import type { GitAuthor, GitVaultContext } from './gitVault'
+import { validMergedMetadata } from './gitMergeValidation'
 
 /** Build objects only. The existing checkout journal publishes a successful merge. */
 export async function mergeGitHeads(context: GitVaultContext, remote: string, author: GitAuthor) {
   const local = await git.resolveRef({ ...context, ref: 'HEAD' })
   const bases = await git.findMergeBase({ ...context, oids: [local, remote] })
   if (bases.length !== 1 || !await mergeableBlobs(context, [local, remote, bases[0]])) return null
-  return writeMergedCommit(context, remote, author)
+  const merged = await writeMergedCommit(context, remote, author)
+  return merged && await validMergedMetadata(context, merged, local, remote) ? merged : null
 }
 
 async function writeMergedCommit(context: GitVaultContext, remote: string, author: GitAuthor) {

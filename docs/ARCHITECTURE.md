@@ -43,6 +43,10 @@ Managed Git vaults retain the existing save/operation queues. Manual sync requir
 an explicit local commit; opt-in AutoGit schedules foreground idle checkpoints
 and synchronization without promising background execution.
 
+Mobile Git merges validate synthesized frontmatter and saved-view/configuration
+blobs before publishing the proposed tree (ADR 0220). Invalid metadata leaves
+HEAD, index and working files untouched for explicit conflict resolution.
+
 New iOS folder selections retain a Files-provider bookmark alongside an offline
 working copy (ADR 0217). Native, coordinated three-way reconciliation writes
 local edits back and imports external changes; divergent versions stop for
