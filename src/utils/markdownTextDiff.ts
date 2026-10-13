@@ -31,7 +31,7 @@ interface SplitPoint {
 function commonPrefix({ before, after }: TextPair): number {
   const limit = Math.min(before.length, after.length)
   let length = 0
-  while (length < limit && before[length] === after[length]) length++
+  while (length < limit && before.charAt(length) === after.charAt(length)) length++
   return length
 }
 
@@ -43,8 +43,8 @@ function commonSuffix({ before, after }: TextPair): number {
 }
 
 function matchingCharacters({ before, after }: TextPair, x: TextOffset, y: TextOffset): boolean {
-  if (x >= before.length || y >= after.length) return false
-  return before[x] === after[y]
+  const character = before.charAt(x)
+  return character !== '' && character === after.charAt(y)
 }
 
 function nextX(frontier: Frontier, index: TextOffset, diagonal: Diagonal, distance: EditDistance): number {

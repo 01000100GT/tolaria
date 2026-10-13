@@ -1,3 +1,4 @@
+import integrityMarkdown from '../test/fixtures/markdown-integrity.md?raw'
 import { describe, expect, it } from 'vitest'
 import { BlockNoteEditor } from '@blocknote/core'
 import { schema } from '../components/editorSchema'
@@ -5,7 +6,7 @@ import { syncActiveTabIntoRawBuffer } from '../components/editorRawModeSync'
 import { installRichEditorMarkdownSerializer, serializeRichEditorDocumentToMarkdown } from '../utils/richEditorMarkdown'
 import { resolveBlocksForTarget } from './editorBlockResolution'
 
-const source = 'Inline code: `loadData([["y"]])` and `[[x]]`.\nPlaceholder: <term>\n<!-- comment -->\nEntity: &lt;term&gt;\n\n| id | left | right |\n| :--- | :--- | ---: |\n| a | b | c |\n'
+const source = integrityMarkdown
 const path = '/vault/integrity.md'
 
 async function loadedEditor() {
@@ -68,6 +69,13 @@ describe('real editor Markdown source integrity', () => {
     const resolved = await resolveBlocksForTarget({ editor, cache: new Map(), content: rawEdited, targetPath: path })
     editor.replaceBlocks(editor.document, resolved.blocks)
     expect(serializeRichEditorDocumentToMarkdown({ editor, tabContent: rawEdited, notePath: path })).toBe(rawEdited)
+  })
+
+  it('keeps original body bytes when frontmatter properties change', async () => {
+    const editor = await loadedEditor()
+    const withProperties = `---\nstatus: done\n---\n${source}`
+    expect(serializeRichEditorDocumentToMarkdown({ editor, tabContent: withProperties, notePath: path }))
+      .toBe(withProperties)
   })
 
 })

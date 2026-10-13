@@ -1,10 +1,12 @@
+import integrityMarkdown from '../test/fixtures/markdown-integrity.md?raw'
+import renderedMarkdown from '../test/fixtures/markdown-integrity-rendered.md?raw'
 import { describe, expect, it } from 'vitest'
 import { patchMarkdownSource } from './markdownSourcePatch'
 
 describe('source-preserving rich edits', () => {
   it('applies a single character edit without rewriting invisible HTML, entities or tables', () => {
-    const source = 'Inline code: `loadData([["y"]])` and `[[x]]`.\r\nPlaceholder: <term>\r\n<!-- comment -->\r\nEntity: &lt;term&gt;\r\n| id | left | right |\r\n| :--- | :--- | ---: |\r\n| a | b | c |\r\n'
-    const baseline = 'Inline code: `loadData([["y"]])` and `[[x]]`.\nPlaceholder: \nEntity: <term>\n| id | left | right |\n| --- | --- | --- |\n| a | b | c |\n'
+    const source = integrityMarkdown.replace(/\n/g, '\r\n')
+    const baseline = renderedMarkdown
     expect(patchMarkdownSource(source, baseline, baseline.replace('Inline code:', 'Inline codes:')))
       .toBe(source.replace('Inline code:', 'Inline codes:'))
   })
@@ -22,13 +24,16 @@ describe('source-preserving rich edits', () => {
   })
 
   it('allows deleting visible content adjacent to an invisible HTML placeholder', () => {
-    expect(patchMarkdownSource('ABC <term>\n', 'ABC \n', 'AB \n')).toBe('AB <term>\n')
+    const placeholder = integrityMarkdown.split('\n')[1]
+    const source = `${placeholder.replace('Placeholder:', 'ABC')}\n`
+    const expected = `${placeholder.replace('Placeholder:', 'AB')}\n`
+    expect(patchMarkdownSource(source, 'ABC \n', 'AB \n')).toBe(expected)
   })
 
   it('edits entity text without modifying a matching invisible placeholder', () => {
-    const source = 'Placeholder: <term>\nEntity: &lt;term&gt;\n'
-    const baseline = 'Placeholder: \nEntity: <term>\n'
-    expect(patchMarkdownSource(source, baseline, baseline.replace('<term>', '<terms>')))
+    const source = integrityMarkdown
+    const baseline = renderedMarkdown
+    expect(patchMarkdownSource(source, baseline, baseline.replace('term', 'terms')))
       .toBe(source.replace('&lt;term&gt;', '&lt;terms&gt;'))
   })
 
