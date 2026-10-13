@@ -34,7 +34,8 @@
   "Saved to folder" status. Existing imported copies are not silently linked.
 - Added a red/green regression for `.note.md.icloud` placeholders: they must
   not delete the cached note, copy placeholder metadata, or advance the baseline.
-  Undownloaded ubiquitous items request download and abort the current pass;
+  Undownloaded or downloaded-but-stale ubiquitous items request download and
+  abort the current pass;
   retry after the provider makes the content available. Read/coordination errors
   also stop reconciliation. This is not a background iCloud delivery guarantee.
 - Native QA used computer-use interaction on the Release iPad simulator, not
@@ -51,8 +52,8 @@
 - Tests: `pnpm mobile:lint`, `pnpm mobile:typecheck`, `pnpm mobile:test` pass
   (1,427 tests / 245 files), as does the mobile web export in the normal push
   hook. Native `swift test --package-path apps/mobile/modules/tolaria-workspace-access`
-  passes 72 tests after the placeholder regression. The final simulator ARM64
-  Release build succeeds. Desktop/Rust coverage and broad suites were not run,
+  passes 73 tests after the placeholder and stale-version regressions. The final
+  simulator ARM64 Release build succeeds. Desktop/Rust coverage and broad suites were not run,
   following the mobile-only experimental workflow; this is not release promotion.
 - CodeScene: all 23 committed code paths are 10.0 or unscorable with no warnings;
   existing 10.0 scores remain 10.0. The placeholder follow-up preserves 10.0 in
@@ -84,3 +85,18 @@
   workflow. Physical iPad installation remains incomplete: `codesign` waits
   for Apple Development key access in macOS SecurityAgent. No device uninstall,
   data reset, security bypass, or claim of physical iCloud end-to-end QA.
+
+## Physical iCloud test
+
+1. Start with a small disposable folder in iCloud Drive, containing a Markdown
+   note. Make its files available locally in Files before selecting it.
+2. In Tolaria, open Manage vaults -> Open local folder and select that folder.
+   Re-selecting is required for a folder previously imported as an unlinked copy.
+3. Edit the note and wait for Saved to folder. Check the original in Files or
+   on the Mac after iCloud delivers it. That status confirms the local provider
+   write, not delivery to the Mac.
+4. Edit a different part externally, then return to Tolaria and choose Sync now.
+   Avoid simultaneous edits to the same file during this first test: conflicting
+   versions are preserved and sync stops rather than selecting a winner.
+5. Restart Tolaria and verify another edit still reaches the chosen folder.
+   Test cross-device delivery before using this workflow with the full vault.
