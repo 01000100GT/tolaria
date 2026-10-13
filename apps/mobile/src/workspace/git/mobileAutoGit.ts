@@ -9,6 +9,8 @@ export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unkno
   let attempted = 0
   let running: SyncOperation | undefined
   let disposed = false
+  let failures = 0
+  let retryAt = 0
 
   function cancelTimer() {
     clearTimeout(timer)
@@ -18,14 +20,20 @@ export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unkno
   function schedule() {
     cancelTimer()
     if (disposed || running || !canSync(state)) return
-    if (version > attempted) timer = setTimeout(() => { void execute() }, idleMs)
+    if (version > attempted || retryAt) timer = setTimeout(() => { void execute() }, Math.max(idleMs, retryAt - Date.now()))
+  }
+
+  function completed(retry: boolean) {
+    failures = retry ? failures + 1 : 0
+    retryAt = retry ? Date.now() + Math.min(300_000, 30_000 * 2 ** Math.min(failures - 1, 4)) : 0
   }
 
   function execute() {
     attempted = version
     const controller = new AbortController()
     const promise = Promise.resolve().then(() => run(controller.signal))
-      .catch(() => { /* The operation owner presents failures; retry only on a new trigger. */ })
+      .then(result => { completed(retryRequested(result)) })
+      .catch(error => { completed(syncFailureKind(error) === 'retry') })
       .then(() => { running = undefined; schedule() })
     running = { controller, promise }
     return running
@@ -41,6 +49,7 @@ export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unkno
 
   return {
     dirty: () => { version += 1; schedule() },
+    reconnect: () => { retryAt = 0; version += 1; schedule() },
     flush,
     update: (next: AutoGitState) => {
       if (sameState(state, next)) return
@@ -65,3 +74,5 @@ function canSync(state: AutoGitState) {
 function sameState(previous: AutoGitState, next: AutoGitState) {
   return previous.enabled === next.enabled && previous.foreground === next.foreground && previous.blocked === next.blocked
 }
+import { retryRequested, syncFailureKind } from '../syncFailure'
+

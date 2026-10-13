@@ -46,6 +46,10 @@ and synchronization without promising background execution.
 Mobile Git merges validate synthesized frontmatter and saved-view/configuration
 blobs before publishing the proposed tree (ADR 0220). Invalid metadata leaves
 HEAD, index and working files untouched for explicit conflict resolution.
+Git sync has an independent operation mutex and uses short editor/write barriers
+around checkpoints and incoming checkout, not HTTP waits (ADR 0221). Temporary
+failures retry with bounded backoff, with Expo network reconnection as a retry
+hint. Authentication and conflict failures require attention.
 
 New iOS folder selections retain a Files-provider bookmark alongside an offline
 working copy (ADR 0217). Native, coordinated three-way reconciliation writes

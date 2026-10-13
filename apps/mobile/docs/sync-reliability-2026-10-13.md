@@ -50,3 +50,26 @@ installation is implied by simulator checks.
 - Localization: no UI copy changes. PostHog: no new event needed because this
   adds a safety check to an existing sync action. ADR 0220 and Architecture
   document the validation boundary. Native end-to-end checks follow the UI batch.
+
+## Retry and responsive Git batch
+
+- Red: writes attempted during HTTP fetch/push blocked on the full-operation
+  queue. Green: those real HTTP/Git tests now finish, retain typing, and converge
+  on a subsequent sync. Editor-boundary tests cover save failure, resume without
+  remount, and refresh after uncertain checkout failure.
+- Automatic temporary failures return a retry outcome without opening the vault
+  dialog. Backoff grows from 30 seconds to a five-minute cap; tests cover recovery,
+  disposal, background pause, reconnection and error classification. Thirty-two
+  focused tests pass, as does mobile typecheck. Native verification remains due.
+- Existing files `gitRemote.ts`, `mobileAutoGit.ts`, `useMobileVaults.ts`, and
+  `useWorkspaceAutoSync.ts` have recorded CodeScene 10 / zero local baselines.
+  They remain 10 / zero. All five new TS files score 10 with no findings.
+  All 45 exact-file TS analyzer rows completed without errors or findings.
+  `package.json` remains zero across its four relevant analyzers; CodeScene does
+  not score JSON. `responsive-manifest.json` records the full branch and batch.
+- Expo Network 8.0.8 is the SDK-54-compatible dependency used only for connection
+  events. The initial install hit a pnpm store mismatch; rerunning with the
+  existing Jupiter store succeeded. No global package-manager settings changed.
+- ADR 0221 and Architecture describe the short write barriers. Localization: no
+  UI copy changes. PostHog: existing sync-request event remains sufficient; no
+  event is added for each retry because that would create noise.

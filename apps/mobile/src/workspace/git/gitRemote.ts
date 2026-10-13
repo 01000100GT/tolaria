@@ -6,6 +6,7 @@ import { createGitTaskRunner } from './gitTaskRunner'
 import { requireActiveSync } from '../syncCancellation'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
+export type GitLocalAccess = <T>(operation: () => Promise<{ value: T; workspaceChanged: boolean }>) => Promise<T>
 export type GitRemoteOptions = GitVaultContext & {
   checkpoint?: boolean
   http: HttpClient
@@ -14,6 +15,7 @@ export type GitRemoteOptions = GitVaultContext & {
   signal?: AbortSignal
   onPhase?: (phase: GitSyncPhase) => void
   operationKey?: string
+  withLocalAccess?: GitLocalAccess
 }
 
 export function cloneGitVault(options: GitRemoteOptions, repositoryUrl: string) {
@@ -29,7 +31,7 @@ export function cloneGitVault(options: GitRemoteOptions, repositoryUrl: string) 
 }
 
 export function syncGitVault(options: GitRemoteOptions, author: GitAuthor) {
-  return withSavedWorkspace(options.operationKey ?? options.dir, () => syncUnlocked(options, author))
+  return withWorkspaceOperation(`git-sync:${options.operationKey ?? options.dir}`, () => syncUnlocked(options, author))
 }
 
 async function syncUnlocked(options: GitRemoteOptions, author: GitAuthor) {
@@ -38,9 +40,10 @@ async function syncUnlocked(options: GitRemoteOptions, author: GitAuthor) {
   const url = githubRepositoryUrl(String(await git.getConfig({ ...context, path: 'remote.origin.url' })))
   const ref = await git.currentBranch(context)
   if (!ref) throw new Error('detachedHead')
-  const vault = createGitVault(context)
   emitPhase(options, 'checkpoint')
-  const checkpoint = options.checkpoint === false ? await vault.requireClean() : await vault.checkpoint(author)
+  const checkpoint = await localAccess(options, async () => ({
+    value: await checkpointLocal(options, context, author), workspaceChanged: false,
+  }))
   requireActiveSync(options.signal)
   const token = options.getToken ? await options.getToken() : options.token
   const connection = transport({ ...options, token, cache: context.cache }, url)
@@ -69,7 +72,23 @@ async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConne
   await git.fetch({ ...connection, singleBranch: true, tags: false })
   const remoteOid = await git.resolveRef({ ...connection, ref: `refs/remotes/origin/${connection.ref}` })
   emitPhase(options, 'checkout')
-  return createGitVault(connection).integrate(remoteOid, author)
+  return localAccess(options, async () => {
+    requireActiveSync(options.signal)
+    // Edits may have arrived while fetching; checkpoint them before replacement.
+    await checkpointLocal(options, connection, author)
+    const value = await createGitVault(connection).integrate(remoteOid, author)
+    return { value, workspaceChanged: ['updated', 'merged'].includes(value) }
+  })
+}
+
+function checkpointLocal(options: GitRemoteOptions, context: GitVaultContext, author: GitAuthor) {
+  const vault = createGitVault(context)
+  return options.checkpoint === false ? vault.requireClean() : vault.checkpoint(author)
+}
+
+async function localAccess<T>(options: GitRemoteOptions, operation: () => Promise<{ value: T; workspaceChanged: boolean }>) {
+  const run = () => withSavedWorkspace(options.operationKey ?? options.dir, operation)
+  return options.withLocalAccess ? options.withLocalAccess(run) : (await run()).value
 }
 
 async function pushCurrentHead(options: GitRemoteOptions, connection: GitConnection) {

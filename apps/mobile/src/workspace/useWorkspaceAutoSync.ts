@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
+import { addNetworkStateListener } from 'expo-network'
 import { createMobileAutoGit } from './git/mobileAutoGit'
 import { createWorkspaceSyncLifecycle } from './workspaceSyncLifecycle'
 import type { createWorkspaceSyncEditors } from './workspaceSyncEditors'
@@ -24,10 +25,17 @@ export function useWorkspaceAutoSync(options: WorkspaceAutoSyncOptions, idleMs: 
     lifecycle.current = events
     const dirty = editors.subscribeDirty(scheduler.dirty)
     const subscription = AppState.addEventListener('change', events.change)
+    let connected = true
+    const network = addNetworkStateListener(state => {
+      if (state.isConnected === undefined) return
+      const available = state.isConnected && state.isInternetReachable !== false
+      if (available && !connected) scheduler.reconnect()
+      connected = available
+    })
     const timer = setInterval(events.poll, pollMs)
     events.poll()
     return () => {
-      dirty(); subscription.remove(); clearInterval(timer)
+      dirty(); subscription.remove(); network.remove(); clearInterval(timer)
       scheduler.dispose(); lifecycle.current = null
     }
   }, [editors, rootUri, idleMs, pollMs])
