@@ -9,7 +9,6 @@ import { nativeGitHttp } from './nativeGitHttp'
 import { runSavedVaultOperation } from './savedVaultOperation'
 import { useGitHubAccount } from './useGitHubAccount'
 import { useManagedVaultCatalog, type ActiveVault } from './useManagedVaultCatalog'
-import type { GitSyncPhase } from './gitRemote'
 import { githubFailure } from './githubFailure'
 import { createGitVault, type GitAuthor } from './gitVault'
 import { withSavedWorkspace } from './workspaceWriteQueue'
@@ -21,8 +20,10 @@ import { useLinkedFolderSync } from '../useLinkedFolderSync'
 import { requireActiveSync } from '../syncCancellation'
 import { createGitEditorAccess } from './gitEditorAccess'
 import { syncFailureKind } from '../syncFailure'
+import { useVaultSyncLedger } from '../useVaultSyncLedger'
+import type { VaultSyncState } from '../syncLedgerModel'
 
-export type VaultSyncState = 'local' | 'pending' | 'committed' | 'synced' | 'diverged' | 'failed' | 'saveFailed'
+export type { VaultSyncState } from '../syncLedgerModel'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | 'mobile.vaults.folderUnavailable' | 'mobile.vaults.folderConflict' | null
 type VaultTask = () => Promise<ActiveVault | null | 'cancelled' | 'unchanged'>
 
@@ -37,14 +38,14 @@ export function useMobileVaults() {
   const [revision, setRevision] = useState(0)
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [phase, setPhase] = useState<GitSyncPhase | 'clone' | null>(null)
-  const [status, setStatus] = useState<VaultSyncState>('pending')
+  const syncHistory = useVaultSyncLedger(activeVaultId(active))
+  const { record: { phase, status, lastCommitId }, setStatus, setPhase, setLastCommitId } = syncHistory
   const [error, setError] = useState<VaultError>(null)
-  const [lastCommitId, setLastCommitId] = useState<string | null>(null)
   const running = useRef(false)
-  const restorePending = catalog.pending
+  const dirtyVersion = useRef(0)
+  const restorePending = catalog.pending || !syncHistory.ready
   const linked = !active.git && isWorkspaceLinked(active.selection?.vaultRootUri)
-  useEffect(() => editors.subscribeDirty(() => setStatus('pending')), [editors])
+  useEffect(() => editors.subscribeDirty(() => { dirtyVersion.current += 1; setStatus('pending') }), [editors, setStatus])
   useEffect(() => {
     if (!catalog.error) return
     if (catalog.pending || catalog.restored) return
@@ -70,6 +71,7 @@ export function useMobileVaults() {
     setBusy(true)
     if (present) setOpened(true)
     setError(null)
+    syncHistory.setProblem(null)
     let next = active
     let saved = false
     let failed = false
@@ -88,6 +90,7 @@ export function useMobileVaults() {
       })
     } catch (failure) {
       if (signal?.aborted) { setStatus('pending'); return }
+      syncHistory.setProblem(syncFailureKind(failure))
       if (!present && syncFailureKind(failure) === 'retry') {
         setStatus('pending')
         setError(vaultFailure(saved, failure).error)
@@ -109,8 +112,6 @@ export function useMobileVaults() {
   const select = async (vault: ManagedGitVault) => {
     const selection = await managedGitSelection(vault)
     await activateManagedGitVault(vault.id)
-    setStatus('pending')
-    setLastCommitId(null)
     return { git: vault, selection }
   }
   const openFolder = () => perform(async () => {
@@ -118,7 +119,6 @@ export function useMobileVaults() {
     if (!selection) return 'cancelled'
     const vault = await rememberLocalVault(selection)
     await catalog.reload()
-    setStatus(isWorkspaceLinked(selection.vaultRootUri) ? 'synced' : 'local')
     analytics.capture({ name: 'mobile_vault_catalog_used', action: 'add', kind: 'local' })
     return { selection: await activateManagedLocalVault(vault), git: null }
   })
@@ -132,8 +132,6 @@ export function useMobileVaults() {
   }) }
   const selectLocal = (vault: ManagedLocalVault) => perform(async () => {
     const selection = await activateManagedLocalVault(vault)
-    setStatus(isWorkspaceLinked(selection.vaultRootUri) ? 'pending' : 'local')
-    setLastCommitId(null)
     analytics.capture({ name: 'mobile_vault_catalog_used', action: 'switch', kind: 'local' })
     return { selection, git: null }
   })
@@ -148,6 +146,7 @@ export function useMobileVaults() {
   const syncFolder = async (root: string) => {
     const result = await syncLinkedWorkspace(root)
     setStatus(result.conflict ? 'diverged' : 'synced')
+    syncHistory.setProblem(result.conflict ? 'conflict' : null)
     setError(result.conflict ? 'mobile.vaults.folderConflict' : null)
     if (result.conflict) setOpened(true)
     return result.changed ? null : 'unchanged' as const
@@ -157,19 +156,26 @@ export function useMobileVaults() {
     if (linked && active.selection) return syncFolder(active.selection.vaultRootUri)
     if (!active.git) { setStatus('local'); return null }
     const { syncGitVault } = await import('./gitRemote')
+    let checkpointVersion = dirtyVersion.current
+    const localAccess = createGitEditorAccess({
+      editors, rootUri: active.selection?.vaultRootUri,
+      refresh: selectedNoteId => {
+        setOverride(refreshedVault(active, active, selectedNoteId))
+        setRevision(value => value + 1)
+      },
+    })
     const result = await syncGitVault({
       ...managedGitConnection(active.git), http: nativeGitHttp,
       checkpoint, signal,
-      withLocalAccess: createGitEditorAccess({
-        editors, rootUri: active.selection?.vaultRootUri,
-        refresh: selectedNoteId => {
-          setOverride(refreshedVault(active, active, selectedNoteId))
-          setRevision(value => value + 1)
-        },
-      }),
+      onCheckpoint: oid => { setLastCommitId(oid.slice(0, 8)); setStatus('committed') },
+      withLocalAccess: async run => {
+        const value = await localAccess(run)
+        checkpointVersion = dirtyVersion.current
+        return value
+      },
       getToken: async () => (await account.currentSession())?.accessToken, onPhase: setPhase,
     }, mobileGitAuthor(account.session))
-    setStatus(result.kind)
+    syncHistory.complete(result.kind, checkpointVersion !== dirtyVersion.current)
     return result.workspaceChanged ? null : 'unchanged' as const
   }
   const sync = async () => { await perform(() => syncTask(preferences.settings.autoGit), false, 'sync') }
@@ -203,7 +209,7 @@ export function useMobileVaults() {
   })
 
   return {
-    account, active, busy, catalog, close, clone, editors, error, open, opened, linked,
+    account, active, busy, catalog, close, clone, editors, error, open, opened, linked, syncHistory,
     openFolder, phase, restorePending, revision, status, sync, commit, lastCommitId, selectLocal, forget,
     select: (vault: ManagedGitVault) => perform(async () => {
       const next = await select(vault)
@@ -211,6 +217,10 @@ export function useMobileVaults() {
       return next
     }),
   }
+}
+
+function activeVaultId(active: ActiveVault) {
+  return active.git?.id ?? active.selection?.vaultAlias ?? undefined
 }
 
 async function resolveVaultTask(task: VaultTask, active: ActiveVault, select: (next: ActiveVault) => void) {

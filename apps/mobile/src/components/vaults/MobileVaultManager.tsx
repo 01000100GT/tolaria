@@ -32,6 +32,7 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
         </MobileToolbar>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <VaultOperationStatus manager={manager} />
+          <VaultSyncHistory manager={manager} />
           <MobileGitControls manager={manager} />
           {manager.linked && <View style={styles.section}>
             <Text style={styles.detail}>{mobileText('mobile.vaults.folderLinked')}</Text>
@@ -48,6 +49,18 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
       </MobilePanel>
     </KeyboardAvoidingView>
   </Modal>
+}
+
+function VaultSyncHistory({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const { record, failed } = manager.syncHistory
+  return <View style={styles.section} testID="vault-sync-history">
+    {record.status === 'pending' && (manager.active.git || manager.linked) && <Text style={styles.detail}>{mobileText('mobile.sync.pending')}</Text>}
+    {record.lastSuccessAt !== null && <Text style={styles.detail} testID="vault-last-sync">{mobileText('mobile.sync.lastSuccess').replace('{time}', new Date(record.lastSuccessAt).toLocaleString())}</Text>}
+    {record.lastCommitId && <Text style={styles.detail}>{mobileText('mobile.sync.lastCommit').replace('{commit}', record.lastCommitId)}</Text>}
+    {record.error && <Text style={styles.detail}>{mobileText(`mobile.sync.${record.error}`)}</Text>}
+    {failed && <Text style={styles.error}>{mobileText('mobile.sync.historyFailed')}</Text>}
+  </View>
 }
 
 function CloneRepository({ manager }: { manager: VaultManager }) {

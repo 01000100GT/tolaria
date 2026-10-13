@@ -1225,3 +1225,20 @@ files:
     mobile.git.localCommit: 70757f4bf8ab23fd7cd2ccf7005ef2f6
     mobile.git.auto: 086247a9b57fde6eefee2a0c4752242d
     mobile.git.manual: e1ba155a9f2e8c3be94020eef32a0301
+    mobile.sync.lastSuccess: c0d97dd3c454f8ea9060509b331b07e2
+    mobile.sync.lastCommit: 5d16b28fc2aaa6d8956b722f1f69b213
+    mobile.sync.pending: e6227498ede4ff116196b907aa4f2cb5
+    mobile.sync.historyFailed: b86c74941e83e0a0f6d9e0360f990a6a
+    mobile.sync.retry: 778692b1c69433e1654f56e5adb9cd6a
+    mobile.sync.authentication: 39d4e7b7ae3297fa9972b3ec34e20d8f
+    mobile.sync.conflict: 2eb43d27dcc4d6171ac87489626138a4
+    mobile.sync.local: f76c1a28fe7f7d23b72973697475a3f8
+    mobile.sync.keepBoth: c2a3f995f2c86adb7fba6cfba2bc2779
+    mobile.sync.localVersion: 59b7aca6f5d1567ab0a5d1860f729f10
+    mobile.sync.remoteVersion: db748d53805d22986589f5d62bf32dfd
+    mobile.sync.deleted: 5fe6005bf6e415c950c011fb65f12b8f
+    mobile.sync.binary: 135e597f6bd43f323a948b2296b93ed7
+    mobile.sync.continue: 3196881d906d7571b419c7b6487e581b
+    mobile.sync.stale: e2384af720e08b326159c29d5ede7128
+    mobile.sync.review: 49deb1946bf6b0862b740db5b54462dc
+    mobile.sync.previewTruncated: 7d83d0b9f20dd46ae97db305433bada0

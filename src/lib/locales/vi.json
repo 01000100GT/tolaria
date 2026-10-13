@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Nhập thông báo commit.",
   "mobile.git.localCommit": "Đã commit cục bộ",
   "mobile.git.auto": "Tự động",
-  "mobile.git.manual": "Thủ công"
+  "mobile.git.manual": "Thủ công",
+  "mobile.sync.lastSuccess": "Lần đồng bộ thành công gần nhất: {time}",
+  "mobile.sync.lastCommit": "Commit cục bộ: {commit}",
+  "mobile.sync.pending": "Các thay đổi cục bộ đang chờ đồng bộ",
+  "mobile.sync.historyFailed": "Không thể lưu hoặc khôi phục lịch sử đồng bộ. Các tệp trong vault của bạn không bị ảnh hưởng.",
+  "mobile.sync.retry": "Đồng bộ sẽ tự động thử lại khi có thể. Bạn có thể tiếp tục chỉnh sửa.",
+  "mobile.sync.authentication": "Đăng nhập lại vào GitHub để tiếp tục đồng bộ.",
+  "mobile.sync.conflict": "Xem lại các phiên bản xung đột trước khi tiếp tục đồng bộ.",
+  "mobile.sync.local": "Đồng bộ cần được chú ý. Các tệp cục bộ của bạn đã được giữ lại.",
+  "mobile.sync.keepBoth": "Giữ cả hai",
+  "mobile.sync.localVersion": "Thiết bị này",
+  "mobile.sync.remoteVersion": "Phiên bản khác",
+  "mobile.sync.deleted": "Đã xóa",
+  "mobile.sync.binary": "Tệp hoặc thư mục nhị phân; không có bản xem trước văn bản",
+  "mobile.sync.continue": "Áp dụng các lựa chọn và tiếp tục",
+  "mobile.sync.stale": "Các tệp đã thay đổi sau lần so sánh này. Xem lại các phiên bản mới nhất trước khi áp dụng các lựa chọn của bạn.",
+  "mobile.sync.review": "Xem lại các xung đột",
+  "mobile.sync.previewTruncated": "Bản xem trước bị cắt ngắn; tệp đầy đủ vẫn được giữ nguyên."
 }

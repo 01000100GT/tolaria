@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Ange ett commit-meddelande.",
   "mobile.git.localCommit": "Kommittat lokalt",
   "mobile.git.auto": "Automatiskt",
-  "mobile.git.manual": "Manuellt"
+  "mobile.git.manual": "Manuellt",
+  "mobile.sync.lastSuccess": "Senaste lyckade synkroniseringen: {time}",
+  "mobile.sync.lastCommit": "Lokal commit: {commit}",
+  "mobile.sync.pending": "Lokala ändringar väntar på att synkroniseras",
+  "mobile.sync.historyFailed": "Synkroniseringshistoriken kunde inte sparas eller återställas. Dina valvfiler påverkas inte.",
+  "mobile.sync.retry": "Synkroniseringen kommer att göras om automatiskt när den är tillgänglig. Du kan fortsätta att redigera.",
+  "mobile.sync.authentication": "Logga in på GitHub igen för att återuppta synkroniseringen.",
+  "mobile.sync.conflict": "Granska de motstridiga versionerna innan du fortsätter synkroniseringen.",
+  "mobile.sync.local": "Synkroniseringen behöver åtgärdas. Dina lokala filer har behållits.",
+  "mobile.sync.keepBoth": "Behåll båda",
+  "mobile.sync.localVersion": "Den här enheten",
+  "mobile.sync.remoteVersion": "Annan version",
+  "mobile.sync.deleted": "Raderad",
+  "mobile.sync.binary": "Binär fil eller mapp; textförhandsgranskning är inte tillgänglig",
+  "mobile.sync.continue": "Tillämpa valen och fortsätt",
+  "mobile.sync.stale": "Filerna har ändrats efter den här jämförelsen. Granska de senaste versionerna innan du tillämpar dina val.",
+  "mobile.sync.review": "Granska konflikter",
+  "mobile.sync.previewTruncated": "Förhandsgranskningen är trunkerad; den fullständiga filen har bevarats."
 }

@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "커밋 메시지를 입력하세요.",
   "mobile.git.localCommit": "로컬에서 커밋됨",
   "mobile.git.auto": "자동",
-  "mobile.git.manual": "수동"
+  "mobile.git.manual": "수동",
+  "mobile.sync.lastSuccess": "마지막 성공적인 동기화: {time}",
+  "mobile.sync.lastCommit": "로컬 커밋: {commit}",
+  "mobile.sync.pending": "로컬 변경 사항이 동기화를 기다리고 있습니다",
+  "mobile.sync.historyFailed": "동기화 기록을 저장하거나 복원할 수 없습니다. Vault 파일은 영향을 받지 않습니다.",
+  "mobile.sync.retry": "동기화가 가능해지면 자동으로 다시 시도합니다. 계속 편집하실 수 있습니다.",
+  "mobile.sync.authentication": "동기화를 다시 시작하려면 GitHub에 다시 로그인하세요.",
+  "mobile.sync.conflict": "동기화를 계속하기 전에 충돌하는 버전을 검토하세요.",
+  "mobile.sync.local": "동기화에 주의가 필요합니다. 로컬 파일은 그대로 유지되었습니다.",
+  "mobile.sync.keepBoth": "둘 다 유지",
+  "mobile.sync.localVersion": "이 기기",
+  "mobile.sync.remoteVersion": "다른 버전",
+  "mobile.sync.deleted": "삭제됨",
+  "mobile.sync.binary": "바이너리 파일 또는 폴더입니다. 텍스트 미리 보기를 사용할 수 없습니다.",
+  "mobile.sync.continue": "선택 사항을 적용하고 계속하기",
+  "mobile.sync.stale": "이 비교 이후 파일이 변경되었습니다. 선택 사항을 적용하기 전에 최신 버전을 검토하세요.",
+  "mobile.sync.review": "충돌 검토",
+  "mobile.sync.previewTruncated": "미리 보기가 잘렸습니다. 전체 파일은 그대로 보존됩니다."
 }

@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "请输入提交消息。",
   "mobile.git.localCommit": "已在本地提交",
   "mobile.git.auto": "自动",
-  "mobile.git.manual": "手动"
+  "mobile.git.manual": "手动",
+  "mobile.sync.lastSuccess": "上次成功同步时间：{time}",
+  "mobile.sync.lastCommit": "本地提交：{commit}",
+  "mobile.sync.pending": "本地更改正在等待同步",
+  "mobile.sync.historyFailed": "无法保存或恢复同步历史记录。您的 Vault 文件未受影响。",
+  "mobile.sync.retry": "同步将在可用时自动重试。您可以继续编辑。",
+  "mobile.sync.authentication": "请再次登录 GitHub 以恢复同步。",
+  "mobile.sync.conflict": "在继续同步之前，请先查看冲突的版本。",
+  "mobile.sync.local": "同步需要注意。您的本地文件已保留。",
+  "mobile.sync.keepBoth": "保留两者",
+  "mobile.sync.localVersion": "此设备",
+  "mobile.sync.remoteVersion": "其他版本",
+  "mobile.sync.deleted": "已删除",
+  "mobile.sync.binary": "二进制文件或文件夹；无法提供文本预览",
+  "mobile.sync.continue": "应用选择并继续",
+  "mobile.sync.stale": "在此次比较后，文件已发生变化。在应用您的选择之前，请先查看最新版本。",
+  "mobile.sync.review": "查看冲突",
+  "mobile.sync.previewTruncated": "预览已截断；完整文件已保留。"
 }

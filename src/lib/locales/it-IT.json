@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Inserisci un messaggio di commit.",
   "mobile.git.localCommit": "Committed localmente",
   "mobile.git.auto": "Automatico",
-  "mobile.git.manual": "Manuale"
+  "mobile.git.manual": "Manuale",
+  "mobile.sync.lastSuccess": "Ultima sincronizzazione riuscita: {time}",
+  "mobile.sync.lastCommit": "Commit locale: {commit}",
+  "mobile.sync.pending": "Le modifiche locali sono in attesa di sincronizzazione",
+  "mobile.sync.historyFailed": "Impossibile salvare o ripristinare la cronologia della sincronizzazione. I file del tuo vault non sono stati compromessi.",
+  "mobile.sync.retry": "La sincronizzazione verrà riprovata automaticamente quando sarà disponibile. Puoi continuare a modificare.",
+  "mobile.sync.authentication": "Accedi nuovamente a GitHub per riprendere la sincronizzazione.",
+  "mobile.sync.conflict": "Esamina le versioni in conflitto prima di continuare la sincronizzazione.",
+  "mobile.sync.local": "La sincronizzazione richiede attenzione. I tuoi file locali sono stati conservati.",
+  "mobile.sync.keepBoth": "Mantieni entrambe",
+  "mobile.sync.localVersion": "Questo dispositivo",
+  "mobile.sync.remoteVersion": "Altra versione",
+  "mobile.sync.deleted": "Eliminato",
+  "mobile.sync.binary": "File o cartella binari; anteprima di testo non disponibile",
+  "mobile.sync.continue": "Applica le scelte e continua",
+  "mobile.sync.stale": "I file sono stati modificati dopo questo confronto. Controlla le versioni più recenti prima di applicare le tue scelte.",
+  "mobile.sync.review": "Esamina i conflitti",
+  "mobile.sync.previewTruncated": "Anteprima troncata; il file completo è stato conservato."
 }

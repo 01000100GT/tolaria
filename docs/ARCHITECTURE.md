@@ -50,6 +50,9 @@ Git sync has an independent operation mutex and uses short editor/write barriers
 around checkpoints and incoming checkout, not HTTP waits (ADR 0221). Temporary
 failures retry with bounded backoff, with Expo network reconnection as a retry
 hint. Authentication and conflict failures require attention.
+Installation-local sync history is keyed by managed vault ID and published with
+backup recovery (ADR 0222). It records successful remote/provider operations
+separately from local commits and pending edits, without storing user content.
 
 New iOS folder selections retain a Files-provider bookmark alongside an offline
 working copy (ADR 0217). Native, coordinated three-way reconciliation writes

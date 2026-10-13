@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Uviadzicie paviedamleńnie kamitu.",
   "mobile.git.localCommit": "Kamit stvorany lakalna",
   "mobile.git.auto": "Aŭtamatyčny",
-  "mobile.git.manual": "Ručny"
+  "mobile.git.manual": "Ručny",
+  "mobile.sync.lastSuccess": "Apošniaja paśpiachovaja sinchranizacyja: {time}",
+  "mobile.sync.lastCommit": "Lakalny kamit: {commit}",
+  "mobile.sync.pending": "Lakalnyja źmieny čakajuć sinchranizacyi",
+  "mobile.sync.historyFailed": "Nie ŭdałosia zachavać abo adnavić historyju sinchranizacyi. Fajły schovišča nie zakranutyja.",
+  "mobile.sync.retry": "Sinchranizacyja aŭtamatyčna paŭtorycca, kali stanie dastupnaj. Vy možacie praciahvać redahavańnie.",
+  "mobile.sync.authentication": "Uvajdzicie ŭ GitHub jašče raz, kab adnavić sinchranizacyju.",
+  "mobile.sync.conflict": "Pierad praciahvam sinchranizacyi prahladźcie kanfliktnyja viersii.",
+  "mobile.sync.local": "Sinchranizacyja patrabuje ŭvahi. Vašy lakalnyja fajły zachavanyja.",
+  "mobile.sync.keepBoth": "Zachavać abiedźvie",
+  "mobile.sync.localVersion": "Hetaja pryłada",
+  "mobile.sync.remoteVersion": "Inšaja viersija",
+  "mobile.sync.deleted": "Vydalena",
+  "mobile.sync.binary": "Binarny fajł abo tečka; papiaredni prahlad tekstu niedastupny",
+  "mobile.sync.continue": "Prymjianić vybar i praciahnuć",
+  "mobile.sync.stale": "Fajły źmianilisia paśla hetaha paraŭnańnia. Pierad užyvańniem vybaru prahladźcie apošnija viersii.",
+  "mobile.sync.review": "Prahlad kanfliktaŭ",
+  "mobile.sync.previewTruncated": "Papiaredni prahlad skaročany; poŭny fajł zachavany."
 }

@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Zadajte správu ku commitu.",
   "mobile.git.localCommit": "Zaviazané lokálne",
   "mobile.git.auto": "Automatické",
-  "mobile.git.manual": "Manuálne"
+  "mobile.git.manual": "Manuálne",
+  "mobile.sync.lastSuccess": "Posledná úspešná synchronizácia: {time}",
+  "mobile.sync.lastCommit": "Lokálny commit: {commit}",
+  "mobile.sync.pending": "Miestne zmeny čakajú na synchronizáciu",
+  "mobile.sync.historyFailed": "Históriu synchronizácie sa nepodarilo uložiť ani obnoviť. Vaše súbory v úložisku zostali nedotknuté.",
+  "mobile.sync.retry": "Synchronizácia sa automaticky zopakuje, keď bude k dispozícii. Môžete pokračovať v úpravách.",
+  "mobile.sync.authentication": "Ak chcete obnoviť synchronizáciu, znova sa prihláste do GitHubu.",
+  "mobile.sync.conflict": "Pred pokračovaním v synchronizácii skontrolujte konfliktné verzie.",
+  "mobile.sync.local": "Synchronizácia si vyžaduje pozornosť. Vaše lokálne súbory boli zachované.",
+  "mobile.sync.keepBoth": "Ponechať obe",
+  "mobile.sync.localVersion": "Toto zariadenie",
+  "mobile.sync.remoteVersion": "Iná verzia",
+  "mobile.sync.deleted": "Odstránené",
+  "mobile.sync.binary": "Binárny súbor alebo priečinok; ukážka textu nie je k dispozícii",
+  "mobile.sync.continue": "Použiť voľby a pokračovať",
+  "mobile.sync.stale": "Po tomto porovnaní sa súbory zmenili. Pred uplatnením svojich volieb si pozrite najnovšie verzie.",
+  "mobile.sync.review": "Skontrolovať konflikty",
+  "mobile.sync.previewTruncated": "Náhľad je skrátený; celý súbor je zachovaný."
 }

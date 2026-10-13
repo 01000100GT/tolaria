@@ -73,3 +73,25 @@ installation is implied by simulator checks.
 - ADR 0221 and Architecture describe the short write barriers. Localization: no
   UI copy changes. PostHog: existing sync-request event remains sufficient; no
   event is added for each retry because that would create noise.
+
+## Per-vault history batch
+
+- Added validated, serialized per-vault history with pending-file publication and
+  backup recovery. Restore interrupted operations as pending. Keep newer edits
+  when disk restoration finishes late; deduplicate restoration. Report history
+  IO failure without changing vault content. Tests cover independent histories,
+  interrupted publication, corrupt state, retries and inherited-key safety.
+- The manager shows last success, local commit, pending changes and categorized
+  errors. Git completion stays pending when edits occur after its last checkpoint.
+  Provider success retains the existing Saved-to-folder wording.
+- `status-manifest.json` enumerates the batch and branch. All ten code files
+  score CodeScene 10; existing baselines were 10 and zero local findings. Fifty
+  local analyzer rows completed with zero findings/errors; staged CLI delta
+  reports ten eligible files and no issues. CodeScene parsing/dispatch helpers
+  were simplified without suppression. Cloud/MCP exceptions remain as recorded.
+- `pnpm l10n:translate` completed all 19 configured Lara targets. The additional
+  maintained `be-Latn` catalog was updated in its existing script; all 21 catalogs
+  validate against 1,241 English keys. Status and upcoming conflict-screen labels
+  are included. No credential or note text is included in history or analytics.
+- PostHog: no new event needed for passive status display. ADR 0222 and Architecture
+  document persistence. Scoped typecheck/tests pass; native UI checks follow.

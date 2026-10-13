@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "コミットメッセージを入力してください。",
   "mobile.git.localCommit": "ローカルでコミット済み",
   "mobile.git.auto": "自動",
-  "mobile.git.manual": "手動"
+  "mobile.git.manual": "手動",
+  "mobile.sync.lastSuccess": "前回の同期成功日時：{time}",
+  "mobile.sync.lastCommit": "ローカルコミット：{commit}",
+  "mobile.sync.pending": "ローカルの変更が同期を待っています",
+  "mobile.sync.historyFailed": "同期履歴を保存または復元できませんでした。Vaultファイルは影響を受けません。",
+  "mobile.sync.retry": "同期は利用可能になり次第、自動的に再試行されます。引き続き編集できます。",
+  "mobile.sync.authentication": "同期を再開するには、GitHubに再度サインインしてください。",
+  "mobile.sync.conflict": "同期を続行する前に、競合するバージョンを確認してください。",
+  "mobile.sync.local": "同期に注意が必要です。ローカルファイルは保持されています。",
+  "mobile.sync.keepBoth": "両方を保持",
+  "mobile.sync.localVersion": "このデバイス",
+  "mobile.sync.remoteVersion": "別のバージョン",
+  "mobile.sync.deleted": "削除済み",
+  "mobile.sync.binary": "バイナリファイルまたはフォルダです。テキストプレビューは利用できません。",
+  "mobile.sync.continue": "選択を適用して続行",
+  "mobile.sync.stale": "この比較後にファイルが変更されました。選択を適用する前に、最新バージョンを確認してください。",
+  "mobile.sync.review": "競合を確認する",
+  "mobile.sync.previewTruncated": "プレビューは切り捨てられています。完全なファイルは保持されています。"
 }

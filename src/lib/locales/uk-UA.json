@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Введіть повідомлення про коміт.",
   "mobile.git.localCommit": "Виконано коміт локально",
   "mobile.git.auto": "Автоматично",
-  "mobile.git.manual": "Вручну"
+  "mobile.git.manual": "Вручну",
+  "mobile.sync.lastSuccess": "Остання успішна синхронізація: {time}",
+  "mobile.sync.lastCommit": "Локальний коміт: {commit}",
+  "mobile.sync.pending": "Локальні зміни очікують на синхронізацію",
+  "mobile.sync.historyFailed": "Не вдалося зберегти або відновити історію синхронізації. Ваші файли сховища не зазнали змін.",
+  "mobile.sync.retry": "Синхронізація буде автоматично повторена, коли це стане можливим. Ви можете продовжувати редагування.",
+  "mobile.sync.authentication": "Щоб відновити синхронізацію, знову увійдіть у GitHub.",
+  "mobile.sync.conflict": "Перш ніж продовжити синхронізацію, перегляньте версії, що конфліктують.",
+  "mobile.sync.local": "Синхронізація потребує уваги. Ваші локальні файли збережено.",
+  "mobile.sync.keepBoth": "Залишити обидві версії",
+  "mobile.sync.localVersion": "Цей пристрій",
+  "mobile.sync.remoteVersion": "Інша версія",
+  "mobile.sync.deleted": "Видалено",
+  "mobile.sync.binary": "Бінарний файл або папка; текстовий попередній перегляд недоступний",
+  "mobile.sync.continue": "Застосувати вибір і продовжити",
+  "mobile.sync.stale": "Після цього порівняння файли було змінено. Перегляньте останні версії, перш ніж застосувати свої вибори.",
+  "mobile.sync.review": "Переглянути конфлікти",
+  "mobile.sync.previewTruncated": "Попередній перегляд обрізано; повний файл збережено."
 }

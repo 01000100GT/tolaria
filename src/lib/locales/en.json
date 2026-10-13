@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Enter a commit message.",
   "mobile.git.localCommit": "Committed locally",
   "mobile.git.auto": "Automatic",
-  "mobile.git.manual": "Manual"
+  "mobile.git.manual": "Manual",
+  "mobile.sync.lastSuccess": "Last successful sync: {time}",
+  "mobile.sync.lastCommit": "Local commit: {commit}",
+  "mobile.sync.pending": "Local changes are waiting to sync",
+  "mobile.sync.historyFailed": "Sync history could not be saved or restored. Your vault files are unaffected.",
+  "mobile.sync.retry": "Sync will retry automatically when available. You can keep editing.",
+  "mobile.sync.authentication": "Sign in to GitHub again to resume syncing.",
+  "mobile.sync.conflict": "Review the conflicting versions before continuing sync.",
+  "mobile.sync.local": "Sync needs attention. Your local files have been kept.",
+  "mobile.sync.keepBoth": "Keep both",
+  "mobile.sync.localVersion": "This device",
+  "mobile.sync.remoteVersion": "Other version",
+  "mobile.sync.deleted": "Deleted",
+  "mobile.sync.binary": "Binary file or folder; text preview unavailable",
+  "mobile.sync.continue": "Apply choices and continue",
+  "mobile.sync.stale": "Files changed after this comparison. Review the latest versions before applying your choices.",
+  "mobile.sync.review": "Review conflicts",
+  "mobile.sync.previewTruncated": "Preview truncated; the complete file is preserved."
 }

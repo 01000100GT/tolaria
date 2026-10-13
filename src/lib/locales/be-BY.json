@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Увядзіце паведамленне аб фіксацыі.",
   "mobile.git.localCommit": "Фіксавана лакальна",
   "mobile.git.auto": "Аўтаматычна",
-  "mobile.git.manual": "Уручную"
+  "mobile.git.manual": "Уручную",
+  "mobile.sync.lastSuccess": "Апошняя паспяховая сінхранізацыя: {time}",
+  "mobile.sync.lastCommit": "Лакальны каміт: {commit}",
+  "mobile.sync.pending": "Лакальныя змены чакаюць сінхранізацыі",
+  "mobile.sync.historyFailed": "Не ўдалося захаваць або аднавіць гісторыю сінхранізацыі. Вашы файлы сховішча не закрануты.",
+  "mobile.sync.retry": "Сінхранізацыя будзе аўтаматычна паўторана, калі стане даступнай. Вы можаце працягваць рэдагаванне.",
+  "mobile.sync.authentication": "Увайдзіце ў GitHub яшчэ раз, каб аднавіць сінхранізацыю.",
+  "mobile.sync.conflict": "Перад тым, як працягнуць сінхранізацыю, праглядзіце канфліктуючыя версіі.",
+  "mobile.sync.local": "Сінхранізацыя патрабуе ўвагі. Вашы лакальныя файлы захаваны.",
+  "mobile.sync.keepBoth": "Захаваць абодва",
+  "mobile.sync.localVersion": "Гэтая прылада",
+  "mobile.sync.remoteVersion": "Іншая версія",
+  "mobile.sync.deleted": "Выдалена",
+  "mobile.sync.binary": "Бінарны файл або тэчка; папярэдні прагляд тэксту недаступны",
+  "mobile.sync.continue": "Прымяніць выбар і працягнуць",
+  "mobile.sync.stale": "Файлы былі зменены пасля гэтага параўнання. Перад ужываннем вашых выбараў праглядзіце апошнія версіі.",
+  "mobile.sync.review": "Прагляд канфліктаў",
+  "mobile.sync.previewTruncated": "Папярэдні прагляд абрэзаны; поўны файл захаваны."
 }

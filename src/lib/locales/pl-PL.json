@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Wprowadź wiadomość dotyczącą zatwierdzenia.",
   "mobile.git.localCommit": "Zatwierdzono lokalnie",
   "mobile.git.auto": "Automatyczne",
-  "mobile.git.manual": "Ręcznie"
+  "mobile.git.manual": "Ręcznie",
+  "mobile.sync.lastSuccess": "Ostatnia udana synchronizacja: {time}",
+  "mobile.sync.lastCommit": "Lokalny commit: {commit}",
+  "mobile.sync.pending": "Lokalne zmiany oczekują na synchronizację",
+  "mobile.sync.historyFailed": "Nie udało się zapisać ani przywrócić historii synchronizacji. Twoje pliki w vault nie są naruszone.",
+  "mobile.sync.retry": "Synchronizacja zostanie automatycznie wznowiona, gdy będzie dostępna. Możesz dalej edytować.",
+  "mobile.sync.authentication": "Zaloguj się ponownie do GitHub, aby wznowić synchronizację.",
+  "mobile.sync.conflict": "Przejrzyj sprzeczne wersje, zanim przejdziesz dalej z synchronizacją.",
+  "mobile.sync.local": "Synchronizacja wymaga uwagi. Twoje lokalne pliki zostały zachowane.",
+  "mobile.sync.keepBoth": "Zachowaj obie wersje",
+  "mobile.sync.localVersion": "To urządzenie",
+  "mobile.sync.remoteVersion": "Inna wersja",
+  "mobile.sync.deleted": "Usunięto",
+  "mobile.sync.binary": "Plik binarny lub folder; podgląd tekstu niedostępny",
+  "mobile.sync.continue": "Zastosuj wybrane opcje i kontynuuj",
+  "mobile.sync.stale": "Pliki zostały zmienione po tym porównaniu. Przejrzyj najnowsze wersje, zanim zastosujesz swoje wybory.",
+  "mobile.sync.review": "Przejrzyj konflikty",
+  "mobile.sync.previewTruncated": "Podgląd został skrócony; cały plik został zachowany."
 }

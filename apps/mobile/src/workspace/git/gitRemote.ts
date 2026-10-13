@@ -16,6 +16,7 @@ export type GitRemoteOptions = GitVaultContext & {
   onPhase?: (phase: GitSyncPhase) => void
   operationKey?: string
   withLocalAccess?: GitLocalAccess
+  onCheckpoint?: (oid: string) => void
 }
 
 export function cloneGitVault(options: GitRemoteOptions, repositoryUrl: string) {
@@ -81,9 +82,11 @@ async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConne
   })
 }
 
-function checkpointLocal(options: GitRemoteOptions, context: GitVaultContext, author: GitAuthor) {
+async function checkpointLocal(options: GitRemoteOptions, context: GitVaultContext, author: GitAuthor) {
   const vault = createGitVault(context)
-  return options.checkpoint === false ? vault.requireClean() : vault.checkpoint(author)
+  const checkpoint = await (options.checkpoint === false ? vault.requireClean() : vault.checkpoint(author))
+  options.onCheckpoint?.(checkpoint.oid)
+  return checkpoint
 }
 
 async function localAccess<T>(options: GitRemoteOptions, operation: () => Promise<{ value: T; workspaceChanged: boolean }>) {

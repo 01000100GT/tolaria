@@ -1222,5 +1222,22 @@
   "mobile.git.emptyCommitMessage": "Masukkan pesan commit.",
   "mobile.git.localCommit": "Dikomit secara lokal",
   "mobile.git.auto": "Otomatis",
-  "mobile.git.manual": "Manual"
+  "mobile.git.manual": "Manual",
+  "mobile.sync.lastSuccess": "Sinkronisasi terakhir yang berhasil: {time}",
+  "mobile.sync.lastCommit": "Commit lokal: {commit}",
+  "mobile.sync.pending": "Perubahan lokal sedang menunggu sinkronisasi",
+  "mobile.sync.historyFailed": "Riwayat sinkronisasi tidak dapat disimpan atau dipulihkan. File vault Anda tidak terpengaruh.",
+  "mobile.sync.retry": "Sinkronisasi akan mencoba lagi secara otomatis saat tersedia. Anda dapat terus mengedit.",
+  "mobile.sync.authentication": "Masuk ke GitHub lagi untuk melanjutkan sinkronisasi.",
+  "mobile.sync.conflict": "Tinjau versi yang bertentangan sebelum melanjutkan sinkronisasi.",
+  "mobile.sync.local": "Sinkronisasi memerlukan perhatian. File lokal Anda telah disimpan.",
+  "mobile.sync.keepBoth": "Pertahankan keduanya",
+  "mobile.sync.localVersion": "Perangkat ini",
+  "mobile.sync.remoteVersion": "Versi lain",
+  "mobile.sync.deleted": "Dihapus",
+  "mobile.sync.binary": "File atau folder biner; pratinjau teks tidak tersedia",
+  "mobile.sync.continue": "Terapkan pilihan dan lanjutkan",
+  "mobile.sync.stale": "File berubah setelah perbandingan ini. Tinjau versi terbaru sebelum menerapkan pilihan Anda.",
+  "mobile.sync.review": "Tinjau konflik",
+  "mobile.sync.previewTruncated": "Pratinjau dipotong; file lengkap tetap disimpan."
 }
