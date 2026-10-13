@@ -53,6 +53,10 @@ hint. Authentication and conflict failures require attention.
 Installation-local sync history is keyed by managed vault ID and published with
 backup recovery (ADR 0222). It records successful remote/provider operations
 separately from local commits and pending edits, without storing user content.
+Native conflict review shares local/remote/keep-both choices across Git and linked
+folders (ADR 0223). Git retains both parents; coordinated folder publication
+retains private original snapshots and an interruption journal. Comparisons are
+version-checked again before applying any choices.
 
 New iOS folder selections retain a Files-provider bookmark alongside an offline
 working copy (ADR 0217). Native, coordinated three-way reconciliation writes

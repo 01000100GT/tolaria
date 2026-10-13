@@ -16,6 +16,7 @@ import { MobileGitControls } from './MobileGitControls'
 import { createVaultManagerStyles } from './vaultManagerStyles'
 import { MobileSavedVaults } from './MobileSavedVaults'
 import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
+import { MobileConflictReview } from './MobileConflictReview'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
@@ -24,15 +25,18 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
   const mobileColors = useMobileColors()
   return <Modal visible={manager.opened} transparent animationType="fade" onRequestClose={manager.close}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
-      <MobilePanel style={styles.panel} accessibilityViewIsModal testID="vault-manager">
+      <MobilePanel style={[styles.panel, manager.conflictReview && conflictPanel]} accessibilityViewIsModal testID="vault-manager">
         <MobileToolbar>
-          <MobileToolbarTitle title={mobileText('status.vault.manageWorkspaces')} />
+          <MobileToolbarTitle title={mobileText(manager.conflictReview ? 'status.sync.resolveConflicts' : 'status.vault.manageWorkspaces')} />
           <MobileToolbarSpacer />
           {!manager.busy && <MobileIconButton accessibilityLabel={mobileText('window.close')} onPress={manager.close}><X size={18} color={mobileColors.textMuted} /></MobileIconButton>}
         </MobileToolbar>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+        {manager.conflictReview ? <MobileConflictReview key={manager.conflictReview.value.files.map(file => file.path).join('|')}
+          files={manager.conflictReview.value.files} busy={manager.busy} failure={manager.conflictFailure}
+          cancel={manager.cancelConflictReview} apply={choices => { void manager.resolveConflicts(choices) }} /> : <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <VaultOperationStatus manager={manager} />
           <VaultSyncHistory manager={manager} />
+          <ReviewConflictsButton manager={manager} />
           <MobileGitControls manager={manager} />
           {manager.linked && <View style={styles.section}>
             <Text style={styles.detail}>{mobileText('mobile.vaults.folderLinked')}</Text>
@@ -45,10 +49,18 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
           <MobileSavedVaults manager={manager} />
           <MobileGitHubAccount account={manager.account} disabled={manager.busy} clone={manager.clone} />
           <CloneRepository manager={manager} />
-        </ScrollView>
+        </ScrollView>}
       </MobilePanel>
     </KeyboardAvoidingView>
   </Modal>
+}
+
+const conflictPanel = { maxWidth: 1000, height: '90%' as const }
+
+function ReviewConflictsButton({ manager }: { manager: VaultManager }) {
+  if (manager.status !== 'diverged') return null
+  return <MobileButton disabled={manager.busy} label={mobileText('mobile.sync.review')}
+    onPress={() => { void manager.reviewConflicts() }} style={{ minHeight: 44 }} testID="review-sync-conflicts" />
 }
 
 function VaultSyncHistory({ manager }: { manager: VaultManager }) {

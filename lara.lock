@@ -1176,7 +1176,7 @@ files:
     mobile.vaults.folderLinked: 07df69bbc8a45a1c0ed7b5272d2873b4
     mobile.vaults.folderOpenHint: 99a81fb10d794ab2f77e4d33414722e0
     mobile.vaults.folderUnavailable: bbd38c55e4d5a5362d55b7b3eee06258
-    mobile.vaults.folderConflict: c9345b5515b605e0e35386e553e819ff
+    mobile.vaults.folderConflict: 7f8ec0868832b7f1d263aa1e861edd2b
     mobile.vaults.localCopy: aa20c1d667c2ef2eb659ff3c2b11697c
     mobile.vaults.sessionFolder: 957a1315ef9c0afeb8de62a2e72335c7
     mobile.vaults.github: d3b7c913cd04ebfec0e9ec32cb6fd58c
@@ -1200,7 +1200,7 @@ files:
     mobile.vaults.catalogFailed: 959d00638eaad955646fa2cafd9002dc
     mobile.editor.loading: 88d1d76b5e54b416c0103fe99cc7fefa
     mobile.editor.readFailed: 9c6c94312466ead61546b567527d7d32
-    mobile.vaults.diverged: eb9883175a55936ddc2526ee0d9fe55d
+    mobile.vaults.diverged: fecddbd32039feed14efe5b7368fa771
     mobile.vaults.checkpoint: a937d10266de6dce3543aebe7e4b5899
     mobile.vaults.fetch: ededa7d275710f6c3a8f104844814afd
     mobile.vaults.checkout: af625c3914c5c3cd45dd16bee7a8cf63
@@ -1241,4 +1241,5 @@ files:
     mobile.sync.continue: 3196881d906d7571b419c7b6487e581b
     mobile.sync.stale: e2384af720e08b326159c29d5ede7128
     mobile.sync.review: 49deb1946bf6b0862b740db5b54462dc
+    mobile.sync.noConflicts: f0d1d71496ef1294e0455ad7e1f37f6c
     mobile.sync.previewTruncated: 7d83d0b9f20dd46ae97db305433bada0

@@ -50,12 +50,7 @@ public class TolariaWorkspaceAccessModule: Module {
     Events("workspaceSyncExpired")
 
     AsyncFunction("beginWorkspaceSync") { (identifier: String) -> Bool in
-      self.backgroundSync.begin(identifier, request: { expiration in
-        let token = UIApplication.shared.beginBackgroundTask(withName: "Tolaria vault sync", expirationHandler: expiration)
-        return token == .invalid ? nil : token.rawValue
-      }, expired: { [weak self] in
-        self?.sendEvent("workspaceSyncExpired", ["identifier": identifier])
-      })
+      self.beginSync(identifier)
     }.runOnQueue(.main)
 
     AsyncFunction("endWorkspaceSync") { (identifier: String) in
@@ -76,11 +71,7 @@ public class TolariaWorkspaceAccessModule: Module {
     }
 
     AsyncFunction("saveWorkspaceTexts") { (uri: String, changes: [[String: String]], identifier: String) throws in
-      let entries = try changes.map { change -> WorkspaceTextChange in
-        guard let path = change["path"], let content = change["content"] else { throw WorkspaceFileError.invalidPath }
-        return WorkspaceTextChange(path: path, content: content)
-      }
-      try managedWorkspaceText(uri).writeBatch(entries, identifier: identifier)
+      try self.saveTexts(uri, changes: changes, identifier: identifier)
     }
 
     Function("recoverWorkspaceText") { (uri: String) throws -> Bool in
@@ -113,11 +104,19 @@ public class TolariaWorkspaceAccessModule: Module {
       return try LinkedWorkspaceStore().sync(uri)
     }
 
+    AsyncFunction("reviewLinkedConflicts") { (uri: String) throws -> String in
+      return try self.reviewConflicts(uri)
+    }
+
+    AsyncFunction("resolveLinkedConflicts") { (uri: String, review: String, choices: [String: String]) throws -> Bool in
+      return try self.resolveConflicts(uri, review: review, choices: choices)
+    }
+
     #if DEBUG || TOLARIA_QA
     Constant("nativeStorageQAEnabled") { true }
 
     AsyncFunction("runLinkedBackgroundProbe") { () throws -> Bool in
-      return try runLinkedWorkspaceBackgroundProof()
+      return try runLinkedWorkspaceBackgroundProof() && runLinkedConflictNativeProof()
     }
 
     AsyncFunction("runEntryRecoveryProbe") { (phase: String) throws -> [String: Any] in
@@ -148,6 +147,36 @@ public class TolariaWorkspaceAccessModule: Module {
     }
 
     return try copyWorkspace(from: source)
+  }
+
+  private func saveTexts(_ uri: String, changes: [[String: String]], identifier: String) throws {
+    let entries = try changes.map { change -> WorkspaceTextChange in
+      guard let path = change["path"], let content = change["content"] else { throw WorkspaceFileError.invalidPath }
+      return WorkspaceTextChange(path: path, content: content)
+    }
+    try managedWorkspaceText(uri).writeBatch(entries, identifier: identifier)
+  }
+
+  private func beginSync(_ identifier: String) -> Bool {
+    backgroundSync.begin(identifier, request: { expiration in
+      let token = UIApplication.shared.beginBackgroundTask(withName: "Tolaria vault sync", expirationHandler: expiration)
+      return token == .invalid ? nil : token.rawValue
+    }, expired: { [weak self] in
+      self?.sendEvent("workspaceSyncExpired", ["identifier": identifier])
+    })
+  }
+
+  private func reviewConflicts(_ uri: String) throws -> String {
+    let review = try LinkedWorkspaceStore().session(uri).reviewConflicts()
+    return String(decoding: try JSONEncoder().encode(review), as: UTF8.self)
+  }
+
+  private func resolveConflicts(_ uri: String, review: String, choices: [String: String]) throws -> Bool {
+    let decoded = try JSONDecoder().decode(LinkedConflictReview.self, from: Data(review.utf8))
+    do {
+      try LinkedWorkspaceStore().session(uri).resolveConflicts(decoded, choices: choices)
+      return true
+    } catch LinkedWorkspaceError.conflict { return false }
   }
 
   private func copyWorkspace(from source: URL) throws -> [String: String] {

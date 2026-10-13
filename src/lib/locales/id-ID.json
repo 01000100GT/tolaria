@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Folder tertaut. Perubahan disimpan kembali secara otomatis saat Tolaria aktif. iCloud atau penyedia file Anda menangani sinkronisasi antarperangkat.",
   "mobile.vaults.folderOpenHint": "Tautkan folder dari File, termasuk iCloud Drive. Salinan yang sudah diimpor tetap tersimpan secara lokal; pilih kembali folder aslinya untuk menautkannya.",
   "mobile.vaults.folderUnavailable": "Folder yang ditautkan tidak tersedia. Perubahan Anda aman di perangkat ini. Pulihkan akses di Files, lalu coba sinkronkan lagi.",
-  "mobile.vaults.folderConflict": "File yang sama diubah di sini dan di folder tertaut. Tidak ada versi yang ditimpa. Pastikan kedua versi sama sebelum mencoba sinkronisasi lagi.",
+  "mobile.vaults.folderConflict": "File diubah di sini dan di folder tertaut. Tinjau konflik untuk memilih versi mana yang akan dipertahankan.",
   "mobile.vaults.localCopy": "Folder yang diimpor adalah salinan lokal dalam build ini. Perubahan tidak disinkronkan kembali ke iCloud atau folder aslinya.",
   "mobile.vaults.sessionFolder": "Akses ke folder asli hanya selama sesi. Penyuntingan mengubah file-filenya. Buka kembali setelah memulai ulang; Tolaria tidak mengelola sinkronisasi penyedia.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Daftar vault yang disimpan tidak dapat dibaca. Tidak ada file vault yang dihapus.",
   "mobile.editor.loading": "Memuat catatan...",
   "mobile.editor.readFailed": "Catatan ini tidak dapat dibaca. File-nya tidak diubah.",
-  "mobile.vaults.diverged": "Riwayat lokal dan riwayat remote telah berbeda. Kedua riwayat dipertahankan. Selesaikan perbedaan di desktop sebelum menyinkronkan lagi.",
+  "mobile.vaults.diverged": "Beberapa perubahan perlu Anda tinjau. Kedua riwayat dipertahankan. Tinjau konflik, lalu lanjutkan sinkronisasi.",
   "mobile.vaults.checkpoint": "Menyimpan perubahan lokal...",
   "mobile.vaults.fetch": "Mengambil perubahan remote...",
   "mobile.vaults.checkout": "Memperbarui file lokal...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Terapkan pilihan dan lanjutkan",
   "mobile.sync.stale": "File berubah setelah perbandingan ini. Tinjau versi terbaru sebelum menerapkan pilihan Anda.",
   "mobile.sync.review": "Tinjau konflik",
+  "mobile.sync.noConflicts": "Tidak ada lagi file yang bertentangan. Lanjutkan untuk menyelesaikan sinkronisasi.",
   "mobile.sync.previewTruncated": "Pratinjau dipotong; file lengkap tetap disimpan."
 }

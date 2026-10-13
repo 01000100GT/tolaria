@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Dossier lié. Les modifications sont automatiquement réenregistrées lorsque Tolaria est actif. iCloud ou votre fournisseur de fichiers gère la synchronisation entre les appareils.",
   "mobile.vaults.folderOpenHint": "Associez un dossier depuis Fichiers, y compris iCloud Drive. Les copies importées existantes restent locales ; sélectionnez à nouveau leur dossier d'origine pour le lier.",
   "mobile.vaults.folderUnavailable": "Le dossier lié n'est pas disponible. Vos modifications sont en sécurité sur cet appareil. Rétablissez l'accès dans Fichiers, puis réessayez la synchronisation.",
-  "mobile.vaults.folderConflict": "Le même fichier a été modifié ici et dans le dossier lié. Aucune des deux versions n'a été écrasée. Faites en sorte que les versions soient identiques avant de réessayer la synchronisation.",
+  "mobile.vaults.folderConflict": "Fichiers modifiés ici et dans le dossier lié. Examinez les conflits pour choisir les versions à conserver.",
   "mobile.vaults.localCopy": "Dans cette version, les dossiers importés sont des copies locales. Les modifications ne sont pas synchronisées avec iCloud ni avec le dossier d'origine.",
   "mobile.vaults.sessionFolder": "Accès au dossier d'origine uniquement pendant la session. Les modifications affectent ses fichiers. Rouvrir après le redémarrage ; Tolaria ne gère pas la synchronisation des fournisseurs.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "La liste des coffres-forts enregistrée n'a pas pu être lue. Aucun fichier du coffre-fort n'a été supprimé.",
   "mobile.editor.loading": "Chargement de la note…",
   "mobile.editor.readFailed": "Cette note n'a pas pu être lue. Son fichier n'a pas été modifié.",
-  "mobile.vaults.diverged": "Les historiques local et distant ont divergé. Les deux historiques sont conservés. Résolvez la divergence sur le poste de travail avant de synchroniser à nouveau.",
+  "mobile.vaults.diverged": "Certaines modifications nécessitent votre vérification. Les deux historiques sont conservés. Examinez les conflits, puis poursuivez la synchronisation.",
   "mobile.vaults.checkpoint": "Enregistrement des modifications locales…",
   "mobile.vaults.fetch": "Récupération des modifications distantes…",
   "mobile.vaults.checkout": "Mise à jour des fichiers locaux…",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Appliquer les choix et continuer",
   "mobile.sync.stale": "Fichiers modifiés après cette comparaison. Vérifiez les dernières versions avant d'appliquer vos choix.",
   "mobile.sync.review": "Examiner les conflits",
+  "mobile.sync.noConflicts": "Il ne reste plus aucun fichier en conflit. Continuez pour terminer la synchronisation.",
   "mobile.sync.previewTruncated": "Aperçu tronqué ; le fichier complet est conservé."
 }

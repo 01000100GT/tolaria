@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Podłączony folder. Zmiany są automatycznie zapisywane z powrotem, gdy Tolaria jest aktywna. Synchronizacją między urządzeniami zarządza iCloud lub Twój dostawca plików.",
   "mobile.vaults.folderOpenHint": "Połącz folder z aplikacji Pliki, w tym z iCloud Drive. Istniejące zaimportowane kopie pozostają lokalne; wybierz ponownie ich oryginalny folder, aby go połączyć.",
   "mobile.vaults.folderUnavailable": "Podłączony folder jest niedostępny. Twoje zmiany są bezpieczne na tym urządzeniu. Przywróć dostęp w aplikacji Pliki, a następnie spróbuj ponownie zsynchronizować.",
-  "mobile.vaults.folderConflict": "Ten sam plik został zmieniony tutaj i w połączonym folderze. Żadna z wersji nie została nadpisana. Dopasuj wersje do siebie, zanim ponownie spróbujesz synchronizacji.",
+  "mobile.vaults.folderConflict": "Pliki zostały zmienione tutaj i w połączonym folderze. Przejrzyj konflikty, aby wybrać, które wersje zachować.",
   "mobile.vaults.localCopy": "W tej kompilacji zaimportowane foldery są kopiami lokalnymi. Zmiany nie są synchronizowane z iCloud ani z oryginalnym folderem.",
   "mobile.vaults.sessionFolder": "Dostęp do oryginalnego folderu tylko w ramach sesji. Edycje zmieniają jego pliki. Otwórz ponownie po ponownym uruchomieniu; Tolaria nie zarządza synchronizacją z dostawcą.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Nie udało się odczytać zapisanej listy repozytoriów. Nie usunięto żadnych plików repozytorium.",
   "mobile.editor.loading": "Ładowanie notatki...",
   "mobile.editor.readFailed": "Nie udało się odczytać tej notatki. Jej plik nie został zmieniony.",
-  "mobile.vaults.diverged": "Historie lokalna i zdalna rozeszły się. Obie historie zostały zachowane. Rozwiąż rozbieżność na komputerze przed ponowną synchronizacją.",
+  "mobile.vaults.diverged": "Niektóre zmiany wymagają Twojej weryfikacji. Obie historie są zachowane. Przejrzyj konflikty, a następnie kontynuuj synchronizację.",
   "mobile.vaults.checkpoint": "Zapisywanie zmian lokalnych...",
   "mobile.vaults.fetch": "Pobieranie zmian zdalnych...",
   "mobile.vaults.checkout": "Aktualizowanie plików lokalnych...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Zastosuj wybrane opcje i kontynuuj",
   "mobile.sync.stale": "Pliki zostały zmienione po tym porównaniu. Przejrzyj najnowsze wersje, zanim zastosujesz swoje wybory.",
   "mobile.sync.review": "Przejrzyj konflikty",
+  "mobile.sync.noConflicts": "Nie pozostały żadne konflikty plików. Kontynuuj, aby dokończyć synchronizację.",
   "mobile.sync.previewTruncated": "Podgląd został skrócony; cały plik został zachowany."
 }

@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Thư mục được liên kết. Các thay đổi được tự động lưu lại khi Tolaria đang hoạt động. iCloud hoặc nhà cung cấp tệp của bạn sẽ xử lý việc đồng bộ hóa giữa các thiết bị.",
   "mobile.vaults.folderOpenHint": "Liên kết một thư mục từ ứng dụng Tệp, bao gồm cả iCloud Drive. Các bản sao đã nhập hiện có vẫn lưu cục bộ; hãy chọn lại thư mục gốc của chúng để liên kết.",
   "mobile.vaults.folderUnavailable": "Thư mục được liên kết không khả dụng. Các thay đổi của bạn được lưu an toàn trên thiết bị này. Khôi phục quyền truy cập trong Files, sau đó thử đồng bộ lại.",
-  "mobile.vaults.folderConflict": "Cùng một tệp đã được thay đổi ở đây và trong thư mục được liên kết. Cả hai phiên bản đều không bị ghi đè. Hãy đồng bộ hóa các phiên bản trước khi thử đồng bộ lại.",
+  "mobile.vaults.folderConflict": "Các tệp đã thay đổi ở đây và trong thư mục được liên kết. Xem lại các xung đột để chọn phiên bản cần giữ lại.",
   "mobile.vaults.localCopy": "Các thư mục đã nhập là bản sao cục bộ trong bản dựng này. Các thay đổi không được đồng bộ hóa ngược lại với iCloud hoặc thư mục gốc.",
   "mobile.vaults.sessionFolder": "Quyền truy cập vào thư mục gốc chỉ trong phạm vi phiên làm việc. Các thao tác chỉnh sửa sẽ thay đổi các tệp của nó. Mở lại sau khi khởi động lại; Tolaria không quản lý đồng bộ hóa nhà cung cấp.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Không thể đọc danh sách vault đã lưu. Chưa có tệp vault nào bị xóa.",
   "mobile.editor.loading": "Đang tải ghi chú...",
   "mobile.editor.readFailed": "Không thể đọc ghi chú này. Tệp của nó chưa được thay đổi.",
-  "mobile.vaults.diverged": "Lịch sử cục bộ và lịch sử từ xa đã phân kỳ. Cả hai lịch sử đều được lưu giữ. Giải quyết sự khác biệt trên máy tính để bàn trước khi đồng bộ hóa lại.",
+  "mobile.vaults.diverged": "Một số thay đổi cần bạn xem xét. Cả hai lịch sử đều được lưu giữ. Xem lại các xung đột, sau đó tiếp tục đồng bộ.",
   "mobile.vaults.checkpoint": "Đang lưu các thay đổi cục bộ...",
   "mobile.vaults.fetch": "Đang tải các thay đổi từ xa...",
   "mobile.vaults.checkout": "Đang cập nhật các tệp cục bộ...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Áp dụng các lựa chọn và tiếp tục",
   "mobile.sync.stale": "Các tệp đã thay đổi sau lần so sánh này. Xem lại các phiên bản mới nhất trước khi áp dụng các lựa chọn của bạn.",
   "mobile.sync.review": "Xem lại các xung đột",
+  "mobile.sync.noConflicts": "Không còn tệp nào xung đột. Tiếp tục để hoàn tất đồng bộ hóa.",
   "mobile.sync.previewTruncated": "Bản xem trước bị cắt ngắn; tệp đầy đủ vẫn được giữ nguyên."
 }

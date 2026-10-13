@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Verknüpfter Ordner. Änderungen werden automatisch zurückgespeichert, während Tolaria aktiv ist. iCloud oder Ihr Dateianbieter übernimmt die Synchronisierung zwischen den Geräten.",
   "mobile.vaults.folderOpenHint": "Verknüpfen Sie einen Ordner aus „Dateien“, einschließlich iCloud Drive. Vorhandene importierte Kopien bleiben lokal gespeichert. Wählen Sie ihren ursprünglichen Ordner erneut aus, um ihn zu verknüpfen.",
   "mobile.vaults.folderUnavailable": "Der verknüpfte Ordner ist nicht verfügbar. Ihre Änderungen sind auf diesem Gerät sicher. Stellen Sie den Zugriff in „Dateien“ wieder her und versuchen Sie dann erneut, die Synchronisierung durchzuführen.",
-  "mobile.vaults.folderConflict": "Dieselbe Datei wurde hier und im verknüpften Ordner geändert. Keine der beiden Versionen wurde überschrieben. Stellen Sie die Übereinstimmung der Versionen her, bevor Sie die Synchronisierung erneut versuchen.",
+  "mobile.vaults.folderConflict": "Dateien wurden hier und im verknüpften Ordner geändert. Überprüfen Sie die Konflikte, um auszuwählen, welche Versionen beibehalten werden sollen.",
   "mobile.vaults.localCopy": "Importierte Ordner sind in dieser Version lokale Kopien. Änderungen werden nicht mit iCloud oder dem ursprünglichen Ordner synchronisiert.",
   "mobile.vaults.sessionFolder": "Nur während der Sitzung gültiger Zugriff auf den ursprünglichen Ordner. Durch Bearbeitungen werden seine Dateien geändert. Nach dem Neustart erneut öffnen; Tolaria verwaltet die Synchronisierung mit dem Provider nicht.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Die gespeicherte Vault-Liste konnte nicht gelesen werden. Es wurden keine Vault-Dateien entfernt.",
   "mobile.editor.loading": "Notiz wird geladen …",
   "mobile.editor.readFailed": "Diese Notiz konnte nicht gelesen werden. Die zugehörige Datei wurde nicht geändert.",
-  "mobile.vaults.diverged": "Der lokale und der Remote-Verlauf weichen voneinander ab. Beide Verläufe bleiben erhalten. Beheben Sie die Abweichung auf dem Desktop, bevor Sie erneut synchronisieren.",
+  "mobile.vaults.diverged": "Einige Änderungen müssen von Ihnen überprüft werden. Beide Verläufe werden beibehalten. Überprüfen Sie die Konflikte und fahren Sie dann mit der Synchronisierung fort.",
   "mobile.vaults.checkpoint": "Lokale Änderungen werden gespeichert …",
   "mobile.vaults.fetch": "Remote-Änderungen werden abgerufen …",
   "mobile.vaults.checkout": "Lokale Dateien werden aktualisiert …",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Auswahl übernehmen und fortfahren",
   "mobile.sync.stale": "Dateien wurden nach diesem Vergleich geändert. Überprüfen Sie die neuesten Versionen, bevor Sie Ihre Auswahl anwenden.",
   "mobile.sync.review": "Konflikte überprüfen",
+  "mobile.sync.noConflicts": "Es sind keine widersprüchlichen Dateien mehr vorhanden. Fahren Sie fort, um die Synchronisierung abzuschließen.",
   "mobile.sync.previewTruncated": "Vorschau abgeschnitten; die vollständige Datei bleibt erhalten."
 }

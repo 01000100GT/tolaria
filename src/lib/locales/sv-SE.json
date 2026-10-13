@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Länkad mapp. Ändringar sparas automatiskt när Tolaria är aktivt. iCloud eller din filleverantör hanterar synkroniseringen mellan enheter.",
   "mobile.vaults.folderOpenHint": "Länka en mapp från Filer, inklusive iCloud Drive. Befintliga importerade kopior förblir lokala; välj deras ursprungliga mapp igen för att länka den.",
   "mobile.vaults.folderUnavailable": "Den länkade mappen är inte tillgänglig. Dina ändringar är säkra på den här enheten. Återställ åtkomsten i Filer och försök sedan synkronisera igen.",
-  "mobile.vaults.folderConflict": "Samma fil har ändrats här och i den länkade mappen. Ingen av versionerna skrevs över. Se till att versionerna överensstämmer innan du försöker synkronisera igen.",
+  "mobile.vaults.folderConflict": "Filer har ändrats här och i den länkade mappen. Granska konflikterna för att välja vilka versioner som ska behållas.",
   "mobile.vaults.localCopy": "Importerade mappar är lokala kopior i den här versionen. Ändringar synkroniseras inte tillbaka till iCloud eller den ursprungliga mappen.",
   "mobile.vaults.sessionFolder": "Åtkomst till den ursprungliga mappen endast under sessionen. Redigeringar ändrar dess filer. Öppna igen efter omstart; Tolaria hanterar inte synkronisering med leverantörer.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Den sparade listan över valv kunde inte läsas. Inga valvfiler har tagits bort.",
   "mobile.editor.loading": "Laddar anteckning …",
   "mobile.editor.readFailed": "Den här anteckningen kunde inte läsas. Dess fil har inte ändrats.",
-  "mobile.vaults.diverged": "Lokala och fjärrhistoriker har divergerat. Båda historikerna bevaras. Lös avvikelsen på datorn innan du synkroniserar igen.",
+  "mobile.vaults.diverged": "Vissa ändringar behöver granskas av dig. Båda historikerna bevaras. Granska konflikterna och fortsätt sedan synkroniseringen.",
   "mobile.vaults.checkpoint": "Sparar lokala ändringar …",
   "mobile.vaults.fetch": "Hämtar ändringar från fjärrservern …",
   "mobile.vaults.checkout": "Uppdaterar lokala filer …",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Tillämpa valen och fortsätt",
   "mobile.sync.stale": "Filerna har ändrats efter den här jämförelsen. Granska de senaste versionerna innan du tillämpar dina val.",
   "mobile.sync.review": "Granska konflikter",
+  "mobile.sync.noConflicts": "Inga motstridiga filer återstår. Fortsätt för att slutföra synkroniseringen.",
   "mobile.sync.previewTruncated": "Förhandsgranskningen är trunkerad; den fullständiga filen har bevarats."
 }

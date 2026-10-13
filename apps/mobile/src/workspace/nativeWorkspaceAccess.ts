@@ -7,6 +7,8 @@ export type NativeWorkspaceAccessModule = {
   addListener?: (event: 'workspaceSyncExpired', listener: (event: { identifier: string }) => void) => { remove: () => void }
   isWorkspaceLinked?: (root: string) => boolean
   syncLinkedWorkspace?: (root: string) => Promise<{ linked: boolean; changed: boolean; conflict: boolean }>
+  reviewLinkedConflicts?: (root: string) => Promise<string>
+  resolveLinkedConflicts?: (root: string, review: string, choices: Record<string, string>) => Promise<boolean>
   gitEntryInfo?: (uri: string) => {
     exists: boolean; isDirectory?: boolean; size?: number; modificationTime?: number; creationTime?: number
   }

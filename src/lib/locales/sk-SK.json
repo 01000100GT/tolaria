@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Prepojený priečinok. Zmeny sa automaticky ukladajú späť, kým je Tolaria aktívna. Synchronizáciu medzi zariadeniami zabezpečuje iCloud alebo váš poskytovateľ súborov.",
   "mobile.vaults.folderOpenHint": "Prepojte priečinok z aplikácie Súbory vrátane iCloud Drive. Existujúce importované kópie zostávajú lokálne; ak ich chcete prepojiť, znova vyberte ich pôvodný priečinok.",
   "mobile.vaults.folderUnavailable": "Prepojený priečinok nie je k dispozícii. Vaše zmeny sú na tomto zariadení v bezpečí. Obnovte prístup v aplikácii Súbory a potom skúste synchronizáciu znova.",
-  "mobile.vaults.folderConflict": "Ten istý súbor sa zmenil tu aj v prepojenom priečinku. Žiadna z verzií nebola prepísaná. Pred opätovným pokusom o synchronizáciu zosúlaďte verzie.",
+  "mobile.vaults.folderConflict": "Súbory sa zmenili tu a v prepojenom priečinku. Skontrolujte konflikty a vyberte, ktoré verzie si chcete ponechať.",
   "mobile.vaults.localCopy": "Importované priečinky sú v tejto zostave lokálne kópie. Zmeny sa nesynchronizujú späť do iCloudu ani do pôvodného priečinka.",
   "mobile.vaults.sessionFolder": "Prístup k pôvodnému priečinku len počas relácie. Úpravami sa menia jeho súbory. Po reštarte znova otvorte; Tolaria nespravuje synchronizáciu poskytovateľa.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Uložený zoznam trezorov sa nepodarilo prečítať. Neboli odstránené žiadne súbory úložiska.",
   "mobile.editor.loading": "Načítava sa poznámka…",
   "mobile.editor.readFailed": "Túto poznámku sa nepodarilo prečítať. Jej súbor nebol zmenený.",
-  "mobile.vaults.diverged": "Miestna a vzdialená história sa rozchádzajú. Obe histórie sú zachované. Pred ďalšou synchronizáciou vyriešte rozdiel v desktopovej aplikácii.",
+  "mobile.vaults.diverged": "Niektoré zmeny si vyžadujú vašu kontrolu. Obe histórie sú zachované. Skontrolujte konflikty a potom pokračujte v synchronizácii.",
   "mobile.vaults.checkpoint": "Ukladajú sa lokálne zmeny...",
   "mobile.vaults.fetch": "Načítavajú sa vzdialené zmeny...",
   "mobile.vaults.checkout": "Aktualizujú sa lokálne súbory...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Použiť voľby a pokračovať",
   "mobile.sync.stale": "Po tomto porovnaní sa súbory zmenili. Pred uplatnením svojich volieb si pozrite najnovšie verzie.",
   "mobile.sync.review": "Skontrolovať konflikty",
+  "mobile.sync.noConflicts": "Nezostali žiadne konfliktné súbory. Pokračujte a dokončite synchronizáciu.",
   "mobile.sync.previewTruncated": "Náhľad je skrátený; celý súbor je zachovaný."
 }

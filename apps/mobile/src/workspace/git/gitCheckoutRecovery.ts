@@ -1,5 +1,6 @@
 import git from 'isomorphic-git'
 import type { GitVaultContext } from './gitVault'
+import { prepareGitTypeChanges } from './gitCheckoutTypeChanges'
 
 export const gitCheckoutJournalName = 'tolaria-checkout.json'
 type CheckoutJournal = { version: 1; branch: string; before: string; target: string }
@@ -20,6 +21,7 @@ export async function recoverGitCheckout(context: GitVaultContext) {
 
 async function finishCheckout(context: GitVaultContext, journal: CheckoutJournal) {
   await validateCheckoutHead(context, journal)
+  await prepareGitTypeChanges(context, journal.before, journal.target)
   // Never force: unexpected changes must stop recovery instead of being discarded.
   await git.checkout({ ...context, ref: journal.target, noUpdateHead: true, nonBlocking: true, batchSize: 20 })
   await git.merge({ ...context, ours: journal.branch, theirs: journal.target, fastForwardOnly: true })

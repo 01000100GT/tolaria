@@ -153,3 +153,8 @@ Native editor screenshots can open `exp://.../--/?layoutProbe=1&editorMode=raw` 
 - Tablet action sheets are clickable and tested against the editable snapshot. Create/property/relationship/body edits, Type document create/delete/edit, Type template editing and template-backed note creation, relationship target creation, saved-view edits, note type changes, note file moves, and folder moves emit repository write plans; explicit `source=native-vault` mode persists those writes through Expo FileSystem, while fixture and host-vault QA remain deterministic.
 - Phone navigation now uses the same reducer-backed workspace controller as tablet for list, sidebar, editor, properties, action sheets, wikilinks, relationships, saved views, folders, persistence writes, swipe navigation between the main phone surfaces, drag-coupled neighboring-surface previews, Reanimated directional transitions, and native metric probes for the list/sidebar layout surfaces. Deeper phone-specific polish remains after the tablet/mobile editing contract is stable.
 - Mobile wrappers are thin Tolaria wrappers over RNR-style primitives so the eventual implementation can swap in more RNR coverage without changing Tolaria-specific tokens and semantics.
+- `components/vaults/MobileConflictReview.tsx` follows desktop
+  `ConflictResolverModal.tsx`: file list, explicit version choices and continuation.
+  Native differences are bounded scrollable comparisons, 44-point action targets,
+  and stacked comparisons on phones. It uses existing Tolaria/RNR buttons, text,
+  theme colors and metric scaling, with native XCUITest frame/interaction checks.

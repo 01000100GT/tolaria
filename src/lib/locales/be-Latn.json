@@ -3,7 +3,7 @@
   "mobile.vaults.folderLinked": "Zviazanaja tečka. Zmieny aŭtamatyčna zachoŭvajucca, pakuĺ Tolaria aktyŭnaja. iCloud abo vaš pastaŭščyk fajlaŭ ažycciaŭliaje sinchranizacyju pamiž pryładami.",
   "mobile.vaults.folderOpenHint": "Zviazać papku z «Fajłaŭ», uklučajučy iCloud Drive. Isnujučyja impartavanyja kopii zastajucca lakaĺnymi; znoŭ vybierycie ich zychodnuju papku, kab zviazać jaje.",
   "mobile.vaults.folderUnavailable": "Zviazany katałoh niedastupny. Vašy zmieny zachavany na hetaj pryładzie. Adnavicie dostup u prahramie «Fajły», a zatym paŭtarycie sprobu sinchranizacyi.",
-  "mobile.vaults.folderConflict": "Adzin i toj ža fajł byŭ zmienieny tut i ŭ zviazanym katałohu. Ni adna z viersij nie była pierapisana. Uzhadnicie viersii, pierš čym paŭtaryć sprobu sinchranizacyi.",
+  "mobile.vaults.folderConflict": "Fajły zmianiłisia tut i ŭ zviazanym katałohu. Prahledźcie kanflikty i vybierycie viersii, jakija treba zachavać.",
   "command.noMatches": "Niama adpaviednych kamand",
   "command.palettePlaceholder": "Uviadzicie kamandu...",
   "command.footerNavigate": "↑↓ navihacyja",
@@ -1193,7 +1193,7 @@
   "mobile.vaults.catalogFailed": "Nie ŭdałosia pračytać zachavany spis schoviščaŭ. Nijakija fajly schovišča nie byli vydalenyja.",
   "mobile.editor.loading": "Zahruzka natatki...",
   "mobile.editor.readFailed": "Hetuju natatku nie ŭdałosia pračytać. Jaje fajł nie byŭ źmienieny.",
-  "mobile.vaults.diverged": "Lakaĺnaja i addalenaja historyi razyšlisia. Abiedźvie historyi zachavany. Vyrasycie razychodžańnie na nastoĺnym kampjutary pierad paŭtornaj sinchranizacyjaj.",
+  "mobile.vaults.diverged": "Niekatoryja źmieny patrabujuć vašaha prahladu. Abiedźvie historyi zachavany. Prahledźcie kanflikty, a potym praciahvajcie sinchranizacyju.",
   "mobile.vaults.checkpoint": "Zachavannie lakaĺnych zmienaŭ...",
   "mobile.vaults.fetch": "Atrymannie addalenych zmianienniaŭ...",
   "mobile.vaults.checkout": "Abnaŭlennie lakaĺnych fajłaŭ...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Prymjianić vybar i praciahnuć",
   "mobile.sync.stale": "Fajły źmianilisia paśla hetaha paraŭnańnia. Pierad užyvańniem vybaru prahladźcie apošnija viersii.",
   "mobile.sync.review": "Prahlad kanfliktaŭ",
+  "mobile.sync.noConflicts": "Kanfliktnych fajłaŭ nie zastałosia. Praciahvajcie, kab zaviaršyć sinchranizacyju.",
   "mobile.sync.previewTruncated": "Papiaredni prahlad skaročany; poŭny fajł zachavany."
 }

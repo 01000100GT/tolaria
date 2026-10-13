@@ -22,6 +22,8 @@ import { createGitEditorAccess } from './gitEditorAccess'
 import { syncFailureKind } from '../syncFailure'
 import { useVaultSyncLedger } from '../useVaultSyncLedger'
 import type { VaultSyncState } from '../syncLedgerModel'
+import { inspectVaultConflicts, resolveVaultConflicts, type VaultConflictReview } from '../vaultConflictOperations'
+import type { SyncConflictChoices } from '../syncConflictModel'
 
 export type { VaultSyncState } from '../syncLedgerModel'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | 'mobile.vaults.folderUnavailable' | 'mobile.vaults.folderConflict' | null
@@ -38,6 +40,8 @@ export function useMobileVaults() {
   const [revision, setRevision] = useState(0)
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [conflictReview, setConflictReview] = useState<VaultConflictReview | null>(null)
+  const [conflictFailure, setConflictFailure] = useState<'stale' | 'local' | null>(null)
   const syncHistory = useVaultSyncLedger(activeVaultId(active))
   const { record: { phase, status, lastCommitId }, setStatus, setPhase, setLastCommitId } = syncHistory
   const [error, setError] = useState<VaultError>(null)
@@ -57,6 +61,7 @@ export function useMobileVaults() {
   const close = () => {
     if (running.current) return
     account.cancelSignIn()
+    setConflictReview(null)
     editors.setBlocked(false)
     setOpened(false)
   }
@@ -179,6 +184,27 @@ export function useMobileVaults() {
     return result.workspaceChanged ? null : 'unchanged' as const
   }
   const sync = async () => { await perform(() => syncTask(preferences.settings.autoGit), false, 'sync') }
+  const reviewConflicts = () => perform(async () => {
+    setConflictFailure(null)
+    setConflictReview(await inspectVaultConflicts(active, mobileGitAuthor(account.session), preferences.settings.autoGit))
+    return 'unchanged'
+  })
+  const resolveConflicts = async (choices: SyncConflictChoices) => {
+    if (!conflictReview) return
+    let resolved = false
+    await perform(async () => {
+      try {
+        const oid = await resolveVaultConflicts(active, conflictReview, choices, mobileGitAuthor(account.session))
+        recordResolution(oid)
+        resolved = true
+        return null
+      } catch (failure) {
+        setConflictFailure(conflictFailureKind(failure))
+        throw failure
+      }
+    })
+    if (resolved && active.git) await perform(() => syncTask(false), true, 'sync')
+  }
   const commit = async (message: string, push = false) => {
     let committed = false
     await perform(async () => {
@@ -192,6 +218,19 @@ export function useMobileVaults() {
     return 'unchanged'
   }, true, 'commit')
     if (committed && push) await perform(() => syncTask(false), true, 'sync')
+  }
+
+  const recordResolution = (oid: string | null) => {
+    if (oid) setLastCommitId(oid.slice(0, 8))
+    setStatus(oid ? 'committed' : 'synced')
+    analytics.capture({ name: active.git ? 'mobile_git_operation_requested' : 'mobile_folder_sync_requested', operation: 'resolveConflicts' })
+    setConflictReview(null)
+  }
+  const cancelConflictReview = () => {
+    if (busy) return
+    setConflictReview(null)
+    setConflictFailure(null)
+    setStatus('diverged')
   }
 
   useMobileAutoGit({
@@ -211,6 +250,8 @@ export function useMobileVaults() {
   return {
     account, active, busy, catalog, close, clone, editors, error, open, opened, linked, syncHistory,
     openFolder, phase, restorePending, revision, status, sync, commit, lastCommitId, selectLocal, forget,
+    conflictReview, conflictFailure, reviewConflicts, resolveConflicts,
+    cancelConflictReview,
     select: (vault: ManagedGitVault) => perform(async () => {
       const next = await select(vault)
       analytics.capture({ name: 'mobile_vault_catalog_used', action: 'switch', kind: 'git' })
@@ -221,6 +262,10 @@ export function useMobileVaults() {
 
 function activeVaultId(active: ActiveVault) {
   return active.git?.id ?? active.selection?.vaultAlias ?? undefined
+}
+
+function conflictFailureKind(failure: unknown) {
+  return failure instanceof Error && failure.message === 'syncConflictStale' ? 'stale' : 'local'
 }
 
 async function resolveVaultTask(task: VaultTask, active: ActiveVault, select: (next: ActiveVault) => void) {

@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "已連結的資料夾。當 Tolaria 處於作用中狀態時，變更會自動儲存回原處。iCloud 或您的檔案提供者會負責處理裝置之間的同步。",
   "mobile.vaults.folderOpenHint": "從「檔案」連結資料夾，包括 iCloud Drive。現有已匯入的副本仍保留在本地；請再次選取其原始資料夾以進行連結。",
   "mobile.vaults.folderUnavailable": "已連結的資料夾無法使用。您的變更在此裝置上是安全的。在「檔案」中恢復存取權限，然後再試一次同步。",
-  "mobile.vaults.folderConflict": "此處與連結的資料夾中都有相同的檔案發生變更。兩個版本都沒有被覆寫。在重試同步之前，請先讓各個版本保持一致。",
+  "mobile.vaults.folderConflict": "此處及連結的資料夾中的檔案已變更。請檢視衝突，以選擇要保留的版本。",
   "mobile.vaults.localCopy": "在此版本中，匯入的資料夾為本機副本。變更不會同步回 iCloud 或原始資料夾。",
   "mobile.vaults.sessionFolder": "僅限工作階段存取原始資料夾。編輯會變更其檔案。重新啟動後再開啟；Tolaria 不負責管理提供者同步。",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "無法讀取已儲存的 Vault 清單。未移除任何 Vault 檔案。",
   "mobile.editor.loading": "正在載入筆記……",
   "mobile.editor.readFailed": "無法讀取此筆記。其檔案未經變更。",
-  "mobile.vaults.diverged": "本機與遠端歷史紀錄已分歧。兩個歷史紀錄都已保留。請先在桌面版上解決差異，再進行同步。",
+  "mobile.vaults.diverged": "有些變更需要您審核。兩個歷史紀錄都會保留。請先檢視衝突，然後再繼續同步。",
   "mobile.vaults.checkpoint": "正在儲存本機變更……",
   "mobile.vaults.fetch": "正在擷取遠端變更……",
   "mobile.vaults.checkout": "正在更新本機檔案……",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "套用選擇並繼續",
   "mobile.sync.stale": "在此比較之後，檔案已變更。在套用您的選擇之前，請先檢視最新版本。",
   "mobile.sync.review": "檢視衝突",
+  "mobile.sync.noConflicts": "已無衝突的檔案。繼續以完成同步。",
   "mobile.sync.previewTruncated": "預覽已截斷；完整檔案已保留。"
 }

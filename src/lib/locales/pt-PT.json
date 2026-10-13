@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Pasta associada. As alterações são guardadas automaticamente enquanto o Tolaria estiver ativo. O iCloud ou o seu fornecedor de ficheiros trata da sincronização entre dispositivos.",
   "mobile.vaults.folderOpenHint": "Associe uma pasta a partir de Ficheiros, incluindo o iCloud Drive. As cópias importadas existentes permanecem locais; selecione novamente a respetiva pasta original para a vincular.",
   "mobile.vaults.folderUnavailable": "A pasta associada não está disponível. As suas alterações estão seguras neste dispositivo. Restaure o acesso em Ficheiros e, em seguida, tente sincronizar novamente.",
-  "mobile.vaults.folderConflict": "O mesmo ficheiro foi alterado aqui e na pasta associada. Nenhuma das versões foi substituída. Faça com que as versões sejam iguais antes de tentar sincronizar novamente.",
+  "mobile.vaults.folderConflict": "Ficheiros alterados aqui e na pasta associada. Analise os conflitos para escolher quais versões manter.",
   "mobile.vaults.localCopy": "As pastas importadas são cópias locais nesta versão. As alterações não são sincronizadas com o iCloud nem com a pasta original.",
   "mobile.vaults.sessionFolder": "Acesso à pasta original apenas durante a sessão. As edições alteram os seus ficheiros. Reabrir após reiniciar; o Tolaria não gere a sincronização do fornecedor.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Não foi possível ler a lista de vaults guardada. Não foram removidos ficheiros do vault.",
   "mobile.editor.loading": "A carregar a nota...",
   "mobile.editor.readFailed": "Não foi possível ler esta nota. O seu ficheiro não foi alterado.",
-  "mobile.vaults.diverged": "Os históricos local e remoto divergiram. Ambos os históricos são preservados. Resolva a divergência no computador antes de sincronizar novamente.",
+  "mobile.vaults.diverged": "Algumas alterações precisam da sua revisão. Ambos os históricos são preservados. Analise os conflitos e, em seguida, continue a sincronização.",
   "mobile.vaults.checkpoint": "A guardar as alterações locais...",
   "mobile.vaults.fetch": "A obter alterações remotas...",
   "mobile.vaults.checkout": "A atualizar os ficheiros locais...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Aplicar as escolhas e continuar",
   "mobile.sync.stale": "Os ficheiros foram alterados após esta comparação. Analise as versões mais recentes antes de aplicar as suas escolhas.",
   "mobile.sync.review": "Analisar conflitos",
+  "mobile.sync.noConflicts": "Não restam ficheiros em conflito. Continue para concluir a sincronização.",
   "mobile.sync.previewTruncated": "Pré-visualização truncada; o ficheiro completo é preservado."
 }

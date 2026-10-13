@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Cartella collegata. Le modifiche vengono salvate automaticamente mentre Tolaria è attivo. iCloud o il tuo provider di file gestisce la sincronizzazione tra i dispositivi.",
   "mobile.vaults.folderOpenHint": "Collega una cartella da File, incluso iCloud Drive. Le copie importate esistenti rimangono locali; seleziona nuovamente la loro cartella originale per collegarla.",
   "mobile.vaults.folderUnavailable": "La cartella collegata non è disponibile. Le tue modifiche sono al sicuro su questo dispositivo. Ripristina l'accesso in File, quindi riprova a eseguire la sincronizzazione.",
-  "mobile.vaults.folderConflict": "Lo stesso file è stato modificato qui e nella cartella collegata. Nessuna delle due versioni è stata sovrascritta. Rendi le versioni coerenti prima di riprovare a eseguire la sincronizzazione.",
+  "mobile.vaults.folderConflict": "File modificati qui e nella cartella collegata. Esamina i conflitti per scegliere quali versioni mantenere.",
   "mobile.vaults.localCopy": "In questa build, le cartelle importate sono copie locali. Le modifiche non vengono sincronizzate con iCloud o con la cartella originale.",
   "mobile.vaults.sessionFolder": "Accesso alla cartella originale solo per la durata della sessione. Le modifiche cambiano i suoi file. Riapri dopo il riavvio; Tolaria non gestisce la sincronizzazione dei provider.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "Impossibile leggere l'elenco dei vault salvati. Nessun file del vault è stato rimosso.",
   "mobile.editor.loading": "Caricamento della nota in corso...",
   "mobile.editor.readFailed": "Impossibile leggere questa nota. Il suo file non è stato modificato.",
-  "mobile.vaults.diverged": "Le cronologie locale e remota sono divergenti. Entrambe le cronologie sono state conservate. Risolvi la divergenza sul desktop prima di eseguire nuovamente la sincronizzazione.",
+  "mobile.vaults.diverged": "Alcune modifiche richiedono la tua revisione. Entrambe le cronologie vengono conservate. Esamina i conflitti, quindi prosegui con la sincronizzazione.",
   "mobile.vaults.checkpoint": "Salvataggio delle modifiche locali in corso...",
   "mobile.vaults.fetch": "Recupero delle modifiche remote in corso...",
   "mobile.vaults.checkout": "Aggiornamento dei file locali in corso...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Applica le scelte e continua",
   "mobile.sync.stale": "I file sono stati modificati dopo questo confronto. Controlla le versioni più recenti prima di applicare le tue scelte.",
   "mobile.sync.review": "Esamina i conflitti",
+  "mobile.sync.noConflicts": "Non sono rimasti file in conflitto. Continua per completare la sincronizzazione.",
   "mobile.sync.previewTruncated": "Anteprima troncata; il file completo è stato conservato."
 }

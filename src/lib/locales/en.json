@@ -1174,7 +1174,7 @@
   "mobile.vaults.folderLinked": "Linked folder. Changes are saved back automatically while Tolaria is active. iCloud or your file provider handles syncing between devices.",
   "mobile.vaults.folderOpenHint": "Link a folder from Files, including iCloud Drive. Existing imported copies stay local; select their original folder again to link it.",
   "mobile.vaults.folderUnavailable": "The linked folder is unavailable. Your changes are safe on this device. Restore access in Files, then retry syncing.",
-  "mobile.vaults.folderConflict": "The same file changed here and in the linked folder. Neither version was overwritten. Make the versions agree before retrying sync.",
+  "mobile.vaults.folderConflict": "Files changed here and in the linked folder. Review the conflicts to choose which versions to keep.",
   "mobile.vaults.localCopy": "Imported folders are local copies in this build. Changes do not sync back to iCloud or the original folder.",
   "mobile.vaults.sessionFolder": "Session-only access to the original folder. Edits change its files. Reopen after restarting; Tolaria does not manage provider sync.",
   "mobile.vaults.github": "GitHub",
@@ -1198,7 +1198,7 @@
   "mobile.vaults.catalogFailed": "The saved vault list could not be read. No vault files have been removed.",
   "mobile.editor.loading": "Loading note...",
   "mobile.editor.readFailed": "This note could not be read. Its file has not been changed.",
-  "mobile.vaults.diverged": "Local and remote histories have diverged. Both histories are preserved. Resolve the divergence on desktop before syncing again.",
+  "mobile.vaults.diverged": "Some changes need your review. Both histories are preserved. Review the conflicts, then continue syncing.",
   "mobile.vaults.checkpoint": "Saving local changes...",
   "mobile.vaults.fetch": "Fetching remote changes...",
   "mobile.vaults.checkout": "Updating local files...",
@@ -1239,5 +1239,6 @@
   "mobile.sync.continue": "Apply choices and continue",
   "mobile.sync.stale": "Files changed after this comparison. Review the latest versions before applying your choices.",
   "mobile.sync.review": "Review conflicts",
+  "mobile.sync.noConflicts": "No conflicting files remain. Continue to finish syncing.",
   "mobile.sync.previewTruncated": "Preview truncated; the complete file is preserved."
 }
