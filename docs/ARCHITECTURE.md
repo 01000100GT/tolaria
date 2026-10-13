@@ -43,6 +43,13 @@ Managed Git vaults retain the existing save/operation queues. Manual sync requir
 an explicit local commit; opt-in AutoGit schedules foreground idle checkpoints
 and synchronization without promising background execution.
 
+New iOS folder selections retain a Files-provider bookmark alongside an offline
+working copy (ADR 0217). Native, coordinated three-way reconciliation writes
+local edits back and imports external changes; divergent versions stop for
+resolution. This is independent of Git. Provider delivery, including iCloud's
+cross-device upload, remains the provider's responsibility. Existing copy-only
+vaults are never silently attached to an original folder.
+
 Examples:
 - ✅ Vault: `_pinned_properties` in a Type note (every device should show the same pinned properties)
 - ✅ Vault: `_icon: shapes` in a Type note (icon is part of the type's identity)

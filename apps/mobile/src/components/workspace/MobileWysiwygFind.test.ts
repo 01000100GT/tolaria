@@ -9,7 +9,11 @@ async function editorWith(content: string) {
   disposals.push(result.dispose)
   return result.editor
 }
-afterEach(() => { for (const dispose of disposals.splice(0)) dispose() })
+afterEach(async () => {
+  for (const dispose of disposals.splice(0)) dispose()
+  // TenTap's 10ms trailing bridge notification must settle before jsdom closes.
+  await new Promise(resolve => setTimeout(resolve, 25))
+})
 const options = { caseSensitive: false, regex: false }
 
 describe('inline rich editor find', () => {

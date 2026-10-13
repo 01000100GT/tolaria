@@ -4,6 +4,7 @@ import type { VaultSyncState } from './git/useMobileVaults'
 export const MobileVaultControlsContext = createContext<{
   rootUri?: string
   git: boolean
+  linked?: boolean
   busy: boolean
   status: VaultSyncState
   open: () => Promise<void>

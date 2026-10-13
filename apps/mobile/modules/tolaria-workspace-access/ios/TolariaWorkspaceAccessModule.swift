@@ -83,6 +83,14 @@ public class TolariaWorkspaceAccessModule: Module {
       return try self.restoreWorkspace()
     }
 
+    Function("isWorkspaceLinked") { (uri: String) throws -> Bool in
+      return try LinkedWorkspaceStore().session(uri).isLinked
+    }
+
+    AsyncFunction("syncLinkedWorkspace") { (uri: String) throws -> [String: Bool] in
+      return try LinkedWorkspaceStore().sync(uri)
+    }
+
     #if DEBUG || TOLARIA_QA
     Constant("nativeStorageQAEnabled") { true }
 
@@ -125,7 +133,7 @@ public class TolariaWorkspaceAccessModule: Module {
       .appendingPathComponent("local-" + UUID().uuidString.lowercased(), isDirectory: true)
     try FileManager.default.createDirectory(at: managed.deletingLastPathComponent(), withIntermediateDirectories: true)
     try managedWorkspaceText(managed.absoluteString).recover()
-    let indexJson = try importManagedWorkspace(from: source, to: managed)
+    let indexJson = try LinkedWorkspaceStore().connect(source: source, cache: managed)
     return ["indexJson": indexJson, "label": label, "uri": managed.absoluteString]
   }
 

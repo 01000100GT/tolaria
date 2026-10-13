@@ -2,6 +2,8 @@ import type { WorkspaceFileIndex } from './fileSystemWorkspaceRepository'
 import type { WorkspaceTextChange } from './workspaceTextBatch'
 
 export type NativeWorkspaceAccessModule = {
+  isWorkspaceLinked?: (root: string) => boolean
+  syncLinkedWorkspace?: (root: string) => Promise<{ linked: boolean; changed: boolean; conflict: boolean }>
   gitEntryInfo?: (uri: string) => {
     exists: boolean; isDirectory?: boolean; size?: number; modificationTime?: number; creationTime?: number
   }

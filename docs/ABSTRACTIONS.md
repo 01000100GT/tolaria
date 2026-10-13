@@ -145,6 +145,15 @@ indexes and cached raw note content. Old standalone binaries fail closed rather
 than silently falling back to a non-atomic writer. Expo Go/Android do not yet
 provide this native guarantee. See ADR 0203.
 
+`LinkedWorkspaceSession` coordinates a bookmarked iOS folder and an app-owned
+working copy. `LinkedWorkspacePlan` performs three-way content comparison;
+`LinkedWorkspaceTree` applies checked file/directory changes without following
+symlinks or touching Git internals. `LinkedWorkspaceStore` keeps bookmarks and
+baselines outside vault content using stable container-relative identities.
+`linkedWorkspace.ts` joins the existing save queue; `useLinkedFolderSync` reuses
+the idle scheduler for foreground write-back, refresh and explicit retries.
+The status reports provider persistence, not cross-device delivery (ADR 0217).
+
 Asynchronous repository note reads join the existing per-root operation queue
 before calling synchronous native recovery. Opening a note therefore waits for
 that vault's active save/Git work without entering a blocking native lock from

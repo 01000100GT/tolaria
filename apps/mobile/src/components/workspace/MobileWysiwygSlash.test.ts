@@ -10,7 +10,11 @@ async function editorWith(content: string) {
   disposals.push(dispose)
   return editor
 }
-afterEach(() => { for (const dispose of disposals.splice(0)) dispose() })
+afterEach(async () => {
+  for (const dispose of disposals.splice(0)) dispose()
+  // TenTap's 10ms trailing bridge notification must settle before jsdom closes.
+  await new Promise(resolve => setTimeout(resolve, 25))
+})
 
 describe('native rich editor slash commands', () => {
   it.each(mobileSlashCommands)('executes $action with the production editor schema', async ({ action }) => {

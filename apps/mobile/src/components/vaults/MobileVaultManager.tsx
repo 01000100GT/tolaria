@@ -15,6 +15,7 @@ import { MobileGitHubAccount } from './MobileGitHubAccount'
 import { MobileGitControls } from './MobileGitControls'
 import { createVaultManagerStyles } from './vaultManagerStyles'
 import { MobileSavedVaults } from './MobileSavedVaults'
+import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
@@ -32,9 +33,13 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <VaultOperationStatus manager={manager} />
           <MobileGitControls manager={manager} />
+          {manager.linked && <View style={styles.section}>
+            <Text style={styles.detail}>{mobileText('mobile.vaults.folderLinked')}</Text>
+            <MobileButton disabled={manager.busy} label={mobileText('status.sync.now')} onPress={() => { void manager.sync() }} testID="linked-folder-sync" />
+          </View>}
           <View style={styles.section}>
             <MobileButton disabled={manager.busy} label={mobileText('status.vault.openLocal')} icon={<FolderOpen size={16} color={mobileColors.text} />} onPress={() => { void manager.openFolder() }} />
-            <Text style={styles.detail}>{mobileText('mobile.vaults.localCopy')}</Text>
+            <Text style={styles.detail}>{mobileText(optionalNativeWorkspaceAccessModule()?.syncLinkedWorkspace ? 'mobile.vaults.folderOpenHint' : 'mobile.vaults.localCopy')}</Text>
           </View>
           <MobileSavedVaults manager={manager} />
           <MobileGitHubAccount account={manager.account} disabled={manager.busy} clone={manager.clone} />
@@ -66,7 +71,7 @@ function VaultOperationStatus({ manager }: { manager: VaultManager }) {
     {manager.busy && <View style={styles.progress}><ActivityIndicator color={mobileColors.primary} /><Text style={styles.detail}>{progressLabel(manager.phase)}</Text></View>}
     {manager.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(manager.error)}</Text>}
     {manager.catalog.error && <Text style={styles.error}>{mobileText('mobile.vaults.catalogFailed')}</Text>}
-    {manager.status === 'diverged' && <Text style={styles.error}>{mobileText('mobile.vaults.diverged')}</Text>}
+    {manager.status === 'diverged' && manager.active.git && <Text style={styles.error}>{mobileText('mobile.vaults.diverged')}</Text>}
     {manager.status === 'saveFailed' && <MobileButton disabled={manager.busy} label={mobileText('pulse.retry')} onPress={() => { void manager.sync() }} testID="vault-manager-retry" />}
   </View>
 }

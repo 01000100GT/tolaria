@@ -12,15 +12,22 @@ export function useVaultSyncPresentation(sync: MobileSyncStatus) {
   const display = useContext(MobileVaultDisplayContext)
   if (!controls || display?.source !== 'native') return null
   const git = controls.git && display.rootUri === controls.rootUri
-  const state = vaultSyncStatus(git, controls.status, sync)
+  const linked = Boolean(controls.linked && display.rootUri === controls.rootUri)
+  const syncable = git || linked
+  const state = vaultSyncStatus(git, controls.status, sync, linked)
   const label = controls.busy ? mobileText('status.sync.syncing') : state.label
   const color = statusColor(state.status, colors)
-  return { label, color, retry: state.retry, open: controls.open, sync: git || state.retry ? controls.sync : undefined, busy: controls.busy }
+  return { label, color, retry: state.retry, canCommit: git, open: controls.open, sync: syncControl(syncable, state.retry, controls.sync), busy: controls.busy }
 }
 
-export function vaultSyncStatus(git: boolean, current: VaultSyncState, sync: MobileSyncStatus) {
+function syncControl(syncable: boolean, retry: boolean, sync: () => Promise<void>) {
+  return syncable || retry ? sync : undefined
+}
+
+export function vaultSyncStatus(git: boolean, current: VaultSyncState, sync: MobileSyncStatus, linked = false) {
   const status = sync.kind === 'writeFailed' ? 'saveFailed' : current
-  return { status, label: statusLabel(git, status), retry: status === 'saveFailed' }
+  const label = linked && status === 'synced' ? mobileText('mobile.vaults.folderSaved') : statusLabel(git || linked, status)
+  return { status, label, retry: status === 'saveFailed' }
 }
 
 function statusColor(status: VaultSyncState, mobileColors: MobileColors) {

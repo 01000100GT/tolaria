@@ -62,7 +62,7 @@ function GitActions({ vault, compact }: { vault: ReturnType<typeof useVaultSyncP
   if (compact) return <MobileButton label="" density="status" variant="ghost" accessibilityLabel={mobileText(vault.retry ? 'pulse.retry' : 'status.sync.now')} disabled={vault.busy} onPress={() => { void sync() }} testID="vault-sync-retry" icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} />
   return <>
     <MobileButton density="status" disabled={vault.busy} icon={<ArrowClockwise color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText(vault.retry ? 'pulse.retry' : 'status.sync.now')} onPress={() => { void sync() }} testID="vault-sync-retry" variant="ghost" />
-    <MobileButton density="status" disabled={vault.busy} icon={<GitCommit color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('status.commit.label')} onPress={() => { void vault.open() }} testID="vault-commit-open" variant="ghost" />
+    {vault.canCommit && <MobileButton density="status" disabled={vault.busy} icon={<GitCommit color={mobileColors.textMuted} size={desktopStatusBarParity.iconSize} />} label={mobileText('status.commit.label')} onPress={() => { void vault.open() }} testID="vault-commit-open" variant="ghost" />}
   </>
 }
 

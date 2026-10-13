@@ -2,6 +2,7 @@ export type MobileAnalyticsEvent =
   | { name: 'mobile_note_swipe_used'; action: 'favorite' | 'archive' | 'delete' }
   | { name: 'mobile_setting_changed'; setting: 'theme' | 'uiScale' | 'autoGit' }
   | { name: 'mobile_git_operation_requested'; operation: 'commit' | 'sync' | 'autoSync' }
+  | { name: 'mobile_folder_sync_requested'; operation: 'sync' }
   | { name: 'mobile_editor_tool_opened'; tool: 'find' | 'replace' | 'slash' }
   | { name: 'mobile_vault_catalog_used'; action: 'add' | 'switch' | 'forget'; kind: 'local' | 'git' }
 

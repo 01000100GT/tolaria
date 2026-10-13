@@ -16,6 +16,7 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
   const controls = {
     rootUri: active.selection?.vaultRootUri,
     git: Boolean(active.git),
+    linked: manager.linked,
     busy: manager.busy,
     status: manager.status,
     open,

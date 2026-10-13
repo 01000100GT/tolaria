@@ -1,4 +1,9 @@
 {
+  "mobile.vaults.folderSaved": "Zachavana ŭ papku",
+  "mobile.vaults.folderLinked": "Zviazanaja tečka. Zmieny aŭtamatyčna zachoŭvajucca, pakuĺ Tolaria aktyŭnaja. iCloud abo vaš pastaŭščyk fajlaŭ ažycciaŭliaje sinchranizacyju pamiž pryładami.",
+  "mobile.vaults.folderOpenHint": "Zviazać papku z «Fajłaŭ», uklučajučy iCloud Drive. Isnujučyja impartavanyja kopii zastajucca lakaĺnymi; znoŭ vybierycie ich zychodnuju papku, kab zviazać jaje.",
+  "mobile.vaults.folderUnavailable": "Zviazany katałoh niedastupny. Vašy zmieny zachavany na hetaj pryładzie. Adnavicie dostup u prahramie «Fajły», a zatym paŭtarycie sprobu sinchranizacyi.",
+  "mobile.vaults.folderConflict": "Adzin i toj ža fajł byŭ zmienieny tut i ŭ zviazanym katałohu. Ni adna z viersij nie była pierapisana. Uzhadnicie viersii, pierš čym paŭtaryć sprobu sinchranizacyi.",
   "command.noMatches": "Niama adpaviednych kamand",
   "command.palettePlaceholder": "Uviadzicie kamandu...",
   "command.footerNavigate": "↑↓ navihacyja",
