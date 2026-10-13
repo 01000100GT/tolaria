@@ -1,6 +1,7 @@
 import './gitRuntime'
 import git, { type FsClient } from 'isomorphic-git'
 import { checkoutGitFastForward, recoverGitCheckout } from './gitCheckoutRecovery'
+import { mergeGitHeads } from './gitMerge'
 
 export type GitAuthor = { name: string; email: string }
 export type GitRelationship = 'equal' | 'ahead' | 'behind' | 'diverged'
@@ -13,7 +14,7 @@ export function createGitVault(options: GitVaultContext) {
   return {
     checkpoint: (author: GitAuthor, message?: string) => checkpoint(context, author, message),
     requireClean: () => requireClean(context),
-    integrate: (remoteOid: string) => integrate(context, remoteOid),
+    integrate: (remoteOid: string, author?: GitAuthor) => integrate(context, remoteOid, author),
     relationship: (remoteOid: string) => relationship(context, remoteOid),
     recover: () => recoverGitCheckout(context),
   }
@@ -55,13 +56,26 @@ async function relationship(context: GitVaultContext, remoteOid: string): Promis
   return 'diverged'
 }
 
-async function integrate(context: GitVaultContext, remoteOid: string) {
+async function integrate(context: GitVaultContext, remoteOid: string, author?: GitAuthor) {
   await recoverGitCheckout(context)
   if ((await changes(context)).length) throw new Error('dirtyWorkingCopy')
   const state = await relationship(context, remoteOid)
+  if (state === 'diverged') return integrateDivergence(context, remoteOid, author)
   if (state !== 'behind') return state
+  await advanceHead(context, remoteOid)
+  return 'updated' as const
+}
+
+async function integrateDivergence(context: GitVaultContext, remoteOid: string, author?: GitAuthor) {
+  if (!author) return 'diverged' as const
+  const target = await mergeGitHeads(context, remoteOid, author)
+  if (!target) return 'diverged' as const
+  await advanceHead(context, target)
+  return 'merged' as const
+}
+
+async function advanceHead(context: GitVaultContext, target: string) {
   const branch = await git.currentBranch(context)
   if (!branch) throw new Error('detachedHead')
-  await checkoutGitFastForward(context, branch, remoteOid)
-  return 'updated' as const
+  await checkoutGitFastForward(context, branch, target)
 }

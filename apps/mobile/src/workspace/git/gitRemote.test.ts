@@ -67,3 +67,59 @@ it('keeps a rejected push as a recoverable local commit and retries without dupl
   expect(await readFile(join(second.dir, 'note.md'), 'utf8')).toBe('# Offline-safe\n')
   expect(await git.log(first)).toHaveLength(2)
 })
+
+it('merges independent edits, preserves both parents, and publishes the combined history', async () => {
+  const { first, second, remote } = await fixture()
+  await writeFile(join(first.dir, 'desktop.md'), '# Desktop\n')
+  await writeFile(join(second.dir, 'tablet.md'), '# Tablet\n')
+  await syncGitVault(first, author)
+  const remoteParent = await git.resolveRef({ ...first, ref: 'HEAD' })
+  const localParent = (await createGitVault(second).checkpoint(author)).oid
+  expect(await syncGitVault(second, author)).toMatchObject({ kind: 'synced', workspaceChanged: true })
+  const oid = await git.resolveRef({ ...second, ref: 'HEAD' })
+  expect((await git.readCommit({ ...second, oid })).commit.parent).toEqual([localParent, remoteParent])
+  expect(execFileSync('git', ['--git-dir', remote, 'rev-parse', 'main'], gitProcessOptions).toString().trim()).toBe(oid)
+  expect(await readFile(join(second.dir, 'desktop.md'), 'utf8')).toBe('# Desktop\n')
+  expect(await readFile(join(second.dir, 'tablet.md'), 'utf8')).toBe('# Tablet\n')
+  expect(await syncGitVault(second, author)).toMatchObject({ kind: 'synced', workspaceChanged: false })
+  expect(await git.resolveRef({ ...second, ref: 'HEAD' })).toBe(oid)
+})
+
+it('fetches and merges again if the remote advances immediately before push', async () => {
+  const { first, second } = await fixture()
+  await writeFile(join(first.dir, 'desktop.md'), '# Desktop\n')
+  await writeFile(join(second.dir, 'tablet.md'), '# Tablet\n')
+  let advanced = false
+  const http = { request: async (request: Parameters<typeof first.http.request>[0]) => {
+    if (!advanced && request.url.includes('git-receive-pack')) {
+      advanced = true
+      await syncGitVault(first, author)
+    }
+    return second.http.request(request)
+  } }
+  expect(await syncGitVault({ ...second, http }, author)).toMatchObject({ kind: 'synced', workspaceChanged: true })
+  expect(advanced).toBe(true)
+  await syncGitVault(first, author)
+  expect(await readFile(join(first.dir, 'tablet.md'), 'utf8')).toBe('# Tablet\n')
+  expect(await readFile(join(second.dir, 'desktop.md'), 'utf8')).toBe('# Desktop\n')
+})
+
+it('bounds retries when a remote keeps moving and retains the combined local history', async () => {
+  const { first, second } = await fixture()
+  await writeFile(join(second.dir, 'tablet.md'), '# Tablet\n')
+  let attempts = 0
+  const http = { request: async (request: Parameters<typeof first.http.request>[0]) => {
+    if (request.url.includes('info/refs?service=git-receive-pack')) {
+      attempts += 1
+      await writeFile(join(first.dir, `desktop-${attempts}.md`), '# Desktop\n')
+      await syncGitVault(first, author)
+    }
+    return second.http.request(request)
+  } }
+  await expect(syncGitVault({ ...second, http }, author)).rejects.toThrow('pushRejected')
+  expect(attempts).toBe(3)
+  expect(await readFile(join(second.dir, 'tablet.md'), 'utf8')).toBe('# Tablet\n')
+  expect(await syncGitVault(second, author)).toMatchObject({ kind: 'synced' })
+  await syncGitVault(first, author)
+  expect(await readFile(join(first.dir, 'tablet.md'), 'utf8')).toBe('# Tablet\n')
+})

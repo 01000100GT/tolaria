@@ -38,19 +38,43 @@ async function syncUnlocked(options: GitRemoteOptions, author: GitAuthor) {
   const vault = createGitVault(context)
   emitPhase(options, 'checkpoint')
   const checkpoint = options.checkpoint === false ? await vault.requireClean() : await vault.checkpoint(author)
-  emitPhase(options, 'fetch')
   const connection = transport({ ...options, cache: context.cache }, url)
-  await git.fetch({ ...connection, url, ref, singleBranch: true, tags: false })
-  const remoteOid = await git.resolveRef({ ...context, ref: `refs/remotes/origin/${ref}` })
-  emitPhase(options, 'checkout')
-  const integrated = await vault.integrate(remoteOid)
-  if (integrated === 'diverged') return { kind: 'diverged' as const, changedFiles: checkpoint.changedFiles, workspaceChanged: false }
-  if (integrated === 'ahead') {
-    emitPhase(options, 'push')
-    const pushed = await git.push({ ...connection, url, ref, force: false })
-    if (!pushed.ok) throw new Error('pushRejected')
+  const result = await syncHeads(options, { ...connection, url, ref }, author)
+  return { ...result, changedFiles: checkpoint.changedFiles }
+}
+
+type GitConnection = ReturnType<typeof transport> & { url: string; ref: string }
+
+async function syncHeads(options: GitRemoteOptions, connection: GitConnection, author: GitAuthor) {
+  let workspaceChanged = false
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const integrated = await fetchAndIntegrate(options, connection, author)
+    workspaceChanged ||= ['updated', 'merged'].includes(integrated)
+    if (integrated === 'diverged') return { kind: 'diverged' as const, workspaceChanged }
+    const needsPush = ['ahead', 'merged'].includes(integrated)
+    if (!needsPush || await pushCurrentHead(options, connection)) {
+      return { kind: 'synced' as const, workspaceChanged }
+    }
   }
-  return { kind: 'synced' as const, changedFiles: checkpoint.changedFiles, workspaceChanged: integrated === 'updated' }
+  throw new Error('pushRejected')
+}
+
+async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConnection, author: GitAuthor) {
+  emitPhase(options, 'fetch')
+  await git.fetch({ ...connection, singleBranch: true, tags: false })
+  const remoteOid = await git.resolveRef({ ...connection, ref: `refs/remotes/origin/${connection.ref}` })
+  emitPhase(options, 'checkout')
+  return createGitVault(connection).integrate(remoteOid, author)
+}
+
+async function pushCurrentHead(options: GitRemoteOptions, connection: GitConnection) {
+  emitPhase(options, 'push')
+  try {
+    return (await git.push({ ...connection, force: false })).ok
+  } catch (error) {
+    if (error instanceof git.Errors.PushRejectedError && error.data.reason === 'not-fast-forward') return false
+    throw error
+  }
 }
 
 function emitPhase(options: GitRemoteOptions, phase: GitSyncPhase) {

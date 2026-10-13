@@ -31,8 +31,11 @@ only action and kind, never vault names, paths, URLs, or content. See ADR 0216.
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
 authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
 checkpoints and commit-graph classification. `gitRemote.ts` performs serialized
-clone and manual sync; it stops on divergent history without changing either
-branch. `workspaceOperationQueue.ts` is the shared working-copy mutation boundary.
+clone and sync. `gitMerge.ts` builds conflict-free merge objects without changing
+HEAD or the working tree, rejects lossy binary/text conversion, and publishes
+through the existing checkout journal. Genuine conflicts preserve both histories;
+push races receive at most three fetch/integrate/push attempts (ADR 0218).
+`workspaceOperationQueue.ts` is the shared working-copy mutation boundary.
 `expoGitFileSystem.ts` maps virtual `/vault` paths to one app-owned file URI, with
 explicit path containment and unsupported symlink errors. `githubAuth.ts` uses
 device authorization and checks the resulting account identity; no client secret
