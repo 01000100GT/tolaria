@@ -3,6 +3,21 @@ import XCTest
 @testable import TolariaWorkspaceFiles
 
 final class LinkedWorkspaceSafetyTests: XCTestCase {
+  func testCloudPlaceholderDoesNotDeleteCachedNoteOrAdvanceBaseline() throws {
+    try withDisposableWorkspace { root in
+      let fixture = try LinkedWorkspaceFixture(root: root)
+      try fixture.write("note.md", "original", in: fixture.source)
+      let session = LinkedWorkspaceSession(cache: fixture.cache, stateFile: fixture.state)
+      try session.connect(source: fixture.source)
+      let baseline = try Data(contentsOf: fixture.state)
+      try FileManager.default.moveItem(at: fixture.source.appendingPathComponent("note.md"), to: fixture.source.appendingPathComponent(".note.md.icloud"))
+      XCTAssertThrowsError(try session.sync())
+      XCTAssertEqual(try fixture.read("note.md", in: fixture.cache), "original")
+      XCTAssertEqual(try Data(contentsOf: fixture.state), baseline)
+      XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.cache.appendingPathComponent(".note.md.icloud").path))
+    }
+  }
+
   func testConflictRequestsEditorRefreshWithoutOverwritingEitherSide() throws {
     try withDisposableWorkspace { root in
       let fixture = try LinkedWorkspaceFixture(root: root)

@@ -6,6 +6,7 @@ struct LinkedWorkspaceTree {
 
   func snapshot() throws -> [String: String] {
     try requireWorkspaceMutationRoot(root)
+    _ = try downloadedWorkspaceItemValues(root)
     var failure: Error?
     let keys: [URLResourceKey] = [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
     guard let entries = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys, errorHandler: { _, error in
@@ -30,9 +31,7 @@ struct LinkedWorkspaceTree {
 
   func fingerprint(_ path: String) throws -> String? {
     let file = try workspaceFileURL(root: root, path: path)
-    let values: URLResourceValues
-    do { values = try file.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]) }
-    catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError { return nil }
+    guard let values = try downloadedWorkspaceItemValues(file) else { return nil }
     guard values.isSymbolicLink != true else { throw WorkspaceFileError.symbolicLink }
     if values.isDirectory == true { return "directory" }
     guard values.isRegularFile == true else { throw WorkspaceFileError.invalidPath }
@@ -78,4 +77,25 @@ private func needsRemoval(_ previous: String?, _ desired: String?) -> Bool {
 
 private func linkedWorkspaceDigest(_ data: Data) -> String {
   SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+}
+
+private func downloadedWorkspaceItemValues(_ file: URL) throws -> URLResourceValues? {
+  // An evicted iCloud file must never look like a user deletion in the merge.
+  if file.lastPathComponent.hasPrefix("."), file.pathExtension == "icloud" {
+    throw WorkspaceFileError.coordinationFailed
+  }
+  guard let values = try workspaceItemValues(file) else { return nil }
+  if values.ubiquitousItemDownloadingStatus == .notDownloaded {
+    try FileManager.default.startDownloadingUbiquitousItem(at: file)
+    throw WorkspaceFileError.coordinationFailed
+  }
+  return values
+}
+
+private func workspaceItemValues(_ file: URL) throws -> URLResourceValues? {
+  do {
+    return try file.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey])
+  } catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError {
+    return nil
+  }
 }
