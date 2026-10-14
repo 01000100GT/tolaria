@@ -6,7 +6,7 @@ import "./Editor.css";
 import type { VaultEntry } from "../types";
 
 function readEditorStylesheet(): string {
-	return readFileSync(`${process.cwd()}/src/components/Editor.css`, "utf8")
+	return readFileSync("src/components/Editor.css", "utf8")
 		.replaceAll('"', "'")
 		.replace(/\s+/g, " ")
 		.replace(/\(\s+/g, "(")
