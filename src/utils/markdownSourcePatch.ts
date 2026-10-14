@@ -40,9 +40,11 @@ function alignmentEdits(
 		return markdownTextEdits(source, rendered);
 	let offset = 0;
 	const edits: MarkdownTextEdit[] = [];
-	for (let index = 0; index < sourceLines.length; index++) {
-		const line = sourceLines[index];
-		for (const edit of lineAlignmentEdits(line, renderedLines[index])) {
+	for (const [index, line] of sourceLines.entries()) {
+		for (const edit of lineAlignmentEdits(
+			line,
+			renderedLines.at(index) ?? "",
+		)) {
 			edits.push({ ...edit, from: edit.from + offset, to: edit.to + offset });
 		}
 		offset += line.length;
@@ -72,6 +74,13 @@ function lineAlignmentEdits(
 	return edits;
 }
 
+function spanStartsBefore(
+	span: SourceSpan | undefined,
+	position: TextOffset,
+): boolean {
+	return span !== undefined && span.sourceFrom < position;
+}
+
 function tokenContainsSpan(
 	span: SourceSpan | undefined,
 	end: TextOffset,
@@ -91,14 +100,16 @@ function protectSourceTokenSpans(
 	)) {
 		const from = match.index;
 		const to = from + match[0].length;
-		while (index < spans.length && spans[index].sourceFrom < from)
-			result.push(spans[index++]);
-		const first = spans[index];
+		while (spanStartsBefore(spans.at(index), from)) {
+			result.push(...spans.slice(index, index + 1));
+			index++;
+		}
+		const first = spans.at(index);
 		if (!tokenContainsSpan(first, to)) continue;
 		const offset = first.renderedFrom - first.sourceFrom;
 		let last = first;
-		while (tokenContainsSpan(spans[index], to)) {
-			last = spans[index++];
+		while (tokenContainsSpan(spans.at(index), to)) {
+			last = spans.at(index++) ?? first;
 		}
 		result.push({
 			sourceFrom: from,

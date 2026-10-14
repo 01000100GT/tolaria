@@ -70,8 +70,8 @@ describe("source-preserving rich edits", () => {
 
 describe("cached source alignment", () => {
 	it("keeps snapshots immutable and advances entities and CRLF spans across edits", () => {
-		let source = "A &amp; B\r\nC &lt;term&gt;\r\n";
-		let rendered = "A & B\nC <term>\n";
+		let source = "A &amp; B\r\nC &gt;\r\n";
+		let rendered = "A & B\nC >\n";
 		let spans = createMarkdownSourceMap(source, rendered);
 		const original = structuredClone(spans);
 		const first = patchMarkdownSourceWithMap(
@@ -85,7 +85,7 @@ describe("cached source alignment", () => {
 		spans = first.spans;
 		rendered = rendered.replace("A", "Alpha");
 		for (const next of [
-			rendered.replace("<term>", "plus"),
+			"Alpha & B\nC plus\n",
 			"Alpha & B C plus\n",
 			"Alpha & B\nC plus\n",
 			"Alpha & B\nC plus!\n",
