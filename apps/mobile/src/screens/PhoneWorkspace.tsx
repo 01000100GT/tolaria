@@ -168,7 +168,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
   })
   useMobileEditorOverlayFocus(phoneState !== 'editor' || Boolean(controller.openAction) || commandPalette.visible, editorCommandRegistry.commands)
   useMobileWorkspaceKeyboardShortcuts({
-    nativeNoteNavigationEnabled: phoneState === 'list',
+    nativeNoteNavigationEnabled: phoneState === 'list' && !commandPalette.visible && !controller.openAction,
     onCreateNote: controller.onOpenCreateNote,
     onOpenFindInNote: controller.onOpenFindInNote,
     onOpenCommandPalette: commandPalette.open,

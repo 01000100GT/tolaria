@@ -1,7 +1,7 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   Pressable,
   ScrollView,
@@ -23,6 +23,7 @@ import {
   type MobileCommandPaletteCommand,
 } from '../../workspace/mobileCommandPalette'
 import { mobileCommandPaletteLayoutContract } from './MobileCommandPaletteLayout'
+import { optionalNativeMobileKeyCommandsModule } from '../../native/mobileNativeKeyCommands'
 
 type MobileCommandPaletteProps = {
   commands: MobileCommandPaletteCommand[]
@@ -46,16 +47,21 @@ export function MobileCommandPalette({ commands, onClose }: MobileCommandPalette
     setSelectedIndex(0)
     setQuery(nextQuery)
   }
-  const handleKeyPress = (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-    if (event.nativeEvent.key === 'ArrowDown') {
+  const handleKey = (key: string) => {
+    if (key === 'ArrowDown') {
       setSelectedIndex((index) => Math.min(index + 1, Math.max(results.flatList.length - 1, 0)))
-    } else if (event.nativeEvent.key === 'ArrowUp') {
+    } else if (key === 'ArrowUp') {
       setSelectedIndex((index) => Math.max(index - 1, 0))
-    } else if (event.nativeEvent.key === 'Enter') {
+    } else if (key === 'Enter') {
       selectActiveCommand()
-    } else if (event.nativeEvent.key === 'Escape') {
+    } else if (key === 'Escape') {
       onClose()
     }
+  }
+  useNativePaletteKeys(handleKey)
+  const handleKeyPress = (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    // Native arrows/Escape arrive through UIKeyCommand; Return uses onSubmitEditing.
+    if (!optionalNativeMobileKeyCommandsModule()) handleKey(event.nativeEvent.key)
   }
 
   return (
@@ -94,6 +100,23 @@ export function MobileCommandPalette({ commands, onClose }: MobileCommandPalette
       </View>
     </MobileKeyboardAvoidingView>
   )
+}
+
+function useNativePaletteKeys(onKey: (key: string) => void) {
+  const current = useRef(onKey)
+  useLayoutEffect(() => { current.current = onKey }, [onKey])
+  useEffect(() => {
+    const module = optionalNativeMobileKeyCommandsModule()
+    if (!module) return
+    const subscription = module.addListener('onShortcut', (event) => {
+      if (!event.metaKey && !event.ctrlKey && !event.altKey) current.current(event.key)
+    })
+    module.setCommandPaletteOpen?.(true)
+    return () => {
+      module.setCommandPaletteOpen?.(false)
+      subscription.remove()
+    }
+  }, [])
 }
 
 function CommandResults({

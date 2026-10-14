@@ -1,14 +1,8 @@
+import type { MobileWorkspaceKeyboardAction } from '../workspace/mobileWorkspaceKeyboardShortcuts'
+
 type KeyboardShortcutProofLogText = string
 type KeyboardShortcutProofLine = string
 type KeyboardShortcutEventSource = 'dom' | 'native'
-type MobileWorkspaceKeyboardAction =
-  | 'commandPalette'
-  | 'createNote'
-  | 'findInNote'
-  | 'nextNote'
-  | 'previousNote'
-  | 'search'
-  | 'toggleRawEditor'
 
 export type NativeMobileKeyboardShortcutBridgeProof = {
   kind: 'bridge'
@@ -111,25 +105,22 @@ function parsedProof(value: unknown): NativeMobileKeyboardShortcutProof | null {
     }
   }
 
-  if (
-    candidate.kind === 'action'
-    && isMobileWorkspaceKeyboardAction(candidate.action)
-    && (typeof candidate.code === 'string' || candidate.code === null)
-    && typeof candidate.key === 'string'
-    && typeof candidate.metaKey === 'boolean'
-    && (candidate.source === 'dom' || candidate.source === 'native')
-  ) {
-    return {
-      action: candidate.action,
-      code: candidate.code,
-      kind: 'action',
-      key: candidate.key,
-      metaKey: candidate.metaKey,
-      source: candidate.source,
-    }
-  }
+  return candidate.kind === 'action' ? parsedActionProof(candidate) : null
+}
 
-  return null
+function parsedActionProof(candidate: Record<string, unknown>): NativeMobileKeyboardShortcutActionProof | null {
+  if (!isMobileWorkspaceKeyboardAction(candidate.action) || typeof candidate.key !== 'string') return null
+  if (typeof candidate.code !== 'string' && candidate.code !== null) return null
+  if (typeof candidate.metaKey !== 'boolean') return null
+  if (candidate.source !== 'dom' && candidate.source !== 'native') return null
+  return {
+    action: candidate.action,
+    code: candidate.code,
+    kind: 'action',
+    key: candidate.key,
+    metaKey: candidate.metaKey,
+    source: candidate.source,
+  }
 }
 
 function latestBridgeProof(proofs: NativeMobileKeyboardShortcutProof[]) {
@@ -154,14 +145,13 @@ function hasNativeSearchAction(actions: NativeMobileKeyboardShortcutActionProof[
 }
 
 function isMobileWorkspaceKeyboardAction(value: unknown): value is MobileWorkspaceKeyboardAction {
-  return value === 'commandPalette'
-    || value === 'createNote'
-    || value === 'findInNote'
-    || value === 'nextNote'
-    || value === 'previousNote'
-    || value === 'search'
-    || value === 'toggleRawEditor'
+  return typeof value === 'string' && keyboardActions.has(value)
 }
+
+const keyboardActions = new Set<string>([
+  'commandPalette', 'createNote', 'findInNote', 'nextNote', 'previousNote', 'search',
+  'toggleRawEditor', 'toggleProperties', 'viewAll', 'viewEditorList', 'viewEditorOnly',
+])
 
 function proofFailure(
   passed: boolean,

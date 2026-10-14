@@ -21,6 +21,16 @@ describe('mobile workspace keyboard shortcuts', () => {
     expect(shortcut('f')).toBe('findInNote')
   })
 
+  it('uses the desktop pane shortcuts on hardware keyboards', () => {
+    expect(shortcut('1')).toBe('viewEditorOnly')
+    expect(shortcut('2')).toBe('viewEditorList')
+    expect(shortcut('3')).toBe('viewAll')
+    expect(shortcut('I', { shiftKey: true })).toBe('toggleProperties')
+    expect(shortcut('Unidentified', { code: 'Digit1' })).toBe('viewEditorOnly')
+    expect(shortcut('i')).toBeNull()
+    expect(shortcut('1', { altKey: true })).toBeNull()
+  })
+
   it('toggles the raw editor from the desktop raw-editor shortcut', () => {
     expect(shortcut('\\')).toBe('toggleRawEditor')
     expect(shortcut('Backslash')).toBe('toggleRawEditor')

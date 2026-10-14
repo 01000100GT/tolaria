@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useLayoutEffect, useRef } from 'react'
 import { WorkspaceSyncEditorsContext } from './workspaceSyncEditors'
 import {
   optionalNativeMobileKeyCommandsModule,
@@ -16,6 +16,10 @@ type KeyboardShortcutHandlers = {
   onSelectPreviousNote?: () => void
   onShortcutAction?: (action: MobileWorkspaceKeyboardAction, event: MobileKeyboardShortcutEvent) => void
   onToggleRawEditor?: () => void
+  onToggleProperties?: () => void
+  onViewAll?: () => void
+  onViewEditorList?: () => void
+  onViewEditorOnly?: () => void
 }
 export type MobileWorkspaceKeyboardAction =
   | 'commandPalette'
@@ -25,6 +29,10 @@ export type MobileWorkspaceKeyboardAction =
   | 'previousNote'
   | 'search'
   | 'toggleRawEditor'
+  | 'toggleProperties'
+  | 'viewAll'
+  | 'viewEditorList'
+  | 'viewEditorOnly'
 
 type KeyboardDocument = {
   addEventListener: (type: 'keydown', listener: (event: KeyboardEvent) => void, options?: KeyboardListenerOptions) => void
@@ -43,51 +51,39 @@ type MobileKeyboardShortcutEvent =
     source?: 'native'
   }
 
-export function useMobileWorkspaceKeyboardShortcuts({
-  nativeNoteNavigationEnabled = true,
-  onCreateNote,
-  onOpenFindInNote,
-  onOpenCommandPalette,
-  onOpenSearch,
-  onSelectNextNote,
-  onSelectPreviousNote,
-  onShortcutAction,
-  onToggleRawEditor,
-}: KeyboardShortcutHandlers) {
+export function useMobileWorkspaceKeyboardShortcuts(options: KeyboardShortcutHandlers) {
   const syncEditors = useContext(WorkspaceSyncEditorsContext)
-  useEffect(() => {
-    const handlers = {
-      commandPalette: onOpenCommandPalette,
-      createNote: onCreateNote,
-      findInNote: onOpenFindInNote,
-      nextNote: onSelectNextNote,
-      previousNote: onSelectPreviousNote,
-      search: onOpenSearch,
-      toggleRawEditor: onToggleRawEditor,
-    }
-    const handleKeyDown = (event: MobileKeyboardShortcutEvent) => {
-      if (syncEditors?.isBlocked()) return
-      const action = mobileWorkspaceKeyboardAction(event)
-      if (!action) return
-      if (!shouldHandleMobileWorkspaceKeyboardAction(action, event, { nativeNoteNavigationEnabled })) return
+  const current = useRef(options)
+  useLayoutEffect(() => { current.current = options }, [options])
+  useEffect(() => installMobileWorkspaceKeyboardShortcuts((event) => {
+    if (syncEditors?.isBlocked()) return
+    dispatchWorkspaceShortcut(event, current.current)
+  }), [syncEditors])
+}
 
-      event.preventDefault?.()
-      onShortcutAction?.(action, event)
-      handlers[action]?.()
-    }
+function dispatchWorkspaceShortcut(event: MobileKeyboardShortcutEvent, options: KeyboardShortcutHandlers) {
+  const action = mobileWorkspaceKeyboardAction(event)
+  if (!action || !shouldHandleMobileWorkspaceKeyboardAction(action, event, options)) return
+  const handler = workspaceShortcutHandlers(options).get(action)
+  if (!handler) return
+  event.preventDefault?.()
+  options.onShortcutAction?.(action, event)
+  handler()
+}
 
-    return installMobileWorkspaceKeyboardShortcuts(handleKeyDown)
-  }, [
-    onCreateNote,
-    onOpenCommandPalette,
-    onOpenFindInNote,
-    onOpenSearch,
-    onSelectNextNote,
-    onSelectPreviousNote,
-    onShortcutAction,
-    onToggleRawEditor,
-    nativeNoteNavigationEnabled,
-    syncEditors,
+function workspaceShortcutHandlers(options: KeyboardShortcutHandlers) {
+  return new Map<MobileWorkspaceKeyboardAction, (() => void) | undefined>([
+    ['commandPalette', options.onOpenCommandPalette],
+    ['createNote', options.onCreateNote],
+    ['findInNote', options.onOpenFindInNote],
+    ['nextNote', options.onSelectNextNote],
+    ['previousNote', options.onSelectPreviousNote],
+    ['search', options.onOpenSearch],
+    ['toggleRawEditor', options.onToggleRawEditor],
+    ['toggleProperties', options.onToggleProperties],
+    ['viewAll', options.onViewAll],
+    ['viewEditorList', options.onViewEditorList],
+    ['viewEditorOnly', options.onViewEditorOnly],
   ])
 }
 
@@ -108,7 +104,7 @@ export function installMobileWorkspaceKeyboardShortcuts(
   if (nativeModule) subscriptions.push(nativeModule.addListener('onShortcut', listener))
   if (subscriptions.length === 0) return undefined
 
-  return () => subscriptions.forEach((subscription) => subscription.remove())
+  return () => { subscriptions.forEach((subscription) => { subscription.remove() }) }
 }
 
 export function keyboardTargets(host: KeyboardTargetHost): KeyboardDocument[] {
@@ -138,16 +134,23 @@ function isKeyboardTarget(target: KeyboardTargetCandidate): target is KeyboardDo
 export function mobileWorkspaceKeyboardAction(
   event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'> & Partial<Pick<KeyboardEvent, 'code'>>,
 ): MobileWorkspaceKeyboardAction | null {
-  if (event.altKey || event.shiftKey) return null
-  const key = normalizedKeyboardKey(event).replace(/^key/u, '')
-  const actions = event.metaKey || event.ctrlKey ? commandActions : navigationActions
+  if (event.altKey) return null
+  const key = normalizedKeyboardKey(event).replace(/^(key|digit)/u, '')
+  const actions = keyboardActionMap(event)
   return actions.get(key) ?? null
+}
+
+function keyboardActionMap(event: Pick<KeyboardEvent, 'ctrlKey' | 'metaKey' | 'shiftKey'>) {
+  if (event.metaKey || event.ctrlKey) return event.shiftKey ? shiftedCommandActions : commandActions
+  return event.shiftKey ? new Map<string, MobileWorkspaceKeyboardAction>() : navigationActions
 }
 
 const commandActions = new Map<string, MobileWorkspaceKeyboardAction>([
   ['k', 'commandPalette'], ['f', 'findInNote'], ['o', 'search'], ['p', 'search'],
   ['\\', 'toggleRawEditor'], ['backslash', 'toggleRawEditor'], ['n', 'createNote'],
+  ['1', 'viewEditorOnly'], ['2', 'viewEditorList'], ['3', 'viewAll'],
 ])
+const shiftedCommandActions = new Map<string, MobileWorkspaceKeyboardAction>([['i', 'toggleProperties']])
 const navigationActions = new Map<string, MobileWorkspaceKeyboardAction>([
   ['arrowdown', 'nextNote'], ['arrowup', 'previousNote'],
 ])

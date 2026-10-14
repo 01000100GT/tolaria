@@ -194,18 +194,7 @@ function TabletWorkspaceChrome(props: TabletWorkspaceChromeProps) {
   const suggestionNotes = snapshot.allNotes ?? snapshot.notes
   const openCommandPalette = useCallback(() => setCommandPaletteOpen(true), [])
   const closeCommandPalette = useCallback(() => setCommandPaletteOpen(false), [])
-  const selectNextNote = useCallback(() => selectAdjacentVisibleNote(props.notes, props.selectedNoteId, props.onSelectNote, 1), [props.notes, props.onSelectNote, props.selectedNoteId])
-  const selectPreviousNote = useCallback(() => selectAdjacentVisibleNote(props.notes, props.selectedNoteId, props.onSelectNote, -1), [props.notes, props.onSelectNote, props.selectedNoteId])
-  useMobileWorkspaceKeyboardShortcuts({
-    onCreateNote: props.onOpenCreateNote,
-    onOpenFindInNote: props.onOpenFindInNote,
-    onOpenCommandPalette: openCommandPalette,
-    onOpenSearch: props.onOpenSearch,
-    onSelectNextNote: selectNextNote,
-    onSelectPreviousNote: selectPreviousNote,
-    onShortcutAction: props.keyboardShortcutProbe ? logNativeMobileKeyboardShortcutActionProof : undefined,
-    onToggleRawEditor: editorCommandRegistry.commands.toggleRawEditor,
-  })
+  useTabletKeyboardShortcuts(props, gestures, editorCommandRegistry.commands, { open: openCommandPalette, visible: commandPaletteOpen })
   const commandPaletteCommands = useMemo(() => buildMobileCommandPaletteCommands({
     ...props,
     onOpenCommandPalette: openCommandPalette,
@@ -257,6 +246,10 @@ function TabletWorkspaceChrome(props: TabletWorkspaceChromeProps) {
         {...props}
         gestures={gestures}
         onOpenCommandPalette={openCommandPalette}
+        onSelectNote={(noteId) => {
+          editorCommandRegistry.commands.blur?.()
+          onSelectNote(noteId)
+        }}
       />
       <TabletEditorPanelHost
         {...props}
@@ -372,6 +365,31 @@ type TabletPanelGestures = ReturnType<typeof useTabletPanelGestures>
 type TabletPanelHostProps = TabletWorkspaceChromeProps & { gestures: TabletPanelGestures }
 type TabletSidebarHostProps = TabletPanelHostProps & { onOpenCommandPalette: () => void }
 type TabletPropertiesPanelHostProps = TabletPanelHostProps & { onFixInvalidFrontmatter?: () => void }
+
+function useTabletKeyboardShortcuts(
+  props: TabletWorkspaceChromeProps,
+  gestures: TabletPanelGestures,
+  editor: MobileEditorCommands,
+  palette: { open: () => void; visible: boolean },
+) {
+  const next = useCallback(() => selectAdjacentVisibleNote(props.notes, props.selectedNoteId, props.onSelectNote, 1), [props.notes, props.onSelectNote, props.selectedNoteId])
+  const previous = useCallback(() => selectAdjacentVisibleNote(props.notes, props.selectedNoteId, props.onSelectNote, -1), [props.notes, props.onSelectNote, props.selectedNoteId])
+  useMobileWorkspaceKeyboardShortcuts({
+    nativeNoteNavigationEnabled: gestures.noteListVisible && !props.openAction && !palette.visible,
+    onCreateNote: props.onOpenCreateNote,
+    onOpenFindInNote: props.onOpenFindInNote,
+    onOpenCommandPalette: palette.open,
+    onOpenSearch: props.onOpenSearch,
+    onSelectNextNote: next,
+    onSelectPreviousNote: previous,
+    onShortcutAction: props.keyboardShortcutProbe ? logNativeMobileKeyboardShortcutActionProof : undefined,
+    onToggleRawEditor: editor.toggleRawEditor,
+    onToggleProperties: gestures.toggleProperties,
+    onViewAll: gestures.showAllPanels,
+    onViewEditorList: gestures.showEditorList,
+    onViewEditorOnly: gestures.showEditorOnly,
+  })
+}
 
 function selectAdjacentVisibleNote(
   notes: MobileNote[],

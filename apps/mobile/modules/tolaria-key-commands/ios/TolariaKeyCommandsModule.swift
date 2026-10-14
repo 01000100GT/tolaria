@@ -7,14 +7,23 @@ private let mobileSearchEnvironmentName = "TOLARIA_MOBILE_SEARCH"
 
 private struct TolariaKeyCommand {
   let action: String
-  let altKey: Bool
   let code: String
-  let ctrlKey: Bool
   let input: String
   let key: String
-  let metaKey: Bool
   let modifierFlags: UIKeyModifierFlags
-  let shiftKey: Bool
+
+  var altKey: Bool { modifierFlags.contains(.alternate) }
+  var ctrlKey: Bool { modifierFlags.contains(.control) }
+  var metaKey: Bool { modifierFlags.contains(.command) }
+  var shiftKey: Bool { modifierFlags.contains(.shift) }
+
+  init(_ action: String, key: String, code: String, input: String? = nil, modifiers: UIKeyModifierFlags = .command) {
+    self.action = action
+    self.key = key
+    self.code = code
+    self.input = input ?? key
+    self.modifierFlags = modifiers
+  }
 }
 
 public struct TolariaApplicationKeyCommand {
@@ -24,94 +33,32 @@ public struct TolariaApplicationKeyCommand {
 
 public class TolariaKeyCommandsModule: Module {
   private static weak var activeModule: TolariaKeyCommandsModule?
+  public private(set) static var commandPaletteOpen = false
   private static let commands: [TolariaKeyCommand] = [
+    TolariaKeyCommand("commandPalette", key: "k", code: "KeyK"),
+    TolariaKeyCommand("findInNote", key: "f", code: "KeyF"),
+    TolariaKeyCommand("search", key: "o", code: "KeyO"),
+    TolariaKeyCommand("search", key: "p", code: "KeyP"),
+    TolariaKeyCommand("toggleRawEditor", key: "\\", code: "Backslash"),
+    TolariaKeyCommand("createNote", key: "n", code: "KeyN"),
+    TolariaKeyCommand("viewEditorOnly", key: "1", code: "Digit1"),
+    TolariaKeyCommand("viewEditorList", key: "2", code: "Digit2"),
+    TolariaKeyCommand("viewAll", key: "3", code: "Digit3"),
+    TolariaKeyCommand("toggleProperties", key: "i", code: "KeyI", modifiers: [.command, .shift]),
+    TolariaKeyCommand("closeCommandPalette", key: "Escape", code: "Escape", input: UIKeyCommand.inputEscape, modifiers: []),
     TolariaKeyCommand(
-      action: "commandPalette",
-      altKey: false,
-      code: "KeyK",
-      ctrlKey: false,
-      input: "k",
-      key: "k",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "findInNote",
-      altKey: false,
-      code: "KeyF",
-      ctrlKey: false,
-      input: "f",
-      key: "f",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "search",
-      altKey: false,
-      code: "KeyO",
-      ctrlKey: false,
-      input: "o",
-      key: "o",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "search",
-      altKey: false,
-      code: "KeyP",
-      ctrlKey: false,
-      input: "p",
-      key: "p",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "toggleRawEditor",
-      altKey: false,
-      code: "Backslash",
-      ctrlKey: false,
-      input: "\\",
-      key: "\\",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "createNote",
-      altKey: false,
-      code: "KeyN",
-      ctrlKey: false,
-      input: "n",
-      key: "n",
-      metaKey: true,
-      modifierFlags: .command,
-      shiftKey: false
-    ),
-    TolariaKeyCommand(
-      action: "previousNote",
-      altKey: false,
-      code: "ArrowUp",
-      ctrlKey: false,
-      input: UIKeyCommand.inputUpArrow,
+      "previousNote",
       key: "ArrowUp",
-      metaKey: false,
-      modifierFlags: [],
-      shiftKey: false
+      code: "ArrowUp",
+      input: UIKeyCommand.inputUpArrow,
+      modifiers: []
     ),
     TolariaKeyCommand(
-      action: "nextNote",
-      altKey: false,
-      code: "ArrowDown",
-      ctrlKey: false,
-      input: UIKeyCommand.inputDownArrow,
+      "nextNote",
       key: "ArrowDown",
-      metaKey: false,
-      modifierFlags: [],
-      shiftKey: false
+      code: "ArrowDown",
+      input: UIKeyCommand.inputDownArrow,
+      modifiers: []
     )
   ]
 
@@ -123,6 +70,10 @@ public class TolariaKeyCommandsModule: Module {
     Function("isSupported") {
       return true
     }
+
+    AsyncFunction("setCommandPaletteOpen") { (open: Bool) in
+      Self.commandPaletteOpen = open
+    }.runOnQueue(.main)
 
     Function("launchArguments") {
       return ProcessInfo.processInfo.arguments
@@ -147,6 +98,7 @@ public class TolariaKeyCommandsModule: Module {
     OnStopObserving("onShortcut") {
       if Self.activeModule === self {
         Self.activeModule = nil
+        Self.commandPaletteOpen = false
       }
     }
   }
@@ -228,17 +180,25 @@ public final class TolariaKeyCommandsReactDelegateHandler: ExpoReactDelegateHand
 }
 
 private final class TolariaKeyCommandsRootViewController: UIViewController {
+  override var canBecomeFirstResponder: Bool { true }
+
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    if !containsFocusedTextInput(view.window ?? view) { becomeFirstResponder() }
+  }
+
   override var keyCommands: [UIKeyCommand]? {
     let textInputFocused = containsFocusedTextInput(view.window ?? view)
     return TolariaKeyCommandsModule.applicationKeyCommands().filter {
-      !$0.modifierFlags.isEmpty || !textInputFocused
+      if $0.input == UIKeyCommand.inputEscape { return TolariaKeyCommandsModule.commandPaletteOpen }
+      return !$0.modifierFlags.isEmpty || !textInputFocused || TolariaKeyCommandsModule.commandPaletteOpen
     }.map { specification in
       let command = UIKeyCommand(
         input: specification.input,
         modifierFlags: specification.modifierFlags,
         action: #selector(handleTolariaKeyCommand(_:))
       )
-      command.wantsPriorityOverSystemBehavior = !specification.modifierFlags.isEmpty
+      command.wantsPriorityOverSystemBehavior = true
       return command
     }
   }
