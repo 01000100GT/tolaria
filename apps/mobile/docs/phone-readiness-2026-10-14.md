@@ -114,6 +114,97 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 - Localization: no UI copy changes. PostHog: no additional event for eliminating
   repeated computation in existing actions. No dependency/storage-strategy ADR;
   Abstractions updated. No full desktop/Rust release coverage run.
+- Commit `36539b351` passed normal hooks and was pushed to
+  `origin/mobile-ui-foundation`: lint, typecheck, 1,533 tests / 263 files and web
+  export pass. CLI staged delta checked all ten eligible code paths with no
+  issues; the unavailable MCP safeguard is not claimed as passed. After push,
+  project Hotspot is 10.0 and Average is 9.991524406635728. Forty-eight local
+  analyzer/file runs completed successfully: zero Critical, High, Medium, Minor,
+  Info or unclassified findings. Existing suggestions-file baseline improved
+  from one finding to zero; other existing zero baselines stayed zero. Codacy
+  Cloud exact-SHA verification remains unavailable after two authenticated-CLI
+  attempts report a missing API token, under the recorded exception.
+- Both physical-device installations succeeded without uninstalling or resetting
+  app data. Remote launches were denied because both devices were locked.
+  Simulator Laputa SHA-256 verification: 6,036 files before/after, zero changed,
+  added or removed files. Demo-vault Git status is empty.
+- All three existing PhoneReadinessTests pass on the updated native iPhone
+  Release app: source-mode preservation through Properties, property Save above
+  the software keyboard, and compact landscape formatting with one Properties
+  header. Result: `phone-regression.xcresult`. Tests use the isolated fixture,
+  not the user vault; the iPad large-vault checks above use real read-only data.
+
+## TestFlight preparation assessment
+
+Requested after the current fixes. This is a readiness assessment, not a beta
+release approval or a claim that telemetry and all phone acceptance are finished.
+
+1. Confirm the Apple Developer Program team and access to App Store Connect.
+   Local device signing proves a development identity exists, not that the app
+   record, distribution signing or CI upload permissions are ready. This host
+   currently has one Apple Development identity and no Apple Distribution
+   identity. No App Store Connect upload credential was found in the current
+   process environment; account state has not been inspected.
+2. Decide the permanent bundle identifier before creating the app record. The
+   installed app is `com.tolaria.mobile.dev`. A separate release identifier is
+   advisable, but its availability is unverified. Changing it creates a separate
+   sandbox and Keychain scope: existing testers must retain the development app
+   until their vaults are safely imported or cloned into the beta.
+3. Build with a supported toolchain. Local Xcode reports 16.2; the repository's
+   current macOS CircleCI executor selects 16.4. Apple requires Xcode 26 or later
+   and the iOS/iPadOS 26 SDK for App Store Connect uploads since April 28, 2026.
+   Add a dedicated mobile archive/sign/upload lane to CircleCI, retaining it as
+   the authoritative release system. EAS Build/Submit is an optional delegated
+   build service, not a replacement CI system. Neither route is configured yet.
+4. Configure distribution signing, unique build numbers, release environment,
+   GitHub public OAuth configuration, privacy manifests and export-compliance
+   answers, beta description, feedback contact and test instructions. Keep
+   private signing/upload/Sentry source-map credentials in CI secrets, never
+   EXPO_PUBLIC variables or committed configuration. Audit actual collected
+   telemetry before completing privacy disclosures.
+5. Restore the full release gates, including cloud analyzer verification, and
+   verify the signed release on both physical devices: GitHub return flow,
+   representative vault startup, property editing, save/reopen, offline/resume
+   and conflict-safe sync. The experimental analyzer exception is not a waiver
+   to distribute a beta.
+6. Upload to TestFlight and test internally first; then invite external testers
+   after the first beta review. Testers install/update through TestFlight without
+   Xcode or a source checkout. Builds expire after 90 days. Start with binary
+   updates only; OTA adds another compatibility/release surface and is not needed
+   for the first beta. Native module changes always need a new binary.
+
+Official references checked October 14:
+[Apple upload requirements](https://developer.apple.com/news/upcoming-requirements/),
+[TestFlight workflow](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/),
+[Expo iOS builds](https://docs.expo.dev/build-reference/ios-builds/).
+
+## Remaining telemetry batch
+
+- Existing mobile PostHog events are consent-bound, narrowly allowlisted and use
+  a session-only anonymous identifier. A mobile-specific name is not sufficient
+  for the requested cross-platform event model. Audit desktop event semantics
+  first: `note_created`, `note_deleted`, `vault_opened`, `vault_switched`,
+  `search_used`, `commit_made` and `theme_mode_changed` are existing examples.
+  Emit successful-action events only after success, not by renaming current
+  requested-operation events into success events.
+- Add common explicit product surface, OS, phone/tablet family, app/build version
+  and release-channel properties. Use the same PostHog project for comparisons.
+  Keep unrelated installations anonymous; GitHub storage authorization is not
+  permission to merge identities across devices. A future Tolaria account can
+  supply a shared pseudonymous user ID under explicit consent.
+- Sentry is not yet integrated in the mobile app. Use the official
+  `@sentry/react-native` SDK and Expo/Metro integration, source maps and native
+  debug symbols, separate crash-reporting consent, mobile release/build tags and
+  strict redaction. Do not enable replay, screenshots, automatic note/UI capture,
+  raw console/network breadcrumbs or default PII. Verify opt-out stops sending
+  and local queued-event behavior before release.
+- The requested analyzer-exception extension has not been approved as of this
+  record. Do not silently extend the October 14 14:12 UTC expiry or describe
+  these pending integrations as implemented. PostHog connection was suggested
+  for live ingestion verification; it is not yet confirmed connected.
+
+References: [Sentry Expo setup](https://docs.sentry.io/platforms/react-native/guides/expo/),
+[PostHog anonymous and identified events](https://posthog.com/docs/data/anonymous-vs-identified-events).
 
 ## iPad keyboard batch
 
