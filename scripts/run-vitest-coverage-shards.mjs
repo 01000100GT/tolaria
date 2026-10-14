@@ -2,7 +2,8 @@
 
 import { spawn } from "node:child_process";
 import console from "node:console";
-import { readFile, rm } from "node:fs/promises";
+import { openAsBlob } from "node:fs";
+import { rm } from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
 import { resolve } from "node:path";
@@ -32,13 +33,13 @@ const coverageRequire = createCoverageRequire();
 const { createCoverageMap } = coverageRequire("istanbul-lib-coverage");
 const libReport = coverageRequire("istanbul-lib-report");
 const reports = coverageRequire("istanbul-reports");
-const thresholdPercent = Number(process.env.VITEST_COVERAGE_THRESHOLD ?? "71");
-const thresholds = {
-	lines: metricThreshold("LINES"),
-	functions: metricThreshold("FUNCTIONS"),
-	branches: metricThreshold("BRANCHES"),
-	statements: metricThreshold("STATEMENTS"),
-};
+const thresholdPercent = Number(process.env.VITEST_COVERAGE_THRESHOLD ?? "72");
+const thresholds = new Map([
+	["lines", metricThreshold("LINES")],
+	["functions", metricThreshold("FUNCTIONS")],
+	["branches", metricThreshold("BRANCHES")],
+	["statements", metricThreshold("STATEMENTS")],
+]);
 
 function positiveInteger(value, name) {
 	if (/^[1-9][0-9]*$/.test(value)) {
@@ -71,14 +72,18 @@ function shardCoverageDir(shardIndex) {
 }
 
 async function clearVitestCache() {
-	const exitCode = await spawnCommand(
-		"clear-cache",
-		"pnpm",
-		["exec", "vitest", "--clearCache"],
-		process.env,
-	);
-	if (exitCode !== 0) {
-		throw new Error(`Vitest cache clear failed with exit code ${exitCode}`);
+	try {
+		const exitCode = await spawnCommand(
+			"clear-cache",
+			"pnpm",
+			["exec", "vitest", "--clearCache"],
+			process.env,
+		);
+		if (exitCode !== 0) {
+			throw new Error(`Vitest cache clear failed with exit code ${exitCode}`);
+		}
+	} catch (error) {
+		throw new Error("Vitest cache clearing failed", { cause: error });
 	}
 }
 
@@ -103,9 +108,14 @@ function runShard(shardIndex) {
 	);
 }
 
+function printStatus(message) {
+	const line = message.replaceAll("\r", "\\r").replaceAll("\n", "\\n");
+	process.stdout.write(`${line}\n`);
+}
+
 function spawnCommand(name, command, args, env) {
 	return new Promise((resolveExit, rejectExit) => {
-		console.log(`[${name}] started`);
+		printStatus(`[${name}] started`);
 		const child = spawn(command, args, {
 			cwd: rootDir,
 			env,
@@ -126,7 +136,7 @@ function spawnCommand(name, command, args, env) {
 			}
 
 			const exitCode = code ?? 1;
-			console.log(`[${name}] exited with status ${exitCode}`);
+			printStatus(`[${name}] exited with status ${exitCode}`);
 			resolveExit(exitCode);
 		});
 	});
@@ -149,15 +159,19 @@ async function runShardBatch(firstShard) {
 }
 
 async function runShards() {
-	let firstShard = 1;
+	try {
+		let firstShard = 1;
 
-	while (firstShard <= totalShards) {
-		if (!(await runShardBatch(firstShard))) {
-			console.error(`Coverage shard artifacts preserved at ${shardRoot}`);
-			process.exit(1);
+		while (firstShard <= totalShards) {
+			if (!(await runShardBatch(firstShard))) {
+				console.error(`Coverage shard artifacts preserved at ${shardRoot}`);
+				process.exit(1);
+			}
+
+			firstShard += concurrency;
 		}
-
-		firstShard += concurrency;
+	} catch (error) {
+		throw new Error("Coverage shard execution failed", { cause: error });
 	}
 }
 
@@ -166,7 +180,8 @@ async function readShardCoverage(shardIndex) {
 		shardCoverageDir(shardIndex),
 		"coverage-final.json",
 	);
-	return JSON.parse(await readFile(coveragePath, "utf8"));
+	const report = await openAsBlob(coveragePath);
+	return JSON.parse(await report.text());
 }
 
 async function mergeCoverage() {
@@ -193,20 +208,22 @@ async function writeCoverageReports(coverageMap) {
 
 function printCoverageSummary(summary) {
 	for (const metric of ["lines", "functions", "branches", "statements"]) {
-		const item = summary[metric];
-		console.log(
+		const item = summary.get(metric);
+		printStatus(
 			`${metric.padEnd(10)} ${String(item.pct).padStart(6)}% ` +
-				`(${item.covered}/${item.total}, threshold ${thresholds[metric]}%)`,
+				`(${item.covered}/${item.total}, threshold ${thresholds.get(metric)}%)`,
 		);
 	}
 }
 
 function checkCoverageThresholds(coverageMap) {
-	const summary = coverageMap.getCoverageSummary().toJSON();
+	const summary = new Map(
+		Object.entries(coverageMap.getCoverageSummary().toJSON()),
+	);
 	printCoverageSummary(summary);
 
-	const failures = Object.entries(thresholds).filter(
-		([metric, threshold]) => summary[metric].pct < threshold,
+	const failures = [...thresholds].filter(
+		([metric, threshold]) => summary.get(metric).pct < threshold,
 	);
 
 	if (failures.length === 0) {
@@ -215,7 +232,7 @@ function checkCoverageThresholds(coverageMap) {
 
 	for (const [metric, threshold] of failures) {
 		console.error(
-			`Coverage for ${metric} (${summary[metric].pct}%) does not meet threshold ${threshold}%`,
+			`Coverage for ${metric} (${summary.get(metric).pct}%) does not meet threshold ${threshold}%`,
 		);
 	}
 
