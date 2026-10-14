@@ -164,29 +164,33 @@ mod tests {
         assert!(content.contains("Status: Active"));
     }
 
-    #[test]
-    fn test_reload_vault_entry_reads_from_disk() {
+    #[tokio::test]
+    async fn test_reload_vault_entry_reads_from_disk() {
         let dir = tempfile::TempDir::new().unwrap();
         let note = dir.path().join("test.md");
         std::fs::write(&note, "---\ntitle: Test\nStatus: Active\n---\n# Test\n").unwrap();
 
-        let entry = reload_vault_entry_blocking(note.clone(), vault_path_arg(dir.path())).unwrap();
+        let entry = reload_vault_entry(note.clone(), vault_path_arg(dir.path()))
+            .await
+            .unwrap();
         assert_eq!(entry.title, "Test");
         assert_eq!(entry.status, Some("Active".to_string()));
 
         std::fs::write(&note, "---\ntitle: Test\nStatus: Done\n---\n# Test\n").unwrap();
-        let fresh = reload_vault_entry_blocking(note, vault_path_arg(dir.path())).unwrap();
+        let fresh = reload_vault_entry(note, vault_path_arg(dir.path()))
+            .await
+            .unwrap();
         assert_eq!(fresh.status, Some("Done".to_string()));
     }
 
-    #[test]
-    fn test_reload_vault_entry_nonexistent() {
-        let result = reload_vault_entry_blocking("/nonexistent/path.md".into(), None);
+    #[tokio::test]
+    async fn test_reload_vault_entry_nonexistent() {
+        let result = reload_vault_entry("/nonexistent/path.md".into(), None).await;
         assert!(result.is_err());
     }
 
-    #[test]
-    fn test_get_note_content_rejects_path_outside_active_vault() {
+    #[tokio::test]
+    async fn test_get_note_content_rejects_path_outside_active_vault() {
         let dir = tempfile::TempDir::new().unwrap();
         let vault_path = dir.path();
         let inside = vault_path.join("inside.md");
@@ -196,7 +200,8 @@ mod tests {
         std::fs::write(&inside, "# Inside\n").unwrap();
         std::fs::write(&outside, "# Outside\n").unwrap();
 
-        let err = get_note_content_blocking(outside, vault_path_arg(vault_path))
+        let err = get_note_content(outside, vault_path_arg(vault_path))
+            .await
             .expect_err("expected out-of-vault read to be rejected");
 
         assert_eq!(err, ACTIVE_VAULT_PATH_ERROR);

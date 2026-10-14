@@ -331,8 +331,8 @@ mod tests {
         path.to_string_lossy().into_owned()
     }
 
-    #[test]
-    fn rename_note_command_updates_title_file_and_links() {
+    #[tokio::test]
+    async fn rename_note_command_updates_title_file_and_links() {
         let dir = TempDir::new().unwrap();
         let vault = vault_path(&dir);
         let old_path = write_note(
@@ -342,12 +342,13 @@ mod tests {
         );
         let linked_path = write_note(&dir, "linked.md", "See [[Old Title]].\n");
 
-        let result = rename_note_blocking(RenameNoteCommandArgs {
+        let result = rename_note(RenameNoteCommandArgs {
             vault_path: vault.clone(),
             old_path: old_path.clone(),
             new_title: "New Title".to_string(),
             old_title: None,
         })
+        .await
         .unwrap();
 
         assert!(result.new_path.ends_with("new-title.md"));
@@ -359,8 +360,8 @@ mod tests {
         assert_eq!(result.failed_updates, 0);
     }
 
-    #[test]
-    fn filename_and_folder_commands_preserve_note_content() {
+    #[tokio::test]
+    async fn filename_and_folder_commands_preserve_note_content() {
         let dir = TempDir::new().unwrap();
         let vault = vault_path(&dir);
         let old_path = write_note(
@@ -369,20 +370,22 @@ mod tests {
             "---\ntitle: Draft Title\n---\n# Draft Title\n",
         );
 
-        let renamed = rename_note_filename_blocking(RenameNoteFilenameCommandArgs {
+        let renamed = rename_note_filename(RenameNoteFilenameCommandArgs {
             vault_path: vault.clone(),
             old_path,
             new_filename_stem: "custom-name".to_string(),
         })
+        .await
         .unwrap();
         assert!(renamed.new_path.ends_with("custom-name.md"));
 
         fs::create_dir(dir.path().join("Projects")).unwrap();
-        let moved = move_note_to_folder_blocking(MoveNoteToFolderCommandArgs {
+        let moved = move_note_to_folder(MoveNoteToFolderCommandArgs {
             vault_path: vault.clone(),
             old_path: renamed.new_path.clone(),
             folder_path: "Projects".to_string(),
         })
+        .await
         .unwrap();
 
         assert!(moved.new_path.ends_with("Projects/custom-name.md"));
@@ -429,10 +432,11 @@ mod tests {
         let vault = vault_path(&dir);
         let untitled = write_note(&dir, "untitled-note-123.md", "# Project Plan\n");
 
-        let auto = auto_rename_untitled_blocking(AutoRenameUntitledCommandArgs {
+        let auto = auto_rename_untitled(AutoRenameUntitledCommandArgs {
             vault_path: vault.clone(),
             note_path: untitled,
         })
+        .await
         .unwrap()
         .unwrap();
         assert!(auto.new_path.ends_with("project-plan.md"));
@@ -457,26 +461,28 @@ mod tests {
         assert_eq!(renames[0].new_path, "plans.md");
 
         assert_eq!(
-            update_wikilinks_for_renames_blocking(UpdateWikilinksForRenamesCommandArgs {
+            update_wikilinks_for_renames(UpdateWikilinksForRenamesCommandArgs {
                 vault_path: vault,
                 renames,
             })
+            .await
             .unwrap(),
             0,
         );
     }
 
-    #[test]
-    fn move_note_to_folder_accepts_empty_folder_as_vault_root() {
+    #[tokio::test]
+    async fn move_note_to_folder_accepts_empty_folder_as_vault_root() {
         let dir = TempDir::new().unwrap();
         let vault = vault_path(&dir);
         let note = write_note(&dir, "projects/note.md", "# Note\n");
 
-        let result = move_note_to_folder_blocking(MoveNoteToFolderCommandArgs {
+        let result = move_note_to_folder(MoveNoteToFolderCommandArgs {
             vault_path: vault,
             old_path: note,
             folder_path: "  ".to_string(),
         })
+        .await
         .unwrap();
 
         assert!(result.new_path.ends_with("note.md"));

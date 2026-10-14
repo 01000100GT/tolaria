@@ -77,35 +77,37 @@ mod tests {
         std::fs::write(path, content).unwrap();
     }
 
-    #[test]
-    fn update_frontmatter_command_validates_and_updates_note() {
+    #[tokio::test]
+    async fn update_frontmatter_command_validates_and_updates_note() {
         let dir = tempfile::TempDir::new().unwrap();
         let path = note_path(&dir, "note.md");
         write_note(&path, "---\nStatus: Draft\n---\n# Note\n");
 
-        let updated = update_frontmatter_blocking(
+        let updated = update_frontmatter(
             path.clone(),
             "Status".to_string(),
             FrontmatterValue::String("Done".to_string()),
             Some(dir.path().to_string_lossy().into_owned()),
         )
+        .await
         .unwrap();
 
         assert!(updated.contains("Status: Done"));
         assert_eq!(std::fs::read_to_string(path).unwrap(), updated);
     }
 
-    #[test]
-    fn delete_frontmatter_property_command_removes_existing_key() {
+    #[tokio::test]
+    async fn delete_frontmatter_property_command_removes_existing_key() {
         let dir = tempfile::TempDir::new().unwrap();
         let path = note_path(&dir, "note.md");
         write_note(&path, "---\nStatus: Draft\nOwner: Ada\n---\n# Note\n");
 
-        let updated = delete_frontmatter_property_blocking(
+        let updated = delete_frontmatter_property(
             path,
             "Owner".to_string(),
             Some(dir.path().to_string_lossy().into_owned()),
         )
+        .await
         .unwrap();
 
         assert!(!updated.contains("Owner:"));

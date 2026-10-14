@@ -168,7 +168,7 @@ pub async fn search_vault(
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_registered_vault_roots, find_registered_vault_root, reload_vault_entry_blocking,
+        collect_registered_vault_roots, find_registered_vault_root, reload_vault_entry,
         resolve_reload_vault_path, search_vault,
     };
     use crate::vault_list::{VaultEntry as VaultListEntry, VaultList};
@@ -312,12 +312,14 @@ mod tests {
         );
     }
 
-    #[test]
-    fn reload_vault_entry_command_reads_note_inside_vault() {
+    #[tokio::test]
+    async fn reload_vault_entry_command_reads_note_inside_vault() {
         let dir = tempfile::TempDir::new().unwrap();
         let note_path = write_note(dir.path(), "note.md", "# Reloaded Title\n\nBody");
 
-        let entry = reload_vault_entry_blocking(note_path, Some(dir.path().to_path_buf())).unwrap();
+        let entry = reload_vault_entry(note_path, Some(dir.path().to_path_buf()))
+            .await
+            .unwrap();
 
         assert_eq!(entry.title, "Reloaded Title");
     }
