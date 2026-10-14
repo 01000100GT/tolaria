@@ -42,6 +42,7 @@ import { chipTone, noteTypeColor, noteTypeSoftColor, statusTone, tagTone } from 
 type MobilePropertiesPanelProps = {
   compact: boolean
   fullWidth?: boolean
+  showToolbar?: boolean
   layoutProbe?: boolean
   note: MobileNote | null
   onAddProperty: (key?: string) => void
@@ -81,7 +82,7 @@ export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
       ]}
       testID="properties-panel"
     >
-      <MobileToolbar testID="properties-toolbar">
+      {props.showToolbar !== false ? <MobileToolbar testID="properties-toolbar">
         <MobileToolbarTitle testID="properties-toolbar-title" title={mobileCopy.properties} variant="inspector" />
         <MobileToolbarSpacer />
         {props.note ? <MobileIconButton
@@ -89,7 +90,7 @@ export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
           testID="properties-toolbar-add"
           onPress={() => props.onAddProperty()}
         ><Plus size={16} color={mobileColors.textMuted} /></MobileIconButton> : null}
-      </MobileToolbar>
+      </MobileToolbar> : null}
       <ScrollView
         {...probeProps(propertyLayoutProbe.probe, 'properties.scroll')}
         contentContainerStyle={[panelStyles.content, props.note ? null : panelStyles.emptyContent]}

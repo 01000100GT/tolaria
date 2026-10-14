@@ -11,6 +11,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileTextInput } from '../../ui/MobileTextInput'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
+import { useMobileDeviceLayout } from '../../ui/useMobileDeviceLayout'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
 import { mobileRadius } from '../../ui/tokens'
 import type { MobileEditorBlock, MobileNote, MobileSidebarIcon, MobileTone, MobileTypeDefinitions, MobileViewFilterGroup } from '../../workspace/mobileWorkspaceModel'
@@ -293,6 +294,7 @@ type RetargetNoteAction = 'changeType' | 'moveFolder'
 
 export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProps) {
   const { styles, sheetStyles } = useMobileStyles(createThemeStyles)
+  const phone = useMobileDeviceLayout() === 'phone'
   useEffect(() => {
     if (props.action !== 'search') Keyboard.dismiss()
   }, [props.action])
@@ -305,10 +307,10 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
   return (
     <MobileKeyboardAvoidingView style={styles.overlay} testID="workspace-action-sheet">
       <Pressable accessibilityLabel={mobileText('common.cancel')} style={styles.backdrop} testID="workspace-action-sheet-backdrop" onPress={props.onClose} />
-      <View style={styles.sheetContainer} pointerEvents="box-none">
+      <View style={[styles.sheetContainer, phone && phoneSheetStyles.container]} pointerEvents="box-none">
         <MobilePanel
           accessibilityViewIsModal
-          style={[sheetStyles.sheet, longFormSheetStyle]}
+          style={[sheetStyles.sheet, longFormSheetStyle, phone && phoneSheetStyles.sheet]}
           testID={`workspace-action-sheet-${props.action}`}
         >
           <MobileToolbar testID="workspace-action-sheet-toolbar">
@@ -819,6 +821,7 @@ function VisibilitySwitchRow({
 
 function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
   const { styles } = useMobileStyles(createThemeStyles)
+  const phone = useMobileDeviceLayout() === 'phone'
   const {
     action,
     notes,
@@ -849,8 +852,9 @@ function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
   })
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
-      <MobileTextInput
+    <View style={styles.formBody}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
+      {!(phone && editingProperty) ? <MobileTextInput
         autoFocus={mobileWorkspaceFormSheetAutoFocus}
         label={mobileText('inspector.properties.propertyName')}
         placeholder={mobileText('inspector.properties.propertyName')}
@@ -858,7 +862,7 @@ function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
         value={propertyName}
         editable={!editingProperty}
         onChangeText={onPropertyNameChange}
-      />
+      /> : null}
       {keySuggestions.length > 0 ? (
         <MobileWorkspaceSuggestionList
           labels={keySuggestions}
@@ -871,13 +875,15 @@ function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
       <MobilePropertyValueEditor
         kind={selectedValueKind}
         lockedListKind={lockedListKind}
+        showKindPicker={!(phone && lockedListKind)}
         propertyName={propertyName}
         suggestions={valueSuggestions}
         value={propertyValue}
         onKindChange={onPropertyValueKindChange}
         onValueChange={onPropertyValueChange}
       />
-      <SheetFooter>
+      </ScrollView>
+      <SheetFooter pinned>
         {mobilePropertyDeleteActionVisible({
           editingProperty,
           hasSelectedNote: selectedNote !== null,
@@ -893,7 +899,7 @@ function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
         <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspacePropertyActionTestIds.cancel} variant="ghost" onPress={onClose} />
         <MobileButton disabled={!canSaveProperty} label={mobileText('common.save')} testID={mobileWorkspacePropertyActionTestIds.save} variant="primary" onPress={onSaveProperty} />
       </SheetFooter>
-    </ScrollView>
+    </View>
   )
 }
 
@@ -1155,6 +1161,11 @@ const actionTitleByAction: Record<MobileWorkspaceAction, Parameters<typeof mobil
   setNoteIcon: 'command.note.setIcon',
   tableOfContents: 'tableOfContents.title',
 }
+
+const phoneSheetStyles = StyleSheet.create({
+  container: { paddingHorizontal: 8, paddingVertical: 8 },
+  sheet: { maxHeight: '100%' },
+})
 
 function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const { space: mobileSpace, type: mobileType, toolbarAction: desktopToolbarActionParity } = metrics

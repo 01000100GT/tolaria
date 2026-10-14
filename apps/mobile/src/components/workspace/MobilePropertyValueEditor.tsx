@@ -16,6 +16,7 @@ import { MobileWorkspaceSuggestionList } from './MobileWorkspaceSuggestionList'
 type MobilePropertyValueEditorProps = {
   kind: MobilePropertyValueKind
   lockedListKind: boolean
+  showKindPicker?: boolean
   propertyName: string
   suggestions: string[]
   value: string
@@ -29,6 +30,7 @@ export function MobilePropertyValueEditor({
   onKindChange,
   onValueChange,
   propertyName,
+  showKindPicker = true,
   suggestions,
   value,
 }: MobilePropertyValueEditorProps) {
@@ -36,11 +38,11 @@ export function MobilePropertyValueEditor({
 
   return (
     <>
-      <MobilePropertyValueKindPicker
+      {showKindPicker ? <MobilePropertyValueKindPicker
         lockedListKind={lockedListKind}
         selectedKind={kind}
         onSelect={onKindChange}
-      />
+      /> : null}
       <MobileTextInput
         autoCapitalize={inputConfig.autoCapitalize}
         keyboardType={inputConfig.keyboardType}

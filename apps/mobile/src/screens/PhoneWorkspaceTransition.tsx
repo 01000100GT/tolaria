@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react'
-import { Animated as NativeAnimated, StyleSheet, View, type ViewProps } from 'react-native'
+import { useLayoutEffect, type ReactNode } from 'react'
+import { Animated as NativeAnimated, StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native'
 import Reanimated, {
-  FadeIn,
-  SlideInLeft,
-  SlideInRight,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated'
 import {
   phoneWorkspaceTransitionDirection,
   phoneWorkspaceTransitionDurationMs,
   type PhoneWorkspaceState,
-  type PhoneWorkspaceTransitionDirection,
 } from './phoneWorkspaceTransitions'
 
 type PhoneWorkspaceTransitionProps = {
@@ -31,8 +31,8 @@ export function PhoneWorkspaceTransition({
   state,
   swipeHandlers,
 }: PhoneWorkspaceTransitionProps) {
-  const direction = phoneWorkspaceTransitionDirection(previousState, state)
   const dragStyle = dragX && !gestureHandoffActive ? { transform: [{ translateX: dragX }] } : null
+  const transitionStyle = usePhoneTransitionStyle({ previousState, state, gestureHandoffActive })
 
   return (
     <View
@@ -43,9 +43,7 @@ export function PhoneWorkspaceTransition({
       {preview ? <View pointerEvents="none" style={styles.previewLayer}>{preview}</View> : null}
       <NativeAnimated.View style={[styles.stage, dragStyle]}>
         <Reanimated.View
-          entering={gestureHandoffActive ? undefined : enteringTransition(direction)}
-          key={state}
-          style={styles.stage}
+          style={[styles.stage, transitionStyle]}
         >
           {children}
         </Reanimated.View>
@@ -54,10 +52,20 @@ export function PhoneWorkspaceTransition({
   )
 }
 
-function enteringTransition(direction: PhoneWorkspaceTransitionDirection) {
-  if (direction === 'fromLeft') return SlideInLeft.duration(phoneWorkspaceTransitionDurationMs)
-  if (direction === 'fromRight') return SlideInRight.duration(phoneWorkspaceTransitionDurationMs)
-  return FadeIn.duration(100)
+function usePhoneTransitionStyle({ previousState, state, gestureHandoffActive }: Pick<PhoneWorkspaceTransitionProps, 'previousState' | 'state' | 'gestureHandoffActive'>) {
+  const { width } = useWindowDimensions()
+  const reduceMotion = useReducedMotion()
+  const offset = useSharedValue(0)
+  const direction = phoneWorkspaceTransitionDirection(previousState, state)
+  useLayoutEffect(() => {
+    offset.value = 0
+    if (gestureHandoffActive) return
+    if (reduceMotion) return
+    if (previousState === state) return
+    offset.value = direction === 'fromLeft' ? -width : width
+    offset.value = withTiming(0, { duration: phoneWorkspaceTransitionDurationMs })
+  }, [direction, gestureHandoffActive, offset, previousState, reduceMotion, state, width])
+  return useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }))
 }
 
 const styles = StyleSheet.create({

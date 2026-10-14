@@ -42,6 +42,7 @@ import { TabletEditorPanel } from './TabletEditorPanel'
 import type { EditorEditingMode } from './TabletEditorPanel'
 import { WorkspaceActionSheetHost } from './TabletWorkspace'
 import { PhoneWorkspaceTransition } from './PhoneWorkspaceTransition'
+import { PhoneScreenLayer } from './PhoneScreenLayer'
 import { phonePanelDragSurface } from './phonePanelDragSurface'
 import { useTabletWorkspaceController } from './useTabletWorkspaceController'
 import { useMobileInspectorReferenceGroups } from './useMobileInspectorReferenceGroups'
@@ -165,7 +166,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
     openSidebar: navigation.openSidebar,
     phoneState,
   })
-  useMobileEditorOverlayFocus(Boolean(controller.openAction) || commandPalette.visible, editorCommandRegistry.commands)
+  useMobileEditorOverlayFocus(phoneState !== 'editor' || Boolean(controller.openAction) || commandPalette.visible, editorCommandRegistry.commands)
   useMobileWorkspaceKeyboardShortcuts({
     nativeNoteNavigationEnabled: phoneState === 'list',
     onCreateNote: controller.onOpenCreateNote,
@@ -394,7 +395,7 @@ function PhoneWorkspaceRoot({
         state={phoneState}
         swipeHandlers={nativePhoneDragPreviewEnabled() ? undefined : transitionSwipeHandlers}
       >
-        <PhoneWorkspaceStateView
+        <PhoneWorkspaceScreens
           controller={controller}
           options={options}
           openEditor={navigation.openEditor}
@@ -749,6 +750,25 @@ type PhoneWorkspaceStateViewProps = {
 
 const disabledPhoneLayoutProbe: MobileLayoutProbe = () => ({})
 
+function PhoneWorkspaceScreens(props: PhoneWorkspaceStateViewProps) {
+  return (
+    <>
+      <PhoneScreenLayer active={props.phoneState === 'list'} retain>
+        <PhoneNoteListScreen {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'editor'} retain>
+        <PhoneEditorScreen {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'sidebar'}>
+        <PhoneSidebarDrawer {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'properties'}>
+        <PhonePropertiesScreen {...props} />
+      </PhoneScreenLayer>
+    </>
+  )
+}
+
 function PhoneWorkspaceStateView(props: PhoneWorkspaceStateViewProps) {
   if (props.phoneState === 'sidebar') return <PhoneSidebarDrawer {...props} />
   if (props.phoneState === 'properties') return <PhonePropertiesScreen {...props} />
@@ -1065,6 +1085,7 @@ function PhonePropertiesScreen({
       <MobilePropertiesPanel
         compact
         fullWidth
+        showToolbar={false}
         layoutProbe={options.layoutProbe}
         note={controller.selectedNote}
         typeDefinitions={controller.snapshot.typeDefinitions}

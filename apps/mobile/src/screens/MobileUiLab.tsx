@@ -2,7 +2,8 @@ import type { MobileMetrics } from '../ui/mobileMetrics'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { MobileColors } from '../ui/theme/mobilePalette'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Linking, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
+import { useMobileDeviceLayout } from '../ui/useMobileDeviceLayout'
 import { PhoneWorkspace, type PhoneWorkspaceState } from './PhoneWorkspace'
 import { TabletWorkspace } from './TabletWorkspace'
 import type { TabletTransitionProbeMode } from './tabletWorkspaceTypes'
@@ -108,8 +109,7 @@ type DevVaultLoadState =
   | { state: DevVaultWorkspaceState; status: 'ready' }
 
 export function MobileUiLab() {
-  const { width } = useWindowDimensions()
-  const isWideEnoughForTablet = width >= 900
+  const isWideEnoughForTablet = useMobileDeviceLayout() === 'tablet'
   const searchParams = useMobileUiSearchParams()
   const {
     open: openNativeWorkspace,
