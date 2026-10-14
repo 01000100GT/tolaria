@@ -113,7 +113,14 @@ Git. `workspaceSyncEditors.ts` collects awaitable editor preparation operations;
 `editorSaveGate.ts` prevents stale TenTap replies from overwriting pulled content.
 The vault manager uses both boundaries (ADR 0196). `MobileVaultProvider` owns
 vault switching and manual sync, while a separate memoized workspace context
-prevents progress updates from re-indexing the vault. `savedVaultOperation.ts`
+prevents progress updates from re-indexing the vault. `useMobileWorkspaceResolution`
+also retains the repository request and initial snapshot across equivalent parent
+renders; a new vault selection revision still invalidates that snapshot.
+`preloadNativeWorkspace` awaits the iOS background index bridge when restoring
+the catalog, serialized with working-copy operations. The bridge validates the
+managed root and completes interrupted writes before indexing under the native
+mutation lock. It does not add a persistent cache or bypass a real disk refresh.
+`savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
 and remounts from disk; a pre-barrier failure instead resumes the existing draft.
 A confirmed no-change folder-picker cancellation or Git result also resumes that draft without
@@ -122,6 +129,9 @@ replacement IDs are never reused, and an older cancellation cannot undo a newer
 replacement. Failures after import or Git starts still require the disk refresh.
 `gitRemote` reports whether checkout changed document files; local commits and
 push-only/no-op syncs preserve the mounted editor under ADR 0212.
+Relationship-picker exclusions resolve each existing reference once per search,
+then filter candidate IDs with a set. They must not resolve a vault-wide link
+inside the per-note candidate loop.
 `managedGitStorage.native.ts` keeps app-owned working copies and a credential-free
 catalog. Catalog publication renames a validated pending file and retains a
 recoverable backup. `githubAccountState.ts` isolates cancellation and ordered

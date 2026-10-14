@@ -4,6 +4,7 @@ import { initializeLocalVaultCatalog, managedLocalSelection } from './managedLoc
 import type { ManagedLocalVault } from './managedLocalVaults'
 import type { ManagedGitVault, ManagedGitVaultCatalog } from './managedGitVaults'
 import type { NativeWorkspaceSelection } from '../nativeWorkspacePicker'
+import { preloadNativeWorkspace } from '../preloadNativeWorkspace'
 
 export type ActiveVault = { selection: NativeWorkspaceSelection | null; git: ManagedGitVault | null }
 
@@ -20,7 +21,8 @@ export function useManagedVaultCatalog() {
       setVaults(catalog.vaults)
       setLocalVaults(catalog.localVaults ?? [])
       const restored = await restoreCatalogSelection(catalog)
-      if (active) setRestored(restored)
+      const selection = await preloadNativeWorkspace(restored.selection)
+      if (active) setRestored({ ...restored, selection })
     }).catch(() => { if (active) setError(true) })
       .finally(() => { if (active) setPending(false) })
     return () => { active = false }

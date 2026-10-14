@@ -96,6 +96,10 @@ public class TolariaWorkspaceAccessModule: Module {
       return try self.restoreWorkspace()
     }
 
+    AsyncFunction("readWorkspaceIndex") { (uri: String) throws -> String in
+      return try self.readWorkspaceIndex(uri)
+    }
+
     Function("isWorkspaceLinked") { (uri: String) throws -> Bool in
       return try LinkedWorkspaceStore().session(uri).isLinked
     }
@@ -131,6 +135,15 @@ public class TolariaWorkspaceAccessModule: Module {
       return try runWorkspaceFileNativeProof()
     }
     #endif
+  }
+
+  private func readWorkspaceIndex(_ uri: String) throws -> String {
+    let store = try managedWorkspaceText(uri)
+    workspaceMutationLock.lock()
+    defer { workspaceMutationLock.unlock() }
+    _ = try store.recover()
+    try requireWorkspaceMutationRoot(store.root)
+    return try WorkspaceFileIndex(root: store.root).json()
   }
 
   private func importWorkspace(_ uri: String) throws -> [String: String]? {

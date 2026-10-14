@@ -99,8 +99,8 @@ import { tabletTransitionProbeMode } from './tabletTransitionProbeMode'
 import {
   initialMobileUiNativeSearch,
   mobileUiRequestedWorkspaceSource,
-  resolveMobileUiWorkspace,
 } from './mobileUiLabWorkspaceResolution'
+import { useMobileWorkspaceResolution } from './useMobileWorkspaceResolution'
 import { mobileWorkspaceKey } from './mobileWorkspaceKey'
 
 type DevVaultLoadState =
@@ -327,7 +327,7 @@ function useMobileUiWorkspaceSource({
   const source = currentSnapshotSource(searchParams, nativeWorkspace)
   const devVaultUrl = currentDevVaultUrl(searchParams)
   const devVault = useDevVaultWorkspaceState(source === 'dev', devVaultUrl)
-  const repositoryRequest = mobileRepositoryRequestForProbes({
+  const request = mobileRepositoryRequestForProbes({
     scenarioId,
     source,
     vaultAlias: currentVaultAlias(searchParams, nativeWorkspace),
@@ -335,14 +335,16 @@ function useMobileUiWorkspaceSource({
     vaultRootUri: currentVaultRootUri(searchParams, nativeWorkspace),
     workspaceIndex: nativeWorkspace?.index,
   }, { workspacePersistenceProbe, wysiwygPersistenceProbe })
-  const probeRepository = mobileRepositoryForProbes({ workspacePersistenceProbe, wysiwygPersistenceProbe })
-  const { baseSnapshot, repository } = resolveMobileUiWorkspace({
+  const probeRepository = useMemo(() => mobileRepositoryForProbes({
+    workspacePersistenceProbe, wysiwygPersistenceProbe,
+  }), [workspacePersistenceProbe, wysiwygPersistenceProbe])
+  const { baseSnapshot, repository, repositoryRequest } = useMobileWorkspaceResolution({
     devVaultState: devVault.status === 'ready' ? devVault.state : null,
     persistenceProbeEnabled: workspacePersistenceProbe || wysiwygPersistenceProbe,
     probeRepository,
-    repositoryRequest,
+    repositoryRequest: request,
     source,
-  })
+  }, nativeWorkspace)
 
   return {
     baseSnapshot,

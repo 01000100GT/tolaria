@@ -18,11 +18,11 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 | Android | System Back and linked-folder support; actual native verification | Pending; SDK not found at the default local path |
 | Accessibility | 44-point targets, Dynamic Type, VoiceOver and Reduced Motion | In progress |
 | Acceptance | Small/large phones, rotation, keyboard, offline/resume, large copied vault, iPad regressions | In progress |
-| Startup | Reopening a local vault must not block on a full disk scan/index rebuild | Investigation: restored managed selections lack an index; screen resolution synchronously rebuilds the snapshot on rerender. Fix and native measurements pending |
+| Startup | Reopening a local vault must not block on a full disk scan/index rebuild | iOS restore indexing moved to native background queue; snapshot retained across parent rerenders. Native large-vault restore passes; cold-launch end-to-end latency and persistent cache remain follow-up work |
 | Telemetry | Desktop-aligned PostHog events and Sentry with explicit mobile/device attribution and privacy controls | Requested after branding/installations; pending |
 | GitHub sign-in | iPhone returns successfully from Safari authorization and finishes sign-in despite transient network interruptions | User confirms GitHub approved the code. Recovery regressions reproduced; retry fix passes focused tests, native/device acceptance pending |
-| iPad Properties | Tapping property values and relationship controls responds immediately and opens the appropriate action | User reports taps have no effect or abysmal latency; reproduce independently on actual native runtime, not considered fixed by startup work |
-| Beta distribution | Installable beta with a reliable update path, without requiring testers to build source | Assess TestFlight and Android testing distribution, plus compatible over-the-air JS updates; implementation not yet requested |
+| iPad Properties | Tapping property values and relationship controls responds immediately and opens the appropriate action | Removed repeated vault-wide resolution in relationship picker; Type, URL, Tags and relationship dialogs open in native large-vault QA. Physical-device acceptance still pending |
+| Beta distribution | Installable beta with a reliable update path, without requiring testers to build source | User requested TestFlight preparation after current fixes; toolchain/account/release-gate assessment pending |
 
 ## Baseline and evidence
 
@@ -85,6 +85,35 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 - Localization: no UI copy changes. PostHog: no event needed for restoring an
   existing sign-in flow. No dependency or ADR; Abstractions documents retry
   ownership. No vault data was changed.
+
+## October 14 startup and properties performance
+
+- Restored iOS vaults now receive an asynchronously loaded native file index
+  before publication. Native indexing shares the mutation lock, checks the
+  managed root and pending checkout, and recovers interrupted writes first.
+  Older native builds/other platforms retain their existing fallback. Indexing
+  errors surface instead of silently falling back to a blocking JavaScript scan.
+- Equivalent parent renders retain the loaded snapshot and repository request.
+  Vault changes and explicit selection revisions invalidate the snapshot. This
+  is not a persistent cache: cold launch still indexes and constructs metadata.
+- The relationship picker resolved one existing target 1,000 times in the red
+  regression. It now resolves it once, preserving excluded targets and search
+  results. A pre-existing dynamic-object-dispatch scanner finding was removed
+  by storing built-in view resolvers in a Map.
+- Focused Vitest: 37 passing tests; native WorkspaceFileIndexTests: 5 passing.
+  iOS Release build succeeds. Computer-use QA against 5,867 active Laputa notes
+  verifies cold restoration and opens Type, URL, Tags and relationship dialogs
+  on the first post-tap observation. Dialogs were cancelled without saving.
+  Tool observation latency is not reported as measured app response latency.
+- Evidence: `/Volumes/Jupiter/Cache/tolaria-mobile-startup-20261014`, including
+  exact manifest, before/after per-file reports, failing/passing tests and builds.
+  All ten code files end at CodeScene 10 or unscorable with zero findings;
+  existing scorable files preserve 10. Native bridge extraction restored its
+  method-size gate before commit. Local analyzer results are recorded per file;
+  cloud Codacy/MCP remain unavailable under the existing time-bounded exception.
+- Localization: no UI copy changes. PostHog: no additional event for eliminating
+  repeated computation in existing actions. No dependency/storage-strategy ADR;
+  Abstractions updated. No full desktop/Rust release coverage run.
 
 ## iPad keyboard batch
 

@@ -48,16 +48,16 @@ type RelationshipTargetSuggestionOptions = {
 
 const VIEW_FIELD_SUGGESTION_LIMIT = 12
 const ICON_PROPERTY_KEYS = systemMetadataAliases('_icon')
-const BUILT_IN_VIEW_VALUE_RESOLVERS: Record<string, ViewValueResolver> = {
-  archived: (note) => [String(note.archived === true)],
-  body: (note) => note.snippet ? [note.snippet] : [],
-  favorite: (note) => [String(note.favorite)],
-  filename: (note) => [note.path?.split('/').at(-1) ?? note.id],
-  isa: (note) => [note.type],
-  status: (note) => note.status ? [note.status] : [],
-  title: (note) => [note.title],
-  type: (note) => [note.type],
-}
+const BUILT_IN_VIEW_VALUE_RESOLVERS = new Map<string, ViewValueResolver>([
+  ['archived', (note) => [String(note.archived === true)]],
+  ['body', (note) => note.snippet ? [note.snippet] : []],
+  ['favorite', (note) => [String(note.favorite)]],
+  ['filename', (note) => [note.path?.split('/').at(-1) ?? note.id]],
+  ['isa', (note) => [note.type]],
+  ['status', (note) => note.status ? [note.status] : []],
+  ['title', (note) => [note.title]],
+  ['type', (note) => [note.type]],
+])
 export function mobilePropertyKeySuggestions(
   notes: MobileNote[],
   selectedNote: MobileNote | null,
@@ -100,7 +100,9 @@ export function mobileRelationshipTargetSuggestions(
   query: SuggestionQuery,
   options: RelationshipTargetSuggestionOptions = {},
 ): MobileNote[] {
-  const candidates = notes.filter((note) => isRelationshipTargetSuggestion(note, notes, options))
+  const excluded = existingRelationshipTargetIds(notes, options)
+  const candidates = notes.filter((note) => !note.archived
+    && note.id !== options.selectedNote?.id && !excluded.has(note.id))
 
   return sortMobileNotesByIdentityMatch(candidates, relationshipTargetQuery(query))
     .slice(0, 6)
@@ -235,27 +237,18 @@ function relationshipKeyCandidates(
   ]
 }
 
-function isRelationshipTargetSuggestion(
-  note: MobileNote,
+function existingRelationshipTargetIds(
   notes: MobileNote[],
   options: RelationshipTargetSuggestionOptions,
-): boolean {
-  if (note.archived) return false
-  if (note.id === options.selectedNote?.id) return false
-  if (isExistingRelationshipTarget(note, notes, options)) return false
-  return true
-}
-
-function isExistingRelationshipTarget(
-  note: MobileNote,
-  notes: MobileNote[],
-  options: RelationshipTargetSuggestionOptions,
-): boolean {
+): Set<string> {
+  const ids = new Set<string>()
   const relationship = selectedRelationshipForSuggestions(options.selectedNote, options.relationshipKey)
-  return relationship?.values.some((value) => {
-    if (value.id === note.id) return true
-    return value.ref ? mobileNoteForWikilinkTarget(notes, parsedRelationshipRefTarget(value.ref))?.id === note.id : false
-  }) ?? false
+  for (const value of relationship?.values ?? []) {
+    if (value.id) ids.add(value.id)
+    const resolved = value.ref ? mobileNoteForWikilinkTarget(notes, parsedRelationshipRefTarget(value.ref)) : null
+    if (resolved) ids.add(resolved.id)
+  }
+  return ids
 }
 
 function selectedRelationshipForSuggestions(
@@ -385,7 +378,7 @@ function builtInViewValues(
   note: MobileNote,
   normalizedKey: NormalizedSuggestionKey,
 ): ViewFieldValue[] | null {
-  return BUILT_IN_VIEW_VALUE_RESOLVERS[normalizedKey]?.(note) ?? null
+  return BUILT_IN_VIEW_VALUE_RESOLVERS.get(normalizedKey)?.(note) ?? null
 }
 
 function relationshipValueSuggestionItems(
