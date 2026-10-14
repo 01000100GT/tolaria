@@ -5,14 +5,17 @@ import { useMobileSettings } from '../settings/useMobileSettings'
 import { createMobileAnalytics } from './mobileAnalytics'
 import { mobileAnalyticsEndpoint, posthogSender } from './posthogTransport'
 import { AnalyticsContext } from './useMobileAnalytics'
+import { mobileRuntimeContext, mobileTelemetryConfig } from './mobileTelemetryRuntime'
+import { mobileCrashReporting } from './mobileSentry'
 
 function nativeAnalytics() {
-  const key = process.env.EXPO_PUBLIC_POSTHOG_KEY ?? ''
-  const endpoint = mobileAnalyticsEndpoint(key, process.env.EXPO_PUBLIC_POSTHOG_HOST)
+  const { posthogKey: key, posthogHost } = mobileTelemetryConfig()
+  const endpoint = mobileAnalyticsEndpoint(key, posthogHost)
   return createMobileAnalytics({
     configured: endpoint !== null,
     createId: randomUUID,
     platform: Platform.OS,
+    context: mobileRuntimeContext(),
     send: endpoint ? posthogSender(endpoint, key) : async () => {},
   })
 }
@@ -24,5 +27,9 @@ export function MobileAnalyticsProvider({ children }: { children: ReactNode }) {
     analytics.setEnabled(ready && settings.analytics)
     return () => analytics.setEnabled(false)
   }, [analytics, ready, settings.analytics])
+  useEffect(() => {
+    void mobileCrashReporting.setEnabled(ready && settings.crashReporting)
+    return () => { void mobileCrashReporting.setEnabled(false) }
+  }, [ready, settings.crashReporting])
   return <AnalyticsContext.Provider value={analytics}>{children}</AnalyticsContext.Provider>
 }

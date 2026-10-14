@@ -1,5 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
+import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
+import { trackSuccessfulMobileEdit } from '../analytics/mobileSuccessfulEdit'
+import { captureMobileError } from '../analytics/mobileCrashChannel'
 import { isMobileNoteHydration, mobileEditNeedsNoteRead } from '../workspace/mobileNoteRead'
 import { usePreparedWorkspaceEdits, type WorkspaceEditOptions } from './usePreparedWorkspaceEdits'
 import {
@@ -94,6 +97,7 @@ function useWorkspaceEditApplier({
   setWorkspaceHistory: WorkspaceHistorySetter
   snapshotState: ReturnType<typeof useWorkspaceSnapshotState>
 }) {
+  const analytics = useMobileAnalytics()
   const syncEditors = useContext(WorkspaceSyncEditorsContext)
   const [generation] = useState(() => syncEditors?.generation())
   return useCallback((edit: MobileWorkspaceEdit, options: WorkspaceEditOptions = {}) => {
@@ -109,9 +113,10 @@ function useWorkspaceEditApplier({
       setWorkspaceSnapshot: snapshotState.setWorkspaceSnapshot,
       workspaceSnapshotRef: snapshotState.workspaceSnapshotRef,
       writes: result.writes,
+      onSaved: () => trackSuccessfulMobileEdit(edit, result.writes.length, analytics.capture),
     })
     return result
-  }, [generation, repository, repositoryRequest, setWorkspaceHistory, snapshotState, syncEditors])
+  }, [analytics, generation, repository, repositoryRequest, setWorkspaceHistory, snapshotState, syncEditors])
 }
 
 export function applyWorkspaceEditToWritableSnapshot(
@@ -211,12 +216,14 @@ function updateWorkspaceSnapshot(
 }
 
 async function persistWorkspaceWrites({
+  onSaved,
   repository,
   repositoryRequest,
   setWorkspaceSnapshot,
   workspaceSnapshotRef,
   writes,
 }: {
+  onSaved: () => void
   repository: ReadOnlyWorkspaceRepository
   repositoryRequest?: ReadOnlyWorkspaceRequest
   setWorkspaceSnapshot: WorkspaceSnapshotSetter
@@ -225,7 +232,9 @@ async function persistWorkspaceWrites({
 }) {
   try {
     await repository.persistWrites(writes, repositoryRequest)
-  } catch {
+    onSaved()
+  } catch (error) {
+    captureMobileError(error, 'persistence')
     markWorkspaceWriteFailed(workspaceSnapshotRef, setWorkspaceSnapshot)
   }
 }

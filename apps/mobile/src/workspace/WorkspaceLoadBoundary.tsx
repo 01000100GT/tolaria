@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { captureMobileError } from '../analytics/mobileCrashChannel'
 
 type Props = { children: ReactNode; fallback: ReactNode }
 
@@ -8,6 +9,10 @@ export class WorkspaceLoadBoundary extends Component<Props, { failed: boolean }>
 
   static getDerivedStateFromError() {
     return { failed: true }
+  }
+
+  componentDidCatch(error: Error) {
+    captureMobileError(error, 'workspace')
   }
 
   render() {

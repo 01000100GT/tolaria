@@ -26,7 +26,7 @@ export function MobileAppearanceSettings() {
         style={styles.option}
         testID={`settings-theme-${theme}`}
         onPress={() => { void preferences.update({ theme }).then(saved => {
-          if (saved) analytics.capture({ name: 'mobile_setting_changed', setting: 'theme' })
+          if (saved) analytics.capture({ name: 'theme_mode_changed', mode: theme })
         }) }}
       />)}
     </View>

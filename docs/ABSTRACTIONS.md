@@ -369,7 +369,20 @@ The React Native app in `apps/mobile` has its own UI abstraction layer. Mobile s
 allowlist of swipe, settings and Git-request events. The PostHog capture transport
 uses ephemeral session identifiers, no document/repository metadata, bounded
 requests and immediate opt-out cancellation. It is inert without a configured
-public project key; see ADR 0214.
+public project key; see ADR 0214. Shared successful actions use desktop event
+names and carry explicit mobile OS/device/build attribution. `mobileSuccessfulEdit`
+emits creation/deletion only after persistence; requests remain separate events.
+`mobileTelemetryContext` constrains build metadata to safe categorical values.
+
+Crash reporting has independent default-off consent. `mobileCrashReporting`
+serializes SDK lifecycle changes; `mobileSentryDriver` lazily loads the official
+React Native SDK and uses a revocable, bounded SDK transport. `mobileCrashPrivacy`
+rebuilds reports from stack coordinates and safe exception types, excluding raw
+messages, vault data, attachments and automatic UI/network context. A small
+`mobileCrashChannel` allows domain error boundaries to report without importing
+the SDK. Native fatal crash handling remains disabled until a native redaction
+boundary is implemented. Expo/Metro source-map upload is configured but requires
+private CI credentials. See ADR 0225 for scope, attribution and privacy policy.
 
 `MobileThemeProvider` resolves installation appearance preferences and publishes
 desktop-derived palettes to both NativeWind/RNR and explicit native styles.

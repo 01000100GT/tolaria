@@ -1,12 +1,13 @@
 export type MobileSettings = {
   autoGit: boolean
   analytics: boolean
+  crashReporting: boolean
   theme: 'system' | 'light' | 'dark'
   uiScale: 1 | 1.1
 }
 
 export const defaultMobileSettings: MobileSettings = {
-  autoGit: false, analytics: false, theme: 'system', uiScale: 1.1,
+  autoGit: false, analytics: false, crashReporting: false, theme: 'system', uiScale: 1.1,
 }
 
 export function parseMobileSettings(raw: string | null): MobileSettings {
@@ -16,6 +17,7 @@ export function parseMobileSettings(raw: string | null): MobileSettings {
   return {
     autoGit: setting(value.autoGit, [true, false], defaultMobileSettings.autoGit),
     analytics: setting(value.analytics, [true, false], defaultMobileSettings.analytics),
+    crashReporting: setting(value.crashReporting, [true, false], defaultMobileSettings.crashReporting),
     theme: setting(value.theme, ['system', 'light', 'dark'], defaultMobileSettings.theme),
     uiScale: setting(value.uiScale, [1, 1.1], defaultMobileSettings.uiScale),
   }

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useMobileSearchEvent } from '../analytics/useMobileDiscoveryEvents'
 import type { MobileWorkspaceAction } from '../components/workspace/MobileWorkspaceActionSheet'
 import type {
   MobileSidebarFolderSelection,
@@ -199,6 +200,7 @@ export function useTabletWorkspaceController({
     snapshot,
   })
   const [openAction, setOpenAction] = useState<MobileWorkspaceAction | null>(null)
+  useMobileSearchEvent(openAction === 'search')
   const { readOnlyForm, resetForm, updateReadOnlyForm } = useReadOnlyFormState()
   const [searchQuery, setSearchQuery] = useState('')
   const navigation = useTabletWorkspaceNavigation(workspaceSnapshot, searchQuery)

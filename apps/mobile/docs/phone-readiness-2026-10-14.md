@@ -19,7 +19,7 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 | Accessibility | 44-point targets, Dynamic Type, VoiceOver and Reduced Motion | In progress |
 | Acceptance | Small/large phones, rotation, keyboard, offline/resume, large copied vault, iPad regressions | In progress |
 | Startup | Reopening a local vault must not block on a full disk scan/index rebuild | iOS restore indexing moved to native background queue; snapshot retained across parent rerenders. Native large-vault restore passes; cold-launch end-to-end latency and persistent cache remain follow-up work |
-| Telemetry | Desktop-aligned PostHog events and Sentry with explicit mobile/device attribution and privacy controls | Requested after branding/installations; pending |
+| Telemetry | Desktop-aligned PostHog events and Sentry with explicit mobile/device attribution and privacy controls | Implemented with independent consent; native fatal crashes, source-map upload and dashboard acceptance remain explicit release follow-ups |
 | GitHub sign-in | iPhone returns successfully from Safari authorization and finishes sign-in despite transient network interruptions | User confirms GitHub approved the code. Recovery regressions reproduced; retry fix passes focused tests, native/device acceptance pending |
 | iPad Properties | Tapping property values and relationship controls responds immediately and opens the appropriate action | Removed repeated vault-wide resolution in relationship picker; Type, URL, Tags and relationship dialogs open in native large-vault QA. Physical-device acceptance still pending |
 | Beta distribution | Installable beta with a reliable update path, without requiring testers to build source | User requested TestFlight preparation after current fixes; toolchain/account/release-gate assessment pending |
@@ -178,30 +178,88 @@ Official references checked October 14:
 [TestFlight workflow](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/),
 [Expo iOS builds](https://docs.expo.dev/build-reference/ios-builds/).
 
-## Remaining telemetry batch
+## October 14 telemetry batch
 
-- Existing mobile PostHog events are consent-bound, narrowly allowlisted and use
-  a session-only anonymous identifier. A mobile-specific name is not sufficient
-  for the requested cross-platform event model. Audit desktop event semantics
-  first: `note_created`, `note_deleted`, `vault_opened`, `vault_switched`,
-  `search_used`, `commit_made` and `theme_mode_changed` are existing examples.
-  Emit successful-action events only after success, not by renaming current
-  requested-operation events into success events.
-- Add common explicit product surface, OS, phone/tablet family, app/build version
-  and release-channel properties. Use the same PostHog project for comparisons.
-  Keep unrelated installations anonymous; GitHub storage authorization is not
-  permission to merge identities across devices. A future Tolaria account can
-  supply a shared pseudonymous user ID under explicit consent.
-- Sentry is not yet integrated in the mobile app. Use the official
-  `@sentry/react-native` SDK and Expo/Metro integration, source maps and native
-  debug symbols, separate crash-reporting consent, mobile release/build tags and
-  strict redaction. Do not enable replay, screenshots, automatic note/UI capture,
-  raw console/network breadcrumbs or default PII. Verify opt-out stops sending
-  and local queued-event behavior before release.
-- The requested analyzer-exception extension has not been approved as of this
-  record. Do not silently extend the October 14 14:12 UTC expiry or describe
-  these pending integrations as implemented. PostHog connection was suggested
-  for live ingestion verification; it is not yet confirmed connected.
+### October 14 analyzer exception extension
+
+- Approver: Luca, repository owner, explicitly approved the requested extension
+  in this chat on October 14 and authorized reusing desktop telemetry keys.
+- Expires: October 15, 2026 at 14:12 UTC (16:12 Europe/Rome), or earlier when
+  access returns. Review/remove within seven days; this is not a release waiver.
+- Blocked commands: `codacy tools gh refactoringhq tolaria --output json`
+  failed twice again with `No API token found`; CodeScene MCP is absent from
+  the available tool inventory. Cloud baseline, analyzer parity, exact-SHA
+  verification and MCP safeguards are unavailable, not passing.
+- Scope: mobile startup/authentication/properties fixes and mobile PostHog/Sentry
+  integration, settings, dependencies/build configuration, focused tests,
+  localization and architecture documentation. Exact paths recorded in each
+  batch manifest under `/Volumes/Jupiter/Cache/tolaria-mobile-telemetry-20261014`.
+- Risk: local analysis cannot prove cloud parity; crash reporting introduces a
+  privacy-sensitive transport. No thresholds or suppressions are weakened.
+- Compensation: per-file before/after local Codacy and CodeScene CLI, staged
+  delta, project API floors, focused privacy/consent/payload tests, scoped mobile
+  gates, native QA and inspection of bundled configuration without exposing
+  credentials. Baseline Hotspot 10 / Average 9.991524406635728 (floors 10 / 9.99).
+
+### Implementation
+
+- Desktop public PostHog key, EU ingestion host and Sentry DSN recovered from
+  the official desktop release and saved only in ignored `.env.local`. Native
+  Release bundle inspection confirms all three values without printing them.
+  Expo config also accepts the existing desktop `VITE_*` environment names;
+  private source-map upload credentials never enter the application manifest.
+- PostHog retains the bounded, consent-only transport and ephemeral anonymous
+  session ID. Desktop-aligned events: `note_created`, `note_deleted`,
+  `vault_opened`, `vault_switched`, `search_used`, `commit_made` and
+  `theme_mode_changed`. Create/delete fire after successful persistence; manual
+  commits fire only when files changed. Requested operations stay distinct.
+- Both services include `app_surface=mobile`, `platform`, `device_family`,
+  `app_version`, `build_number`, `release_channel` and `distribution`. No vault
+  names, paths, note content or GitHub identity are sent or used to link devices.
+- Official Sentry React Native SDK, matching core/CLI, Expo plugin and Metro
+  integration. Crash reporting has independent default-off persisted consent.
+  SDK loading is lazy; revocation aborts requests and invalidates old transports.
+  Error reports are reconstructed from an allowlist, removing raw messages,
+  attachments, breadcrumbs, user/request/extra/context data. Automatic sessions,
+  tracing, replay, logs, screenshots and UI capture are disabled.
+- Coverage is currently JavaScript errors and caught workspace/persistence
+  failures. Native fatal crash capture is intentionally disabled because native
+  reports bypass the JavaScript privacy filter. This is not full native-crash
+  coverage. Source-map upload and symbolication require private CI credentials,
+  Sentry organization/project configuration and server-side verification.
+
+### Verification and remaining gates
+
+- Two safe, explicitly marked synthetic verification events received HTTP 200
+  through the actual PostHog and Sentry transports. This proves ingestion
+  acceptance, not dashboard visibility or symbolication. No user content was
+  included. Evidence: `ingestion-verification.json` in the telemetry directory.
+- iOS simulator Release build passes. A pnpm-isolation failure in Sentry's build
+  script was fixed by declaring its matching CLI as a mobile dev dependency.
+  Local source-map uploads are explicitly disabled without private credentials.
+- Focused analytics/privacy tests pass, including old settings migration, payload
+  redaction, consent withdrawal, in-flight cancellation and initialization
+  failure. Mobile typecheck/lint and localization validation pass. All UI copy
+  reuses existing translated desktop keys; no new translation was required.
+- Native XCTest: both iPad privacy tests pass (analytics and independent crash
+  consent, persistence and revocation); four iPhone tests pass (crash consent
+  and the three existing phone readiness regressions). These are Release-native
+  app checks, not browser substitutes. The consent tests finish with both off.
+  Manual computer-use QA is blocked by the locked Mac; the owner was asked to
+  unlock it. This limitation is not represented as passing visual QA.
+- Laputa SHA-256 integrity remains 6,036 files, zero additions/deletions/changes.
+  Demo-vault status is empty. Native interaction tests use the isolated fixture.
+- Per-file local analysis: 147 successful analyzer/file runs, zero Critical,
+  High, Medium, Minor, Info or unclassified findings. All zero baselines remain
+  zero; the existing Metro config improves from one finding to zero. Manifest,
+  analyzer identity/version and per-file results are in `current-manifest.json`,
+  `branch-manifest.json` and `local-analyzer-evidence.json` in the evidence folder.
+- Refactoring: decomposed crash initialization/redaction helpers to preserve
+  CodeScene 10. ADR 0225 and Abstractions document ownership/privacy. Full
+  desktop/Rust coverage is not run for this experimental mobile-only batch.
+- Cloud Codacy parity/exact-SHA checks and CodeScene MCP safeguards remain
+  unavailable under the owner-approved exception above, not passing release
+  gates. No TestFlight upload is performed by this batch.
 
 References: [Sentry Expo setup](https://docs.sentry.io/platforms/react-native/guides/expo/),
 [PostHog anonymous and identified events](https://posthog.com/docs/data/anonymous-vs-identified-events).

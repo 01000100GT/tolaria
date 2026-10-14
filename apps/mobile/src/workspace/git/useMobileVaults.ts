@@ -15,6 +15,7 @@ import { withSavedWorkspace } from './workspaceWriteQueue'
 import { useMobileSettings } from '../../settings/useMobileSettings'
 import { useMobileAutoGit } from './useMobileAutoGit'
 import { useMobileAnalytics } from '../../analytics/useMobileAnalytics'
+import { useMobileVaultEvents } from '../../analytics/useMobileDiscoveryEvents'
 import { isWorkspaceLinked, syncLinkedWorkspace } from '../linkedWorkspace'
 import { useLinkedFolderSync } from '../useLinkedFolderSync'
 import { requireActiveSync } from '../syncCancellation'
@@ -37,6 +38,7 @@ export function useMobileVaults() {
   const [editors] = useState(createWorkspaceSyncEditors)
   const [override, setOverride] = useState<ActiveVault | null>(null)
   const active = override ?? catalog.restored ?? { selection: null, git: null }
+  useMobileVaultEvents(active.selection?.vaultRootUri)
   const [revision, setRevision] = useState(0)
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -212,6 +214,7 @@ export function useMobileVaults() {
     setPhase('checkpoint')
     const connection = managedGitConnection(active.git)
     const result = await withSavedWorkspace(connection.operationKey ?? connection.dir, () => createGitVault(connection).checkpoint(mobileGitAuthor(account.session), message))
+    if (result.changedFiles > 0) analytics.capture({ name: 'commit_made' })
     setLastCommitId(result.oid.slice(0, 8))
     setStatus('committed')
     committed = true
