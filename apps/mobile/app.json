@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "Tolaria Mobile",
+    "name": "Tolaria",
     "slug": "tolaria-mobile",
     "scheme": "tolaria",
     "version": "0.1.0",
+    "icon": "../../src-tauri/icons/512x512.png",
     "orientation": "default",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
+      "icon": {
+        "light": "../../src-tauri/icons/512x512.png",
+        "dark": "../../src-tauri/icons/512x512-dark.png"
+      },
       "bundleIdentifier": "com.tolaria.mobile.dev",
       "infoPlist": {
         "LSSupportsOpeningDocumentsInPlace": true,

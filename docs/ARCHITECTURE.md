@@ -295,6 +295,15 @@ Mobile attachment import and opening also follow the controller/editor callback 
 
 The mobile command palette mirrors the desktop command boundary without importing desktop React hooks. `apps/mobile/src/workspace/mobileCommandPalette.ts` builds enabled mobile command rows from existing workspace callbacks, preserving shared IDs from `src/shared/appCommandManifest.json` when a command is manifest-backed and using desktop dynamic command-palette IDs for rows such as note retargeting, file utility actions, and note-width changes. Selection-sensitive editor actions such as paste-without-formatting are registered by the mounted source or native WYSIWYG editor through `apps/mobile/src/workspace/mobileEditorCommands.ts`, so tablet and phone palettes can dispatch the active editor command without importing editor internals. `apps/mobile/src/components/workspace/MobileCommandPalette.tsx` owns only the native searchable/grouped surface; create/search/navigation/note/file/view/settings execution remains in the reducer/controller callbacks. Hardware keyboard commands are exposed through the tracked `TolariaKeyCommands` Expo module: its React delegate handler supplies the root UIKit controller and registers priority `UIKeyCommand`s, then forwards normalized events to the same JavaScript router used by DOM keyboard QA. The root controller accepts first-responder status when no text input owns focus. JavaScript retains one subscription across renders and reads current handlers through a ref. Cmd+1/2/3 and Cmd+Shift+I use the existing tablet panel controller. Unmodified arrows belong to the focused native text input, the open command palette, or the visible note list, in that order; modal/hidden lists cannot consume them. The palette explicitly registers its lifetime with the native module, receives arrows/Escape there, and uses the input's submit event for Return. Native XCTest exercises modifier shortcuts across one workspace session; `assert-ios-keyboard-navigation.mjs` uses AXe HID events and actual accessibility results for arrows/Return/Escape, which XCTest on iOS 18.3 cannot reliably synthesize. Neither harness treats bridge-event logs alone as a successful interaction.
 
+The mobile launcher name is `Tolaria`; the existing package and bundle identifiers
+remain unchanged so native updates retain their application data.
+The Expo launcher icon references the same `src-tauri/icons/512x512.png` and
+`512x512-dark.png` assets used by the desktop runtime. Expo's standard icon
+generation supplies the native sizes and iOS appearance variants. There is no
+independent mobile artwork; the older `icon-source.png` and Tauri iOS exports
+are not the current desktop icon source. Rebuild the native app after changing
+these assets or the icon configuration.
+
 ## System Overview
 
 ```mermaid

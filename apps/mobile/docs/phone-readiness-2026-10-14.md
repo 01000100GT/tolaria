@@ -18,6 +18,8 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 | Android | System Back and linked-folder support; actual native verification | Pending; SDK not found at the default local path |
 | Accessibility | 44-point targets, Dynamic Type, VoiceOver and Reduced Motion | In progress |
 | Acceptance | Small/large phones, rotation, keyboard, offline/resume, large copied vault, iPad regressions | In progress |
+| Startup | Reopening a local vault must not block on a full disk scan/index rebuild | Reported during device testing; investigation pending |
+| Telemetry | Desktop-aligned PostHog events and Sentry with explicit mobile/device attribution and privacy controls | Requested after branding/installations; pending |
 
 ## Baseline and evidence
 
@@ -134,3 +136,35 @@ not cloud dashboard results.
   product action. Architecture documents the native keyboard routing and QA.
   ADRs: none for this keyboard repair; ADR 0224 belongs to the earlier phone
   screen-lifetime batch. The remaining phone scope above is still pending.
+
+## Launcher branding and physical installs
+
+- `apps/mobile/app.json` now uses the `Tolaria` display name and references the
+  exact desktop runtime light/dark icon PNGs. The application identifiers are
+  unchanged. No new artwork, dependencies, runtime behavior or translated
+  strings were introduced. The native display-name/icon assets were regenerated
+  with Expo's installed configuration plugins, then compiled into Release builds.
+- Evidence directory: `/Volumes/Jupiter/Cache/tolaria-mobile-icon-20261014`.
+  The initial shared-icon contract failed before the change; the final contract
+  checks name, source paths and stable bundle identity. The compiled simulator
+  asset catalog contains both 1024px light/dark variants. Native Home Screen QA
+  shows the blue desktop droplet, the accessibility label is `Tolaria`, and
+  clicking it launches the app successfully (`home-screen.png`).
+- Release build and installation succeeded on the physical iPad and iPhone 13
+  Pro Max. Both devices launched successfully; the iPhone was verified after
+  the owner confirmed developer-profile trust (`iphone-launch-trusted.json`).
+  No device data was reset and no vault files were edited for this check.
+- Scan manifest: one existing non-executable Expo JSON configuration,
+  `apps/mobile/app.json`, plus this record and `docs/ARCHITECTURE.md`. Its local
+  Biome 2.5.6, Opengrep 1.26.0, Trivy 0.72.0 and Jackson 1.0.0 scans each checked
+  one file successfully, with zero findings/errors before and after at every
+  severity. JSON is unsupported by CodeScene (confirmed on retry), so no file
+  Code Health score is claimed and no scorable source file changed. Project
+  health remains Hotspot 10 / Average 9.991524406635728 against floors 10 / 9.99.
+  Cloud/MCP verification remains unavailable under the previously approved
+  exception, expiring October 14 at 14:12 UTC; no production promotion.
+- `pnpm l10n:translate` and `pnpm l10n:validate` pass without catalog changes;
+  `Tolaria` is the existing product name. PostHog: no event needed for packaging
+  branding. Refactoring: none. ADRs: none. Architecture records the shared asset
+  source. Demo fixture dirt is empty. Normal mobile hooks apply to commit/push;
+  no desktop/Rust coverage run is required for this experimental metadata change.
