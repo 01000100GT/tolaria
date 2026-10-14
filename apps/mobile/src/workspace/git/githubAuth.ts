@@ -41,19 +41,41 @@ export async function finishGitHubSignIn(
 ): Promise<GitHubSession> {
   const deadline = Date.now() + code.expires_in * 1000
   let interval = Math.max(5, code.interval) * 1000
+  const poll = deviceAuthorizationPoll(clientId, code, signal, request)
   while (Date.now() < deadline) {
-    await waitForPoll(interval, signal)
+    await waitForPoll(Math.min(interval, deadline - Date.now()), signal)
     if (Date.now() >= deadline) break
-    const result = await githubForm<TokenResponse>('oauth/access_token', {
-      client_id: clientId,
-      device_code: code.device_code,
-      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-    }, request, signal)
-    if (result.access_token) return identifyGitHubSession(result, request, signal)
-    if (result.error === 'slow_down') interval += 5000
-    else if (result.error !== 'authorization_pending') throw new Error('githubAuthorizationFailed')
+    try {
+      const session = await poll()
+      if (session) return session
+    } catch (error) {
+      interval = nextDevicePollInterval(error, interval)
+    }
   }
   throw new Error('githubAuthorizationExpired')
+}
+
+function deviceAuthorizationPoll(clientId: string, code: GitHubDeviceCode, signal: AbortSignal, request: GitHubRequest) {
+  let tokens: TokenResponse | undefined
+  return async () => {
+    // Keep an issued token in memory if Safari/backgrounding interrupts /user.
+    tokens ??= await githubForm<TokenResponse>('oauth/access_token', {
+      client_id: clientId, device_code: code.device_code,
+      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+    }, request, signal)
+    if (tokens.access_token) return identifyGitHubSession(tokens, request, signal)
+    const error = tokens.error
+    tokens = undefined
+    if (error === 'authorization_pending') return null
+    throw new Error(error === 'slow_down' ? 'githubSlowDown' : 'githubAuthorizationFailed')
+  }
+}
+
+function nextDevicePollInterval(error: unknown, interval: number): number {
+  const message = error instanceof Error ? error.message : ''
+  if (message === 'githubSlowDown') return interval + 5000
+  if (message === 'githubNetworkFailed' || message === 'githubRequestTimeout') return interval * 2
+  throw error
 }
 
 export async function refreshGitHubSession(session: GitHubSession, clientId: string, request: GitHubRequest = fetch, signal?: AbortSignal) {

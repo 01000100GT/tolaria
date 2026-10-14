@@ -18,8 +18,11 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 | Android | System Back and linked-folder support; actual native verification | Pending; SDK not found at the default local path |
 | Accessibility | 44-point targets, Dynamic Type, VoiceOver and Reduced Motion | In progress |
 | Acceptance | Small/large phones, rotation, keyboard, offline/resume, large copied vault, iPad regressions | In progress |
-| Startup | Reopening a local vault must not block on a full disk scan/index rebuild | Reported during device testing; investigation pending |
+| Startup | Reopening a local vault must not block on a full disk scan/index rebuild | Investigation: restored managed selections lack an index; screen resolution synchronously rebuilds the snapshot on rerender. Fix and native measurements pending |
 | Telemetry | Desktop-aligned PostHog events and Sentry with explicit mobile/device attribution and privacy controls | Requested after branding/installations; pending |
+| GitHub sign-in | iPhone returns successfully from Safari authorization and finishes sign-in despite transient network interruptions | User confirms GitHub approved the code. Recovery regressions reproduced; retry fix passes focused tests, native/device acceptance pending |
+| iPad Properties | Tapping property values and relationship controls responds immediately and opens the appropriate action | User reports taps have no effect or abysmal latency; reproduce independently on actual native runtime, not considered fixed by startup work |
+| Beta distribution | Installable beta with a reliable update path, without requiring testers to build source | Assess TestFlight and Android testing distribution, plus compatible over-the-air JS updates; implementation not yet requested |
 
 ## Baseline and evidence
 
@@ -52,6 +55,36 @@ vaults or disposable copies for mutation tests; leave Laputa unchanged.
 - Latest iPad feedback is also in scope: hardware Cmd+K, pane shortcuts and
   note-list arrows. Native regressions reproduced the failures before the fix;
   the completed keyboard batch is recorded below.
+
+## GitHub return-from-Safari recovery
+
+- GitHub approved the user's device code, but Tolaria reported a connection
+  failure on return. The previous polling loop treated its first interrupted
+  network request as terminal, discarding the sign-in attempt.
+- Six focused regressions cover interrupted token polling, interrupted identity
+  verification, request timeout, deadline expiry, immediate cancellation and
+  explicit denial. Five failed before the change; all six pass afterward, along
+  with existing authorization, request and cancellation coverage (23 tests).
+- Transient retries use exponential backoff and the original device-code
+  deadline. GitHub slow-down responses retain their additional five-second
+  interval. Denial and cancellation never retry. An issued token remains only in
+  memory until the account identity is verified and the existing secure store
+  persists the session. No credentials or response bodies are logged.
+- Release device build succeeds and is installed on the physical iPhone.
+  End-to-end approval/return acceptance is awaiting the user's retry; the
+  deterministic failure tests are not represented as live GitHub acceptance.
+- Exact code manifest: `githubAuth.ts` (existing),
+  `githubSignInRecovery.test.ts` (new), both under `src/workspace/git/`.
+  CodeScene: existing 10 -> 10; new 10. All ten per-file local analyzer runs
+  completed with zero findings at every severity and zero errors; existing
+  zero baseline stayed zero. Evidence and full branch-path manifest:
+  `/Volumes/Jupiter/Cache/tolaria-mobile-auth-20261014`.
+- CodeScene project baseline: Hotspot 10 / Average 9.991524406635728. Cloud
+  Codacy still lacks authentication after two retries; MCP remains unavailable.
+  The existing time-bounded owner exception applies, not a release waiver.
+- Localization: no UI copy changes. PostHog: no event needed for restoring an
+  existing sign-in flow. No dependency or ADR; Abstractions documents retry
+  ownership. No vault data was changed.
 
 ## iPad keyboard batch
 

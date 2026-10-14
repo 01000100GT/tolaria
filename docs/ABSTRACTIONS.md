@@ -51,6 +51,11 @@ iCloud synchronizer and must not label local disk writes as remote synchronizati
 `githubRequest.ts` bounds the complete JSON exchange, including the response
 body, and settles cancellation even if a transport ignores its abort signal.
 Device-code, token, identity, and repository requests share that boundary.
+Device authorization retries network interruptions and request timeouts with
+exponential polling backoff until the original code deadline; explicit denial
+and cancellation remain terminal. An issued token stays in memory while retrying
+identity verification, rather than exchanging the device code again. No session
+is published or persisted until identity verification succeeds.
 `githubAccountState.ts` retains the visible account until secure credential
 deletion succeeds; network and storage failures are not reported as expired
 authorization. `githubFailure.ts` maps only known error identifiers to localized
