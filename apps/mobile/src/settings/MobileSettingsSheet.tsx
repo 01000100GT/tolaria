@@ -26,7 +26,8 @@ export function MobileSettingsSheet({ manager }: { manager: ReturnType<typeof us
   const close = () => { manager.account.cancelSignIn(); preferences.close() }
   const openVaults = () => { close(); void manager.open() }
   const clone = async (url: string) => { preferences.close(); await manager.clone(url) }
-  return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={close}>
+  return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={close}
+    supportedOrientations={['portrait', 'portrait-upside-down', 'landscape-left', 'landscape-right']}>
     <View style={styles.backdrop}>
       <MobilePanel style={styles.panel} accessibilityViewIsModal testID="mobile-settings">
         <MobileToolbar>

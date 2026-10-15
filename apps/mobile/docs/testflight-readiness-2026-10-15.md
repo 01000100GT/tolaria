@@ -26,6 +26,35 @@ signing-account change or beta invitation has been performed.
 
 ## Blocking checklist
 
+### Unlocked-Mac follow-up, October 15
+
+Native manual QA resumed after the owner unlocked the Mac. On the installed
+iPhone Release build, Properties opens and its type editor can be cancelled
+without a mutation. Opening Settings in landscape incorrectly forces portrait
+content. Evidence: `tolaria-testflight-remediation-20261015/phone-settings-orientation.png`
+under `/Volumes/Jupiter/Cache`.
+
+The Settings correction and its native regression test fall within the existing
+October 14 approval's explicit mobile Settings/focused-tests scope; its expiry
+remains October 15 at 14:12 UTC. This does not extend that approval to the broader
+desktop/branch release remediation. Codacy Cloud was retried twice and still
+reports no API token; the CodeScene MCP remains unavailable. Compensation is
+the same per-file local analysis, CodeScene CLI before/after, native regression
+and scoped mobile gates. No release gate is waived. Before editing,
+`MobileSettingsSheet.tsx` scores 10 and has zero findings from all five relevant
+local analyzers. Project Hotspot/Average remain 10 / 9.991563181194524.
+
+The affected code paths for this scoped correction are
+`apps/mobile/src/settings/MobileSettingsSheet.tsx` (existing) and
+`apps/mobile/native-ui-tests/MobileSettingsOrientationTests.swift` (new).
+The same Settings/build-configuration scope covers correcting the forced native
+light appearance in `apps/mobile/app.json` and adding
+`apps/mobile/src/settings/mobileNativeAppearance.test.ts`. The JSON manifest is
+not a scorable CodeScene language; all four relevant local analyzers completed
+its baseline with zero findings.
+
+### Release gates
+
 | Gate | Current evidence | Required next action |
 | --- | --- | --- |
 | Full frontend tests/coverage | 5,308 passed, one inspector failure; focused retry reproduces it | Fix `InspectorPanels.test.tsx` / Type schema placeholder behavior, then rerun coverage and smoke gates |
