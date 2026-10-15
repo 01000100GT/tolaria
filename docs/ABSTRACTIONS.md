@@ -380,9 +380,12 @@ React Native SDK and uses a revocable, bounded SDK transport. `mobileCrashPrivac
 rebuilds reports from stack coordinates and safe exception types, excluding raw
 messages, vault data, attachments and automatic UI/network context. A small
 `mobileCrashChannel` allows domain error boundaries to report without importing
-the SDK. Native fatal crash handling remains disabled until a native redaction
-boundary is implemented. Expo/Metro source-map upload is configured but requires
-private CI credentials. See ADR 0225 for scope, attribution and privacy policy.
+the SDK. `mobileCombinedCrashDriver` coordinates that driver with the local
+`tolaria-crash-reporting` Expo module on iOS. The module owns native allowlist
+redaction, a cancellable URL session and generation-isolated crash caches. Only
+loaded, explicit consent starts either SDK; revocation cancels both immediately.
+Expo/Metro source-map upload requires private CI credentials. See ADRs 0225 and
+0226 for attribution, privacy policy and native crash-recovery boundaries.
 
 `MobileThemeProvider` resolves installation appearance preferences and publishes
 desktop-derived palettes to both NativeWind/RNR and explicit native styles.

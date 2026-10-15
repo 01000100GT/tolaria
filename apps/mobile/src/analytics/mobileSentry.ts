@@ -2,9 +2,13 @@ import { createMobileCrashReporting } from './mobileCrashReporting'
 import { mobileRuntimeContext, mobileTelemetryConfig } from './mobileTelemetryRuntime'
 import { createMobileSentryDriver } from './mobileSentryDriver'
 import { registerMobileCrashReporter } from './mobileCrashChannel'
+import { combineMobileCrashDrivers } from './mobileCombinedCrashDriver'
+import { mobileNativeCrash } from './mobileNativeCrash'
 
 const dsn = mobileTelemetryConfig().sentryDsn
-const driver = createMobileSentryDriver({ metadata: mobileRuntimeContext(), dsn }, () => import('@sentry/react-native'))
+const metadata = mobileRuntimeContext()
+const javascript = createMobileSentryDriver({ metadata, dsn }, () => import('@sentry/react-native'))
+const driver = combineMobileCrashDrivers(javascript, mobileNativeCrash(dsn, metadata))
 export const mobileCrashReporting = createMobileCrashReporting({ configured: validDsn(dsn), driver })
 registerMobileCrashReporter(mobileCrashReporting.capture)
 

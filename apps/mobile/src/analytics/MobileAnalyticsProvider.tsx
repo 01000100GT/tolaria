@@ -28,7 +28,8 @@ export function MobileAnalyticsProvider({ children }: { children: ReactNode }) {
     return () => analytics.setEnabled(false)
   }, [analytics, ready, settings.analytics])
   useEffect(() => {
-    void mobileCrashReporting.setEnabled(ready && settings.crashReporting)
+    if (!ready) return
+    void mobileCrashReporting.setEnabled(settings.crashReporting)
     return () => { void mobileCrashReporting.setEnabled(false) }
   }, [ready, settings.crashReporting])
   return <AnalyticsContext.Provider value={analytics}>{children}</AnalyticsContext.Provider>
