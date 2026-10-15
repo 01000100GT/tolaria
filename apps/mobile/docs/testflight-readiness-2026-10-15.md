@@ -30,6 +30,7 @@ signing-account change or beta invitation has been performed.
 | --- | --- | --- |
 | Full frontend tests/coverage | 5,308 passed, one inspector failure; focused retry reproduces it | Fix `InspectorPanels.test.tsx` / Type schema placeholder behavior, then rerun coverage and smoke gates |
 | Full branch CodeScene | 1,128 eligible files checked against `origin/main`; 16 existing paths have findings | Refactor those paths and repeat the branch comparison; current-batch cleanliness is not a branch release pass |
+| Full release security hook | 117 local differential findings across 60 older branch paths, none in this batch | Triage/fix all findings and verify analyzer configuration; these are not 117 confirmed vulnerabilities |
 | Cloud analysis | Codacy CLI reports missing API token after two attempts; CodeScene MCP unavailable | Restore access, verify analyzer parity and exact pushed SHA; do not treat local scans as cloud verification |
 | Upload toolchain | Local Xcode 16.2; existing CircleCI macOS lane uses 16.4 | Use Xcode 26+ with iOS/iPadOS 26 SDK in a dedicated mobile CircleCI lane |
 | Application identity | Development bundle `com.tolaria.mobile.dev`, version 0.1.0 | Owner confirms permanent release bundle ID and Apple team; proposed `com.tolaria.mobile` / `C83NM98757`, not assumed approved |
@@ -124,6 +125,28 @@ interface despite an in-app System theme setting.
   updated. Refactoring: configuration builder and native privacy decomposition.
 - Laputa: SHA-256 comparison of all 6,036 files shows zero changed, added or
   removed files. `git status --short -- demo-vault demo-vault-v2` is empty.
+
+### Commit and release-hook result
+
+Implementation commit: `bfbd447c7`. Normal pre-commit hooks pass: mobile lint,
+typecheck and all 1,554 tests. The standalone full hook was then run with
+`TOLARIA_MOBILE_FULL_GATE=1 sh .husky/pre-push < /dev/null`. It exited 1 at
+`pnpm codacy:gate`, before subsequent build/coverage/smoke stages. The separate
+full desktop/Rust runs above are still recorded, not substituted for that gate.
+
+The differential hook reports 117 findings over 60 earlier branch files, zero
+in this batch. Its legacy ESLint8/security configuration is not the same roster
+as the explicit per-file ESLint9 scans; restore cloud parity before interpreting
+the discrepancy. Findings include lint/style, accessibility and security-rule
+matches, some in test fixtures. None are dismissed as false positives without
+analysis/approval. Exact file/line/rule records are retained in
+`full-release-findings.json`; the original output is `full-release-hook.log`.
+
+No push was attempted with a known failing full change-set/hook. The new commit
+is local, and Codacy exact-pushed-SHA verification is therefore outstanding.
+Broader remediation is blocked on restoring cloud access or obtaining the
+requested, narrowly scoped unavailable-service exception. That exception would
+permit preparation only, not bypass these failing release gates.
 
 ### Full branch CodeScene remediation
 

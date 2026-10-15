@@ -1,5 +1,10 @@
 # Phone readiness
 
+Latest release audit: [TestFlight readiness, October 15](testflight-readiness-2026-10-15.md).
+Native iOS crash capture is now implemented and tested. Distribution remains
+blocked by the full branch gates and the signing/toolchain/account requirements
+recorded there; the earlier assessment below is historical evidence.
+
 ## Accepted scope
 
 Track the complete phone review, not only the last request. Use isolated fixture
