@@ -30,9 +30,18 @@ signing-account change or beta invitation has been performed.
 
 Native manual QA resumed after the owner unlocked the Mac. On the installed
 iPhone Release build, Properties opens and its type editor can be cancelled
-without a mutation. Opening Settings in landscape incorrectly forces portrait
-content. Evidence: `tolaria-testflight-remediation-20261015/phone-settings-orientation.png`
-under `/Volumes/Jupiter/Cache`.
+without a mutation. Opening Settings in landscape incorrectly forced portrait
+content. A native regression reproduced the failure before the fix; both
+landscape orientations now pass on iPhone and iPad. Evidence:
+`tolaria-testflight-remediation-20261015/settings-red-v2.xcresult` and the final
+phone/iPad acceptance bundles under `/Volumes/Jupiter/Cache`.
+
+The System theme also stayed light when the simulator's appearance was dark.
+The Expo manifest forced a light native interface. A failing manifest regression
+was added, then the interface style was changed to automatic and the native
+binary rebuilt. Screenshots confirm dark system appearance becomes dark in the
+app and switching back to light updates the running app. The simulator was
+restored to light; the user's theme and telemetry settings were not changed.
 
 The Settings correction and its native regression test fall within the existing
 October 14 approval's explicit mobile Settings/focused-tests scope; its expiry
@@ -53,6 +62,35 @@ light appearance in `apps/mobile/app.json` and adding
 not a scorable CodeScene language; all four relevant local analyzers completed
 its baseline with zero findings.
 
+All four paths have final explicit local scans: 17 successful analyzer/file
+runs, zero errors and zero findings at every severity. All three scorable files
+score 10; the JSON manifest is unsupported by CodeScene after a retry. The
+staged CLI check is clean. These results do not establish cloud analyzer parity
+or waive the full branch failures below.
+
+Final native acceptance on the rebuilt iOS 18.3 simulators: seven iPhone and
+five iPad XCTest checks pass, including Settings orientation, account controls,
+phone editor header/properties/keyboard/safe areas, tablet type visibility,
+relationship controls and footer bounds. Manual iPad coordinate interaction
+still fails in the computer-use tool despite an unlocked Mac; native XCTest
+taps provide the recorded interaction evidence, not a claimed manual pass.
+Mobile lint/typecheck and all 1,555 tests pass in the normal commit hook. An
+earlier concurrent build/test run timed out in three Git tests; all nine Git
+tests passed in isolation and the entire hook passed after the native jobs
+finished, without increasing timeouts. Orientation fix commit: `773984d4a`.
+Localization validation still passes (21 catalogs, 1,242 keys); no UI copy or
+new analytics action changed. No new ADR or abstraction was needed. Laputa's
+6,036-file SHA-256 comparison shows no changed, added or removed files.
+
+The signed Release-configuration development build succeeded and passed strict
+code-signature verification. It was installed over the existing app on the
+physical iPad without uninstalling or resetting its sandbox. Launch was denied
+because the iPad is locked; this is installation evidence, not physical UI
+acceptance. The paired iPhone is not reachable. Evidence: `device-build.log`,
+`ipad-install.json` and `ipad-launch.json` in the follow-up evidence directory.
+This binary still uses `com.tolaria.mobile.dev` and the existing development
+identity; it is not a TestFlight distribution archive.
+
 ### Release gates
 
 | Gate | Current evidence | Required next action |
@@ -67,7 +105,7 @@ its baseline with zero findings.
 | App Store Connect | App record and permissions unverified | Owner provides access; create/verify app record and internal tester group |
 | Symbolication | Expo/Metro Sentry integration exists; local QA disables upload | Set private `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` in CI and verify source maps/dSYMs for the exact archive |
 | Telemetry acceptance | Prior synthetic ingestion accepted; native crash recovery now proven locally | Verify events in PostHog/Sentry, release/device attribution, symbolication, IP retention and privacy disclosures |
-| Native acceptance | Six iPhone checks, four iPad checks and real crash recovery pass | Unlock Mac for manual acceptance; verify final signed binary on both physical devices |
+| Native acceptance | Seven iPhone checks, five iPad checks, system-theme switching and prior real crash recovery pass; Mac unlocked | Verify final signed binary on physical devices; computer-use iPad coordinate interaction remains unavailable |
 | Live GitHub/sync | Retry and sync regressions covered elsewhere; not end-to-end accepted in this batch | Test Safari return, clone, edit/save, offline/resume and non-conflicting/conflicting sync against a disposable remote |
 | Beta metadata | Not submitted | Owner supplies feedback contact, privacy/support URLs and approves privacy/export-compliance answers and test instructions |
 
@@ -96,8 +134,8 @@ beta. Never uninstall it as an installation troubleshooting shortcut.
 The first candidate should be iOS-only, single-active-vault and internal-test
 only. Unfinished share-in, Android acceptance and broader phone polish remain
 tracked in `phone-readiness-2026-10-14.md`; do not imply they shipped. System
-appearance also needs verification: Expo currently declares a light native
-interface despite an in-app System theme setting.
+appearance is now verified on the rebuilt native simulator app; physical-device
+and distribution-binary acceptance remain separate requirements.
 
 ## Release evidence record
 
@@ -106,7 +144,8 @@ interface despite an in-app System theme setting.
 - Mobile lint/typecheck pass; mobile suite: 1,554 tests in 272 files pass.
   Six standalone Swift SDK/privacy/cache tests pass. Red regressions reproduced
   premature consent revocation and loss of a crashed thread beyond the limit.
-- Native Release build succeeds on the iOS 18.2 simulator runtime. Six iPhone
+- Native Release build succeeds on the iOS 18.3 simulator runtime (Xcode's iOS
+  SDK is 18.2). Six iPhone
   XCTest checks cover editor header, keyboard-safe properties, source-mode
   lifetime, landscape formatting, safe areas and independent persisted crash
   consent. Four iPad checks cover consent, type-visibility spacing, relationship
@@ -118,7 +157,8 @@ interface despite an in-app System theme setting.
 - Full Rust coverage: 86.12% lines, passing the 85% floor. Full desktop coverage
   command fails because one test fails; no passing frontend coverage percentage
   is claimed. Playwright release smoke and physical-device acceptance remain
-  outstanding. Manual computer-use stopped when the Mac locked.
+  outstanding. The unlocked-Mac follow-up above supersedes the earlier manual
+  QA interruption, not these release gates.
 - CodeScene starting project: Hotspot 10, Average 9.991563181194524; floors
   10 / 9.99. Both existing files started at 10 and remain 10; all 14 new scorable
   files score 10. `Package.swift` has no scorable code and no findings. Builder

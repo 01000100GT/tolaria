@@ -6,7 +6,7 @@
     "version": "0.1.0",
     "icon": "../../src-tauri/icons/512x512.png",
     "orientation": "default",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "icon": {
