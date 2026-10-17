@@ -304,6 +304,15 @@ independent mobile artwork; the older `icon-source.png` and Tauri iOS exports
 are not the current desktop icon source. Rebuild the native app after changing
 these assets or the icon configuration.
 
+The Expo dynamic configuration keeps development on `com.tolaria.mobile.dev`.
+`TOLARIA_BUILD_PROFILE=testflight` selects `md.tolaria.mobile` and the Refactoring
+ETS signing team, requires `TOLARIA_IOS_BUILD_NUMBER` (1-9999), and validates
+`EXPO_PUBLIC_DISTRIBUTION=testflight` / `EXPO_PUBLIC_RELEASE_CHANNEL=alpha`.
+Run prebuild and archive with the same environment; existing native projects do
+not change merely because environment variables changed. Build-number ordering
+against App Store Connect is a release preflight responsibility. This separation
+does not migrate or remove development vaults (ADR 0227).
+
 ## System Overview
 
 ```mermaid
