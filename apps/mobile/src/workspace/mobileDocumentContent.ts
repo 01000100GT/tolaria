@@ -20,6 +20,7 @@ import {
   type MobileMarkdownImage,
 } from './mobileMarkdownImage'
 import { readMobileInlineMathAt } from './mobileInlineMath'
+import { mobileDiagramHtmlBlock } from './mobileDiagramMarkdown'
 import {
   mobileMarkdownTableSource,
   readMobileMarkdownTableAt,
@@ -114,8 +115,9 @@ export function mobileDocumentWithBody(
   return `${content.slice(0, boundary.bodyStart)}${body}`
 }
 
-export function mobileMarkdownBodyToTentapHtml(body: MarkdownBody): string {
+export function mobileMarkdownBodyToTentapHtml(body: MarkdownBody, options: { diagrams?: boolean } = {}): string {
   const lines = body.replace(/\r\n/g, '\n').split('\n')
+  const readers = options.diagrams ? [mobileDiagramHtmlBlock, ...htmlBlockReaders] : htmlBlockReaders
   const blocks: string[] = []
   let index = 0
 
@@ -126,7 +128,7 @@ export function mobileMarkdownBodyToTentapHtml(body: MarkdownBody): string {
       continue
     }
 
-    const block = readHtmlBlock(lines, index) ?? readParagraphHtml(lines, index)
+    const block = readHtmlBlock(lines, index, readers) ?? readParagraphHtml(lines, index)
     blocks.push(block.html)
     index = block.nextIndex
   }
@@ -165,15 +167,7 @@ function readCodeBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockR
   const opening = readMobileMarkdownCodeFence(openingLine)
   if (!opening) return null
 
-  const openingIndent = leadingMarkdownBlockIndent(openingLine)
-  const codeLines: string[] = []
-  let index = startIndex + 1
-  while (index < lines.length && !isMobileMarkdownCodeFenceClose(lines[index] ?? '', opening)) {
-    codeLines.push(stripMarkdownBlockContentIndent(lines[index] ?? '', openingIndent))
-    index += 1
-  }
-
-  const nextIndex = index < lines.length ? index + 1 : index
+  const { codeLines, nextIndex } = readCodeFenceBody(lines, startIndex, opening)
   const language = simpleCodeBlockLanguage(opening.info)
   if (!isNativeCodeBlockFence(opening.marker, opening.markerKind, language, opening.info)) {
     return sourceLinesParagraphBlock(lines.slice(startIndex, nextIndex), nextIndex)
@@ -186,6 +180,26 @@ function readCodeBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockR
     html: `<pre><code${languageAttrs}>${escapeHtml(codeLines.join('\n'))}</code></pre>`,
     nextIndex,
   }
+}
+
+function readCodeFenceBody(
+  lines: MarkdownLines,
+  startIndex: number,
+  opening: NonNullable<ReturnType<typeof readMobileMarkdownCodeFence>>,
+) {
+  const openingLine = lines[startIndex] ?? ''
+  const openingIndent = leadingMarkdownBlockIndent(openingLine)
+  const codeLines: string[] = []
+  let index = startIndex + 1
+  while (index < lines.length) {
+    const line = lines[index]
+    if (isMobileMarkdownCodeFenceClose(line, opening)) break
+    codeLines.push(stripMarkdownBlockContentIndent(line, openingIndent))
+    index += 1
+  }
+
+  const nextIndex = index < lines.length ? index + 1 : index
+  return { codeLines, nextIndex }
 }
 
 function isNativeCodeBlockFence(
@@ -250,8 +264,8 @@ const htmlBlockReaders = [
   readList,
 ]
 
-function readHtmlBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
-  for (const reader of htmlBlockReaders) {
+function readHtmlBlock(lines: MarkdownLines, startIndex: number, readers = htmlBlockReaders): ReadHtmlBlockResult | null {
+  for (const reader of readers) {
     const block = reader(lines, startIndex)
     if (block) return block
   }
@@ -992,6 +1006,7 @@ const blockNodeSerializers: Record<string, (node: TiptapJsonNode, options: Tipta
   taskList: (node, options) => serializeList(node, 'task', options),
   blockquote: (node, options) => prefixLines(serializeBlockChildren(node.content ?? [], options), '> '),
   codeBlock: codeBlockMarkdown,
+  mobileDiagram: (node) => typeof node.attrs?.source === 'string' ? node.attrs.source : '',
   horizontalRule: () => '---',
   image: imageMarkdown,
   mathBlock: displayMathMarkdown,

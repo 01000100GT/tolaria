@@ -3,7 +3,9 @@ import { cacheDirectory, copyAsync, deleteAsync, makeDirectoryAsync, writeAsStri
 import { useEffect, useMemo, useState } from 'react'
 import { mobileAttachmentUriForHref, mobileHtmlWithResolvedAttachmentUris, mobilePortableAttachmentPath } from '../../workspace/mobileAttachmentUris'
 import { mobileMarkdownBodyToTentapHtml } from '../../workspace/mobileDocumentContent'
+import { mobileMarkdownHasDiagrams } from '../../workspace/mobileDiagramMarkdown'
 import { mobileWysiwygTentapEditorHtml } from './MobileWysiwygTentapEditorHtml'
+import { copyMobileDiagramRenderer } from './mobileDiagramRendererAsset.native'
 
 type VaultRootUri = string
 type MarkdownBody = string
@@ -14,7 +16,7 @@ const previewCache = `${cacheDirectory}tolaria-editor-previews/`
 
 export function mobileEditorPreviewHtml(markdown: MarkdownBody, vaultRootUri?: VaultRootUri | null): string {
   // Images stay portable in Tiptap JSON and resolve relative to the private shell.
-  return mobileMarkdownBodyToTentapHtml(markdown).replace(/\bhref=".*?"/gu,
+  return mobileMarkdownBodyToTentapHtml(markdown, { diagrams: true }).replace(/\bhref=".*?"/gu,
     (link) => mobileHtmlWithResolvedAttachmentUris(link, vaultRootUri))
 }
 
@@ -43,16 +45,18 @@ class MobileEditorPreview {
   readonly source = { uri: `${this.rootUri}editor.html` }
   private readonly copied = new Set<string>()
   private initialized = false
+  private diagramsReady = false
   private disposed = false
   private pending: Promise<void> = Promise.resolve()
 
   constructor(private readonly vaultRootUri: VaultRootUri) {}
 
-  private async preparePaths(paths: readonly string[]) {
+  private async preparePaths(paths: readonly string[], diagrams = false) {
     if (this.disposed) throw new Error('Editor preview disposed')
     this.pending = this.pending.catch(() => undefined).then(async () => {
       await this.initialize()
       await this.copyImages(paths)
+      if (diagrams) await this.prepareDiagrams()
     })
     await this.pending
   }
@@ -86,7 +90,13 @@ class MobileEditorPreview {
     }
   }
 
-  prepare(markdown: MarkdownBody) { return this.preparePaths(previewImagePaths(markdown)) }
+  private async prepareDiagrams() {
+    if (this.diagramsReady) return
+    try { await copyMobileDiagramRenderer(this.rootUri); this.diagramsReady = true }
+    catch { /* An optional preview failure must retain the editable source. */ }
+  }
+
+  prepare(markdown: MarkdownBody) { return this.preparePaths(previewImagePaths(markdown), mobileMarkdownHasDiagrams(markdown, 'mermaid')) }
   prepareAttachment = (href: string) => this.preparePaths(mobilePortableAttachmentPath(href) ? [href] : [])
 
   async dispose() {
@@ -115,7 +125,9 @@ export function mobileEditorFileWebViewProps(preview: ReturnType<typeof createMo
     allowUniversalAccessFromFileURLs: false,
     // Inspect every navigation rather than letting WebView launch external URLs.
     originWhitelist: ['*'],
-    onShouldStartLoadWithRequest: ({ url }: { url: string }) => url === preview.source.uri || url === 'about:blank',
+    onShouldStartLoadWithRequest: ({ url, isTopFrame }: { url: string; isTopFrame?: boolean }) =>
+      url === preview.source.uri || url === 'about:blank'
+      || (isTopFrame === false && url === `${preview.rootUri}diagram-renderer.html`),
   }
 }
 

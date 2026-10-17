@@ -407,7 +407,7 @@ export const mobileParityInventory = [
     surface: 'Native WYSIWYG document editor',
   },
   {
-    assertions: ['custom TenTap WebView source includes Tolaria-owned Tiptap extensions', 'native iOS WYSIWYG input-transform proof covers rendered inline math'],
+    assertions: ['custom TenTap WebView source includes Tolaria-owned Tiptap extensions', 'native iOS WYSIWYG input-transform proof covers rendered inline math', 'MobileDiagramPreviewTests: offline Mermaid rendering and exact Mermaid/whiteboard source retention'],
     contracts: ['desktopEditorParity', 'desktopToolbarActionParity'],
     desktopSource: 'BlockNote/Tiptap editor schema extensions and desktop editor rendering boundary',
     mobileFile: 'src/components/workspace/MobileWysiwygTentapWebEditor.tsx',

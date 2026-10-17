@@ -29,6 +29,7 @@ import { nativeWysiwygDocumentWithInputTransforms } from '../../workspace/mobile
 import { MobileWysiwygFormattingToolbar } from './MobileWysiwygFormattingToolbar.native'
 import { useNativeWysiwygAutocompleteProbe } from './MobileWysiwygAutocompleteProbe.native'
 import { MobileCodeBlockBridge } from './MobileWysiwygCodeBlockBridge'
+import { MobileDiagramBridge } from './MobileWysiwygDiagramBridge'
 import {
   activateNativeEditorChanges,
   isContentSettableEditorBridge,
@@ -211,6 +212,7 @@ type SelectionSettableEditorBridge = EditorBridge & {
 const mobileTenTapBridgeExtensions = [
   ...TenTapStartKit,
   MobileCodeBlockBridge,
+  MobileDiagramBridge,
   MobileMathInlineBridge,
   MobileWysiwygContentBridge,
   MobileWysiwygOutlineBridge,
@@ -223,26 +225,13 @@ export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorPr
   const {
     blocks,
     bullets,
-    compact,
     layoutProbe,
     note,
     notes,
     onImportAttachment,
     onRegisterEditorCommands,
-    onTableOfContentsScrollProof,
-    onUpdateContent,
-    tableOfContentsTarget,
     typeDefinitions,
     vaultRootUri = null,
-    wysiwygAutocompleteProbe = false,
-    wysiwygExternalLinkProbe = false,
-    wysiwygFormatCommandProbe = false,
-    wysiwygInputTransformProbe = false,
-    wysiwygMarkdownBlockProbe = false,
-    wysiwygMathEditProbe = false,
-    wysiwygTableCommandMutationProbe = false,
-    wysiwygWikilinkInsertProbe = false,
-    wysiwygMutationProbe = false,
   } = props
   const [pickerState, setPickerState] = useState<NativeWysiwygPickerState | null>(null)
   const [externalLinkState, setExternalLinkState] = useState<NativeWysiwygExternalLinkSheetState | null>(null)
@@ -260,29 +249,9 @@ export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorPr
     setPickerState(null)
   }, [])
   const bridge = useNativeTentapEditorBridge({
-    blocks,
-    bullets,
-    compact,
-    initialDocumentContent: initialNativeEditorContent({
-      blocks,
-      bullets,
-      note,
-    }),
-    note,
+    ...props,
+    initialDocumentContent: initialNativeEditorContent(props),
     onInlineAutocomplete: handleInlineAutocomplete,
-    onTableOfContentsScrollProof,
-    onUpdateContent,
-    tableOfContentsTarget,
-    vaultRootUri,
-    wysiwygAutocompleteProbe,
-    wysiwygExternalLinkProbe,
-    wysiwygFormatCommandProbe,
-    wysiwygInputTransformProbe,
-    wysiwygMarkdownBlockProbe,
-    wysiwygMathEditProbe,
-    wysiwygTableCommandMutationProbe,
-    wysiwygWikilinkInsertProbe,
-    wysiwygMutationProbe,
   })
   const handleOpenExternalLinkSheet = useCallback(() => {
     setExternalLinkState({
