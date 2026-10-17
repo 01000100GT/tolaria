@@ -9,20 +9,20 @@ describe('explicit mobile UI density', () => {
     expect(mobileMetrics[1].editor).toEqual(desktopEditorParity)
   })
 
-  it('scales typography and spacing together at 110 percent', () => {
-    const metrics = mobileMetrics[1.1]
-    expect(metrics.sidebar.itemTextSize).toBe(14.3)
-    expect(metrics.sidebar.itemLabelLineHeight).toBe(19.8)
-    expect(metrics.sidebar.itemPadding.withCount.top).toBe(6.6)
-    expect(metrics.sidebar.countPillHeight).toBe(22)
-    expect(metrics.noteItem.padding.left).toBe(17.6)
-    expect(metrics.noteItem.snippetLineHeight).toBe(19.8)
-    expect(metrics.editor.bodyFontSize).toBe(16.5)
-    expect(metrics.editor.bodyLineHeight).toBe(25.3)
+  it('scales typography and spacing together at 120 percent', () => {
+    const metrics = mobileMetrics[1.2]
+    expect(metrics.sidebar.itemTextSize).toBe(15.6)
+    expect(metrics.sidebar.itemLabelLineHeight).toBe(21.6)
+    expect(metrics.sidebar.itemPadding.withCount.top).toBe(7.2)
+    expect(metrics.sidebar.countPillHeight).toBe(24)
+    expect(metrics.noteItem.padding.left).toBe(19.2)
+    expect(metrics.noteItem.snippetLineHeight).toBe(21.6)
+    expect(metrics.editor.bodyFontSize).toBe(18)
+    expect(metrics.editor.bodyLineHeight).toBe(27.6)
   })
 
   it('keeps pane geometry, corner radii, strokes and opacity unchanged', () => {
-    const metrics = mobileMetrics[1.1]
+    const metrics = mobileMetrics[1.2]
     expect(metrics.panel.sidebarWidth).toBe(desktopPanelParity.sidebarWidth)
     expect(metrics.panel.noteListWidth).toBe(desktopPanelParity.noteListWidth)
     expect(metrics.panel.inspectorWidth).toBe(desktopPanelParity.inspectorWidth)
@@ -35,7 +35,7 @@ describe('explicit mobile UI density', () => {
   it('does not mutate desktop tokens and has stable shared identities', () => {
     expect(desktopSidebarParity.itemTextSize).toBe(13)
     expect(desktopNoteItemParity.padding.left).toBe(16)
-    expect(mobileMetrics[1.1]).toBe(mobileMetrics[1.1])
-    expect(mobileMetrics[1.1].size(44)).toBe(48.4)
+    expect(mobileMetrics[1.2]).toBe(mobileMetrics[1.2])
+    expect(mobileMetrics[1.2].size(44)).toBe(52.8)
   })
 })

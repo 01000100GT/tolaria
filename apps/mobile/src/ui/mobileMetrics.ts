@@ -4,7 +4,6 @@ import {
   desktopStatusBarParity, desktopToolbarActionParity, desktopToolbarParity,
 } from './desktopParity'
 import { mobileSpace, mobileType } from './tokens'
-import type { MobileSettings } from '../settings/mobileSettings'
 
 type MetricValue = number | string | { readonly [key: string]: MetricValue }
 type ScaledMetrics<T> = { [Key in keyof T]: T[Key] extends number ? number : T[Key] extends string ? T[Key] : ScaledMetrics<T[Key]> }
@@ -21,7 +20,7 @@ function scaleMetrics<T extends Record<string, MetricValue>>(source: T, factor: 
   return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, scaleMetricValue(value, factor, key)])) as ScaledMetrics<T>
 }
 
-function createMetrics(factor: MobileSettings['uiScale']) {
+function createMetrics(factor: number) {
   const size = (points: number) => Math.round(points * factor * 10) / 10
   return {
     factor, size,
@@ -39,5 +38,5 @@ function createMetrics(factor: MobileSettings['uiScale']) {
   }
 }
 
-export const mobileMetrics = { 1: createMetrics(1), 1.1: createMetrics(1.1) }
+export const mobileMetrics = { 1: createMetrics(1), 1.2: createMetrics(1.2) }
 export type MobileMetrics = ReturnType<typeof createMetrics>

@@ -6,39 +6,47 @@ final class TabletDensityTests: XCTestCase {
     XCUIDevice.shared.orientation = .landscapeLeft
   }
 
-  func testDensityPreservesDocumentAndScalesNativeSidebarGeometry() {
+  func testFixedDensityPreservesDocumentAndScalesNativeSidebarGeometry() {
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
     app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&layoutProbe=1&qaRun=density"]
     app.launch()
     let title = element(app, "editor-toolbar-title")
     XCTAssertTrue(title.waitForExistence(timeout: 30))
     let originalTitle = title.label
-    selectScale(app, "1")
-    assertSidebar(app, rowHeight: 32)
-    assertMeasuredInsets(app, scale: 1)
-    let standardWidth = element(app, "sidebar-item-inbox").frame.width
-    selectScale(app, "1.1")
-    assertSidebar(app, rowHeight: 35.2)
-    assertMeasuredInsets(app, scale: 1.1)
-    XCTAssertEqual(element(app, "sidebar-item-inbox").frame.width, standardWidth, accuracy: 2)
+    assertSidebar(app, rowHeight: 38.4)
+    assertMeasuredInsets(app, scale: 1.2)
+    assertNoDensitySetting(app)
     XCTAssertEqual(title.label, originalTitle)
-    record("tablet-larger-density")
+    record("tablet-fixed-120-density")
     app.terminate()
     app.launch()
     XCTAssertTrue(title.waitForExistence(timeout: 30))
-    assertSidebar(app, rowHeight: 35.2)
+    assertSidebar(app, rowHeight: 38.4)
     XCUIDevice.shared.orientation = .portrait
     XCTAssertTrue(title.waitForExistence(timeout: 10))
-    record("tablet-larger-density-portrait")
+    record("tablet-fixed-120-density-portrait")
     XCUIDevice.shared.orientation = .landscapeLeft
   }
 
-  private func selectScale(_ app: XCUIApplication, _ scale: String) {
+  func testPhoneFixedDensityUsesTheSameNativeInsets() {
+    XCUIDevice.shared.orientation = .portrait
+    let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
+    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&phoneState=sidebar&layoutProbe=1&qaRun=density"]
+    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = "?source=fixture&phoneState=sidebar&layoutProbe=1&qaRun=density"
+    app.launch()
+    XCTAssertTrue(element(app, "sidebar-item-inbox").waitForExistence(timeout: 30))
+    assertSidebar(app, rowHeight: 38.4)
+    assertMeasuredInsets(app, scale: 1.2)
+    assertNoDensitySetting(app)
+    record("phone-fixed-120-density")
+  }
+
+  private func assertNoDensitySetting(_ app: XCUIApplication) {
     element(app, "open-mobile-settings").tap()
-    let option = element(app, "settings-scale-\(scale)")
-    XCTAssertTrue(option.waitForExistence(timeout: 5))
-    XCTAssertGreaterThanOrEqual(option.frame.height, 44)
-    option.tap()
+    XCTAssertTrue(element(app, "settings-theme-system").waitForExistence(timeout: 5))
+    for scale in ["1", "1.1", "1.2"] {
+      XCTAssertFalse(element(app, "settings-scale-\(scale)").exists)
+    }
     app.buttons["Close settings"].tap()
   }
 

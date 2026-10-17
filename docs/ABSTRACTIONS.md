@@ -401,13 +401,15 @@ palette-dependent style factory. `useEditorAppearance` changes WebView CSS witho
 resynchronizing the document. The generated palette is checked against desktop
 CSS in the scoped mobile unit suite; see ADR 0213.
 
-`mobileMetrics` derives Standard and Larger metric sets from desktop parity
-tokens. The appearance context publishes the persisted `uiScale`; style
+`mobileMetrics` derives the fixed 120% mobile baseline from desktop parity
+tokens, retaining 100% metrics for canonical parity tests. Valid legacy density
+preferences normalize to 120%; Settings no longer exposes a scale switch. The
+appearance context publishes the metrics; style
 factories receive colors and metrics, while `useMobileMetrics` serves geometry
 and icon consumers. Fonts, spacing and controls scale together without changing
 panel widths, strokes, radii or document state. Rich-editor CSS shares this
 recipe. Native measured density checks complement canonical token tests; see
-ADR 0215.
+ADR 0228. System accessibility text scaling remains enabled.
 
 The Markdown source editor keeps its RNR input as the editable surface and uses
 Reanimated native scroll events to move a non-interactive syntax layer on the UI

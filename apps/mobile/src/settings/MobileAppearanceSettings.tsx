@@ -30,29 +30,7 @@ export function MobileAppearanceSettings() {
         }) }}
       />)}
     </View>
-    <MobileDensitySettings />
   </View>
-}
-
-function MobileDensitySettings() {
-  const preferences = useMobileSettings()
-  const analytics = useMobileAnalytics()
-  const styles = useMobileStyles(createStyles)
-  return <>
-    <Text style={styles.heading}>{mobileText('mobile.settings.scale')}</Text>
-    <View accessibilityRole="radiogroup" accessibilityLabel={mobileText('mobile.settings.scale')} style={styles.options}>
-      {([{ value: 1, label: 'mobile.settings.scaleDefault' }, { value: 1.1, label: 'mobile.settings.scaleLarger' }] as const).map(({ value, label }) => <MobileButton
-        key={value} label={mobileText(label)} accessibilityRole="radio"
-        accessibilityState={{ checked: preferences.settings.uiScale === value }}
-        disabled={!preferences.ready || preferences.saving}
-        variant={preferences.settings.uiScale === value ? 'secondary' : 'ghost'}
-        style={styles.option} testID={`settings-scale-${value}`}
-        onPress={() => { void preferences.update({ uiScale: value }).then(saved => {
-          if (saved) analytics.capture({ name: 'mobile_setting_changed', setting: 'uiScale' })
-        }) }}
-      />)}
-    </View>
-  </>
 }
 
 function createStyles(colors: MobileColors, metrics: MobileMetrics) {

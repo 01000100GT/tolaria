@@ -3,7 +3,7 @@ import { mobilePalettes, type MobileColorMode, type MobileColors } from './mobil
 import { mobileMetrics, type MobileMetrics } from '../mobileMetrics'
 
 export const MobileThemeContext = createContext<{ mode: MobileColorMode; colors: MobileColors; metrics: MobileMetrics }>({
-  mode: 'light', colors: mobilePalettes.light, metrics: mobileMetrics[1.1],
+  mode: 'light', colors: mobilePalettes.light, metrics: mobileMetrics[1.2],
 })
 
 export function useMobileTheme() {
