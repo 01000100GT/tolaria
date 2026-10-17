@@ -125,6 +125,12 @@ test runner environment (the Xcode scheme's Test action) and select that test:
   both copies deliberately; require the recovery screen, Retry, no automatically
   opened modal, and no note-creation UI. Restore the byte-identical metadata after
   checking that retry did not overwrite the unreadable catalog.
+- `TOLARIA_QA_PENDING_CATALOG=valid` or `corrupt`: `MobilePendingCatalogTests`,
+  with only a pending catalog in a disposable simulator. The valid fixture names
+  a local vault containing `# Pending Catalog QA`; the test opens its source and
+  relaunches to verify restoration. The corrupt fixture must show recovery and
+  Retry, not an empty workspace. Check the pending file and note bytes are
+  unchanged, then restore the original metadata. Run both cases on iPhone/iPad.
 - `TOLARIA_QA_LINKED_FOCUS=1`: `MobileEditorFocusTests` linked-folder case, with
   an isolated active folder imported through Files. The source and app-owned
   working copy must both be disposable. The test creates a note, types across

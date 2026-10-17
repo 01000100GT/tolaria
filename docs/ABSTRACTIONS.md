@@ -61,7 +61,10 @@ text remains verbatim in a SHA-256 manifest and images are separate native asset
 to regenerate; existing user copies are never an output target. The bundled
 revision and original relative paths remain recorded in `manifest.json`.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
-publication. `useManagedVaultCatalog` is the single restoration owner;
+publication. Catalog reads prefer the published file, then its backup, then a
+validated pending file only when both published copies are absent. An invalid
+pending first save remains a recovery error, never a fresh-install signal.
+`useManagedVaultCatalog` is the single restoration owner;
 `useMobileVaults` saves pending editor work before add, switch, and forget.
 `mobileVaultCatalogActions` owns those catalog operations and clone activation;
 every action runs through the controller's existing saved-workspace barrier.

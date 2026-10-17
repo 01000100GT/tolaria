@@ -9,6 +9,8 @@ export async function readManagedCatalogFile(): Promise<ManagedGitVaultCatalog> 
   try {
     if (current.exists) return parseManagedGitVaultCatalog(await current.text())
     if (backup.exists) return parseManagedGitVaultCatalog(await backup.text())
+    const pending = catalogFile('.pending')
+    if (pending.exists) return parseManagedGitVaultCatalog(await pending.text())
     return parseManagedGitVaultCatalog(null)
   } catch (error) {
     if (backup.exists) return parseManagedGitVaultCatalog(await backup.text())
