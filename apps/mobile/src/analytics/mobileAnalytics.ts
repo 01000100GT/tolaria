@@ -3,6 +3,7 @@ import type { MobileTelemetryContext } from './mobileTelemetryContext'
 export type MobileAnalyticsEvent =
   | { name: 'note_created' | 'note_deleted' | 'vault_opened' | 'vault_switched' | 'search_used' | 'commit_made' }
   | { name: 'mobile_git_clone_cancel_requested' }
+  | { name: 'file_preview_opened' | 'file_preview_failed'; preview_kind: 'image' | 'pdf' }
   | { name: 'theme_mode_changed'; mode: 'system' | 'light' | 'dark' }
   | { name: 'mobile_note_swipe_used'; action: 'favorite' | 'archive' | 'delete' }
   | { name: 'mobile_setting_changed'; setting: 'theme' | 'uiScale' | 'autoGit' }
@@ -55,6 +56,7 @@ function eventProperties(event: MobileAnalyticsEvent): Record<string, string> {
   if (event.name === 'mobile_note_swipe_used') return { action: event.action }
   if (event.name === 'mobile_setting_changed') return { setting: event.setting }
   if (event.name === 'mobile_editor_tool_opened') return { tool: event.tool }
+  if ('preview_kind' in event) return { preview_kind: event.preview_kind }
   if (event.name === 'mobile_vault_catalog_used') return { action: event.action, kind: event.kind }
   if ('operation' in event) return { operation: event.operation }
   return {}

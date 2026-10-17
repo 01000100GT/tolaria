@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "La liste des coffres-forts enregistrée n'a pas pu être lue. Aucun fichier du coffre-fort n'a été supprimé.",
   "mobile.editor.loading": "Chargement de la note…",
   "mobile.editor.readFailed": "Cette note n'a pas pu être lue. Son fichier n'a pas été modifié.",
+  "mobile.editor.spreadsheetUnsupported": "Les feuilles de calcul ne sont pas encore prises en charge sur mobile",
   "mobile.vaults.diverged": "Certaines modifications nécessitent votre vérification. Les deux historiques sont conservés. Examinez les conflits, puis poursuivez la synchronisation.",
   "mobile.vaults.checkpoint": "Enregistrement des modifications locales…",
   "mobile.vaults.fetch": "Récupération des modifications distantes…",

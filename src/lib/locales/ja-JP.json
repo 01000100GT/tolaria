@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "保存されたボールトリストを読み込めませんでした。Vaultファイルは削除されていません。",
   "mobile.editor.loading": "ノートを読み込み中...",
   "mobile.editor.readFailed": "このノートを読み取れませんでした。そのファイルは変更されていません。",
+  "mobile.editor.spreadsheetUnsupported": "スプレッドシートはまだモバイルではサポートされていません",
   "mobile.vaults.diverged": "一部の変更について確認が必要です。両方の履歴が保持されます。競合を確認してから、同期を続行してください。",
   "mobile.vaults.checkpoint": "ローカルの変更を保存しています...",
   "mobile.vaults.fetch": "リモートの変更を取得中...",

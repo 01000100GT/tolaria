@@ -95,6 +95,7 @@ function PhoneWorkspaceActions(props: PhoneWorkspaceRootProps) {
       initialEditorEditing={props.options.initialEditorEditing}
       layoutProbe={props.options.layoutProbe}
       suggestionNotes={props.suggestionNotes}
+      onSelectNote={props.navigation.openEditor}
       onCreateRelationshipTarget={props.createRelationshipTargetAndOpenEditor}
       onEnterNeighborhood={props.navigation.openNeighborhoodList}
       onSelectTableOfContentsTarget={props.selectTableOfContentsTarget}

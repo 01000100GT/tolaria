@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Nie udało się odczytać zapisanej listy repozytoriów. Nie usunięto żadnych plików repozytorium.",
   "mobile.editor.loading": "Ładowanie notatki...",
   "mobile.editor.readFailed": "Nie udało się odczytać tej notatki. Jej plik nie został zmieniony.",
+  "mobile.editor.spreadsheetUnsupported": "Arkusze kalkulacyjne nie są jeszcze obsługiwane na urządzeniach mobilnych",
   "mobile.vaults.diverged": "Niektóre zmiany wymagają Twojej weryfikacji. Obie historie są zachowane. Przejrzyj konflikty, a następnie kontynuuj synchronizację.",
   "mobile.vaults.checkpoint": "Zapisywanie zmian lokalnych...",
   "mobile.vaults.fetch": "Pobieranie zmian zdalnych...",

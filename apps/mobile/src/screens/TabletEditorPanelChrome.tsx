@@ -77,3 +77,16 @@ export function EmptyEditorPanel() {
     </MobilePanel>
   )
 }
+
+export function MobileSpreadsheetFallback() {
+  const { panelStyles } = useMobileStyles(createEditorPanelStyles)
+  const colors = useMobileColors()
+  return (
+    <View style={[panelStyles.emptyState, { backgroundColor: colors.sidebar }]}
+      testID="spreadsheet-unsupported" accessibilityState={{ disabled: true }}>
+      <Text style={panelStyles.filePreviewDescription}>
+        {mobileText('mobile.editor.spreadsheetUnsupported')}
+      </Text>
+    </View>
+  )
+}

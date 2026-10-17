@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "The saved vault list could not be read. No vault files have been removed.",
   "mobile.editor.loading": "Loading note...",
   "mobile.editor.readFailed": "This note could not be read. Its file has not been changed.",
+  "mobile.editor.spreadsheetUnsupported": "Spreadsheets not supported on mobile yet",
   "mobile.vaults.diverged": "Some changes need your review. Both histories are preserved. Review the conflicts, then continue syncing.",
   "mobile.vaults.checkpoint": "Saving local changes...",
   "mobile.vaults.fetch": "Fetching remote changes...",

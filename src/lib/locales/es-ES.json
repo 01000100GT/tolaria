@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "No se ha podido leer la lista de bóvedas guardada. No se ha eliminado ningún archivo del repositorio.",
   "mobile.editor.loading": "Cargando nota...",
   "mobile.editor.readFailed": "No se ha podido leer esta nota. Su archivo no se ha modificado.",
+  "mobile.editor.spreadsheetUnsupported": "Las hojas de cálculo aún no son compatibles con dispositivos móviles",
   "mobile.vaults.diverged": "Algunos cambios requieren tu revisión. Se conservan ambos historiales. Revisa los conflictos y, a continuación, continúa con la sincronización.",
   "mobile.vaults.checkpoint": "Guardando los cambios locales...",
   "mobile.vaults.fetch": "Obteniendo cambios remotos...",

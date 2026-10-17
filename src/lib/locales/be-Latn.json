@@ -1202,6 +1202,7 @@
   "mobile.vaults.catalogFailed": "Nie ŭdałosia pračytać zachavany spis schoviščaŭ. Nijakija fajly schovišča nie byli vydalenyja.",
   "mobile.editor.loading": "Zahruzka natatki...",
   "mobile.editor.readFailed": "Hetuju natatku nie ŭdałosia pračytać. Jaje fajł nie byŭ źmienieny.",
+  "mobile.editor.spreadsheetUnsupported": "Tablicy pakuĺ nie padtrymlivajucca na mabiĺnych pryładach",
   "mobile.vaults.diverged": "Niekatoryja źmieny patrabujuć vašaha prahladu. Abiedźvie historyi zachavany. Prahledźcie kanflikty, a potym praciahvajcie sinchranizacyju.",
   "mobile.vaults.checkpoint": "Zachavannie lakaĺnych zmienaŭ...",
   "mobile.vaults.fetch": "Atrymannie addalenych zmianienniaŭ...",

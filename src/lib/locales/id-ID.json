@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Daftar vault yang disimpan tidak dapat dibaca. Tidak ada file vault yang dihapus.",
   "mobile.editor.loading": "Memuat catatan...",
   "mobile.editor.readFailed": "Catatan ini tidak dapat dibaca. File-nya tidak diubah.",
+  "mobile.editor.spreadsheetUnsupported": "Spreadsheet belum didukung di perangkat seluler",
   "mobile.vaults.diverged": "Beberapa perubahan perlu Anda tinjau. Kedua riwayat dipertahankan. Tinjau konflik, lalu lanjutkan sinkronisasi.",
   "mobile.vaults.checkpoint": "Menyimpan perubahan lokal...",
   "mobile.vaults.fetch": "Mengambil perubahan remote...",

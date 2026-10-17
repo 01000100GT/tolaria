@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Uložený zoznam trezorov sa nepodarilo prečítať. Neboli odstránené žiadne súbory úložiska.",
   "mobile.editor.loading": "Načítava sa poznámka…",
   "mobile.editor.readFailed": "Túto poznámku sa nepodarilo prečítať. Jej súbor nebol zmenený.",
+  "mobile.editor.spreadsheetUnsupported": "Tabuľky zatiaľ nie sú v mobilných zariadeniach podporované",
   "mobile.vaults.diverged": "Niektoré zmeny si vyžadujú vašu kontrolu. Obe histórie sú zachované. Skontrolujte konflikty a potom pokračujte v synchronizácii.",
   "mobile.vaults.checkpoint": "Ukladajú sa lokálne zmeny...",
   "mobile.vaults.fetch": "Načítavajú sa vzdialené zmeny...",

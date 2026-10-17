@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Die gespeicherte Vault-Liste konnte nicht gelesen werden. Es wurden keine Vault-Dateien entfernt.",
   "mobile.editor.loading": "Notiz wird geladen …",
   "mobile.editor.readFailed": "Diese Notiz konnte nicht gelesen werden. Die zugehörige Datei wurde nicht geändert.",
+  "mobile.editor.spreadsheetUnsupported": "Tabellen werden auf Mobilgeräten noch nicht unterstützt",
   "mobile.vaults.diverged": "Einige Änderungen müssen von Ihnen überprüft werden. Beide Verläufe werden beibehalten. Überprüfen Sie die Konflikte und fahren Sie dann mit der Synchronisierung fort.",
   "mobile.vaults.checkpoint": "Lokale Änderungen werden gespeichert …",
   "mobile.vaults.fetch": "Remote-Änderungen werden abgerufen …",

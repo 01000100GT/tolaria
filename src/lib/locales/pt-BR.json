@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Não foi possível ler a lista de vaults salva. Nenhum arquivo do vault foi removido.",
   "mobile.editor.loading": "Carregando nota...",
   "mobile.editor.readFailed": "Não foi possível ler esta nota. O arquivo dela não foi alterado.",
+  "mobile.editor.spreadsheetUnsupported": "As planilhas ainda não são compatíveis com dispositivos móveis",
   "mobile.vaults.diverged": "Algumas alterações precisam da sua revisão. Ambos os históricos são preservados. Analise os conflitos e, em seguida, continue a sincronização.",
   "mobile.vaults.checkpoint": "Salvando alterações locais...",
   "mobile.vaults.fetch": "Buscando alterações remotas...",

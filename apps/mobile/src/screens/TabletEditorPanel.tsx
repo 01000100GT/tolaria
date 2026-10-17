@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MobileEditorBlocks } from '../components/workspace/MobileEditorBlocks'
+import { MobileFilePreview } from '../components/workspace/MobileFilePreview'
 import { MobileMarkdownSourceEditor } from '../components/workspace/MobileMarkdownSourceEditor'
 import { MobileEditorFileIdentity } from '../components/workspace/MobileEditorFileIdentity'
 import { MobileWysiwygMarkdownEditor } from '../components/workspace/MobileWysiwygMarkdownEditor'
@@ -26,7 +27,8 @@ import { useMobileAttachmentImporter } from '../workspace/mobileAttachmentImport
 import { useMobileAttachmentLinkOpener } from '../workspace/mobileAttachmentOpen'
 import { useRegisteredMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteActionMode } from '../workspace/mobileNoteActionMode'
-import { EmptyEditorPanel, MobileFilePreviewFallback, MobileNoteReadFallback } from './TabletEditorPanelChrome'
+import { mobileSpreadsheetNeedsFallback } from '../workspace/mobileSpreadsheetFormat'
+import { EmptyEditorPanel, MobileFilePreviewFallback, MobileNoteReadFallback, MobileSpreadsheetFallback } from './TabletEditorPanelChrome'
 import { createEditorPanelStyles } from './TabletEditorPanelStyles'
 import type {
   EditorContentProps,
@@ -162,10 +164,16 @@ function EditorPanelBody({ compact, contentProps, fileMode, note, noteRead, onSc
   if (noteRead && noteRead.status !== 'ready') return <MobileNoteReadFallback state={noteRead} />
   if (fileMode === 'binary') {
     return (
-      <ScrollView contentContainerStyle={panelStyles.filePreviewContent} testID="editor-scroll">
-        <MobileFilePreviewFallback note={note} typeDefinitions={contentProps.typeDefinitions} />
-      </ScrollView>
+      <MobileFilePreview note={note} vaultRootUri={contentProps.vaultRootUri} fallback={
+        <ScrollView contentContainerStyle={panelStyles.filePreviewContent} testID="editor-scroll">
+          <MobileFilePreviewFallback note={note} typeDefinitions={contentProps.typeDefinitions} />
+        </ScrollView>
+      } />
     )
+  }
+
+  if (mobileSpreadsheetNeedsFallback(note, contentProps.editingMode)) {
+    return <MobileSpreadsheetFallback />
   }
 
   if (contentProps.editing) {

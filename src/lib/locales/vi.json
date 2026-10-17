@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Không thể đọc danh sách vault đã lưu. Chưa có tệp vault nào bị xóa.",
   "mobile.editor.loading": "Đang tải ghi chú...",
   "mobile.editor.readFailed": "Không thể đọc ghi chú này. Tệp của nó chưa được thay đổi.",
+  "mobile.editor.spreadsheetUnsupported": "Bảng tính chưa được hỗ trợ trên thiết bị di động",
   "mobile.vaults.diverged": "Một số thay đổi cần bạn xem xét. Cả hai lịch sử đều được lưu giữ. Xem lại các xung đột, sau đó tiếp tục đồng bộ.",
   "mobile.vaults.checkpoint": "Đang lưu các thay đổi cục bộ...",
   "mobile.vaults.fetch": "Đang tải các thay đổi từ xa...",

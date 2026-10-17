@@ -57,11 +57,15 @@ function isOptionalMobileAllNotesFileVisible(
   return visibility.unsupported
 }
 
-function mobileFilePreviewKind(note: MobileAllNotesCandidate): MobileFilePreviewKind | null {
+export function mobileFilePreviewKind(note: MobileAllNotesCandidate): MobileFilePreviewKind | null {
   if (note.fileKind && note.fileKind !== 'binary') return null
 
   const extension = extensionFromPath(note.path ?? note.id) ?? extensionFromPath(note.title)
   if (!extension) return null
+  return previewKindForExtension(extension)
+}
+
+function previewKindForExtension(extension: string): MobileFilePreviewKind | null {
   if (imagePreviewExtensions.has(extension)) return 'image'
   if (pdfPreviewExtensions.has(extension)) return 'pdf'
   return null

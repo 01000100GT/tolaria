@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "저장된 볼트 목록을 읽을 수 없습니다. 볼트 파일이 제거되지 않았습니다.",
   "mobile.editor.loading": "노트 불러오는 중...",
   "mobile.editor.readFailed": "이 노트를 읽을 수 없습니다. 해당 파일은 변경되지 않았습니다.",
+  "mobile.editor.spreadsheetUnsupported": "스프레드시트는 아직 모바일에서 지원되지 않습니다.",
   "mobile.vaults.diverged": "일부 변경 사항을 검토하셔야 합니다. 두 히스토리가 모두 보존됩니다. 충돌을 검토한 다음 동기화를 계속하세요.",
   "mobile.vaults.checkpoint": "로컬 변경 사항을 저장하는 중...",
   "mobile.vaults.fetch": "원격 변경 사항을 가져오는 중...",

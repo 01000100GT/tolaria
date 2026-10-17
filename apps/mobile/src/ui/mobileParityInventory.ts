@@ -8,6 +8,13 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['MobileFilePreviewTests: contained image rotation, multipage local PDF and source-preserving spreadsheet fallback'],
+    contracts: ['desktopPanelParity', 'desktopEditorParity'],
+    desktopSource: 'FilePreview and desktop sheet display routing; native image zoom and iOS WebKit PDF rendering',
+    mobileFile: 'src/components/workspace/MobileFilePreview.tsx',
+    surface: 'Native vault file previews',
+  },
+  {
     assertions: ['MobileFilenameHeaderTests: literal basename and extension without changing the document heading'],
     contracts: ['desktopToolbarParity', 'desktopToolbarActionParity'],
     desktopSource: 'BreadcrumbBar filename identity and typed/custom note icon',

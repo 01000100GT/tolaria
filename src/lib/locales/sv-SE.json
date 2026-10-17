@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Den sparade listan över valv kunde inte läsas. Inga valvfiler har tagits bort.",
   "mobile.editor.loading": "Laddar anteckning …",
   "mobile.editor.readFailed": "Den här anteckningen kunde inte läsas. Dess fil har inte ändrats.",
+  "mobile.editor.spreadsheetUnsupported": "Kalkylark stöds ännu inte på mobila enheter",
   "mobile.vaults.diverged": "Vissa ändringar behöver granskas av dig. Båda historikerna bevaras. Granska konflikterna och fortsätt sedan synkroniseringen.",
   "mobile.vaults.checkpoint": "Sparar lokala ändringar …",
   "mobile.vaults.fetch": "Hämtar ändringar från fjärrservern …",

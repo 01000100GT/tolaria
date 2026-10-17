@@ -1207,6 +1207,7 @@
   "mobile.vaults.catalogFailed": "Impossibile leggere l'elenco dei vault salvati. Nessun file del vault è stato rimosso.",
   "mobile.editor.loading": "Caricamento della nota in corso...",
   "mobile.editor.readFailed": "Impossibile leggere questa nota. Il suo file non è stato modificato.",
+  "mobile.editor.spreadsheetUnsupported": "I fogli di calcolo non sono ancora supportati sui dispositivi mobili",
   "mobile.vaults.diverged": "Alcune modifiche richiedono la tua revisione. Entrambe le cronologie vengono conservate. Esamina i conflitti, quindi prosegui con la sincronizzazione.",
   "mobile.vaults.checkpoint": "Salvataggio delle modifiche locali in corso...",
   "mobile.vaults.fetch": "Recupero delle modifiche remote in corso...",

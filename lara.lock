@@ -1209,6 +1209,7 @@ files:
     mobile.vaults.catalogFailed: 959d00638eaad955646fa2cafd9002dc
     mobile.editor.loading: 88d1d76b5e54b416c0103fe99cc7fefa
     mobile.editor.readFailed: 9c6c94312466ead61546b567527d7d32
+    mobile.editor.spreadsheetUnsupported: f0d61a0152611b1eace1b769260fde01
     mobile.vaults.diverged: fecddbd32039feed14efe5b7368fa771
     mobile.vaults.checkpoint: a937d10266de6dce3543aebe7e4b5899
     mobile.vaults.fetch: ededa7d275710f6c3a8f104844814afd
