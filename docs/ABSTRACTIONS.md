@@ -52,6 +52,14 @@ Its retained revision marker supports interrupted-copy and registration retries
 without rewriting published files. Existing catalog files, orphaned vaults, and
 ambiguous preparation state prevent automatic replacement (ADR 0230). This
 storage primitive does not itself enable first-launch initialization.
+`apps/mobile/scripts/generate-starter-vault.ts` packages an immutable commit of
+the canonical Getting Started repository. Its `starterVaultBundle.ts` helper
+validates regular-file paths, types and size bounds before writing the bundle;
+text remains verbatim in a SHA-256 manifest and images are separate native assets.
+`apps/mobile/assets/starter-vault/images.ts` resolves asset modules lazily. Run
+`node apps/mobile/scripts/generate-starter-vault.ts <local-template-repo> <full-commit-sha>`
+to regenerate; existing user copies are never an output target. The bundled
+revision and original relative paths remain recorded in `manifest.json`.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
 publication. `useManagedVaultCatalog` is the single restoration owner;
 `useMobileVaults` saves pending editor work before add, switch, and forget.
