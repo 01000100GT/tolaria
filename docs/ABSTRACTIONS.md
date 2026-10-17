@@ -584,11 +584,42 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileSwipeableNoteRow` / `MobileNoteSwipeActions` | Gesture Handler row actions routed to existing favorite/archive/delete callbacks; full swipe never deletes, and bulk selection disables swipes |
 | `components/ui/dropdown-menu` | Thin RNR dropdown composition with Tolaria colors/spacing and a root portal host; primitive-owned anchoring and dismissal |
 | `MobilePropertiesPanel` | Scalar properties, tags, and typed relationship display/removal |
-| `MobileSyncStatusBar` | Bottom sync/status footer |
+| `MobileSidebarSettings` | Sidebar-bottom Settings entry point; vault management and sync controls live inside Settings instead of a permanent workspace footer |
 
 Mobile UI copy should reuse the localization catalog in `src/lib/locales/en.json` whenever the desktop concept already exists. New mobile-specific copy must be added to that catalog and translated through the normal Lara workflow.
 
-The mobile UI lab uses a fixture-backed repository until a surface has passed visual and interaction QA. The same repository boundary can read an injected host snapshot from `tolaria:mobile-workspace-snapshot` for local large-vault QA and an explicit Expo native vault when launched with `source=native-vault`. A native iOS launch without a selected directory returns a `noVault` snapshot: it never substitutes Expo's private document directory, and mutations remain disabled until the user grants access through the directory picker. Standalone iOS builds retain that explicit grant as a security-scoped bookmark through `TolariaWorkspaceAccess` and resolve it before workspace hydration; Expo Go remains session-scoped. Explicit QA sources and deterministic probes take precedence over remembered user data. The Laputa development bridge is intentionally read-only and rejects persistence attempts. `localVaultSnapshot.ts` owns the pure conversion from scanned Markdown files, explicit folder paths, and `views/*.yml` into `MobileWorkspaceSnapshot`, including type-color inheritance, Type document metadata/raw content, Type instance schema/defaults, relationship value resolution, markdown block previews, sidebar counts, custom scalar properties, raw note content for the capped visible note list, metadata summaries for the full note pool, empty folder visibility, and saved View counts/results. Type document metadata lookup follows desktop-normalized frontmatter aliases for casing and spacing variants, while preserving underscore-only system-field contracts such as `_organized`. Large-vault host QA injects full note Markdown through `tolaria:mobile-workspace-note-contents` so the tablet shell can lazily hydrate metadata-only notes when a search, saved View, type, or folder selection opens a note outside the capped visible list. `mobileWorkspaceEditing.ts` returns both the next snapshot and a write plan (`createNote` / `saveNote` / `moveNote` / folder directory writes); saved View edits write `views/*.yml`, note folder moves and explicit filename renames emit a file move plus only the backlink rewrite saves, folder edits write create/delete/rename directory operations, and Type document create/delete/update/reorder edits write the corresponding Type markdown document frontmatter or deletion plan, including custom scalar defaults and wikilink relationship fields. `tabletWorkspaceHistory.ts` records undo/redo from before/after snapshots and uses reducer restore edits for structural changes so created/deleted notes, folders, saved Views, and Type definitions can round-trip without losing raw content, generated filenames, ordering, or write-plan paths; `tabletWorkspacePathHistory.ts` handles path-changing inverse commands for note moves, note filename renames, and folder subtree renames so backlink rewrites stay reducer-owned. The filesystem repository persists those write plans through relative paths while fixture and host repositories keep deterministic QA behavior. Git and sync mutation logic should be wired only after the corresponding native shell has a stable fixture state and screenshot target.
+The mobile UI lab uses a fixture-backed repository. The same boundary reads an
+injected host snapshot from `tolaria:mobile-workspace-snapshot` for local
+large-vault QA and native vaults through `source=native-vault`. Native startup
+restores the saved catalog; first launch prepares the bundled local starter vault
+when there is no existing local catalog or legacy selection (ADR 0230). It never
+treats Expo's entire private document directory as a vault. An intentionally empty
+catalog remains empty. Standalone iOS builds retain explicit provider grants as
+security-scoped bookmarks through `TolariaWorkspaceAccess`; Expo Go access remains
+session-scoped. Explicit QA sources and deterministic probes take precedence over
+remembered user data. The Laputa development bridge is read-only and rejects writes.
+
+`localVaultSnapshot.ts` converts scanned Markdown files, folder paths and
+`views/*.yml` into `MobileWorkspaceSnapshot`: type-color inheritance, Type metadata
+and raw content, instance schema/defaults, relationship values, Markdown previews,
+sidebar counts, custom scalar properties, empty folders and saved View results.
+Raw content is capped to visible notes while metadata covers the full pool. Type
+metadata follows desktop-normalized frontmatter aliases for casing and spacing,
+preserving underscore-only system fields such as `_organized`. Host QA injects
+full Markdown separately through `tolaria:mobile-workspace-note-contents`, allowing
+lazy hydration when navigation opens a metadata-only note.
+
+`mobileWorkspaceEditing.ts` returns the next snapshot and a write plan. Saved View
+edits write `views/*.yml`; note moves and filename renames emit a file move and
+backlink rewrite saves; folder edits emit directory operations. Type edits write
+or delete Type documents, preserving custom scalar defaults and relationship
+fields. `tabletWorkspaceHistory.ts` records before/after snapshots and structural
+restore edits so notes, folders, Views and Type definitions round-trip without
+losing content, filenames, ordering or write paths. `tabletWorkspacePathHistory.ts`
+owns inverse path-changing commands; backlink rewrites remain reducer-owned. The
+filesystem repository persists relative-path write plans. Fixture and host
+repositories retain deterministic QA behavior; Git checkout and linked-folder
+reconciliation use the separate editor/write barriers described above.
 
 The tablet workspace controller owns temporary interaction state: selected sidebar scope, selected note, search query, action-sheet form values, and an editable snapshot derived by `mobileWorkspaceEditing.ts`. `TabletWorkspace` and `PhoneWorkspace` should share that controller/repository boundary; phone-specific work should adapt navigation and chrome, not fork business logic. The repository boundary owns persistence. Visual components must continue to receive callbacks and snapshots rather than importing Expo or filesystem APIs directly.
 
@@ -608,7 +639,13 @@ Mobile PDF export uses the same callback boundary. `mobilePdfExport.ts` converts
 
 Mobile attachment import stays behind the same boundary. `mobileAttachmentImport.native.ts` is the only mobile module that talks to `expo-document-picker` for user file selection, `mobileAttachments.ts` owns timestamped safe filenames and portable `attachments/...` Markdown serialization, and editor components receive importer callbacks plus pure attachment payloads.
 
-`apps/mobile/docs/ui-parity-inventory.md` is the working checklist for mobile surface parity. `pnpm mobile:qa:screenshots` is the fast visual QA command for this branch: it exports the Expo web bundle, serves it locally, and captures tablet/phone screenshots for the UI lab without running the full desktop/native Tolaria suite. The harness uses `$HOME/Laputa` as the default representative large-vault path when available; set `MOBILE_QA_VAULT_PATH` to override it. The local-vault pass scans that vault read-only, adds local-vault screenshots, and checks snapshot load/render/navigation budgets without committing vault content.
+`apps/mobile/src/ui/mobileParityInventory.ts` is the executable mobile surface map,
+with desktop source references, parity contracts and assertions. Its coverage test
+guards unmapped visible implementation files. Work and outstanding acceptance live
+in the [Tolaria Mobile Linear project](https://linear.app/refactoringhq/project/tolaria-mobile-e4f418a855d6),
+not a parallel repository checklist. See [mobile development](GETTING-STARTED.md#react-native-mobile-development)
+for setup and native QA. Browser screenshots are a fast parity check, never a
+substitute for native interaction, layout and persistence checks.
 
 ### Vault Git Capability
 
