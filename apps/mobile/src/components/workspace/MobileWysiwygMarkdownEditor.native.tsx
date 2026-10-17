@@ -160,6 +160,22 @@ type NativeWysiwygExternalLinkSheetState = {
   initialUrl: string
   selection?: NativeWysiwygSelection
 }
+type NativeTentapEditorSurfaceActionProps = Pick<
+  NativeTentapEditorSurfaceProps,
+  | 'editor'
+  | 'externalLinkState'
+  | 'flushEditorDocument'
+  | 'insertAttachment'
+  | 'insertMarkdownBlock'
+  | 'insertPlainText'
+  | 'insertWikilink'
+  | 'onCloseExternalLinkSheet'
+  | 'onCloseWikilinkPicker'
+  | 'onImportAttachment'
+  | 'onOpenExternalLinkSheet'
+  | 'onOpenToolbarWikilinkPicker'
+  | 'pickerState'
+>
 type NativeTentapEditorSurfaceActions = {
   handleApplyExternalLink: (url: string) => void
   handleFormat: (action: Parameters<typeof applyNativeWysiwygFormat>[1]) => Promise<void>
@@ -385,22 +401,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
   )
 }
 
-function useNativeTentapEditorSurfaceActions(props: Pick<
-  NativeTentapEditorSurfaceProps,
-  | 'editor'
-  | 'externalLinkState'
-  | 'flushEditorDocument'
-  | 'insertAttachment'
-  | 'insertMarkdownBlock'
-  | 'insertPlainText'
-  | 'insertWikilink'
-  | 'onCloseExternalLinkSheet'
-  | 'onCloseWikilinkPicker'
-  | 'onImportAttachment'
-  | 'onOpenExternalLinkSheet'
-  | 'onOpenToolbarWikilinkPicker'
-  | 'pickerState'
->): NativeTentapEditorSurfaceActions {
+function useNativeTentapEditorSurfaceActions(props: NativeTentapEditorSurfaceActionProps): NativeTentapEditorSurfaceActions {
   const {
     editor, externalLinkState, flushEditorDocument, insertAttachment,
     insertMarkdownBlock, insertPlainText, insertWikilink,
