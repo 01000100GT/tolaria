@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
+import { requestCreatedNoteFocus } from '../workspace/mobileEditorFocus'
 import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
 import { trackSuccessfulMobileEdit } from '../analytics/mobileSuccessfulEdit'
 import { captureMobileError } from '../analytics/mobileCrashChannel'
@@ -104,6 +105,7 @@ function useWorkspaceEditApplier({
     const previousSnapshot = snapshotState.workspaceSnapshotRef.current
     if (generation !== syncEditors?.generation()) return { snapshot: previousSnapshot, writes: [] }
     const result = applyWorkspaceEditToWritableSnapshot(previousSnapshot, edit, repositoryRequest?.source)
+    requestCreatedNoteFocus(syncEditors, edit, result)
     if (result.writes.length > 0) syncEditors?.markDirty()
     snapshotState.replaceWorkspaceSnapshot(result.snapshot)
     recordWorkspaceEditHistory({ edit, options, previousSnapshot, resultSnapshot: result.snapshot, setWorkspaceHistory })

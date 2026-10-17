@@ -190,6 +190,13 @@ Both initial snapshots and edited/hydrated metadata retain the complete tag list
 Presentation limits belong to list components, never the persisted-data model or
 the property form's editable value.
 
+`mobileEditorFocus` owns one-shot, note-specific focus requests in the existing
+workspace editor registry. Successful note creation requests focus; ordinary
+navigation does not. The native editor consumes the request after initial content
+has settled, places the cursor at the empty H1, and enables its normal change
+pipeline. Unmount, timeout and workspace replacement cancel stale requests, so
+late readiness or background refresh cannot steal focus back.
+
 `WorkspaceTextRecovery` atomically publishes a pending text save outside the vault,
 replaces the destination, and removes the record last. Replay checks the previous
 or intended SHA-256 digest; conflicts retain both versions and prevent further

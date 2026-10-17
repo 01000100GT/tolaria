@@ -1,8 +1,10 @@
 import type { EditorBridge } from '@10play/tentap-editor'
-import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
+import { type MutableRefObject, useCallback, useContext, useEffect, useRef } from 'react'
 import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent'
 import type { MobileEditorBlock, MobileNote } from '../../workspace/mobileWorkspaceModel'
 import { injectMobileEditorAppearance, useEditorAppearance } from './useEditorAppearance'
+import { WorkspaceSyncEditorsContext } from '../../workspace/workspaceSyncEditors'
+import { scheduleCreatedEditorFocus } from '../../workspace/mobileEditorFocus'
 
 type TimerHandle = ReturnType<typeof setTimeout>
 
@@ -94,6 +96,7 @@ export function useSyncInitialEditorContent({
   refs: NativeTentapEditorRefs
 }) {
   const syncedContentRef = useRef<{ content: string; noteId: string } | null>(null)
+  const editors = useContext(WorkspaceSyncEditorsContext)
 
   useEffect(() => {
     syncInitialEditorContent({
@@ -103,6 +106,21 @@ export function useSyncInitialEditorContent({
       syncedContentRef,
     })
   }, [initialContent, noteId, refs])
+  useEffect(() => {
+    if (!editors) return
+    return scheduleCreatedEditorFocus({
+      requests: editors.focus,
+      noteId,
+      isReady: () => !editors.isBlocked() && nativeInitialContentReady(refs),
+      focus: () => { activateNativeEditorChanges(refs); refs.editorRef.current?.focus('start') },
+    })
+  }, [editors, noteId, refs])
+}
+
+function nativeInitialContentReady(refs: NativeTentapEditorRefs) {
+  return refs.editorRef.current?.getEditorState().isReady === true
+    && refs.editorReadyTimerRef.current !== null
+    && refs.initialContentRetryTimerRefs.current.length === 0
 }
 
 export function useFlushOnUnmount(refs: NativeTentapEditorRefs, flushEditorDocument: () => void) {

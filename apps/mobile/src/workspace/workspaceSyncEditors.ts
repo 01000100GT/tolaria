@@ -1,18 +1,22 @@
 import { createContext, useContext, useEffect, useRef } from 'react'
+import { createMobileEditorFocus } from './mobileEditorFocus'
 
 export type PrepareEditorForSync = (deferWhileFocused?: boolean) => Promise<() => void>
 
 export function createWorkspaceSyncEditors() {
   const editors = new Map<PrepareEditorForSync, string | undefined>()
   const dirtyListeners = new Set<() => void>()
+  const focus = createMobileEditorFocus()
   let blocked = false
   let generation = 0
   let replacementSequence = 0
   return {
+    focus,
     isBlocked: () => blocked,
     setBlocked: (value: boolean) => { blocked = value },
     generation: () => generation,
     beginReplacement: () => {
+      focus.clear()
       const previous = generation
       const replacement = ++replacementSequence
       generation = replacement

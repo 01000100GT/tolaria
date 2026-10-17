@@ -62,6 +62,12 @@ new note directly, without a title dialog, and retains typed content and default
 frontmatter after returning to the list. Browser coverage also exercises Cmd+N
 and the command palette; it does not substitute for native typing/navigation.
 
+`MobileCreatedNoteFocusTests` runs on both iPhone and iPad. It creates a note,
+requires the software keyboard without tapping the editor, types directly into
+the empty H1 and body, and checks focus survives a pause. The raw source must
+retain the heading, body and frontmatter. Opening an existing note must not show
+the keyboard. All edits stay in an isolated in-memory fixture.
+
 `TabletVaultBacklinkTests` requires an isolated on-disk vault with `review.md`
 and `codex-prepared-action-qa.md`, titled `Codex Prepared Action QA`, containing
 `[[review]]` and `Original full body for native Undo.`. It measures the backlink
