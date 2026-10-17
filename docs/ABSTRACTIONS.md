@@ -23,12 +23,28 @@ manager expose both paths.
 
 ## Mobile Git Working Copies
 
+`useVaultNotices` owns bounded, session-local notification deduplication by vault
+and failure category. Automatic sync failures and conflicts do not open the vault
+manager or retain an editor block. A notice offers explicit access to the existing
+manager, while the per-vault sync ledger retains the actionable failure after the
+notice is dismissed. Successful synchronization or conflict resolution starts a
+new notification episode. Editing while diverged keeps that conflict state and
+its automatic-sync block until explicit resolution; it still advances the dirty
+version for subsequent synchronization. Raw errors, paths and note contents never enter notice
+copy. Catalog restore failures instead render `MobileWorkspaceLoadFailure` with
+Retry and Manage vaults; they never silently replace the catalog or show an empty
+workspace as if restore had succeeded.
+
 `managedLocalVaults.ts` validates local catalog entries and contained relative
 directories. `managedLocalStorage.native.ts` registers imports, migrates the
 legacy local copy in place, and resolves current sandbox paths on activation.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
 publication. `useManagedVaultCatalog` is the single restoration owner;
 `useMobileVaults` saves pending editor work before add, switch, and forget.
+`mobileVaultCatalogActions` owns those catalog operations and clone activation;
+every action runs through the controller's existing saved-workspace barrier.
+Sync scheduling, editor recovery and notices remain in the controller. Forgetting
+a vault only removes its catalog entry, never its working-copy files.
 Restoration distinguishes catalog decoding failures from selected-vault recovery
 failures, retains readable catalog entries, and exposes a retry without deleting
 the catalog or working copy.

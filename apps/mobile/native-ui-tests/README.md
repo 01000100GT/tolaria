@@ -114,6 +114,17 @@ test runner environment (the Xcode scheme's Test action) and select that test:
   simulator. Downloads part of the public isomorphic-git repository, displays
   actual counts, and cancels. Verify the saved catalog and existing vault files
   are unchanged and the incomplete clone directory has been removed.
+- `TOLARIA_QA_RECOVERY=conflict`: `MobileVaultRecoveryTests` background case,
+  with a disposable linked folder whose cached and provider versions both differ
+  from their recorded baseline. The test waits for real automatic reconciliation,
+  requires a non-modal notice, and follows its explicit Manage vaults action.
+  It closes the manager and types into a new disposable note to prove the editor
+  lock was released. Verify both original versions remain unchanged afterward.
+- `TOLARIA_QA_RECOVERY=catalog`: `MobileVaultRecoveryTests` catalog case, only
+  after backing up the disposable simulator's primary/backup catalog. Corrupt
+  both copies deliberately; require the recovery screen, Retry, no automatically
+  opened modal, and no note-creation UI. Restore the byte-identical metadata after
+  checking that retry did not overwrite the unreadable catalog.
 - `TOLARIA_QA_LINKED_FOCUS=1`: `MobileEditorFocusTests` linked-folder case, with
   an isolated active folder imported through Files. The source and app-owned
   working copy must both be disposable. The test creates a note, types across

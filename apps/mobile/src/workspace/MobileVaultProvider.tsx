@@ -7,10 +7,12 @@ import { WorkspaceSyncEditorsContext } from './workspaceSyncEditors'
 import { useMobileVaults } from './git/useMobileVaults'
 import { WorkspaceLoadBoundary } from './WorkspaceLoadBoundary'
 import { MobileSettingsSheet } from '../settings/MobileSettingsSheet'
+import { MobileVaultNotice } from '../components/vaults/MobileVaultNotice'
 
 export function MobileVaultProvider({ children }: { children: ReactNode }) {
   const manager = useMobileVaults()
   const { active, open, restorePending, revision, editors } = manager
+  const restoreError = !active.selection && !manager.catalog.pending ? manager.catalog.error : null
   // Sync progress must not make the workspace re-index a large vault.
   const workspace = useMemo(() => ({ selection: active.selection, open, restorePending }), [active.selection, open, restorePending])
   const controls = {
@@ -26,10 +28,12 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
     <NativeWorkspaceContext.Provider value={workspace}>
       <MobileVaultControlsContext.Provider value={controls}>
         <WorkspaceLoadBoundary key={revision} fallback={<MobileWorkspaceLoadFailure onManage={open} />}>
-          {children}
+          {restoreError ? <MobileWorkspaceLoadFailure onManage={open} onRetry={manager.catalog.retry} reason={restoreError} /> : children}
         </WorkspaceLoadBoundary>
         <MobileVaultManager manager={manager} />
         <MobileSettingsSheet manager={manager} />
+        {!manager.opened && manager.notices.current && <MobileVaultNotice notice={manager.notices.current}
+          dismiss={manager.notices.dismiss} onManage={open} />}
       </MobileVaultControlsContext.Provider>
     </NativeWorkspaceContext.Provider>
   </WorkspaceSyncEditorsContext.Provider>

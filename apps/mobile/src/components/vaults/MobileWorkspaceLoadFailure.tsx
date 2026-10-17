@@ -7,10 +7,13 @@ import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
 
-export function MobileWorkspaceLoadFailure({ onManage }: { onManage: () => void }) {
+export function MobileWorkspaceLoadFailure({ onManage, onRetry, reason }: {
+  onManage: () => void; onRetry?: () => void; reason?: 'catalog' | 'selection'
+}) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   return <View style={styles.root} testID="workspace-load-failure">
-    <Text accessibilityRole="alert" style={styles.message}>{mobileText('mobile.vaults.requestFailed')}</Text>
+    <Text accessibilityRole="alert" style={styles.message}>{mobileText(reason === 'catalog' ? 'mobile.vaults.catalogFailed' : 'mobile.vaults.requestFailed')}</Text>
+    {onRetry && <MobileButton label={mobileText('pulse.retry')} onPress={onRetry} testID="vault-recovery-retry" />}
     <MobileButton label={mobileText('status.vault.manageWorkspaces')} onPress={onManage}
       icon={<FolderOpen size={16} color={mobileColors.text} />} />
   </View>
