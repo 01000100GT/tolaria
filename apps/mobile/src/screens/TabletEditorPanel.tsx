@@ -10,13 +10,12 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MobileEditorBlocks } from '../components/workspace/MobileEditorBlocks'
 import { MobileMarkdownSourceEditor } from '../components/workspace/MobileMarkdownSourceEditor'
-import { MobileNoteIcon, MobileTypeIcon } from '../components/workspace/MobileWorkspaceIcons'
+import { MobileEditorFileIdentity } from '../components/workspace/MobileEditorFileIdentity'
 import { MobileWysiwygMarkdownEditor } from '../components/workspace/MobileWysiwygMarkdownEditor'
 import { mobileText } from '../i18n/mobileText'
 import { MobileChip } from '../ui/MobileChip'
 import { MobileIconButton } from '../ui/MobileIconButton'
-import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../ui/MobilePanel'
-import { noteTypeColor } from '../components/workspace/mobileWorkspaceTone'
+import { MobilePanel, MobileToolbar, MobileToolbarSpacer } from '../ui/MobilePanel'
 
 import { MobileLayoutProbeReadout } from '../qa/MobileLayoutProbeReadout'
 import { useMobileLayoutProbe } from '../qa/mobileLayoutProbe'
@@ -250,73 +249,18 @@ function useTableOfContentsScroll(
   return { onScroll, onTargetLayout, setScrollViewNode }
 }
 
-function EditorToolbar({
-  editingMode,
-  editing,
-  fileMode,
-  leading,
-  trailing,
-  note,
-  onOpenMoreActions,
-  onOpenTableOfContents,
-  onToggleProperties,
-  onToggleSourceMode,
-  onToggleFavorite,
-  propertiesVisible,
-  typeDefinitions,
-}: EditorToolbarProps) {
-  const chipLabel = editorToolbarChipLabel(fileMode)
+function EditorToolbar(props: EditorToolbarProps) {
+  const chipLabel = editorToolbarChipLabel(props.fileMode)
 
   return (
     <MobileToolbar testID="editor-toolbar">
-      {leading}
-      <EditorToolbarIcon fileMode={fileMode} note={note} typeDefinitions={typeDefinitions} />
-      <MobileToolbarTitle testID="editor-toolbar-title" title={note.title} />
+      {props.leading}
+      <MobileEditorFileIdentity note={props.note} typeDefinitions={props.typeDefinitions} />
       {chipLabel ? <MobileChip label={chipLabel} tone="gray" /> : null}
       <MobileToolbarSpacer />
-      <EditorToolbarActions
-        editing={editing}
-        editingMode={editingMode}
-        fileMode={fileMode}
-        note={note}
-        onOpenMoreActions={onOpenMoreActions}
-        onOpenTableOfContents={onOpenTableOfContents}
-        onToggleProperties={onToggleProperties}
-        onToggleFavorite={onToggleFavorite}
-        onToggleSourceMode={onToggleSourceMode}
-        propertiesVisible={propertiesVisible}
-      />
-      {trailing}
+      <EditorToolbarActions {...props} />
+      {props.trailing}
     </MobileToolbar>
-  )
-}
-
-function EditorToolbarIcon({
-  fileMode,
-  note,
-  typeDefinitions,
-}: Pick<EditorToolbarProps, 'fileMode' | 'note' | 'typeDefinitions'>) {
-  const colors = useMobileColors()
-  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
-  if (fileMode === 'markdown' && note.icon?.trim()) {
-    return (
-      <MobileNoteIcon
-        color={noteTypeColor(note.typeTone, colors)}
-        icon={note.icon}
-        size={desktopToolbarActionParity.iconSize}
-        testID="editor-toolbar-note-icon"
-      />
-    )
-  }
-
-  return (
-    <MobileTypeIcon
-      fileKind={note.fileKind}
-      size={desktopToolbarActionParity.iconSize}
-      tone={note.typeTone}
-      type={note.type}
-      typeDefinitions={typeDefinitions}
-    />
   )
 }
 

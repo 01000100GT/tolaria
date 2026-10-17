@@ -17,7 +17,7 @@ async function createPhoneNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
   await page.getByTestId(`note-row-${noteRowSlug(title)}.md`).click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeWhiteboardFence(page: Page) {
@@ -31,7 +31,7 @@ async function writeWhiteboardFence(page: Page) {
     '```',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Phone Whiteboard Source')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-whiteboard-source.md')
 }
 
 async function editWhiteboardFence(page: Page) {

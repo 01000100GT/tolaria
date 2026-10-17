@@ -11,7 +11,7 @@ final class TabletPreparedNoteActionTests: XCTestCase {
     let allNotes = app.buttons.matching(identifier: "sidebar-item-all-notes").firstMatch
     XCTAssertTrue(allNotes.waitForExistence(timeout: 60))
     allNotes.tap()
-    XCTAssertNotEqual(element(app, "editor-toolbar-title").label, "Codex Prepared Action QA")
+    XCTAssertNotEqual(element(app, "editor-toolbar-title").label, "codex-prepared-action-qa.md")
     let row = element(app, "note-row-codex-prepared-action-qa.md")
     XCTAssertTrue(row.waitForExistence(timeout: 10))
     row.press(forDuration: 0.7)

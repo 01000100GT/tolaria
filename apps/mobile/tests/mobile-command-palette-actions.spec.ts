@@ -9,8 +9,7 @@ import {
 import type { MobileWorkspaceWrite } from '../src/workspace/mobileWorkspaceEditing'
 import { createTitledNoteFromQuickOpen, noteRowSlug } from './mobile-note-create-actions'
 
-const mobileClipboardAttemptsGlobalKey = '__TOLARIA_MOBILE_CLIPBOARD_ATTEMPTS__'
-const mobileFileRevealAttemptsGlobalKey = '__TOLARIA_MOBILE_FILE_REVEAL_ATTEMPTS__'
+import { fileRevealAttempts, latestClipboardAttempt } from './mobile-browser-attempts'
 
 test.describe('mobile command palette actions', () => {
   test('dispatches selected-note utility commands from the tablet command palette', async ({ page }, testInfo) => {
@@ -41,7 +40,7 @@ test.describe('mobile command palette actions', () => {
 
     await expect(page.getByTestId('mobile-command-palette')).toBeHidden()
     await expect(page.getByTestId(/note-row-untitled-essay-\d+\.md/u)).toBeVisible()
-    await expect(page.getByTestId('editor-toolbar-title')).toHaveText(/Untitled Essay \d+/u)
+    await expect(page.getByTestId('editor-toolbar-title')).toHaveText(/^untitled-essay-\d+\.md$/u)
     await expect(page.getByTestId('editor-title')).toBeHidden()
     await expect(page.getByTestId('property-row-type-edit')).toHaveText('Essay')
   })
@@ -114,28 +113,19 @@ test.describe('mobile command palette actions', () => {
     await expect(page.getByTestId(rowTestId)).toBeHidden()
   })
 
-  test('flushes the active source editor draft from the tablet command palette save command', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'tablet-landscape', 'Command palette save checks use the full-width tablet layout.')
-
-    await assertSourceEditorDraftSavesFromCommandPalette(page, {
-      initialMarkdown: '# Workflow Orchestration Essay\n\nOriginal host body.\n',
-      markdown: '# Workflow Orchestration Essay\n\nSaved from the live source editor command.\n',
-      openPalette: openCommandPalette,
-      url: '/?source=host-vault&editorMode=source&disableEditorIdleSave=1',
+  for (const device of ['tablet', 'phone']) {
+    test(`flushes the active source editor draft from the ${device} command palette save command`, async ({ page }, testInfo) => {
+      const phone = device === 'phone'
+      test.skip(testInfo.project.name !== (phone ? 'phone-portrait' : 'tablet-landscape'))
+      await assertSourceEditorDraftSavesFromCommandPalette(page, {
+        initialMarkdown: `# Workflow Orchestration Essay\n\nOriginal ${device} host body.\n`,
+        markdown: `# Workflow Orchestration Essay\n\nSaved from the live ${device} source editor command.\n`,
+        openPalette: phone ? openPhoneCommandPalette : openCommandPalette,
+        screenTestId: phone ? 'phone-editor-screen' : undefined,
+        url: `/?source=host-vault&editorMode=source&disableEditorIdleSave=1${phone ? '&phoneState=editor' : ''}`,
+      })
     })
-  })
-
-  test('flushes the active source editor draft from the phone command palette save command', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'phone-portrait', 'Phone command palette save checks run on the phone editor shell.')
-
-    await assertSourceEditorDraftSavesFromCommandPalette(page, {
-      initialMarkdown: '# Workflow Orchestration Essay\n\nOriginal phone host body.\n',
-      markdown: '# Workflow Orchestration Essay\n\nSaved from the live phone source editor command.\n',
-      openPalette: openPhoneCommandPalette,
-      screenTestId: 'phone-editor-screen',
-      url: '/?source=host-vault&editorMode=source&disableEditorIdleSave=1&phoneState=editor',
-    })
-  })
+  }
 
   test('dispatches workspace commands from the phone command palette', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone-portrait', 'Phone command palette checks run on the phone shell.')
@@ -173,7 +163,7 @@ test.describe('mobile command palette actions', () => {
     await runCommand(page, 'reveal', 'reveal-selected-folder')
 
     await expect(page.getByTestId('mobile-command-palette')).toBeHidden()
-    await expect.poll(() => latestGlobalAttempt(page, mobileFileRevealAttemptsGlobalKey)).toEqual({
+    await expect.poll(async () => (await fileRevealAttempts(page)).at(-1)).toEqual({
       folderPath: 'Tolaria/Mobile UI',
       path: 'Tolaria/Mobile UI',
     })
@@ -194,7 +184,7 @@ test.describe('mobile command palette actions', () => {
     await page.getByTestId('workspace-action-reveal-folder').click()
 
     await expect(page.getByTestId('workspace-action-sheet-editFolder')).toBeHidden()
-    await expect.poll(() => globalAttemptCount(page, mobileFileRevealAttemptsGlobalKey)).toBe(2)
+    await expect.poll(async () => (await fileRevealAttempts(page)).length).toBe(2)
   })
 })
 
@@ -245,25 +235,6 @@ async function assertSourceEditorDraftSavesFromCommandPalette(page: Page, option
       kind: 'saveNote',
     }),
   ])
-}
-
-async function latestClipboardAttempt(page: Page) {
-  return latestGlobalAttempt(page, mobileClipboardAttemptsGlobalKey)
-}
-
-async function latestGlobalAttempt(page: Page, key: string) {
-  return globalAttempts(page, key).then((attempts) => attempts.at(-1) ?? null)
-}
-
-async function globalAttemptCount(page: Page, key: string) {
-  return globalAttempts(page, key).then((attempts) => attempts.length)
-}
-
-async function globalAttempts(page: Page, key: string) {
-  return page.evaluate((globalKey) => {
-    const attempts = (window as unknown as Record<string, unknown>)[globalKey]
-    return Array.isArray(attempts) ? attempts : []
-  }, key)
 }
 
 async function installFixtureHostWorkspace(page: Page, selectedNoteContent: string) {

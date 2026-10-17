@@ -19,7 +19,7 @@ async function createPhoneNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
   await page.getByTestId(`note-row-${noteRowSlug(title)}.md`).click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeSourceBlocks(page: Page) {
@@ -42,7 +42,7 @@ async function writeSourceBlocks(page: Page) {
     '```',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Phone Source Blocks')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-source-blocks.md')
 }
 
 async function editCodeBlock(page: Page) {

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
+import { createTitledNoteFromQuickOpen, noteRowSlug } from './mobile-note-create-actions'
 
 test.describe('mobile source block action parity', () => {
   test('edits desktop-compatible code, math, and Mermaid blocks from tablet More actions', async ({ page }, testInfo) => {
@@ -17,7 +17,7 @@ test.describe('mobile source block action parity', () => {
 
 async function createTabletNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeSourceBlocks(page: Page) {
@@ -40,7 +40,7 @@ async function writeSourceBlocks(page: Page) {
     '$$',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Source Block Note')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('source-block-note.md')
 }
 
 async function editCodeBlock(page: Page) {

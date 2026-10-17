@@ -17,7 +17,7 @@ async function createPhoneNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
   await page.getByTestId(`note-row-${noteRowSlug(title)}.md`).click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeMarkdownTable(page: Page) {
@@ -31,7 +31,7 @@ async function writeMarkdownTable(page: Page) {
     '| Editor | Phone |',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Phone Table Source')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-table-source.md')
 }
 
 async function editMarkdownTable(page: Page) {

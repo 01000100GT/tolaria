@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
+import { createTitledNoteFromQuickOpen, noteRowSlug } from './mobile-note-create-actions'
 
 test.describe('mobile whiteboard action parity', () => {
   test('edits desktop-compatible tldraw fences from tablet More actions', async ({ page }, testInfo) => {
@@ -15,7 +15,7 @@ test.describe('mobile whiteboard action parity', () => {
 
 async function createTabletNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeWhiteboardFence(page: Page) {
@@ -29,7 +29,7 @@ async function writeWhiteboardFence(page: Page) {
     '```',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Whiteboard Source')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('whiteboard-source.md')
 }
 
 async function editWhiteboardFence(page: Page) {

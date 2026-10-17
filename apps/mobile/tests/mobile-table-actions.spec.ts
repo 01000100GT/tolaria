@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
+import { createTitledNoteFromQuickOpen, noteRowSlug } from './mobile-note-create-actions'
 
 test.describe('mobile table action parity', () => {
   test('edits desktop-compatible markdown tables from tablet More actions', async ({ page }, testInfo) => {
@@ -15,7 +15,7 @@ test.describe('mobile table action parity', () => {
 
 async function createTabletNote(page: Page, title: string) {
   await createTitledNoteFromQuickOpen(page, title)
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
 }
 
 async function writeMarkdownTable(page: Page) {
@@ -29,7 +29,7 @@ async function writeMarkdownTable(page: Page) {
     '| Editor | Mobile |',
   ].join('\n'))
   await page.getByTestId('editor-source-action').click()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Table Source')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('table-source.md')
 }
 
 async function editMarkdownTable(page: Page) {

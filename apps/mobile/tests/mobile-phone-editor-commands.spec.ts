@@ -26,7 +26,7 @@ async function createPhonePersonNote(page: Page) {
   await page.getByTestId('workspace-change-type-input').fill('Person')
   await page.getByTestId('workspace-action-sheet-changeNoteType').getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
 }
 
@@ -160,7 +160,7 @@ async function assertRenderedPhoneMarkdown(page: Page) {
     '| --- | --- |',
     '| Phone | Parity |',
   ].join('\n'))
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Phone Editor Commands')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-editor-commands.md')
   await expect(input).toHaveValue(/\[\[phone-person-target\]\]/u)
   await expect(input).toHaveValue(/\[\[Tolaria\/Mobile UI\/How I Run an Open Source Project\]\]/u)
   await expect(input).toHaveValue(/## Section title/u)
@@ -181,7 +181,7 @@ async function openPhoneTableOfContents(page: Page) {
 }
 
 async function expectBodyOnlyPhoneNote(page: Page, title: string) {
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
   await expect(page.getByTestId('editor-title')).toBeHidden()
 }
 

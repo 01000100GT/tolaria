@@ -58,7 +58,7 @@ async function createPhonePropertyNote(page: Page) {
   await createTitledNoteFromQuickOpen(page, 'Phone Property Matrix')
   await page.getByTestId('note-row-phone-property-matrix.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Phone Property Matrix')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-property-matrix.md')
 }
 
 async function openPhoneProperties(page: Page) {
@@ -158,7 +158,7 @@ async function addDateProperty(page: Page) {
 
   await page.getByTestId('property-row-date-edit').click()
   await expect(page.getByTestId('workspace-action-sheet-editProperty')).toBeVisible()
-  await expect(page.getByTestId('workspace-property-name-input')).toHaveValue('Date')
+  await expect(page.getByTestId('workspace-action-sheet-toolbar')).toContainText('Date')
   await page.getByTestId('workspace-property-value-input').fill('2026-06-21')
   await savePropertySheet(page, 'editProperty')
   await expect(page.getByTestId('property-row-date')).toContainText('June 21, 2026')
@@ -168,8 +168,8 @@ async function editTagListProperty(page: Page) {
   await page.getByTestId('property-tags-edit').scrollIntoViewIfNeeded()
   await page.getByTestId('property-tags-edit').click()
   await expect(page.getByTestId('workspace-action-sheet-editProperty')).toBeVisible()
-  await expect(page.getByTestId('workspace-property-name-input')).toHaveValue('tags')
-  await expect(page.getByTestId('workspace-property-kind-list')).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByTestId('workspace-action-sheet-toolbar')).toContainText('tags')
+  await expect(page.getByTestId('workspace-property-kind-list')).toBeHidden()
   await page.getByTestId('workspace-property-value-input').fill('Mobile, De')
   await page.getByTestId('workspace-property-value-suggestion-design').click()
   await expect(page.getByTestId('workspace-property-value-input')).toHaveValue('Mobile, Design')

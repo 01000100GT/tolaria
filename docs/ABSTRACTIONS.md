@@ -240,6 +240,11 @@ Both initial snapshots and edited/hydrated metadata retain the complete tag list
 Presentation limits belong to list components, never the persisted-data model or
 the property form's editable value.
 
+`MobileEditorFileIdentity` renders the shared phone/tablet breadcrumb icon and
+literal basename, including its extension, from the note's write path. It does
+not derive a filename from the display title or modify the document heading.
+Custom note/type icons retain the existing desktop-derived colors and sizes.
+
 `mobileEditorFocus` owns one-shot, note-specific focus requests in the existing
 workspace editor registry. Successful note creation requests focus; ordinary
 navigation does not. The native editor consumes the request after initial content

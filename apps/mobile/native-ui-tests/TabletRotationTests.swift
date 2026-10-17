@@ -12,12 +12,12 @@ final class TabletRotationTests: XCTestCase {
     XCTAssertTrue(note.waitForExistence(timeout: 60))
     note.tap()
     let title = app.staticTexts.matching(identifier: "editor-toolbar-title").firstMatch
-    waitUntil { title.exists && title.label == "How I Run an Open Source Project" }
+    waitUntil { title.exists && title.label == "How I Run an Open Source Project.md" }
     let editor = app.descendants(matching: .any).matching(identifier: "editor-panel").firstMatch
     XCUIDevice.shared.orientation = .portrait
     waitUntil { app.frame.width < app.frame.height }
     waitUntil { editor.frame.width >= 520 }
-    XCTAssertEqual(title.label, "How I Run an Open Source Project")
+    XCTAssertEqual(title.label, "How I Run an Open Source Project.md")
     XCTAssertLessThan(editor.frame.maxX, app.frame.width + 1)
     let screenshot = XCTAttachment(screenshot: app.screenshot())
     screenshot.lifetime = .keepAlways
@@ -29,11 +29,11 @@ final class TabletRotationTests: XCTestCase {
     XCUIDevice.shared.orientation = .landscapeLeft
     waitUntil { app.frame.width > app.frame.height }
     waitUntil { editor.frame.width >= 520 }
-    XCTAssertEqual(title.label, "How I Run an Open Source Project")
+    XCTAssertEqual(title.label, "How I Run an Open Source Project.md")
     XCUIDevice.shared.orientation = .portrait
     app.buttons.matching(identifier: "editor-properties-action").firstMatch.tap()
     waitUntil { !properties.exists && editor.frame.width >= 520 }
-    XCTAssertEqual(title.label, "How I Run an Open Source Project")
+    XCTAssertEqual(title.label, "How I Run an Open Source Project.md")
   }
 
   private func waitUntil(_ predicate: @escaping () -> Bool) {

@@ -27,7 +27,7 @@ final class TabletVaultBacklinkTests: XCTestCase {
     capture.lifetime = .keepAlways
     add(capture)
     backlink.tap()
-    XCTAssertEqual(element(app, "editor-toolbar-title").label, "Codex Prepared Action QA")
+    XCTAssertEqual(element(app, "editor-toolbar-title").label, "codex-prepared-action-qa.md")
     XCTAssertTrue(app.webViews.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Original full body for native Undo.")).firstMatch.waitForExistence(timeout: 10))
   }
 

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
-import { longPressTestId } from './mobile-phone-test-gestures'
+import { longPressMouseTestId as longPressTestId } from './mobile-phone-test-gestures'
 
 test.describe('phone workspace editing parity', () => {
   test('exercises saved-view and type-section editing flows', async ({ page }, testInfo) => {
@@ -55,6 +55,32 @@ async function createEditAndDeletePhoneSavedView(page: Page) {
 }
 
 async function customizePhoneTypeSectionAndCreateTemplateNote(page: Page) {
+  await configurePhoneTypeSection(page)
+  const procedureSectionTestId = await hideAndRestorePhoneTypeSection(page)
+
+  await longPressTestId(page, procedureSectionTestId)
+  await expect(page.getByTestId('workspace-type-selected-icon')).toContainText('folder')
+  await expect(page.getByTestId('workspace-type-selected-color')).toContainText('green')
+  await expect(page.getByTestId('workspace-type-sort-custom-field-input')).toHaveValue('Priority')
+  await page.getByTestId('workspace-action-sheet-toolbar').getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
+
+  await page.getByTestId(procedureSectionTestId).click()
+  await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
+  await expect(page.getByTestId('note-list-toolbar-title')).toHaveText('Phone Runbooks')
+  await expect(page.getByTestId('note-row-open-source-project').getByText('Project Board')).toBeVisible()
+  await createTitledNoteFromQuickOpen(page, 'Phone Runbook From Type')
+  await expect(page.getByTestId('note-row-phone-runbook-from-type.md')).toBeVisible()
+  await page.getByTestId('note-row-phone-runbook-from-type.md').click()
+  await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
+  await expect.poll(() => page.getByTestId('editor-markdown-input').inputValue()).toContain('## Phone Runbook')
+  await expect.poll(() => page.getByTestId('editor-markdown-input').inputValue()).toContain('Phone type template body.')
+  await page.getByTestId('phone-properties-action').click()
+  await expect(page.getByTestId('property-row-priority')).toContainText('High')
+  await expect(page.getByTestId('relationship-row-workflow-orchestration-essay')).toBeVisible()
+}
+
+async function configurePhoneTypeSection(page: Page) {
   await openPhoneSidebar(page)
   await longPressTestId(page, 'sidebar-item-procedures')
   const sheet = page.getByTestId('workspace-action-sheet-editTypeSection')
@@ -84,29 +110,8 @@ async function customizePhoneTypeSectionAndCreateTemplateNote(page: Page) {
   await expect(page.getByTestId('workspace-type-schema-relationship-belongs-to')).toContainText('Workflow Orchestration Essay')
   await sheet.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await expect(page.getByTestId('sidebar-item-procedures')).toContainText('Phone Runbooks')
-  const procedureSectionTestId = await hideAndRestorePhoneTypeSection(page)
-
-  await longPressTestId(page, procedureSectionTestId)
-  await expect(page.getByTestId('workspace-type-selected-icon')).toContainText('folder')
-  await expect(page.getByTestId('workspace-type-selected-color')).toContainText('green')
-  await expect(page.getByTestId('workspace-type-sort-custom-field-input')).toHaveValue('Priority')
-  await page.getByTestId('workspace-action-sheet-toolbar').getByRole('button', { name: 'Cancel' }).click()
-  await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-
-  await page.getByTestId(procedureSectionTestId).click()
-  await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
-  await expect(page.getByTestId('note-list-toolbar-title')).toHaveText('Phone Runbooks')
-  await expect(page.getByTestId('note-row-open-source-project').getByText('Project Board')).toBeVisible()
-  await createTitledNoteFromQuickOpen(page, 'Phone Runbook From Type')
-  await expect(page.getByTestId('note-row-phone-runbook-from-type.md')).toBeVisible()
-  await page.getByTestId('note-row-phone-runbook-from-type.md').click()
-  await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-markdown-input')).toHaveValue(/## Phone Runbook/u)
-  await expect(page.getByTestId('editor-markdown-input')).toHaveValue(/Phone type template body\./u)
-  await page.getByTestId('phone-properties-action').click()
-  await expect(page.getByTestId('property-row-priority')).toContainText('High')
-  await expect(page.getByTestId('relationship-row-workflow-orchestration-essay')).toBeVisible()
+  await openPhoneSidebar(page)
+  await expect(page.getByRole('button', { name: 'Phone Runbooks', exact: true })).toBeVisible()
 }
 
 async function hideAndRestorePhoneTypeSection(page: Page) {
@@ -118,11 +123,11 @@ async function hideAndRestorePhoneTypeSection(page: Page) {
 
   await visibilityRow.click()
   await expect(visibilityRow).not.toHaveAttribute('aria-checked', 'true')
-  await expect(page.getByRole('button', { name: 'Phone Runbooks' })).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Phone Runbooks', exact: true })).toBeHidden()
 
   await visibilityRow.click()
   await expect(visibilityRow).toHaveAttribute('aria-checked', 'true')
-  await expect(page.getByRole('button', { name: 'Phone Runbooks' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Phone Runbooks', exact: true })).toBeVisible()
   await page.getByTestId('workspace-action-sheet-toolbar').getByRole('button', { name: 'Cancel' }).click()
   await expect(sheet).toBeHidden()
   return 'sidebar-item-type-procedure'
@@ -143,9 +148,9 @@ async function addSuggestedPhoneRelationship(page: Page) {
 
   await page.getByTestId('relationship-row-how-i-run-an-open-source-project-open').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('How I Run an Open Source Project')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('How I Run an Open Source Project.md')
 
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await page.getByTestId('note-row-phone-relationship-source.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
@@ -177,7 +182,7 @@ async function createPhoneRelationshipTarget(page: Page) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expectBodyOnlyPhoneNote(page, 'Brand New Phone Target')
 
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await page.getByTestId('note-row-phone-target-source.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
@@ -187,7 +192,7 @@ async function createPhoneRelationshipTarget(page: Page) {
 }
 
 async function expectBodyOnlyPhoneNote(page: Page, title: string) {
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
   await expect(page.getByTestId('editor-title')).toBeHidden()
 }
 

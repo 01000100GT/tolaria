@@ -48,7 +48,7 @@ async function changePhoneNoteType(page: Page) {
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await page.getByTestId('phone-properties-action').click()
   await expect(page.getByTestId('property-row-type')).toContainText('Procedure')
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-top-bar').getByTestId('phone-back-action').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
 }
 
@@ -58,7 +58,7 @@ async function addAndRemovePhoneNoteFavorite(page: Page) {
   await page.getByTestId('workspace-action-toggle-favorite').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
 
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await openPhoneSidebar(page)
   await expect(page.getByTestId('sidebar-item-favorite-phone-action-source.md')).toBeVisible()
   await page.getByTestId('sidebar-item-all-notes').click()
@@ -69,7 +69,7 @@ async function addAndRemovePhoneNoteFavorite(page: Page) {
   await page.getByTestId('workspace-action-toggle-favorite').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
 
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await openPhoneSidebar(page)
   await expect(page.getByTestId('sidebar-item-favorite-phone-action-source.md')).toBeHidden()
   await page.getByTestId('sidebar-item-all-notes').click()
@@ -89,13 +89,13 @@ async function setAndRemovePhoneNoteIcon(page: Page) {
   await page.getByTestId('phone-properties-action').click()
   await expect(page.getByTestId('property-row-icon')).toContainText('rocket')
   await page.getByTestId('property-row-icon-edit').click()
-  await expect(page.getByTestId('workspace-property-name-input')).toHaveValue('icon')
+  await expect(page.getByTestId('workspace-action-sheet-toolbar')).toContainText('icon')
   await expect(page.getByTestId('workspace-property-value-input')).toHaveValue('rocket')
   await page.getByTestId('workspace-property-value-input').fill('sparkle')
   await page.getByTestId('workspace-action-sheet-editProperty').getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await expect(page.getByTestId('property-row-icon')).toContainText('sparkle')
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-top-bar').getByTestId('phone-back-action').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
 
   await page.getByTestId('editor-more-action').click()
@@ -122,7 +122,8 @@ async function moveAndRenamePhoneNote(page: Page) {
   await page.getByTestId('workspace-rename-file-input').fill('phone-action-renamed')
   await page.getByTestId('workspace-action-sheet-renameNoteFile').getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await expectBodyOnlyPhoneNote(page, 'Phone Action Source')
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-action-renamed.md')
+  await expect(page.getByTestId('editor-title')).toBeHidden()
 }
 
 async function togglePhoneNoteWidth(page: Page) {
@@ -141,7 +142,7 @@ async function archiveOrganizeAndDeletePhoneNote(page: Page) {
   await page.getByTestId('editor-more-action').click()
   await page.getByTestId('workspace-action-archive-note').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(phoneActionRow(page)).toBeHidden()
 
   await openPhoneSidebar(page)
@@ -152,7 +153,7 @@ async function archiveOrganizeAndDeletePhoneNote(page: Page) {
   await expect(page.getByText('Unarchive Note')).toBeVisible()
   await page.getByTestId('workspace-action-archive-note').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(phoneActionRow(page)).toBeHidden()
 
   await openPhoneSidebar(page)
@@ -161,7 +162,7 @@ async function archiveOrganizeAndDeletePhoneNote(page: Page) {
   await page.getByTestId('editor-more-action').click()
   await page.getByTestId('workspace-action-organize-note').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await page.getByTestId('phone-back-action').click()
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(phoneActionRow(page)).toBeVisible()
 
   await phoneActionRow(page).click()
@@ -169,8 +170,8 @@ async function archiveOrganizeAndDeletePhoneNote(page: Page) {
   await page.getByTestId('workspace-action-delete-note').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Workflow Orchestration Essay')
-  await page.getByTestId('phone-back-action').click()
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Workflow Orchestration Essay.md')
+  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await expect(phoneActionRow(page)).toBeHidden()
 }
@@ -183,7 +184,7 @@ async function openPhoneSidebar(page: Page) {
 }
 
 async function expectBodyOnlyPhoneNote(page: Page, title: string) {
-  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(title)
+  await expect(page.getByTestId('editor-toolbar-title')).toHaveText(`${noteRowSlug(title)}.md`)
   await expect(page.getByTestId('editor-title')).toBeHidden()
 }
 

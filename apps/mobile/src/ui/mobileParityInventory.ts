@@ -8,6 +8,13 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['MobileFilenameHeaderTests: literal basename and extension without changing the document heading'],
+    contracts: ['desktopToolbarParity', 'desktopToolbarActionParity'],
+    desktopSource: 'BreadcrumbBar filename identity and typed/custom note icon',
+    mobileFile: 'src/components/workspace/MobileEditorFileIdentity.tsx',
+    surface: 'Literal filename breadcrumb',
+  },
+  {
     assertions: ['TabletEditorFindSlashTests: inline placement, 44-point controls, next-match and replacement'],
     contracts: ['desktopEditorParity', 'desktopToolbarActionParity'],
     desktopSource: 'RawEditorFindBar and editorFind: inline search, case/regex options and replace controls',
