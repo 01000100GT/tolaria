@@ -496,5 +496,5 @@ function sidebarItemPadding(desktopSidebarParity: MobileMetrics['sidebar'], hasC
 
 function sidebarItemContentHeight(desktopSidebarParity: MobileMetrics['sidebar'], hasCount: boolean) {
   const minHeight = hasCount ? desktopSidebarParity.itemContentHeight.withCount : desktopSidebarParity.itemContentHeight.regular
-  return { height: minHeight, minHeight }
+  return { minHeight }
 }

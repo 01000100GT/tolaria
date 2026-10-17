@@ -73,61 +73,49 @@ export function MobileSidebarCountPill(props: MobileSidebarCountPillProps) {
 
 function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const { sidebar: desktopSidebarParity } = metrics
+  const pill = {
+    overflow: 'hidden' as const,
+    borderRadius: desktopSidebarParity.countPillRadius,
+    backgroundColor: mobileColors.graySoft,
+    paddingHorizontal: desktopSidebarParity.countPillPaddingHorizontal,
+  }
+  const text = {
+    color: mobileColors.textMuted,
+    fontSize: desktopSidebarParity.countPillTextSize,
+    fontWeight: '400' as const,
+    textAlign: 'center' as const,
+  }
+  const nativePill = { ...pill, alignItems: 'center' as const, justifyContent: 'center' as const }
   const nativeStyles = StyleSheet.create({
     activeText: { color: mobileColors.textInverse },
     compact: {
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...nativePill,
       minWidth: desktopSidebarParity.countPillCompactMinWidth,
-      height: desktopSidebarParity.countPillCompactHeight,
-      overflow: 'hidden',
-      borderRadius: desktopSidebarParity.countPillRadius,
-      backgroundColor: mobileColors.graySoft,
-      paddingHorizontal: desktopSidebarParity.countPillPaddingHorizontal,
+      minHeight: desktopSidebarParity.countPillCompactHeight,
     },
     count: {
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...nativePill,
       minWidth: desktopSidebarParity.countPillMinWidth,
-      height: desktopSidebarParity.countPillHeight,
-      overflow: 'hidden',
-      borderRadius: desktopSidebarParity.countPillRadius,
-      backgroundColor: mobileColors.graySoft,
-      paddingHorizontal: desktopSidebarParity.countPillPaddingHorizontal,
+      minHeight: desktopSidebarParity.countPillHeight,
     },
     text: {
-      color: mobileColors.textMuted,
-      fontSize: desktopSidebarParity.countPillTextSize,
-      fontWeight: '400',
+      ...text,
       lineHeight: metrics.size(12),
-      textAlign: 'center',
     },
   })
 
   const webStyles = {
     count: {
+      ...pill,
+      ...text,
       minWidth: desktopSidebarParity.countPillMinWidth,
       height: desktopSidebarParity.countPillHeight,
-      overflow: 'hidden' as const,
-      borderRadius: desktopSidebarParity.countPillRadius,
-      backgroundColor: mobileColors.graySoft,
-      color: mobileColors.textMuted,
-      fontSize: desktopSidebarParity.countPillTextSize,
-      fontWeight: '400' as const,
-      paddingHorizontal: desktopSidebarParity.countPillPaddingHorizontal,
-      textAlign: 'center' as const,
     },
     sectionCount: {
+      ...pill,
+      ...text,
       minWidth: desktopSidebarParity.countPillCompactMinWidth,
       height: desktopSidebarParity.countPillCompactHeight,
-      overflow: 'hidden' as const,
-      borderRadius: desktopSidebarParity.countPillRadius,
-      backgroundColor: mobileColors.graySoft,
-      color: mobileColors.textMuted,
-      fontSize: desktopSidebarParity.countPillTextSize,
-      fontWeight: '400' as const,
-      paddingHorizontal: desktopSidebarParity.countPillPaddingHorizontal,
-      textAlign: 'center' as const,
     },
   }
   return { mobileColors, nativeStyles, webStyles }
