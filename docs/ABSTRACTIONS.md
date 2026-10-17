@@ -376,7 +376,12 @@ uses the editor toolbar's leading/trailing slots, not a second title bar. The
 workspace has no permanent bottom status bar. `MobileSidebarSettings` anchors
 Settings below the scrollable sidebar and above the home indicator. The existing
 Settings sheet exposes GitHub and vault management; sync/recovery controls remain
-in the vault manager. Non-sidebar panels reserve their own bottom safe area.
+in the vault manager. Panes extend to the bottom edge, including their backgrounds
+and dividers. The note list keeps controls within its own bottom padding; the
+inspector adds clearance to scrollable content, not a strip outside the panel.
+Formatting strips own their home-indicator clearance through `useMobileBottomInset`,
+which removes that clearance when a software keyboard is visible. There is no
+second workspace inset below the toolbar.
 Phone drawers pass `fullWidth` to the shared sidebar so its measured trailing
 edge meets the note-list preview without a desktop-width gap.
 
@@ -393,9 +398,9 @@ They retain the original touch-down position rather than reconstructing it from
 movement samples, which can start after the finger has already left the edge.
 The raw editor permits responder handoff for these edge gestures; interior text
 selection and vertical scrolling remain outside the panel drag hit zone.
-Each retained phone screen owns its bottom inset independently of the active
-screen. Opening the edge-to-edge sidebar therefore cannot resize the hidden list
-and clamp away its saved scroll offset.
+Retained phone screens remain full-height independently of the active screen.
+Opening the sidebar therefore cannot resize the hidden list and clamp away its
+saved scroll offset. Bottom clearance belongs to each screen's controls/content.
 
 When the adaptive iPad window cannot fit both left panes plus the 520-point
 editor minimum, the animated left strip is clipped to the 340-point list slot.

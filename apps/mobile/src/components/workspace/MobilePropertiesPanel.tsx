@@ -2,6 +2,7 @@ import { useMobileStyles, useMobileColors } from '../../ui/theme/useMobileTheme'
 import { Plus, WarningCircle, X } from 'phosphor-react-native'
 import type { ReactNode } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { mobileCopy, mobileText } from '../../i18n/mobileText'
 import { type MobileLayoutProbe, probeProps, useMobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import { desktopRelationshipParity } from '../../ui/desktopParity'
@@ -64,7 +65,7 @@ type MobilePropertiesPanelProps = {
 export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
   const themeStyles = useMobileStyles(createPropertyPanelStyles)
   const { panelStyles } = themeStyles
-  const mobileColors = useMobileColors()
+  const { bottom } = useSafeAreaInsets()
   const {
     compact,
     fullWidth = false,
@@ -82,24 +83,30 @@ export function MobilePropertiesPanel(props: MobilePropertiesPanelProps) {
       ]}
       testID="properties-panel"
     >
-      {props.showToolbar !== false ? <MobileToolbar testID="properties-toolbar">
-        <MobileToolbarTitle testID="properties-toolbar-title" title={mobileCopy.properties} variant="inspector" />
-        <MobileToolbarSpacer />
-        {props.note ? <MobileIconButton
-          accessibilityLabel={mobileText('inspector.properties.addProperty')}
-          testID="properties-toolbar-add"
-          onPress={() => props.onAddProperty()}
-        ><Plus size={16} color={mobileColors.textMuted} /></MobileIconButton> : null}
-      </MobileToolbar> : null}
+      <PropertiesPanelToolbar {...props} />
       <ScrollView
         {...probeProps(propertyLayoutProbe.probe, 'properties.scroll')}
-        contentContainerStyle={[panelStyles.content, props.note ? null : panelStyles.emptyContent]}
+        contentContainerStyle={[panelStyles.content, props.note ? null : panelStyles.emptyContent, { paddingBottom: panelStyles.content.padding + bottom }]}
         keyboardShouldPersistTaps="handled"
       >
         <PropertiesPanelContent layoutProbe={propertyLayoutProbe.probe} props={props} />
       </ScrollView>
     </MobilePanel>
   )
+}
+
+function PropertiesPanelToolbar(props: MobilePropertiesPanelProps) {
+  const mobileColors = useMobileColors()
+  if (props.showToolbar === false) return null
+  return <MobileToolbar testID="properties-toolbar">
+    <MobileToolbarTitle testID="properties-toolbar-title" title={mobileCopy.properties} variant="inspector" />
+    <MobileToolbarSpacer />
+    {props.note ? <MobileIconButton
+      accessibilityLabel={mobileText('inspector.properties.addProperty')}
+      testID="properties-toolbar-add"
+      onPress={() => props.onAddProperty()}
+    ><Plus size={16} color={mobileColors.textMuted} /></MobileIconButton> : null}
+  </MobileToolbar>
 }
 
 function PropertiesPanelContent({

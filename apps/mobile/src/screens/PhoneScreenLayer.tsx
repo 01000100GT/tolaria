@@ -1,11 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type PhoneScreenLayerProps = {
   active: boolean
   retain?: boolean
-  insetBottom?: boolean
   children: ReactNode
 }
 
@@ -14,8 +12,7 @@ const visibilityProps = {
   hidden: { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants', pointerEvents: 'none', style: { opacity: 0 } },
 } as const
 
-export function PhoneScreenLayer({ active, retain = false, insetBottom = true, children }: PhoneScreenLayerProps) {
-  const { bottom } = useSafeAreaInsets()
+export function PhoneScreenLayer({ active, retain = false, children }: PhoneScreenLayerProps) {
   const [visited, setVisited] = useState(active)
   if (active && !visited) setVisited(true)
   if (!active && !(retain && visited)) return null
@@ -23,7 +20,7 @@ export function PhoneScreenLayer({ active, retain = false, insetBottom = true, c
   return (
     <View
       {...visibility}
-      style={[styles.layer, visibility.style, { bottom: insetBottom ? bottom : 0 }]}
+      style={[styles.layer, visibility.style]}
     >
       {children}
     </View>

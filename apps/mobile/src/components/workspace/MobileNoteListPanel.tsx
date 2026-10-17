@@ -5,6 +5,7 @@ import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { useMemo, type ReactNode } from 'react'
 import { FolderOpen, MagnifyingGlass } from 'phosphor-react-native'
 import { FlatList, StyleSheet, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button } from '../ui/button'
 import { Text } from '../ui/text'
 import { mobileCopy, mobileText } from '../../i18n/mobileText'
@@ -60,6 +61,7 @@ type MobileNoteListPanelProps = {
 
 export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { bottom } = useSafeAreaInsets()
   const {
     bulkActions,
     compact,
@@ -94,7 +96,7 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
   })
 
   return (
-    <MobilePanel {...layoutProbe.probe('noteList.panel')} style={[panelStyles.panel, compact ? panelStyles.panelCompact : null, fullWidth ? panelStyles.panelFullWidth : null]} testID="note-list-panel">
+    <MobilePanel {...layoutProbe.probe('noteList.panel')} style={[panelStyles.panel, compact ? panelStyles.panelCompact : null, fullWidth ? panelStyles.panelFullWidth : null, { paddingBottom: bottom }]} testID="note-list-panel">
       <MobileToolbar testID="note-list-toolbar">
         {leading}
         <View style={styles.toolbarTitleBlock}>

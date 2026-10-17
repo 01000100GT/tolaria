@@ -242,10 +242,10 @@ in `mobileSavedViews.ts`. Sidebar type discovery has no arbitrary count cap and
 uses the desktop pluralization helper, while explicit type labels take priority.
 
 `MobilePanelSafeArea` owns each tablet pane's top inset, background and divider.
-The compact tablet footer shares the bottom system band with an empty central
-home-indicator lane. The phone shell colors its top inset from the active panel
-and reduces the footer's extra bottom inset while retaining clearance below its
-controls. These native system areas remain visually joined to their panels.
+There is no workspace footer: Settings lives at the sidebar bottom. The phone
+shell colors its top inset from the active panel. Panes and their dividers reach
+the bottom edge; bottom controls and scrollable inspector content own their
+home-indicator clearance without leaving a separate band below the workspace.
 `MobileGitHubRepositories` uses a bounded, searchable FlatList picker, and
 `MobileDeviceCode` copies authorization codes without routing secrets through the
 diagnostic clipboard helper. Inspector relationship groups expose their own add

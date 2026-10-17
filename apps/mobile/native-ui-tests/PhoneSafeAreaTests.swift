@@ -12,9 +12,7 @@ final class PhoneSafeAreaTests: XCTestCase {
     XCTAssertFalse(element(app, "phone-footer").exists)
     XCTAssertFalse(element(app, "sync-status-bar").exists)
     let list = element(app, "phone-note-list-screen")
-    let bottomInset = app.frame.maxY - list.frame.maxY
-    XCTAssertGreaterThanOrEqual(bottomInset, 20)
-    XCTAssertLessThanOrEqual(bottomInset, 40)
+    XCTAssertEqual(list.frame.maxY, app.frame.maxY, accuracy: 1)
     verifyTop(app)
     row.tap()
     XCTAssertTrue(element(app, "editor-toolbar").waitForExistence(timeout: 5))

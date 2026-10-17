@@ -11,6 +11,7 @@ import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownF
 
 import { formattingCommands } from './mobileFormattingCommands'
 import { formattingToolbarTouchSize } from './mobileFormattingToolbarModel'
+import { useMobileBottomInset } from '../../ui/useMobileBottomInset'
 
 const nativeOnlyFormattingActions = new Set<MobileMarkdownFormatAction>([
   'tableAddColumnAfter',
@@ -39,6 +40,7 @@ export function MobileMarkdownFormattingToolbar({
   inTable?: boolean
 }) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const bottom = useMobileBottomInset()
   const visibleActions = new Set((actions ?? sourceMarkdownFormattingActions)
     .filter((action) => inTable || !nativeOnlyFormattingActions.has(action)))
 
@@ -46,7 +48,7 @@ export function MobileMarkdownFormattingToolbar({
     <ScrollView
       accessibilityLabel={mobileText('editor.formatting.toolbar')}
       alwaysBounceHorizontal={false}
-      contentContainerStyle={styles.toolbarContent}
+      contentContainerStyle={[styles.toolbarContent, { paddingBottom: Math.max(styles.toolbarContent.paddingBottom, bottom) }]}
       horizontal
       keyboardShouldPersistTaps="always"
       {...formattingProbeProps(layoutProbe, metricId)}

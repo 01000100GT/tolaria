@@ -13,6 +13,7 @@ import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 import { formattingCommands, type FormattingCommand } from './mobileFormattingCommands'
 import { formattingToolbarGroups, formattingToolbarTouchSize, type FormattingToolbarGroup } from './mobileFormattingToolbarModel'
+import { useMobileBottomInset } from '../../ui/useMobileBottomInset'
 
 type Props = {
   actions: readonly MobileMarkdownFormatAction[]
@@ -34,6 +35,7 @@ const commands = new Map(formattingCommands.map((command) => [command.action, co
 
 export function MobileCompactFormattingToolbar(props: Props) {
   const { styles } = useMobileStyles(createThemeStyles)
+  const bottom = useMobileBottomInset()
   const groups = formattingToolbarGroups(props.actions, props.inTable)
   return (
     <ScrollView
@@ -41,7 +43,7 @@ export function MobileCompactFormattingToolbar(props: Props) {
       accessibilityLabel={mobileText('editor.formatting.toolbar')}
       keyboardShouldPersistTaps="always"
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
+      contentContainerStyle={[styles.row, { paddingBottom: Math.max(styles.row.paddingBottom, bottom) }]}
       style={styles.viewport}
       testID="editor-formatting-toolbar"
       {...metricProps(props)}
