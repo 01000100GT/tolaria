@@ -1,62 +1,26 @@
-import type { MobileMetrics } from '../ui/mobileMetrics'
-import { useMobileStyles } from '../ui/theme/useMobileTheme'
-import type { MobileColors } from '../ui/theme/mobilePalette'
-import { useCallback, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
-import {
-  CaretLeft,
-  Command,
-  Info,
-  List,
-} from 'phosphor-react-native'
-import { Animated as NativeAnimated, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Text } from '../components/ui/text'
-import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
-import { MobilePropertiesPanel } from '../components/workspace/MobilePropertiesPanel'
-import { MobileSyncStatusBar } from '../components/workspace/MobileSyncStatusBar'
-import { MobileWorkspaceSidebar } from '../components/workspace/MobileWorkspaceSidebar'
-import { mobileText } from '../i18n/mobileText'
-import { probeProps, useMobileLayoutProbe, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
-import { MobileIconButton } from '../ui/MobileIconButton'
-
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
+import { useWindowDimensions } from 'react-native'
+import { useMobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
-import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands } from '../workspace/mobileEditorCommands'
-import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
+import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus } from '../workspace/mobileEditorCommands'
 import { useMobileWorkspaceKeyboardShortcuts } from '../workspace/mobileWorkspaceKeyboardShortcuts'
 import type { MobileNote, MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
-import { mobileWorkspaceHasNoVault } from '../workspace/mobileWorkspaceEmptyState'
 import type { MobileTableOfContentsTarget } from '../workspace/mobileTableOfContents'
-import {
-  fixtureReadOnlyWorkspaceRepository,
-  type ReadOnlyWorkspaceRepository,
-  type ReadOnlyWorkspaceRequest,
-} from '../workspace/readOnlyWorkspaceRepository'
+import { fixtureReadOnlyWorkspaceRepository, type ReadOnlyWorkspaceRepository, type ReadOnlyWorkspaceRequest } from '../workspace/readOnlyWorkspaceRepository'
 import { MobileCommandPalette } from '../components/workspace/MobileCommandPalette'
 import { buildMobileCommandPaletteCommands } from '../workspace/mobileCommandPalette'
 import { logNativeMobileCommandPaletteProof } from '../qa/nativeMobileCommandPaletteProbe'
-import {
-  logNativeMobileKeyboardShortcutActionProof,
-  logNativeMobileKeyboardShortcutBridgeProof,
-} from '../qa/nativeMobileKeyboardShortcutProof'
-import { TabletEditorPanel } from './TabletEditorPanel'
+import { logNativeMobileKeyboardShortcutActionProof, logNativeMobileKeyboardShortcutBridgeProof } from '../qa/nativeMobileKeyboardShortcutProof'
 import type { EditorEditingMode } from './TabletEditorPanel'
-import { WorkspaceActionSheetHost } from './TabletWorkspace'
-import { PhoneWorkspaceTransition } from './PhoneWorkspaceTransition'
-import { PhoneScreenLayer } from './PhoneScreenLayer'
-import { phonePanelDragSurface } from './phonePanelDragSurface'
+import { PhoneWorkspaceRoot } from './PhoneWorkspaceLayout'
+import { PhoneWorkspaceDragPreview } from './PhoneWorkspaceScreens'
+import { usePhoneDragPreview } from './usePhoneDragPreview'
+import { phoneWorkspaceEditorOptions } from './phoneWorkspaceEditorOptions'
+import { usePhonePanelDragSurface, type PhoneWorkspaceController, type PhoneSwipePreview, type PhoneTableOfContentsTargetRequest } from './phoneWorkspaceScreenSupport'
 import { useTabletWorkspaceController } from './useTabletWorkspaceController'
-import { useMobileInspectorReferenceGroups } from './useMobileInspectorReferenceGroups'
 import { useInitialActionSheetQaTarget } from './useInitialActionSheetQaTarget'
 import type { MobileActionSheetQaTarget } from './tabletWorkspaceTypes'
-import {
-  phoneWorkspaceDragCommitOffset,
-  phoneWorkspaceDragOffset,
-  phoneWorkspaceSidebarDrawerWidth,
-  phoneWorkspaceSwipeDestination,
-  phoneWorkspaceTransitionDurationMs,
-  type PhoneWorkspaceState,
-  type PhoneWorkspaceSwipeDirection,
-} from './phoneWorkspaceTransitions'
+import type { PhoneWorkspaceState } from './phoneWorkspaceTransitions'
 
 export type { PhoneWorkspaceState } from './phoneWorkspaceTransitions'
 
@@ -88,23 +52,6 @@ type PhoneWorkspaceProps = {
 
 type PhoneWorkspaceChromeProps = PhoneWorkspaceProps & {
   controller: PhoneWorkspaceController
-}
-
-type PhoneWorkspaceEditorOptions = {
-  initialEditorEditing: boolean
-  initialEditorEditingMode: EditorEditingMode
-  layoutProbe: boolean
-  sourceIdleSave: boolean
-  sourceSelectionProbe: boolean
-  wysiwygAutocompleteProbe: boolean
-  wysiwygExternalLinkProbe: boolean
-  wysiwygFormatCommandProbe: boolean
-  wysiwygInputTransformProbe: boolean
-  wysiwygMarkdownBlockProbe: boolean
-  wysiwygMathEditProbe: boolean
-  wysiwygTableCommandMutationProbe: boolean
-  wysiwygWikilinkInsertProbe: boolean
-  wysiwygMutationProbe: boolean
 }
 
 type PhoneStateTransitionOptions = {
@@ -190,7 +137,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
     phoneSwipePreview: dragPreview,
   })
   const suggestionNotes = controller.snapshot.allNotes ?? controller.snapshot.notes
-  const preview = phoneWorkspaceDragPreview({
+  const preview = <PhoneWorkspaceDragPreview {...{
     controller,
     dragPreview,
     options,
@@ -202,7 +149,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
     openSidebar: navigation.openSidebar,
     suggestionNotes,
     sourceModeRequest,
-  })
+  }} />
 
   return (
     <PhoneWorkspaceRoot
@@ -229,26 +176,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
   )
 }
 
-function phoneWorkspaceEditorOptions(props: PhoneWorkspaceProps): PhoneWorkspaceEditorOptions {
-  return {
-    initialEditorEditing: props.initialEditorEditing ?? true,
-    initialEditorEditingMode: props.initialEditorEditingMode ?? 'wysiwyg',
-    layoutProbe: props.layoutProbe ?? false,
-    sourceIdleSave: props.sourceIdleSave ?? true,
-    sourceSelectionProbe: props.sourceSelectionProbe ?? false,
-    wysiwygAutocompleteProbe: props.wysiwygAutocompleteProbe ?? false,
-    wysiwygExternalLinkProbe: props.wysiwygExternalLinkProbe ?? false,
-    wysiwygFormatCommandProbe: props.wysiwygFormatCommandProbe ?? false,
-    wysiwygInputTransformProbe: props.wysiwygInputTransformProbe ?? false,
-    wysiwygMarkdownBlockProbe: props.wysiwygMarkdownBlockProbe ?? false,
-    wysiwygMathEditProbe: props.wysiwygMathEditProbe ?? false,
-    wysiwygMutationProbe: props.wysiwygMutationProbe ?? false,
-    wysiwygTableCommandMutationProbe: props.wysiwygTableCommandMutationProbe ?? false,
-    wysiwygWikilinkInsertProbe: props.wysiwygWikilinkInsertProbe ?? false,
-  }
-}
-
-type PhoneWorkspaceNavigation = ReturnType<typeof usePhoneWorkspaceNavigation>
+export type PhoneWorkspaceNavigation = ReturnType<typeof usePhoneWorkspaceNavigation>
 
 function selectAdjacentVisiblePhoneNote(
   notes: MobileNote[],
@@ -263,15 +191,17 @@ function selectAdjacentVisiblePhoneNote(
   if (noteId) onSelectNote(noteId)
 }
 
+type UsePhoneWorkspaceNavigationProps = {
+  controller: PhoneWorkspaceController
+  setPhoneState: (nextState: PhoneWorkspaceState, options?: PhoneStateTransitionOptions) => void
+  setSourceModeRequest: Dispatch<SetStateAction<number>>
+}
+
 function usePhoneWorkspaceNavigation({
   controller,
   setPhoneState,
   setSourceModeRequest,
-}: {
-  controller: PhoneWorkspaceController
-  setPhoneState: (nextState: PhoneWorkspaceState, options?: PhoneStateTransitionOptions) => void
-  setSourceModeRequest: Dispatch<SetStateAction<number>>
-}) {
+}: UsePhoneWorkspaceNavigationProps) {
   const openList = useCallback((options?: PhoneStateTransitionOptions) => setPhoneState('list', options), [setPhoneState])
   const openSidebar = useCallback((options?: PhoneStateTransitionOptions) => setPhoneState('sidebar', options), [setPhoneState])
   const openProperties = useCallback((options?: PhoneStateTransitionOptions) => setPhoneState('properties', options), [setPhoneState])
@@ -338,117 +268,7 @@ function usePhoneTableOfContentsTarget(setPhoneState: (nextState: PhoneWorkspace
   return { select, target }
 }
 
-type PhoneWorkspaceRootProps = {
-  commandPaletteElement: ReactNode
-  controller: PhoneWorkspaceController
-  createRelationshipTargetAndOpenEditor: () => void
-  dragPreview: PhoneSwipePreview
-  editorCommandRegistry: ReturnType<typeof useMobileEditorCommandRegistry>
-  navigation: PhoneWorkspaceNavigation
-  openCommandPalette: () => void
-  options: PhoneWorkspaceEditorOptions
-  phoneLayoutProbe: MobileLayoutProbe
-  phoneState: PhoneWorkspaceState
-  gestureHandoffState: PhoneWorkspaceState | null
-  previousPhoneState: PhoneWorkspaceState
-  preview: ReactNode
-  selectTableOfContentsTarget: (target: MobileTableOfContentsTarget) => void
-  sourceModeRequest: number
-  suggestionNotes: MobileNote[]
-  tableOfContentsTarget: PhoneTableOfContentsTargetRequest | null
-  transitionSwipeHandlers: ReturnType<typeof usePhoneSwipeHandlers>
-  onOpenNativeVault?: () => void
-}
-
-function PhoneWorkspaceRoot({
-  commandPaletteElement,
-  controller,
-  createRelationshipTargetAndOpenEditor,
-  dragPreview,
-  editorCommandRegistry,
-  navigation,
-  openCommandPalette,
-  options,
-  phoneLayoutProbe,
-  phoneState,
-  gestureHandoffState,
-  previousPhoneState,
-  preview,
-  selectTableOfContentsTarget,
-  sourceModeRequest,
-  suggestionNotes,
-  tableOfContentsTarget,
-  transitionSwipeHandlers,
-  onOpenNativeVault,
-}: PhoneWorkspaceRootProps) {
-  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
-  const insets = useSafeAreaInsets()
-  const topColor = phoneState === 'sidebar' ? mobileColors.sidebar : mobileColors.card
-  return (
-    <View {...phoneLayoutProbe('phone.root')} style={styles.root}>
-      <View testID="phone-top-inset" style={{ height: insets.top, backgroundColor: topColor }} />
-      <PhoneWorkspaceTransition
-        dragX={dragPreview.dragX}
-        gestureHandoffActive={gestureHandoffState === phoneState}
-        preview={preview}
-        previousState={previousPhoneState}
-        state={phoneState}
-        swipeHandlers={nativePhoneDragPreviewEnabled() ? undefined : transitionSwipeHandlers}
-      >
-        <PhoneWorkspaceScreens
-          controller={controller}
-          options={options}
-          openEditor={navigation.openEditor}
-          openSourceEditor={navigation.openSourceEditor}
-          openCommandPalette={openCommandPalette}
-          openList={navigation.openList}
-          openProperties={navigation.openProperties}
-          openSidebar={navigation.openSidebar}
-          phoneLayoutProbe={phoneLayoutProbe}
-          phoneState={phoneState}
-          phoneSwipePreview={dragPreview}
-          onRegisterEditorCommands={editorCommandRegistry.register}
-          sourceModeRequest={sourceModeRequest}
-          suggestionNotes={suggestionNotes}
-          tableOfContentsTarget={tableOfContentsTarget}
-        />
-      </PhoneWorkspaceTransition>
-      <View testID="phone-footer" style={{ paddingBottom: Math.max(0, insets.bottom - 12), backgroundColor: mobileColors.sidebar }}>
-        <MobileSyncStatusBar compact sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
-      </View>
-      <WorkspaceActionSheetHost
-        {...controller}
-        editorCommands={editorCommandRegistry.commands}
-        compactTablet
-        defaultPropertiesVisible={false}
-        initialEditorEditing={options.initialEditorEditing}
-        layoutProbe={options.layoutProbe}
-        suggestionNotes={suggestionNotes}
-        onCreateRelationshipTarget={createRelationshipTargetAndOpenEditor}
-        onEnterNeighborhood={navigation.openNeighborhoodList}
-        onSelectTableOfContentsTarget={selectTableOfContentsTarget}
-      />
-      {commandPaletteElement}
-    </View>
-  )
-}
-
-type PhoneTableOfContentsTargetRequest = MobileTableOfContentsTarget & { requestId: number }
-
-function usePhoneCommandPalette({
-  controller,
-  initialOpen = false,
-  onOpenNativeVault,
-  onPastePlainText,
-  onSaveActiveEditor,
-  onToggleRawEditor,
-  openEditor,
-  openList,
-  openNeighborhoodList,
-  openProperties,
-  openSidebar,
-  phoneState,
-}: {
+type UsePhoneCommandPaletteProps = {
   controller: PhoneWorkspaceController
   initialOpen?: boolean
   onOpenNativeVault?: () => void
@@ -461,7 +281,23 @@ function usePhoneCommandPalette({
   openProperties: () => void
   openSidebar: () => void
   phoneState: PhoneWorkspaceState
-}) {
+}
+
+function usePhoneCommandPalette(props: UsePhoneCommandPaletteProps) {
+  const {
+    controller,
+    initialOpen = false,
+    onOpenNativeVault,
+    onPastePlainText,
+    onSaveActiveEditor,
+    onToggleRawEditor,
+    openEditor,
+    openList,
+    openNeighborhoodList,
+    openProperties,
+    openSidebar,
+    phoneState,
+  } = props
   const [visible, setVisible] = useState(initialOpen)
   const open = useCallback(() => setVisible(true), [])
   const close = useCallback(() => setVisible(false), [])
@@ -538,6 +374,15 @@ function usePhoneState(initialState: PhoneWorkspaceState) {
   }
 }
 
+type UsePhoneSwipeHandlersProps = {
+  openEditor: (options?: PhoneStateTransitionOptions) => void
+  openList: (options?: PhoneStateTransitionOptions) => void
+  openProperties: (options?: PhoneStateTransitionOptions) => void
+  openSidebar: (options?: PhoneStateTransitionOptions) => void
+  phoneState: PhoneWorkspaceState
+  phoneSwipePreview: PhoneSwipePreview
+}
+
 function usePhoneSwipeHandlers({
   openEditor,
   openList,
@@ -545,14 +390,7 @@ function usePhoneSwipeHandlers({
   openSidebar,
   phoneState,
   phoneSwipePreview,
-}: {
-  openEditor: (options?: PhoneStateTransitionOptions) => void
-  openList: (options?: PhoneStateTransitionOptions) => void
-  openProperties: (options?: PhoneStateTransitionOptions) => void
-  openSidebar: (options?: PhoneStateTransitionOptions) => void
-  phoneState: PhoneWorkspaceState
-  phoneSwipePreview: PhoneSwipePreview
-}) {
+}: UsePhoneSwipeHandlersProps) {
   const canStart = usePhonePanelDragSurface(phoneState)
   const commitEditor = useCallback(() => phoneSwipePreview.commit('editor', () => openEditor(phoneGestureHandoffOptions)), [openEditor, phoneSwipePreview])
   const commitList = useCallback(() => phoneSwipePreview.commit('list', () => openList(phoneGestureHandoffOptions)), [openList, phoneSwipePreview])
@@ -567,662 +405,4 @@ function usePhoneSwipeHandlers({
   if (phoneState === 'properties') return propertiesSwipe
   if (phoneState === 'sidebar') return sidebarSwipe
   return listSwipe
-}
-
-function usePhonePanelDragSurface(state: PhoneWorkspaceState) {
-  const { width } = useWindowDimensions()
-  const { top } = useSafeAreaInsets()
-  return useCallback((start: { x: number; y: number }) => phonePanelDragSurface(state, start, width, top), [state, width, top])
-}
-
-function usePhoneDragPreview(
-  phoneState: PhoneWorkspaceState,
-  screenWidth: number,
-  clearGestureHandoff: () => void,
-) {
-  const enabled = nativePhoneDragPreviewEnabled()
-  const [dragX] = useState(() => new NativeAnimated.Value(0))
-  const [previewState, setPreviewState] = useState<PhoneWorkspaceState | null>(null)
-  const commit = useCallback((nextState: PhoneWorkspaceState, action: () => void) => {
-    if (!enabled) {
-      action()
-      return
-    }
-
-    dragX.stopAnimation()
-    const commitOffset = phoneWorkspaceDragCommitOffset(phoneState, nextState, screenWidth)
-    if (commitOffset === 0) {
-      dragX.setValue(0)
-      setPreviewState(null)
-      action()
-      return
-    }
-
-    setPreviewState(nextState)
-    NativeAnimated.timing(dragX, {
-      duration: phoneWorkspaceTransitionDurationMs,
-      toValue: commitOffset,
-      useNativeDriver: true,
-    }).start(() => {
-      action()
-      requestAnimationFrame(() => {
-        dragX.setValue(0)
-        setPreviewState(null)
-        clearGestureHandoff()
-      })
-    })
-  }, [clearGestureHandoff, dragX, enabled, phoneState, screenWidth])
-  const onSwipeProgress = useCallback(({ dx }: { dx: number }) => {
-    if (!enabled) return
-
-    const offset = phoneWorkspaceDragOffset(phoneState, dx, screenWidth)
-    dragX.stopAnimation()
-    if (offset === 0) {
-      dragX.setValue(0)
-      setPreviewState(null)
-      return
-    }
-
-    dragX.setValue(offset)
-    setPreviewState(phoneWorkspaceSwipeDestination(phoneState, swipeDirectionForOffset(offset)))
-  }, [dragX, enabled, phoneState, screenWidth])
-  const onSwipeEnd = useCallback((committed: boolean) => {
-    if (!enabled) return
-
-    dragX.stopAnimation()
-    if (committed) return
-
-    NativeAnimated.timing(dragX, {
-      duration: 120,
-      toValue: 0,
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) setPreviewState(null)
-    })
-  }, [dragX, enabled])
-
-  useEffect(() => () => {
-    dragX.stopAnimation()
-  }, [dragX])
-
-  return {
-    commit,
-    dragX,
-    enabled,
-    onSwipeEnd,
-    onSwipeProgress,
-    previewState,
-  }
-}
-
-function swipeDirectionForOffset(offset: number): PhoneWorkspaceSwipeDirection {
-  return offset < 0 ? 'left' : 'right'
-}
-
-function nativePhoneDragPreviewEnabled() {
-  return Platform.OS !== 'web'
-}
-
-type PhoneWorkspaceController = ReturnType<typeof useTabletWorkspaceController>
-type PhoneSwipePreview = ReturnType<typeof usePhoneDragPreview>
-
-function phoneWorkspaceDragPreview({
-  controller,
-  dragPreview,
-  options,
-  openEditor,
-  openSourceEditor,
-  openCommandPalette,
-  openList,
-  openProperties,
-  openSidebar,
-  suggestionNotes,
-  sourceModeRequest,
-}: {
-  controller: PhoneWorkspaceController
-  dragPreview: PhoneSwipePreview
-  options: PhoneWorkspaceEditorOptions
-  openEditor: (noteId?: string) => void
-  openSourceEditor: () => void
-  openCommandPalette: () => void
-  openList: () => void
-  openProperties: () => void
-  openSidebar: () => void
-  suggestionNotes: MobileNote[]
-  sourceModeRequest: number
-}): ReactNode {
-  if (!dragPreview.previewState) return null
-
-  return (
-    <PhoneWorkspaceStateView
-      controller={controller}
-      options={phoneWorkspacePreviewOptions(options)}
-      openEditor={openEditor}
-      openSourceEditor={openSourceEditor}
-      openCommandPalette={openCommandPalette}
-      openList={openList}
-      openProperties={openProperties}
-      openSidebar={openSidebar}
-      phoneLayoutProbe={disabledPhoneLayoutProbe}
-      phoneState={dragPreview.previewState}
-      phoneSwipePreview={dragPreview}
-      sourceModeRequest={sourceModeRequest}
-      suggestionNotes={suggestionNotes}
-      tableOfContentsTarget={null}
-    />
-  )
-}
-
-function phoneWorkspacePreviewOptions(options: PhoneWorkspaceEditorOptions): PhoneWorkspaceEditorOptions {
-  return {
-    ...options,
-    layoutProbe: false,
-    sourceSelectionProbe: false,
-    wysiwygAutocompleteProbe: false,
-    wysiwygExternalLinkProbe: false,
-    wysiwygFormatCommandProbe: false,
-    wysiwygInputTransformProbe: false,
-    wysiwygMarkdownBlockProbe: false,
-    wysiwygMathEditProbe: false,
-    wysiwygMutationProbe: false,
-    wysiwygTableCommandMutationProbe: false,
-    wysiwygWikilinkInsertProbe: false,
-  }
-}
-
-type PhoneWorkspaceStateViewProps = {
-  controller: PhoneWorkspaceController
-  options: PhoneWorkspaceEditorOptions
-  openEditor: (noteId?: string) => void
-  openSourceEditor: () => void
-  openCommandPalette: () => void
-  openList: () => void
-  openProperties: () => void
-  openSidebar: () => void
-  phoneLayoutProbe: MobileLayoutProbe
-  phoneState: PhoneWorkspaceState
-  phoneSwipePreview: PhoneSwipePreview
-  onRegisterEditorCommands?: RegisterMobileEditorCommands
-  sourceModeRequest: number
-  suggestionNotes: MobileNote[]
-  tableOfContentsTarget: PhoneTableOfContentsTargetRequest | null
-}
-
-const disabledPhoneLayoutProbe: MobileLayoutProbe = () => ({})
-
-function PhoneWorkspaceScreens(props: PhoneWorkspaceStateViewProps) {
-  return (
-    <>
-      <PhoneScreenLayer active={props.phoneState === 'list'} retain>
-        <PhoneNoteListScreen {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'editor'} retain>
-        <PhoneEditorScreen {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'sidebar'}>
-        <PhoneSidebarDrawer {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'properties'}>
-        <PhonePropertiesScreen {...props} />
-      </PhoneScreenLayer>
-    </>
-  )
-}
-
-function PhoneWorkspaceStateView(props: PhoneWorkspaceStateViewProps) {
-  if (props.phoneState === 'sidebar') return <PhoneSidebarDrawer {...props} />
-  if (props.phoneState === 'properties') return <PhonePropertiesScreen {...props} />
-  if (props.phoneState === 'editor' && props.controller.selectedNote) return <PhoneEditorScreen {...props} />
-  return <PhoneNoteListScreen {...props} />
-}
-
-function phoneSwipePreviewHandlers(phoneSwipePreview: PhoneSwipePreview) {
-  return phoneSwipePreview.enabled
-    ? {
-      onSwipeEnd: phoneSwipePreview.onSwipeEnd,
-      onSwipeProgress: phoneSwipePreview.onSwipeProgress,
-    }
-    : {}
-}
-
-function PhoneNoteListScreen({
-  controller,
-  options,
-  openCommandPalette,
-  openEditor,
-  openSidebar,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-}: PhoneWorkspaceStateViewProps) {
-  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
-  const commitSidebar = useCallback(
-    () => phoneSwipePreview.commit('sidebar', openSidebar),
-    [openSidebar, phoneSwipePreview],
-  )
-  const swipeHandlers = useHorizontalSwipe({
-    ...phoneSwipePreviewHandlers(phoneSwipePreview),
-    canStart: usePhonePanelDragSurface('list'),
-    onSwipeRight: commitSidebar,
-  })
-
-  return (
-    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.list.screen')} style={styles.screen} testID="phone-note-list-screen">
-      <MobileNoteListPanel
-        compact
-        onToggleNoteFavorite={controller.onToggleNoteFavorite}
-        bulkActions={{
-          onArchive: controller.onBulkArchiveNotes,
-          onDelete: controller.onBulkDeleteNotes,
-          onOrganize: controller.onBulkOrganizeNotes,
-        }}
-        displayPropertyKeys={controller.noteListProperties}
-        emptyVault={mobileWorkspaceHasNoVault(controller.snapshot)}
-        fullWidth
-        layoutProbe={options.layoutProbe}
-        leading={(
-          <View style={styles.leadingActions}>
-            <MobileIconButton accessibilityLabel={mobileText('sidebar.action.expand')} testID="phone-sidebar-action" onPress={openSidebar}>
-              <List color={mobileColors.textMuted} size={18} />
-            </MobileIconButton>
-            <PhoneCommandPaletteButton onPress={openCommandPalette} />
-          </View>
-        )}
-        neighborhood={controller.noteListNeighborhood}
-        noteListFilter={controller.noteListFilter}
-        noteListFilterCounts={controller.noteListFilterCounts}
-        noteListFilterVisible={controller.noteListFilterVisible}
-        notes={controller.notes}
-        propertyDisplayModes={controller.snapshot.vaultConfig?.propertyDisplayModes}
-        searchQuery={controller.searchQuery || undefined}
-        selectedNoteId={controller.selectedNoteId}
-        subtitle={controller.noteListSubtitle}
-        title={controller.noteListTitle}
-        typeDefinitions={controller.snapshot.typeDefinitions}
-        onOpenCreateNote={controller.onOpenCreateNote}
-        onOpenSearch={controller.onOpenSearch}
-        onOpenVault={controller.onOpenCreateNote}
-        onNoteListFilterChange={controller.onNoteListFilterChange}
-        onSelectNote={openEditor}
-      />
-    </View>
-  )
-}
-
-function PhoneSidebarDrawer({
-  controller,
-  options,
-  openCommandPalette,
-  openEditor,
-  openList,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-}: PhoneWorkspaceStateViewProps) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  const { width } = useWindowDimensions()
-  const drawerWidth = phoneWorkspaceSidebarDrawerWidth(width)
-  const commitList = useCallback(
-    () => phoneSwipePreview.commit('list', openList),
-    [openList, phoneSwipePreview],
-  )
-  const swipeHandlers = useHorizontalSwipe({
-    ...phoneSwipePreviewHandlers(phoneSwipePreview),
-    onSwipeLeft: commitList,
-  })
-  const selectFolder = useSelectAndOpenList(controller.onSelectFolder, openList)
-  const selectItem = useSelectAndOpenList(controller.onSelectSidebarItem, openList)
-
-  return (
-    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.sidebar.screen')} style={styles.drawerRoot} testID="phone-sidebar-screen">
-      <View
-        {...probeProps(phoneLayoutProbe, 'phone.sidebar.preview')}
-        pointerEvents="none"
-        style={[styles.drawerPreview, { left: drawerWidth, width }]}
-      >
-        <MobileNoteListPanel
-          compact
-          displayPropertyKeys={controller.noteListProperties}
-          fullWidth
-          layoutProbe={options.layoutProbe}
-          neighborhood={controller.noteListNeighborhood}
-          notes={controller.notes}
-          propertyDisplayModes={controller.snapshot.vaultConfig?.propertyDisplayModes}
-          selectedNoteId={controller.selectedNoteId}
-          subtitle={controller.noteListSubtitle}
-          title={controller.noteListTitle}
-          typeDefinitions={controller.snapshot.typeDefinitions}
-          onOpenCreateNote={controller.onOpenCreateNote}
-          onOpenSearch={controller.onOpenSearch}
-          onSelectNote={openEditor}
-        />
-      </View>
-      <View {...probeProps(phoneLayoutProbe, 'phone.sidebar.drawer')} style={[styles.drawerPanel, { width: drawerWidth }]}>
-        <MobileWorkspaceSidebar
-          activeFolderId={controller.activeFolderId}
-          activeItemId={controller.activeItemId}
-          layoutProbe={options.layoutProbe}
-          sections={controller.snapshot.sidebarSections}
-          title={controller.snapshot.source?.label}
-          onCreateFolder={controller.onOpenCreateFolder}
-          onCreateType={controller.onOpenCreateType}
-          onCreateView={controller.onOpenCreateView}
-          onOpenFolderActions={controller.onOpenFolderActions}
-          onOpenFavoriteActions={controller.onOpenFavoriteActions}
-          onOpenPrimaryActions={controller.onOpenPrimaryActions}
-          onOpenTypeActions={controller.onOpenTypeActions}
-          onOpenTypeVisibility={controller.onOpenTypeVisibility}
-          onOpenViewActions={controller.onOpenViewActions}
-          onSelectFolder={selectFolder}
-          onSelectItem={selectItem}
-          onOpenCommandPalette={openCommandPalette}
-          onCollapse={openList}
-        />
-      </View>
-    </View>
-  )
-}
-
-function PhoneEditorScreen({
-  controller,
-  options,
-  openList,
-  openCommandPalette,
-  openProperties,
-  onRegisterEditorCommands,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-  sourceModeRequest,
-  suggestionNotes,
-  tableOfContentsTarget,
-}: PhoneWorkspaceStateViewProps) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  const commitList = useCallback(
-    () => phoneSwipePreview.commit('list', openList),
-    [openList, phoneSwipePreview],
-  )
-  const commitProperties = useCallback(
-    () => phoneSwipePreview.commit('properties', openProperties),
-    [openProperties, phoneSwipePreview],
-  )
-  const swipeHandlers = useHorizontalSwipe({
-    ...phoneSwipePreviewHandlers(phoneSwipePreview),
-    canStart: usePhonePanelDragSurface('editor'),
-    onSwipeLeft: commitProperties,
-    onSwipeRight: commitList,
-  })
-  const handleNavigateWikilink = usePhoneWikilinkNavigation({ controller, suggestionNotes })
-
-  return (
-    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.editor.screen')} style={styles.screen} testID="phone-editor-screen">
-      {!controller.selectedNote && <PhoneTopBar title="" onBack={openList} />}
-      <PhoneEditorBody
-        controller={controller}
-        leading={<PhoneBackButton onBack={openList} />}
-        trailing={<PhoneEditorActions onOpenCommandPalette={openCommandPalette} onOpenProperties={openProperties} />}
-        notes={suggestionNotes}
-        onNavigateWikilink={handleNavigateWikilink}
-        onRegisterEditorCommands={onRegisterEditorCommands}
-        options={options}
-        sourceModeRequest={sourceModeRequest}
-        tableOfContentsTarget={tableOfContentsTarget}
-      />
-    </View>
-  )
-}
-
-function PhoneEditorActions({
-  onOpenCommandPalette,
-  onOpenProperties,
-}: {
-  onOpenCommandPalette: () => void
-  onOpenProperties: () => void
-}) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  return (
-    <>
-      <MobileIconButton
-        accessibilityLabel={mobileText('inspector.title.properties')}
-        testID="phone-properties-action"
-        onPress={onOpenProperties}
-      >
-        <Info color={mobileColors.textMuted} size={18} />
-      </MobileIconButton>
-      <PhoneCommandPaletteButton onPress={onOpenCommandPalette} />
-    </>
-  )
-}
-
-function PhoneEditorBody({
-  controller,
-  leading,
-  trailing,
-  notes,
-  onNavigateWikilink,
-  onRegisterEditorCommands,
-  options,
-  sourceModeRequest,
-  tableOfContentsTarget,
-}: {
-  controller: PhoneWorkspaceController
-  leading?: ReactNode
-  trailing?: ReactNode
-  notes: MobileNote[]
-  onNavigateWikilink: (target: string) => void
-  onRegisterEditorCommands?: RegisterMobileEditorCommands
-  options: PhoneWorkspaceEditorOptions
-  sourceModeRequest: number
-  tableOfContentsTarget: PhoneTableOfContentsTargetRequest | null
-}) {
-  const sourceModeRequested = sourceModeRequest > 0
-
-  return (
-    <TabletEditorPanel
-      key={`phone-editor-${controller.selectedNote?.id ?? 'none'}-${sourceModeRequest}`}
-      blocks={controller.editorBlocks}
-      bullets={controller.editorBullets}
-      compact
-      leading={leading}
-      trailing={trailing}
-      initialEditing={sourceModeRequested || options.initialEditorEditing}
-      initialEditingMode={sourceModeRequested ? 'source' : options.initialEditorEditingMode}
-      layoutProbe={options.layoutProbe}
-      note={controller.selectedNote}
-      noteRead={controller.selectedNoteRead}
-      notes={notes}
-      onNavigateWikilink={onNavigateWikilink}
-      onOpenMoreActions={controller.onOpenMoreActions}
-      onRegisterEditorCommands={onRegisterEditorCommands}
-      onToggleFavorite={controller.onToggleFavorite}
-      onUpdateContent={controller.onUpdateNoteContent}
-      sourceIdleSave={options.sourceIdleSave}
-      sourceSelectionProbe={options.sourceSelectionProbe}
-      tableOfContentsTarget={tableOfContentsTarget}
-      typeDefinitions={controller.snapshot.typeDefinitions}
-      vaultRootUri={controller.vaultRootUri}
-      wysiwygAutocompleteProbe={options.wysiwygAutocompleteProbe}
-      wysiwygExternalLinkProbe={options.wysiwygExternalLinkProbe}
-      wysiwygFormatCommandProbe={options.wysiwygFormatCommandProbe}
-      wysiwygInputTransformProbe={options.wysiwygInputTransformProbe}
-      wysiwygMarkdownBlockProbe={options.wysiwygMarkdownBlockProbe}
-      wysiwygMathEditProbe={options.wysiwygMathEditProbe}
-      wysiwygTableCommandMutationProbe={options.wysiwygTableCommandMutationProbe}
-      wysiwygWikilinkInsertProbe={options.wysiwygWikilinkInsertProbe}
-      wysiwygMutationProbe={options.wysiwygMutationProbe}
-    />
-  )
-}
-
-function PhonePropertiesScreen({
-  controller,
-  options,
-  openEditor,
-  openSourceEditor,
-  openCommandPalette,
-  openList,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-}: PhoneWorkspaceStateViewProps) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  const returnToEditor = useCallback(() => openEditor(), [openEditor])
-  const commitEditor = useCallback(
-    () => phoneSwipePreview.commit('editor', returnToEditor),
-    [phoneSwipePreview, returnToEditor],
-  )
-  const enterNeighborhood = useCallback((noteId: string) => {
-    controller.onEnterNeighborhood(noteId)
-    openList()
-  }, [controller, openList])
-  const referenceGroups = useMobileInspectorReferenceGroups(controller.selectedNote, controller.snapshot)
-  const swipeHandlers = useHorizontalSwipe({
-    ...phoneSwipePreviewHandlers(phoneSwipePreview),
-    onSwipeRight: commitEditor,
-  })
-
-  return (
-    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.properties.screen')} style={styles.screen} testID="phone-properties-screen">
-      <PhoneTopBar title={mobileText('inspector.title.properties')} onBack={returnToEditor}>
-        <PhoneCommandPaletteButton onPress={openCommandPalette} />
-      </PhoneTopBar>
-      <MobilePropertiesPanel
-        compact
-        fullWidth
-        showToolbar={false}
-        layoutProbe={options.layoutProbe}
-        note={controller.selectedNote}
-        typeDefinitions={controller.snapshot.typeDefinitions}
-        onAddProperty={controller.onAddProperty}
-        onAddRelationship={controller.onAddRelationship}
-        onDeleteProperty={controller.onDeleteProperty}
-        onEditProperty={controller.onEditProperty}
-        onEnterNeighborhood={enterNeighborhood}
-        onFixInvalidFrontmatter={openSourceEditor}
-        onInitializeProperties={controller.onInitializeProperties}
-        onCreateMissingType={controller.onOpenCreateTypeWithName}
-        onOpenChangeNoteType={controller.onOpenChangeNoteType}
-        onRemoveRelationship={controller.onRemoveRelationship}
-        propertyDisplayModes={controller.snapshot.vaultConfig?.propertyDisplayModes}
-        referenceGroups={referenceGroups}
-        onSelectNote={openEditor}
-      />
-    </View>
-  )
-}
-
-function PhoneCommandPaletteButton({ onPress }: { onPress: () => void }) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  return (
-    <MobileIconButton
-      accessibilityLabel={mobileText('menu.view.commandPalette')}
-      testID="phone-command-palette-action"
-      onPress={onPress}
-    >
-      <Command color={mobileColors.textMuted} size={18} />
-    </MobileIconButton>
-  )
-}
-
-function PhoneTopBar({
-  children,
-  onBack,
-  title,
-}: {
-  children?: ReactNode
-  onBack: () => void
-  title: string
-}) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  return (
-    <View style={styles.topBar} testID="phone-top-bar">
-      <PhoneBackButton onBack={onBack} />
-      <Text numberOfLines={1} style={styles.topBarTitle}>{title}</Text>
-      <View style={styles.topBarActions}>{children}</View>
-    </View>
-  )
-}
-
-function PhoneBackButton({ onBack }: { onBack: () => void }) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  return <MobileIconButton accessibilityLabel={mobileText('command.navigation.goBack')} testID="phone-back-action" onPress={onBack}>
-    <CaretLeft color={mobileColors.textMuted} size={18} />
-  </MobileIconButton>
-}
-
-function usePhoneWikilinkNavigation({
-  controller,
-  suggestionNotes,
-}: {
-  controller: PhoneWorkspaceController
-  suggestionNotes: MobileNote[]
-}) {
-  return useCallback((target: string) => {
-    const noteId = mobileNoteIdForWikilinkTarget(suggestionNotes, target)
-    if (!noteId) return
-
-    controller.onSelectNote(noteId)
-  }, [controller, suggestionNotes])
-}
-
-function useSelectAndOpenList<Selection>(
-  select: (selection: Selection) => void,
-  openList: () => void,
-) {
-  return useCallback((selection: Selection) => {
-    select(selection)
-    openList()
-  }, [select, openList])
-}
-
-function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { space: mobileSpace } = metrics
-  const styles = StyleSheet.create({
-    drawerPanel: {
-      flex: 1,
-      backgroundColor: mobileColors.sidebar,
-      borderRightColor: mobileColors.border,
-      borderRightWidth: StyleSheet.hairlineWidth,
-    },
-    drawerPreview: {
-      bottom: 0,
-      position: 'absolute',
-      top: 0,
-    },
-    drawerRoot: {
-      flex: 1,
-      backgroundColor: mobileColors.sidebar,
-      overflow: 'hidden',
-    },
-    root: {
-      flex: 1,
-      backgroundColor: mobileColors.app,
-    },
-    leadingActions: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-    },
-    screen: {
-      flex: 1,
-      backgroundColor: mobileColors.app,
-    },
-    topBar: {
-      minHeight: 44,
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-      borderBottomColor: mobileColors.border,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      backgroundColor: mobileColors.card,
-      paddingHorizontal: mobileSpace.sm,
-    },
-    topBarActions: {
-      minWidth: 32,
-      alignItems: 'flex-end',
-    },
-    topBarTitle: {
-      flex: 1,
-      color: mobileColors.text,
-      fontSize: metrics.size(13),
-      fontWeight: '600',
-    },
-  })
-  return { mobileColors, styles }
 }

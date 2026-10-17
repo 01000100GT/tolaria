@@ -476,6 +476,16 @@ The mobile UI lab uses a fixture-backed repository until a surface has passed vi
 
 The tablet workspace controller owns temporary interaction state: selected sidebar scope, selected note, search query, action-sheet form values, and an editable snapshot derived by `mobileWorkspaceEditing.ts`. `TabletWorkspace` and `PhoneWorkspace` should share that controller/repository boundary; phone-specific work should adapt navigation and chrome, not fork business logic. The repository boundary owns persistence. Visual components must continue to receive callbacks and snapshots rather than importing Expo or filesystem APIs directly.
 
+`PhoneWorkspaceLayout` composes the phone shell; `PhoneWorkspaceScreens` and
+`PhoneWorkspaceEditorScreen` render its retained and transient panels. Shared
+chrome, styles, and editor options remain separate from navigation callbacks.
+`usePhoneDragPreview` owns continuous drag and settlement. A successful native
+settlement resets the attached animated value before navigation, and marks that
+route as already animated. `PhoneWorkspaceTransition` animates only a new route,
+not a cleared handoff or a resize. Interrupted settlement never navigates.
+Native panel-drag tests verify the destination bounds alongside lifecycle tests
+for cancellation and duplicate-animation prevention.
+
 Mobile deep-link copying follows the same boundary. `mobileDeepLinks.ts` owns URL construction from `MobileWorkspaceSnapshot.source` and the selected note path, and `mobileClipboard.ts` owns the Expo Clipboard call plus deterministic QA logging. Components such as `MobileWorkspaceActionSheet` receive `onCopyDeepLink` and do not import clipboard or URL-building modules directly.
 
 Mobile PDF export uses the same callback boundary. `mobilePdfExport.ts` converts the selected `MobileNote` into frontmatter-free HTML with the mobile Markdown body renderer, records deterministic web/Playwright export attempts, and calls `expo-print` plus `expo-sharing` only from the controller-owned action path. Generated PDFs are temporary platform share artifacts and do not mutate the vault.
