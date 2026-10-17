@@ -1,7 +1,7 @@
 import XCTest
 
 final class PhoneSafeAreaTests: XCTestCase {
-  func testCompactFooterAndPanelSafeArea() {
+  func testFullHeightWorkspaceAndPanelSafeArea() {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .portrait
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
@@ -9,12 +9,12 @@ final class PhoneSafeAreaTests: XCTestCase {
     app.launch()
     let row = element(app, "note-row-workflow-orchestration")
     XCTAssertTrue(row.waitForExistence(timeout: 30))
-    let footer = element(app, "phone-footer")
-    XCTAssertTrue(footer.exists)
-    XCTAssertEqual(footer.frame.maxY, app.frame.maxY, accuracy: 1)
-    XCTAssertLessThanOrEqual(footer.frame.height, 55)
-    XCTAssertEqual(element(app, "sync-status-detail").label, "2m ago")
-    XCTAssertTrue(app.buttons["Open local folder"].isHittable)
+    XCTAssertFalse(element(app, "phone-footer").exists)
+    XCTAssertFalse(element(app, "sync-status-bar").exists)
+    let list = element(app, "phone-note-list-screen")
+    let bottomInset = app.frame.maxY - list.frame.maxY
+    XCTAssertGreaterThanOrEqual(bottomInset, 20)
+    XCTAssertLessThanOrEqual(bottomInset, 40)
     verifyTop(app)
     row.tap()
     XCTAssertTrue(element(app, "editor-toolbar").waitForExistence(timeout: 5))

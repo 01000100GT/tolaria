@@ -281,7 +281,10 @@ including deletions whose Undo needs the original bytes. Bulk actions read all
 required notes before applying any edits; a failed read leaves the write plan
 empty. The controller's `usePreparedWorkspaceEdits` keeps loaded editor saves
 synchronous, registers pending preparations with the existing sync barrier,
-rejects obsolete vault generations, and exposes a footer retry for read failures.
+rejects obsolete vault generations, and exposes an actionable, non-modal
+`MobileWorkspaceEditNotice` for failed action preparation. Its Retry remains
+available until the action succeeds; removing the normal status footer does not
+silently discard a failed action.
 Hydration never overwrites an already loaded draft. This is action preparation,
 not a replacement for the per-root disk queue or a multi-file disk transaction.
 
@@ -299,11 +302,21 @@ interaction QA is mandatory; web tests cannot verify native responder arbitratio
 See ADR 0195.
 
 Editor-interior horizontal drags retain sequential panel navigation. Note-list
-rows own their quick actions; the formatting strip uses Gesture Handler's native
+rows own their touch quick actions and leave two-finger trackpad gestures to the
+list's native scrolling; the formatting strip uses Gesture Handler's native
 scroll view to keep horizontal tool scrolling from moving panels. Phone navigation
-uses the editor toolbar's leading/trailing slots, not a second title bar. On iPad,
-the status bar shares the bottom safe-area strip with the centered home indicator;
-native portrait/landscape checks keep the controls outside its center lane.
+uses the editor toolbar's leading/trailing slots, not a second title bar. The
+workspace has no permanent bottom status bar. `MobileSidebarSettings` anchors
+Settings below the scrollable sidebar and above the home indicator. The existing
+Settings sheet exposes GitHub and vault management; sync/recovery controls remain
+in the vault manager. Non-sidebar panels reserve their own bottom safe area.
+Phone drawers pass `fullWidth` to the shared sidebar so its measured trailing
+edge meets the note-list preview without a desktop-width gap.
+
+Phone drag responders retain their gesture identity while reading the latest
+callbacks. A completed native animation commits navigation in a microtask, after
+React Native synchronizes its final animated value, so that synchronization cannot
+overwrite the zero-offset destination. Interrupted drags never commit navigation.
 
 When the adaptive iPad window cannot fit both left panes plus the 520-point
 editor minimum, the animated left strip is clipped to the 340-point list slot.

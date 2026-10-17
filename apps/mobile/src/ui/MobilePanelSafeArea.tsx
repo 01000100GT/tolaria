@@ -11,7 +11,7 @@ export function MobilePanelSafeArea({ children, sidebar = false, divider = 'righ
 }) {
   const { styles } = useMobileStyles(createThemeStyles)
   const { top } = useSafeAreaInsets()
-  return <SafeAreaView edges={['top']} style={[styles.panel, sidebar && styles.sidebar]}>
+  return <SafeAreaView edges={sidebar ? ['top'] : ['top', 'bottom']} style={[styles.panel, sidebar && styles.sidebar]}>
     {divider !== 'none' && <View pointerEvents="none" style={[styles.divider, { height: top }, divider === 'left' ? styles.left : styles.right]} />}
     {children}
   </SafeAreaView>

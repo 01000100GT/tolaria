@@ -227,6 +227,7 @@ function PhoneSidebarDrawer({
       </View>
       <View {...probeProps(phoneLayoutProbe, 'phone.sidebar.drawer')} style={[styles.drawerPanel, { width: drawerWidth }]}>
         <MobileWorkspaceSidebar
+          fullWidth
           activeFolderId={controller.activeFolderId}
           activeItemId={controller.activeItemId}
           layoutProbe={options.layoutProbe}
@@ -244,7 +245,6 @@ function PhoneSidebarDrawer({
           onSelectFolder={selectFolder}
           onSelectItem={selectItem}
           onOpenCommandPalette={openCommandPalette}
-          onCollapse={openList}
         />
       </View>
     </View>

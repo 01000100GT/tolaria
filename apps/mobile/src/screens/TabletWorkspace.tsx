@@ -10,7 +10,7 @@ import { CaretLeft, CaretRight, SidebarSimple } from 'phosphor-react-native'
 import { MobileCommandPalette } from '../components/workspace/MobileCommandPalette'
 import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
 import { MobilePropertiesPanel } from '../components/workspace/MobilePropertiesPanel'
-import { MobileSyncStatusBar } from '../components/workspace/MobileSyncStatusBar'
+import { MobileWorkspaceEditNotice } from '../components/workspace/MobileWorkspaceEditNotice'
 import { MobileWorkspaceActionSheet } from '../components/workspace/MobileWorkspaceActionSheet'
 import { MobileWorkspaceSidebar } from '../components/workspace/MobileWorkspaceSidebar'
 import type { MobileNote, MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
@@ -145,7 +145,7 @@ export function TabletWorkspace({
         {...controller}
         onOpenCreateNote={onCreateNote}
       />
-      <MobileSyncStatusBar sync={controller.snapshot.sync} onOpenLocalVault={onOpenNativeVault} retryFailedEdit={controller.retryFailedEdit} />
+      <MobileWorkspaceEditNotice retry={controller.retryFailedEdit} />
     </View>
   )
 }
@@ -466,7 +466,6 @@ function TabletSidebarHost({
         layoutProbe={layoutProbe}
         sections={snapshot.sidebarSections}
         title={snapshot.source?.label}
-        onCollapse={gestures.showEditorList}
         onCreateFolder={onOpenCreateFolder}
         onCreateType={onOpenCreateType}
         onCreateView={onOpenCreateView}

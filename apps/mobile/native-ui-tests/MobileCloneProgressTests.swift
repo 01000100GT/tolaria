@@ -7,11 +7,15 @@ final class MobileCloneProgressTests: XCTestCase {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .portrait
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&phoneState=list&qaRun=clone-progress"]
+    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&phoneState=sidebar&qaRun=clone-progress"]
     app.launch()
-    let open = element(app, "status-open-vaults")
+    let open = element(app, "open-mobile-settings")
+    if !open.exists { element(app, "note-list-toolbar").swipeRight() }
     XCTAssertTrue(open.waitForExistence(timeout: 30))
     open.tap()
+    let manage = element(app, "settings-manage-vaults")
+    if !manage.isHittable { element(app, "mobile-settings").swipeUp() }
+    manage.tap()
     let url = element(app, "git-repository-url")
     let manager = element(app, "vault-manager")
     for _ in 0..<5 where !url.isHittable { manager.swipeUp() }

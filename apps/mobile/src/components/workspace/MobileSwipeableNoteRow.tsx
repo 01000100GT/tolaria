@@ -63,7 +63,7 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
         <Swipeable
           ref={swipeable}
           childrenContainerStyle={{ backgroundColor: mobileColors.card }}
-          enableTrackpadTwoFingerGesture
+          enableTrackpadTwoFingerGesture={false}
           friction={1}
           overshootFriction={1}
           simultaneousWithExternalGesture={fullSwipe}

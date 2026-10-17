@@ -1,6 +1,5 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
-import type { MobileColors } from '../../ui/theme/mobilePalette'
 import type { ReactNode } from 'react'
 import {
   CaretDown,
@@ -8,9 +7,8 @@ import {
   FileText,
   Eye,
   Plus,
-  SidebarSimple,
 } from 'phosphor-react-native'
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileCopy, mobileText } from '../../i18n/mobileText'
 import { MobileLayoutProbeReadout } from '../../qa/MobileLayoutProbeReadout'
@@ -25,6 +23,8 @@ import type {
   MobileSidebarSection,
 } from '../../workspace/mobileWorkspaceModel'
 import { MobileSidebarCountPill } from './MobileSidebarCountPill'
+import { MobileSidebarSettings } from './MobileSidebarSettings'
+import { createSidebarStyles as createThemeStyles } from './mobileSidebarStyles'
 import { FolderTree, type MobileSidebarFolderSelection } from './MobileWorkspaceSidebarFolderTree'
 import { mobilePhosphorIconElement } from './MobileWorkspaceIconResolver'
 import { noteTypeColor, noteTypeSoftColor } from './mobileWorkspaceTone'
@@ -46,13 +46,13 @@ type SidebarItemId = string
 type SidebarMetricId = string
 type SidebarSectionId = string
 type SidebarSlug = string
-type SidebarSelectionHandler = (selection: MobileSidebarItemSelection) => void
+type SidebarSelectionHandler = NonNullable<MobileWorkspaceSidebarProps['onSelectItem']>
 
 type MobileWorkspaceSidebarProps = {
   activeFolderId?: string | null
   activeItemId?: string | null
   layoutProbe?: boolean
-  onCollapse?: () => void
+  fullWidth?: boolean
   onCreateFolder?: () => void
   onCreateType?: () => void
   onCreateView?: () => void
@@ -84,37 +84,27 @@ type SidebarItemProps = {
 }
 
 export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
-  const themeStyles = useMobileStyles(createThemeStyles)
-  const { styles, mobileColors } = themeStyles
-  const {
-    activeFolderId,
-    activeItemId,
-    layoutProbe: layoutProbeEnabled = false,
-    onCollapse,
-    onCreateFolder,
-    onCreateType,
-    onCreateView,
-    onOpenFolderActions,
-    onOpenFavoriteActions,
-    onOpenCommandPalette,
-    onOpenPrimaryActions,
-    onOpenTypeVisibility,
-    onOpenTypeActions,
-    onOpenViewActions,
-    onSelectFolder,
-    onSelectItem,
-    sections,
-    title = 'Tolaria Vault',
-  } = props
-  const layoutProbe = useMobileLayoutProbe(layoutProbeEnabled)
-
+  const { styles } = useMobileStyles(createThemeStyles)
+  const layoutProbe = useMobileLayoutProbe(props.layoutProbe ?? false)
   return (
-    <MobilePanel {...layoutProbe.probe('sidebar.panel')} style={styles.panel} testID="workspace-sidebar-panel">
+    <MobilePanel {...layoutProbe.probe('sidebar.panel')} style={[styles.panel, props.fullWidth && styles.fullWidth]} testID="workspace-sidebar-panel">
+      <SidebarToolbar title={props.title} onOpenCommandPalette={props.onOpenCommandPalette} />
+      <ScrollView {...layoutProbe.probe('sidebar.scroll')} style={styles.scroll} contentContainerStyle={styles.content}>
+        {props.sections.map((section) => (
+          <SidebarSection {...props} key={section.id} layoutProbe={layoutProbe.probe} section={section} />
+        ))}
+      </ScrollView>
+      <MobileSidebarSettings />
+      {props.layoutProbe ? <MobileLayoutProbeReadout metrics={layoutProbe.metrics} testID="sidebar-layout-metrics" /> : null}
+    </MobilePanel>
+  )
+}
+
+function SidebarToolbar({ title, onOpenCommandPalette }: Pick<MobileWorkspaceSidebarProps, 'title' | 'onOpenCommandPalette'>) {
+  const { styles, mobileColors, metrics } = useMobileStyles(createThemeStyles)
+  return (
       <MobileToolbar testID="sidebar-toolbar">
-        <MobileIconButton accessibilityLabel={mobileText('sidebar.action.collapse')} testID="sidebar-collapse-action" onPress={onCollapse}>
-          <SidebarSimple color={mobileColors.textMuted} size={themeStyles.metrics.toolbarAction.iconSize} />
-        </MobileIconButton>
-        <Text numberOfLines={1} style={styles.vaultTitle} testID="sidebar-toolbar-title">{title}</Text>
+        <Text numberOfLines={1} style={styles.vaultTitle} testID="sidebar-toolbar-title">{title ?? mobileText('status.vault.default')}</Text>
         {onOpenCommandPalette ? (
           <View style={styles.toolbarActions}>
             <MobileIconButton
@@ -122,104 +112,37 @@ export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
               testID="sidebar-command-palette-action"
               onPress={onOpenCommandPalette}
             >
-              <Command color={mobileColors.textMuted} size={themeStyles.metrics.toolbarAction.iconSize} />
+              <Command color={mobileColors.textMuted} size={metrics.toolbarAction.iconSize} />
             </MobileIconButton>
           </View>
         ) : null}
       </MobileToolbar>
-      <ScrollView {...layoutProbe.probe('sidebar.scroll')} contentContainerStyle={styles.content}>
-        {sections.map((section) => (
-          <SidebarSection
-            activeFolderId={activeFolderId}
-            activeItemId={activeItemId}
-            key={section.id}
-            layoutProbe={layoutProbe.probe}
-            section={section}
-            onCreateFolder={onCreateFolder}
-            onCreateType={onCreateType}
-            onCreateView={onCreateView}
-            onOpenFolderActions={onOpenFolderActions}
-            onOpenFavoriteActions={onOpenFavoriteActions}
-            onOpenPrimaryActions={onOpenPrimaryActions}
-            onOpenTypeVisibility={onOpenTypeVisibility}
-            onOpenTypeActions={onOpenTypeActions}
-            onOpenViewActions={onOpenViewActions}
-            onSelectFolder={onSelectFolder}
-            onSelectItem={onSelectItem}
-          />
-        ))}
-      </ScrollView>
-      {layoutProbeEnabled ? <MobileLayoutProbeReadout metrics={layoutProbe.metrics} testID="sidebar-layout-metrics" /> : null}
-    </MobilePanel>
   )
 }
 
-function SidebarSection({
-  activeFolderId,
-  activeItemId,
-  layoutProbe,
-  onCreateView,
-  onCreateFolder,
-  onCreateType,
-  onOpenFolderActions,
-  onOpenFavoriteActions,
-  onOpenPrimaryActions,
-  onOpenTypeVisibility,
-  onOpenTypeActions,
-  onOpenViewActions,
-  onSelectFolder,
-  onSelectItem,
-  section,
-}: {
-  activeFolderId?: string | null
-  activeItemId?: string | null
+type SidebarSectionProps = Omit<MobileWorkspaceSidebarProps, 'layoutProbe'> & {
   layoutProbe: MobileLayoutProbe
-  onCreateFolder?: () => void
-  onCreateType?: () => void
-  onCreateView?: () => void
-  onOpenFolderActions?: (selection: MobileSidebarFolderSelection) => void
-  onOpenFavoriteActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenPrimaryActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenTypeVisibility?: () => void
-  onOpenTypeActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenViewActions?: (selection: MobileSidebarItemSelection) => void
-  onSelectFolder?: (selection: MobileSidebarFolderSelection) => void
-  onSelectItem?: (selection: MobileSidebarItemSelection) => void
   section: MobileSidebarSection
-}) {
-  const themeStyles = useMobileStyles(createThemeStyles)
-  const { styles } = themeStyles
+}
+
+function SidebarSection(props: SidebarSectionProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
+  const { layoutProbe, section } = props
   return (
     <View
       {...probeProps(layoutProbe, `sidebar.section.${section.id}.container`)}
       style={[styles.section, section.id === 'primary' ? styles.primarySection : styles.groupSection]}
       testID={`sidebar-section-${section.id}`}
     >
-      <SidebarSectionTitle
-        layoutProbe={layoutProbe}
-        section={section}
-        onCreateFolder={onCreateFolder}
-        onCreateType={onCreateType}
-        onCreateView={onCreateView}
-        onOpenTypeVisibility={onOpenTypeVisibility}
-      />
-      <SidebarSectionItems
-        activeItemId={activeItemId}
-        layoutProbe={layoutProbe}
-        section={section}
-        onOpenTypeActions={onOpenTypeActions}
-        onOpenViewActions={onOpenViewActions}
-        onOpenFavoriteActions={onOpenFavoriteActions}
-        onOpenPrimaryActions={onOpenPrimaryActions}
-        onSelectItem={onSelectItem}
-      />
+      <SidebarSectionTitle {...props} />
+      <SidebarSectionItems {...props} />
       {section.folders ? (
         <FolderTree
-          activeFolderId={activeFolderId}
+          activeFolderId={props.activeFolderId}
           folders={section.folders}
           layoutProbe={layoutProbe}
-          onOpenFolderActions={onOpenFolderActions}
-          onSelectFolder={onSelectFolder}
+          onOpenFolderActions={props.onOpenFolderActions}
+          onSelectFolder={props.onSelectFolder}
         />
       ) : null}
     </View>
@@ -289,25 +212,8 @@ function sectionCreateHandler(
   return undefined
 }
 
-function SidebarSectionItems({
-  activeItemId,
-  layoutProbe,
-  onSelectItem,
-  onOpenTypeActions,
-  onOpenViewActions,
-  onOpenFavoriteActions,
-  onOpenPrimaryActions,
-  section,
-}: {
-  activeItemId?: string | null
-  layoutProbe: MobileLayoutProbe
-  onSelectItem?: (selection: MobileSidebarItemSelection) => void
-  onOpenTypeActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenViewActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenFavoriteActions?: (selection: MobileSidebarItemSelection) => void
-  onOpenPrimaryActions?: (selection: MobileSidebarItemSelection) => void
-  section: MobileSidebarSection
-}) {
+function SidebarSectionItems(props: SidebarSectionProps) {
+  const { activeItemId, layoutProbe, onSelectItem, section } = props
   const themeStyles = useMobileStyles(createThemeStyles)
   return section.items?.map((item) => {
     const active = activeItemId ? item.id === activeItemId : item.active
@@ -327,10 +233,10 @@ function SidebarSectionItems({
         metricId={`sidebar.item.${item.id}`}
         slug={item.id}
         onLongPress={sidebarItemLongPress({
-          onOpenPrimaryActions,
-          onOpenTypeActions,
-          onOpenViewActions,
-          onOpenFavoriteActions,
+          onOpenPrimaryActions: props.onOpenPrimaryActions,
+          onOpenTypeActions: props.onOpenTypeActions,
+          onOpenViewActions: props.onOpenViewActions,
+          onOpenFavoriteActions: props.onOpenFavoriteActions,
           sectionId: section.id,
           selection,
         })}
@@ -471,16 +377,7 @@ function SidebarItem(props: SidebarItemProps) {
   )
 }
 
-function SectionTitle({
-  count,
-  createAccessibilityLabel,
-  label,
-  layoutProbe,
-  onCreate,
-  onVisibility,
-  sectionId,
-  visibilityAccessibilityLabel,
-}: {
+type SectionTitleProps = {
   count?: string
   createAccessibilityLabel?: string
   label: SidebarDisplayLabel
@@ -489,7 +386,10 @@ function SectionTitle({
   onVisibility?: () => void
   sectionId: SidebarSectionId
   visibilityAccessibilityLabel?: string
-}) {
+}
+
+function SectionTitle(props: SectionTitleProps) {
+  const { count, createAccessibilityLabel, label, layoutProbe, onCreate, onVisibility, sectionId, visibilityAccessibilityLabel } = props
   const themeStyles = useMobileStyles(createThemeStyles)
   const { styles, mobileColors } = themeStyles
   const metricId = `sidebar.section.${sectionId}`
@@ -597,102 +497,4 @@ function sidebarItemPadding(desktopSidebarParity: MobileMetrics['sidebar'], hasC
 function sidebarItemContentHeight(desktopSidebarParity: MobileMetrics['sidebar'], hasCount: boolean) {
   const minHeight = hasCount ? desktopSidebarParity.itemContentHeight.withCount : desktopSidebarParity.itemContentHeight.regular
   return { height: minHeight, minHeight }
-}
-
-function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { sidebar: desktopSidebarParity, panel: desktopPanelParity, type: mobileType, space: mobileSpace } = metrics
-  const nativeStyles = StyleSheet.create({
-    itemText: { lineHeight: metrics.size(18) },
-    sectionTitleRow: { minHeight: metrics.size(30) },
-    sectionTitle: { lineHeight: metrics.size(14) },
-  })
-  const panelStyles = StyleSheet.create({
-    content: { padding: 0 },
-    groupSection: { paddingHorizontal: desktopSidebarParity.sectionHorizontalPadding },
-    panel: {
-      alignSelf: 'stretch',
-      width: desktopPanelParity.sidebarWidth,
-      height: '100%',
-      backgroundColor: mobileColors.sidebar,
-      borderRightWidth: StyleSheet.hairlineWidth,
-    },
-    primarySection: {
-      paddingBottom: desktopSidebarParity.topNavPadding.bottom,
-      paddingLeft: desktopSidebarParity.topNavPadding.left,
-      paddingRight: desktopSidebarParity.topNavPadding.right,
-      paddingTop: desktopSidebarParity.topNavPadding.top,
-    },
-    section: { borderBottomColor: mobileColors.border, borderBottomWidth: StyleSheet.hairlineWidth },
-    toolbarActions: {
-      marginLeft: 'auto',
-    },
-    vaultTitle: {
-      flex: 1,
-      color: mobileColors.text,
-      fontSize: mobileType.body,
-      fontWeight: '600',
-    },
-  })
-
-  const itemStyles = StyleSheet.create({
-    item: {
-      justifyContent: 'center',
-      borderRadius: desktopSidebarParity.itemRadius,
-      minHeight: desktopSidebarParity.itemContentHeight.regular
-        + desktopSidebarParity.itemPadding.regular.top
-        + desktopSidebarParity.itemPadding.regular.bottom,
-      width: '100%',
-    },
-    itemContent: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: desktopSidebarParity.itemGap,
-    },
-    itemPressed: { backgroundColor: mobileColors.control },
-    itemText: {
-      flex: 1,
-      color: mobileColors.text,
-      fontSize: desktopSidebarParity.itemTextSize,
-      fontWeight: '500',
-    },
-  })
-
-  const sectionTitleStyles = StyleSheet.create({
-    sectionTitle: {
-      flex: 1,
-      color: mobileColors.textMuted,
-      fontSize: desktopSidebarParity.countPillTextSize,
-      fontWeight: desktopSidebarParity.sectionTitleFontWeight,
-      letterSpacing: desktopSidebarParity.sectionTitleLetterSpacing,
-    },
-    sectionTitleRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-    },
-    sectionTitleRowRegular: {
-      paddingBottom: desktopSidebarParity.groupHeaderPadding.regular.bottom,
-      paddingLeft: desktopSidebarParity.groupHeaderPadding.regular.left,
-      paddingRight: desktopSidebarParity.groupHeaderPadding.regular.right,
-      paddingTop: desktopSidebarParity.groupHeaderPadding.regular.top,
-    },
-    sectionTitleRowWithCount: {
-      paddingBottom: desktopSidebarParity.groupHeaderPadding.withCount.bottom,
-      paddingLeft: desktopSidebarParity.groupHeaderPadding.withCount.left,
-      paddingRight: desktopSidebarParity.groupHeaderPadding.withCount.right,
-      paddingTop: desktopSidebarParity.groupHeaderPadding.withCount.top,
-    },
-  })
-
-  const styles = {
-    ...panelStyles,
-    ...itemStyles,
-    ...sectionTitleStyles,
-  } as const
-  return {
-    mobileColors, metrics, panelStyles, itemStyles, sectionTitleStyles, styles,
-    nativeItemTextStyle: Platform.OS === 'web' ? null : nativeStyles.itemText,
-    nativeSectionTitleRowStyle: Platform.OS === 'web' ? null : nativeStyles.sectionTitleRow,
-    nativeSectionTitleTextStyle: Platform.OS === 'web' ? null : nativeStyles.sectionTitle,
-  }
 }

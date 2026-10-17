@@ -10,9 +10,12 @@ final class TabletAuthenticatedRepositoryTests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
     app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&qaRun=authenticated-repository"]
     app.launch()
-    let vaults = element(app, "status-open-vaults")
+    let vaults = element(app, "open-mobile-settings")
     XCTAssertTrue(vaults.waitForExistence(timeout: 60))
     vaults.tap()
+    let manage = element(app, "settings-manage-vaults")
+    if !manage.isHittable { element(app, "mobile-settings").swipeUp() }
+    manage.tap()
     let load = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Load repositories")).firstMatch
     XCTAssertTrue(load.waitForExistence(timeout: 30), "Requires the already authorized GitHub session")
     load.tap()

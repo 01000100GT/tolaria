@@ -3,7 +3,7 @@ import XCTest
 final class TabletPortraitNavigationTests: XCTestCase {
   func testToolbarSidebarPreservesEditorAndReturnsToFullList() throws {
     let app = launchPortrait()
-    defer { XCUIDevice.shared.orientation = .landscapeLeft }
+    defer { app.terminate(); XCUIDevice.shared.orientation = .landscapeLeft }
     app.buttons.matching(identifier: "tablet-note-list-sidebar-action").firstMatch.tap()
     assertSidebarDrawer(app)
     app.buttons.matching(identifier: "sidebar-item-all-notes").firstMatch.tap()
@@ -11,9 +11,10 @@ final class TabletPortraitNavigationTests: XCTestCase {
     XCTAssertEqual(element(app, "note-list-panel").frame.minX, 0, accuracy: 1)
     XCTAssertEqual(element(app, "note-list-panel").frame.width, 340, accuracy: 1)
     XCTAssertEqual(app.staticTexts.matching(identifier: "note-list-toolbar-title").firstMatch.label, "All Notes")
+    XCTAssertTrue(element(app, "note-row-workflow-orchestration").waitForExistence(timeout: 5))
     app.buttons.matching(identifier: "tablet-note-list-sidebar-action").firstMatch.tap()
     assertSidebarDrawer(app)
-    app.buttons.matching(identifier: "sidebar-collapse-action").firstMatch.tap()
+    drag(element(app, "workspace-sidebar-panel"), dx: -240)
     waitUntil { !self.element(app, "workspace-sidebar-panel").exists }
     app.buttons.matching(identifier: "editor-properties-action").firstMatch.tap()
     waitUntil { self.element(app, "properties-panel").exists }
@@ -22,8 +23,8 @@ final class TabletPortraitNavigationTests: XCTestCase {
 
   func testDragSidebarUsesSamePortraitGeometry() throws {
     let app = launchPortrait()
-    defer { XCUIDevice.shared.orientation = .landscapeLeft }
-    drag(element(app, "note-list-panel"), dx: 240)
+    defer { app.terminate(); XCUIDevice.shared.orientation = .landscapeLeft }
+    drag(element(app, "note-list-toolbar"), dx: 240)
     assertSidebarDrawer(app)
     drag(element(app, "workspace-sidebar-panel"), dx: -240)
     waitUntil { !self.element(app, "workspace-sidebar-panel").exists }
@@ -35,11 +36,15 @@ final class TabletPortraitNavigationTests: XCTestCase {
 
   private func launchPortrait() -> XCUIApplication {
     continueAfterFailure = false
-    XCUIDevice.shared.orientation = .portrait
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&qaRun=portrait-navigation"]
+    app.terminate()
+    XCUIDevice.shared.orientation = .portrait
+    let search = "?source=fixture&editorMode=wysiwyg&qaRun=portrait-navigation"
+    app.launchArguments = ["--tolaria-mobile-search", search]
+    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
     app.launch()
     XCTAssertTrue(element(app, "note-list-panel").waitForExistence(timeout: 60))
+    XCTAssertTrue(element(app, "note-row-workflow-orchestration").waitForExistence(timeout: 10))
     waitUntil { app.frame.width < app.frame.height }
     return app
   }

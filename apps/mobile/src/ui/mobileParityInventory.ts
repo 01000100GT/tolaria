@@ -169,11 +169,18 @@ export const mobileParityInventory = [
     surface: 'Properties frontmatter state notice',
   },
   {
-    assertions: ['sync footer computed styles'],
-    contracts: ['desktopStatusBarParity'],
-    desktopSource: 'StatusBarFooter and StatusBarBadges',
-    mobileFile: 'src/components/workspace/MobileSyncStatusBar.tsx',
-    surface: 'Sync status bar',
+    assertions: ['MobileSidebarSettingsTests: pinned Settings button, touch target, safe-area clearance, and vault-manager navigation'],
+    contracts: ['desktopSidebarParity', 'desktopToolbarActionParity'],
+    desktopSource: 'Desktop Settings action; owner-requested mobile adaptation replaces the persistent status bar',
+    mobileFile: 'src/components/workspace/MobileSidebarSettings.tsx',
+    surface: 'Sidebar Settings access',
+  },
+  {
+    assertions: ['edit preparation retry regression tests and native workspace recovery checks'],
+    contracts: ['desktopPanelParity', 'desktopToolbarActionParity'],
+    desktopSource: 'Desktop error and retry actions; nonmodal mobile notice replaces the persistent footer failure state',
+    mobileFile: 'src/components/workspace/MobileWorkspaceEditNotice.tsx',
+    surface: 'Recoverable editor preparation notice',
   },
   {
     assertions: ['note and relationship icon size/color computed through parent rows'],

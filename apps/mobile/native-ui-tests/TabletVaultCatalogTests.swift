@@ -28,9 +28,12 @@ final class TabletVaultCatalogTests: XCTestCase {
   }
 
   private func openManager(_ app: XCUIApplication) {
-    let open = element(app, "status-open-vaults")
+    let open = element(app, "open-mobile-settings")
     XCTAssertTrue(open.waitForExistence(timeout: 30))
     open.tap()
+    let manage = element(app, "settings-manage-vaults")
+    if !manage.isHittable { element(app, "mobile-settings").swipeUp() }
+    manage.tap()
     XCTAssertTrue(element(app, "vault-manager").waitForExistence(timeout: 5))
   }
 

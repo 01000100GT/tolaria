@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { MobileSyncStatusBar } from '../components/workspace/MobileSyncStatusBar'
+import { MobileWorkspaceEditNotice } from '../components/workspace/MobileWorkspaceEditNotice'
 import type { MobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import type { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
@@ -44,12 +44,10 @@ export function PhoneWorkspaceRoot(props: PhoneWorkspaceRootProps) {
   const insets = useSafeAreaInsets()
   const topColor = props.phoneState === 'sidebar' ? mobileColors.sidebar : mobileColors.card
   return (
-    <View {...props.phoneLayoutProbe('phone.root')} style={styles.root}>
+    <View {...props.phoneLayoutProbe('phone.root')} style={[styles.root, { paddingBottom: props.phoneState === 'sidebar' ? 0 : insets.bottom }]}>
       <View testID="phone-top-inset" style={{ height: insets.top, backgroundColor: topColor }} />
       <PhoneWorkspaceContent {...props} />
-      <View testID="phone-footer" style={{ paddingBottom: Math.max(0, insets.bottom - 12), backgroundColor: mobileColors.sidebar }}>
-        <MobileSyncStatusBar compact sync={props.controller.snapshot.sync} onOpenLocalVault={props.onOpenNativeVault} retryFailedEdit={props.controller.retryFailedEdit} />
-      </View>
+      <MobileWorkspaceEditNotice retry={props.controller.retryFailedEdit} />
       <PhoneWorkspaceActions {...props} />
       {props.commandPaletteElement}
     </View>
