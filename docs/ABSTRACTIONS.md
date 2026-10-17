@@ -50,8 +50,13 @@ legacy local copy in place, and resolves current sandbox paths on activation.
 directory and publishes the complete tree before returning a catalog record.
 Its retained revision marker supports interrupted-copy and registration retries
 without rewriting published files. Existing catalog files, orphaned vaults, and
-ambiguous preparation state prevent automatic replacement (ADR 0230). This
-storage primitive does not itself enable first-launch initialization.
+ambiguous preparation state prevent automatic replacement (ADR 0230).
+`initializeLocalVaultCatalog` loads `bundledStarterVault.native.ts` only after
+excluding existing local catalogs and legacy imports. This adapter resolves
+Expo-packaged images and invokes preparation before registering the local copy;
+failed preparation never publishes an empty catalog. An existing Git selection
+remains active. On subsequent launches the registered user copy is not refreshed
+from the bundle, so edits and deletions remain local user data.
 `apps/mobile/scripts/generate-starter-vault.ts` packages an immutable commit of
 the canonical Getting Started repository. Its `starterVaultBundle.ts` helper
 validates regular-file paths, types and size bounds before writing the bundle;

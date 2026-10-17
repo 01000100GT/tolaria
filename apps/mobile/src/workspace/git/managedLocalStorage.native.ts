@@ -8,10 +8,18 @@ export async function initializeLocalVaultCatalog() {
   const catalog = await readManagedGitCatalog()
   if (catalog.localVaults !== undefined) return catalog
   const legacy = await restoreNativeWorkspaceDirectory()
-  const localVaults = legacy ? [{ id: 'local-legacy', label: legacy.vaultLabel, directory: 'Tolaria Vault' }] : []
+  const localVaults = legacy
+    ? [{ id: 'local-legacy', label: legacy.vaultLabel, directory: 'Tolaria Vault' }]
+    : await initialStarterVaults()
   return updateManagedGitCatalog(current => current.localVaults !== undefined ? current : {
     ...current, localVaults, activeLocalId: current.activeId ? null : localVaults[0]?.id ?? null,
   })
+}
+
+async function initialStarterVaults(): Promise<ManagedLocalVault[]> {
+  const { prepareBundledStarterVault } = await import('./bundledStarterVault.native')
+  const starter = await prepareBundledStarterVault()
+  return starter ? [starter] : []
 }
 
 export async function rememberLocalVault(selection: NativeWorkspaceSelection): Promise<ManagedLocalVault> {

@@ -165,3 +165,15 @@ the original catalog and remove the disposable vault. Run on both device sizes.
 both phone and tablet. It checks the round action's native frame, separation from
 the filter controls, and direct creation into a focused H1 without a title dialog.
 It never opens or modifies an existing vault.
+
+## Bundled First Launch
+
+`MobileStarterVaultTests` requires `TOLARIA_QA_FRESH_STARTER=1` in the generated
+scheme Test action and a fresh, disposable simulator installation. It opens the
+bundled guide, creates an additive test note, and checks that note after relaunch.
+Run on iPhone and iPad using the standalone Release QA app, without Metro. Verify
+all 47 template files against the bundled SHA-256 manifest and confirm the catalog
+selects a local vault with no Git remote. Remove only the additive test note after
+checking persistence. Never reset an existing user's catalog for this test.
+Embedded-asset checks do not by themselves prove network-disabled operation;
+record network conditions separately when claiming offline native QA.
