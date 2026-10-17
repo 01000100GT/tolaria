@@ -20,15 +20,20 @@ enum MobilePanelNavigation {
 
   static func openProperties(_ app: XCUIApplication) {
     swipe(app, right: false)
+    let phone = UIDevice.current.userInterfaceIdiom == .phone
+    let surface = phone ? element(app, "phone-properties-screen") : app
     wait {
       let panel = element(app, "properties-panel")
-      return panel.exists && panel.frame.width > 200 && abs(panel.frame.maxX - app.frame.maxX) < 1
+      return panel.exists && panel.frame.width > 200
+        && abs(panel.frame.maxX - surface.frame.maxX) < 1
+        && (!phone || abs(panel.frame.minX - surface.frame.minX) < 1)
     }
     XCTContext.runActivity(named: "Properties edge drag") { activity in
       let capture = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
       capture.lifetime = .keepAlways
       activity.add(capture)
-      let geometry = XCTAttachment(string: "app=\(app.frame), panel=\(element(app, "properties-panel").frame)")
+      let geometry = XCTAttachment(string:
+        "app=\(app.frame), surface=\(surface.frame), panel=\(element(app, "properties-panel").frame)")
       geometry.lifetime = .keepAlways
       activity.add(geometry)
     }
