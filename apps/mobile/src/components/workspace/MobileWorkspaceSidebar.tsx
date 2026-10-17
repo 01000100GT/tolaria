@@ -1,9 +1,8 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import {
   CaretDown,
-  Command,
   FileText,
   Eye,
   Plus,
@@ -24,6 +23,7 @@ import type {
 } from '../../workspace/mobileWorkspaceModel'
 import { MobileSidebarCountPill } from './MobileSidebarCountPill'
 import { MobileSidebarSettings } from './MobileSidebarSettings'
+import { MobileVaultControlsContext } from '../../workspace/MobileVaultContext'
 import { createSidebarStyles as createThemeStyles } from './mobileSidebarStyles'
 import { FolderTree, type MobileSidebarFolderSelection } from './MobileWorkspaceSidebarFolderTree'
 import { mobilePhosphorIconElement } from './MobileWorkspaceIconResolver'
@@ -88,31 +88,32 @@ export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
   const layoutProbe = useMobileLayoutProbe(props.layoutProbe ?? false)
   return (
     <MobilePanel {...layoutProbe.probe('sidebar.panel')} style={[styles.panel, props.fullWidth && styles.fullWidth]} testID="workspace-sidebar-panel">
-      <SidebarToolbar title={props.title} onOpenCommandPalette={props.onOpenCommandPalette} />
+      <SidebarToolbar title={props.title} />
       <ScrollView {...layoutProbe.probe('sidebar.scroll')} style={styles.scroll} contentContainerStyle={styles.content}>
         {props.sections.map((section) => (
           <SidebarSection {...props} key={section.id} layoutProbe={layoutProbe.probe} section={section} />
         ))}
       </ScrollView>
-      <MobileSidebarSettings />
+      <MobileSidebarSettings onOpenCommandPalette={props.onOpenCommandPalette} />
       {props.layoutProbe ? <MobileLayoutProbeReadout metrics={layoutProbe.metrics} testID="sidebar-layout-metrics" /> : null}
     </MobilePanel>
   )
 }
 
-function SidebarToolbar({ title, onOpenCommandPalette }: Pick<MobileWorkspaceSidebarProps, 'title' | 'onOpenCommandPalette'>) {
+function SidebarToolbar({ title }: Pick<MobileWorkspaceSidebarProps, 'title'>) {
   const { styles, mobileColors, metrics } = useMobileStyles(createThemeStyles)
+  const vaults = useContext(MobileVaultControlsContext)
   return (
       <MobileToolbar testID="sidebar-toolbar">
         <Text numberOfLines={1} style={styles.vaultTitle} testID="sidebar-toolbar-title">{title ?? mobileText('status.vault.default')}</Text>
-        {onOpenCommandPalette ? (
+        {vaults ? (
           <View style={styles.toolbarActions}>
             <MobileIconButton
-              accessibilityLabel={mobileText('menu.view.commandPalette')}
-              testID="sidebar-command-palette-action"
-              onPress={onOpenCommandPalette}
+              accessibilityLabel={mobileText('status.vault.switch')}
+              testID="sidebar-vault-picker"
+              onPress={() => { void vaults.open() }}
             >
-              <Command color={mobileColors.textMuted} size={metrics.toolbarAction.iconSize} />
+              <CaretDown color={mobileColors.textMuted} size={metrics.toolbarAction.iconSize} />
             </MobileIconButton>
           </View>
         ) : null}
@@ -168,7 +169,7 @@ function SidebarSectionTitle({
 
   return (
     <SectionTitle
-      count={section.count}
+      count={section.id === 'types' ? undefined : section.count}
       label={sidebarSectionLabel(section.id, section.label)}
       layoutProbe={layoutProbe}
       sectionId={section.id}

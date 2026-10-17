@@ -374,7 +374,11 @@ The formatting strip uses Gesture Handler's native
 scroll view to keep horizontal tool scrolling from moving panels. Phone navigation
 uses the editor toolbar's leading/trailing slots, not a second title bar. The
 workspace has no permanent bottom status bar. `MobileSidebarSettings` anchors
-Settings below the scrollable sidebar and above the home indicator. The existing
+Settings and the command palette below the scrollable sidebar and above the home
+indicator, using circular secondary controls. The vault-title chevron reuses the
+existing vault manager through `MobileVaultControlsContext`; it does not bypass
+the manager's save/switch barrier. Type rows retain their individual counts, but
+the Types section heading has no aggregate count. The existing
 Settings sheet exposes GitHub and vault management; sync/recovery controls remain
 in the vault manager. Panes extend to the bottom edge, including their backgrounds
 and dividers. The note list keeps controls within its own bottom padding; the
