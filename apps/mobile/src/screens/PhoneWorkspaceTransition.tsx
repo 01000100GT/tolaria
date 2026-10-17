@@ -61,13 +61,13 @@ function usePhoneTransitionStyle({ previousState, state, gestureHandoffActive }:
   useLayoutEffect(() => {
     if (arrivedState.current === state) return
     arrivedState.current = state
-    offset.value = 0
+    offset.set(0)
     if (gestureHandoffActive) return
     if (reduceMotion) return
-    offset.value = direction === 'fromLeft' ? -width : width
-    offset.value = withTiming(0, { duration: phoneWorkspaceTransitionDurationMs })
+    offset.set(direction === 'fromLeft' ? -width : width)
+    offset.set(withTiming(0, { duration: phoneWorkspaceTransitionDurationMs }))
   }, [direction, gestureHandoffActive, offset, previousState, reduceMotion, state, width])
-  return useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }))
+  return useAnimatedStyle(() => ({ transform: [{ translateX: offset.get() }] }))
 }
 
 const styles = StyleSheet.create({

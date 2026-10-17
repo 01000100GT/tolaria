@@ -14,7 +14,7 @@ vi.mock('react-native', () => ({
 vi.mock('react-native-reanimated', () => ({
   default: { View: 'div' },
   useReducedMotion: () => false,
-  useSharedValue: (value: number) => useRef({ value }).current,
+  useSharedValue: (value: number) => useRef(Object.freeze({ value, set: vi.fn(), get: () => value })).current,
   useAnimatedStyle: () => ({}),
   withTiming: animation.timing,
 }))
