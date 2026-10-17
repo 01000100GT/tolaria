@@ -2,7 +2,7 @@ import type { MobileMetrics } from './mobileMetrics'
 import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { Text } from '../components/ui/text'
 import { type MobileLayoutProbe, probeProps } from '../qa/mobileLayoutProbe'
 
@@ -26,22 +26,25 @@ export function MobilePropertyRow({
   value: ReactNode
 }) {
   const { styles } = useMobileStyles(createThemeStyles)
+  const { fontScale } = useWindowDimensions()
+  const stacked = fontScale > 1.3
+  const rowStyle = [styles.row, stacked && styles.stackedRow]
   const metricId = layoutProbeId ?? testID
   const content = (
     <>
       <Text
         {...propertyProbe(layoutProbe, metricId, 'label')}
-        style={styles.label}
+        style={[styles.label, stacked && styles.stackedLabel]}
         testID={testID ? `${testID}-label` : undefined}
       >
         {label}
       </Text>
       <View
         {...propertyProbe(layoutProbe, metricId, 'value')}
-        style={styles.value}
+        style={[styles.value, stacked && styles.stackedValue]}
         testID={testID ? `${testID}-value` : undefined}
       >
-        {typeof value === 'string' ? <Text style={styles.valueText}>{value}</Text> : value}
+        {typeof value === 'string' ? <Text style={[styles.valueText, stacked && styles.stackedValueText]}>{value}</Text> : value}
       </View>
     </>
   )
@@ -52,7 +55,7 @@ export function MobilePropertyRow({
         {...propertyProbe(layoutProbe, metricId, 'row')}
         accessibilityLabel={accessibilityLabel ?? label}
         accessibilityRole="button"
-        style={styles.row}
+        style={rowStyle}
         testID={testID}
         onPress={onPress}
       >
@@ -62,7 +65,7 @@ export function MobilePropertyRow({
   }
 
   return (
-    <View {...propertyProbe(layoutProbe, metricId, 'row')} style={styles.row} testID={testID}>
+    <View {...propertyProbe(layoutProbe, metricId, 'row')} style={rowStyle} testID={testID}>
       {content}
     </View>
   )
@@ -82,7 +85,6 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
     },
     row: {
       minHeight: desktopPropertyParity.rowMinHeight,
-      maxHeight: 96,
       flexShrink: 0,
       alignItems: 'center',
       flexDirection: 'row',
@@ -95,7 +97,6 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       flex: 1,
       alignItems: 'flex-end',
       flexShrink: 1,
-      maxHeight: 96,
       minWidth: 0,
     },
     valueText: {
@@ -103,6 +104,21 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       fontSize: mobileType.caption,
       fontWeight: '400',
       textAlign: 'right',
+    },
+    stackedLabel: {
+      width: '100%',
+    },
+    stackedRow: {
+      alignItems: 'stretch',
+      flexDirection: 'column',
+      paddingVertical: mobileSpace.sm,
+    },
+    stackedValue: {
+      alignItems: 'flex-start',
+      flex: 0,
+    },
+    stackedValueText: {
+      textAlign: 'left',
     },
   })
   return { mobileColors, styles }

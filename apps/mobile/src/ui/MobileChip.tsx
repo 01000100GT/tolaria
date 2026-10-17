@@ -110,8 +110,9 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       {
         backgroundColor,
         borderRadius: desktopPropertyParity.chipRadius,
-        height: desktopPropertyParity.chipHeight,
+        minHeight: desktopPropertyParity.chipHeight,
         paddingHorizontal: desktopPropertyParity.chipPaddingHorizontal,
+        paddingVertical: 0,
       },
     ]),
   ) as Record<MobileChipTone, ViewStyle>
