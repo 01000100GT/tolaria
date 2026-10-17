@@ -414,6 +414,13 @@ export const mobileParityInventory = [
     surface: 'Markdown source document editor',
   },
   {
+    assertions: ['native iPhone and iPad source creation focus and keyboard retention checks', 'native iPad source scrolling and keyboard toolbar checks', 'browser source syntax overlay and scroll alignment checks'],
+    contracts: ['desktopEditorParity'],
+    desktopSource: 'RawEditorView source input, syntax highlighting, and document selection',
+    mobileFile: 'src/components/workspace/MobileSourceEditorInput.tsx',
+    surface: 'Source document input and syntax overlay',
+  },
+  {
     assertions: ['web fallback keeps source-editor user-flow coverage available'],
     contracts: ['desktopEditorParity', 'desktopToolbarActionParity'],
     desktopSource: 'BlockNote/Tiptap document editing with RawEditorView fallback',

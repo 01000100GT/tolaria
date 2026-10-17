@@ -1,15 +1,12 @@
 import { useMobileStyles, useMobileColors } from '../../ui/theme/useMobileTheme'
 import {
-  Platform,
   Pressable,
   type NativeSyntheticEvent,
-  type TextInputScrollEventData,
   type TextInputSelectionChangeEventData,
   type TextInput,
   View,
 } from 'react-native'
-import Animated, { useAnimatedStyle, useEvent, useSharedValue } from 'react-native-reanimated'
-import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMobileSourceFind } from './useMobileSourceFind'
 import { Input } from '../ui/input'
 import { Text } from '../ui/text'
@@ -17,8 +14,8 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 
 import { createSourceEditorStyles } from './MobileMarkdownSourceEditorStyles'
-import { sourceFindSyntaxTokens, type SourceFindRange } from './MobileSourceFindHighlight'
-import { useWorkspaceSyncEditor } from '../../workspace/workspaceSyncEditors'
+import { SourceEditorInput } from './MobileSourceEditorInput'
+import { useMobileSourceEditorDraft } from './useMobileSourceEditorDraft'
 import {
   activeMobileEmojiShortcodeQuery,
   activeMobilePersonMentionQuery,
@@ -54,15 +51,6 @@ import {
   mobileSourceFrontmatterIssue,
   type MobileSourceFrontmatterIssue,
 } from '../../workspace/mobileSourceFrontmatterValidation'
-import {
-  commitMobileEditorDraft,
-  createMobileEditorDraft,
-  editMobileEditorDraft,
-  mobileEditorDraftCommitDelayMs,
-  mobileEditorDraftNeedsCommit,
-  syncMobileEditorDraft,
-  type MobileEditorDraftState,
-} from '../../workspace/mobileEditorDraft'
 import type { MobileEditorBlock, MobileNote } from '../../workspace/mobileWorkspaceModel'
 import { nativeSourceSelectionProof } from '../../qa/nativeSourceSelectionProbe'
 import { nativeSourceSelectionLogLine } from '../../qa/nativeSourceSelectionLog'
@@ -98,8 +86,6 @@ type MarkdownInlineAutocompleteReplacement = {
   selection: MobileMarkdownTextSelection
   text: string
 }
-type TimerHandle = ReturnType<typeof setTimeout>
-const AnimatedInput = Animated.createAnimatedComponent(Input)
 
 export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProps) {
   const {
@@ -145,6 +131,33 @@ export function MobileMarkdownSourceEditor(props: MobileMarkdownSourceEditorProp
 function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plainText' | 'compact'>) {
   const themeStyles = useMobileStyles(createSourceEditorStyles)
   const { editorStyles } = themeStyles
+  const { autocomplete, editorDraft, find, findInputRef, frontmatterIssue } = useMarkdownSourceDraft(props)
+
+  return (
+    <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-markdown-form">
+      {find.bar}
+      <MobileSourceFrontmatterIssueBanner issue={frontmatterIssue} />
+      <View style={editorStyles.editorBody}>
+        <SourceEditorInput
+          inputRef={findInputRef}
+          findMatch={find.active}
+          editable={!editorDraft.paused}
+          testID="editor-markdown-input"
+          value={editorDraft.content}
+          selection={autocomplete.controlledSelection}
+          onChangeText={autocomplete.handleMarkdownChange}
+          onSelectionChange={autocomplete.handleSelectionChange}
+        />
+        <InlineAutocompleteSuggestions autocomplete={autocomplete} />
+      </View>
+      <View style={editorStyles.toolbarHost}>
+        <MobileMarkdownFormattingToolbar onFormat={autocomplete.applyFormat} />
+      </View>
+    </MobileKeyboardAvoidingView>
+  )
+}
+
+function useMarkdownSourceDraft(props: Omit<MobileMarkdownSourceEditorProps, 'plainText' | 'compact'>) {
   const {
     blocks,
     bullets,
@@ -162,7 +175,9 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
     editorBlocks: note.editorBlocks ?? blocks,
     editorBullets: bullets,
   })
+  const findInputRef = useRef<TextInput>(null)
   const editorDraft = useMobileSourceEditorDraft({
+    inputRef: findInputRef,
     noteId: note.id,
     idleSave,
     onCommit: onUpdateContent,
@@ -177,7 +192,6 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
     onUpdateContent: editorDraft.updateContent,
   })
   const frontmatterIssue = mobileSourceFrontmatterIssue(editorDraft.content)
-  const findInputRef = useRef<TextInput>(null)
   const find = useMobileSourceFind({ input: findInputRef, content: editorDraft.content, register: onRegisterEditorCommands,
     onUpdate: (content) => editorDraft.updateContent(note.id, content) })
   useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
@@ -187,107 +201,27 @@ function MarkdownSourceEditor(props: Omit<MobileMarkdownSourceEditorProps, 'plai
     save: editorDraft.save,
   })
   useNativeSourceSelectionProbe(sourceSelectionProbe === true)
-
-  return (
-    <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-markdown-form">
-      {find.bar}
-      <MobileSourceFrontmatterIssueBanner issue={frontmatterIssue} />
-      <View style={editorStyles.editorBody}>
-        <SourceEditorInput
-          inputRef={findInputRef}
-          findMatch={find.active}
-          editable={!editorDraft.paused}
-          testID="editor-markdown-input"
-          value={editorDraft.content}
-          selection={autocomplete.controlledSelection}
-          onChangeText={autocomplete.handleMarkdownChange}
-          onSelectionChange={autocomplete.handleSelectionChange}
-        />
-        {autocomplete.suggestions.length > 0 ? (
-          <View style={editorStyles.suggestions} testID={autocomplete.suggestionsTestId}>
-            {autocomplete.suggestions.map((suggestion) => (
-              <Pressable
-                accessibilityLabel={suggestion.title}
-                accessibilityRole="button"
-                key={suggestion.id}
-                style={({ pressed }) => [editorStyles.suggestionRow, pressed ? editorStyles.suggestionRowPressed : null]}
-                testID={`${autocomplete.rowTestIdPrefix}-${testIdSegment(suggestion.id)}`}
-                onPress={() => autocomplete.insertSuggestion(suggestion)}
-              >
-                <Text numberOfLines={1} style={editorStyles.suggestionTitle}>{suggestion.title}</Text>
-                <MobileChip label={suggestion.chipLabel} tone="gray" />
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
-      </View>
-      <View style={editorStyles.toolbarHost}>
-        <MobileMarkdownFormattingToolbar onFormat={autocomplete.applyFormat} />
-      </View>
-    </MobileKeyboardAvoidingView>
-  )
+  return { autocomplete, editorDraft, find, findInputRef, frontmatterIssue }
 }
 
-function SourceEditorInput({
-  inputRef,
-  findMatch,
-  editable,
-  onChangeText,
-  onSelectionChange,
-  selection,
-  testID,
-  value,
-}: {
-  inputRef: Ref<TextInput>
-  findMatch?: SourceFindRange | null
-  editable: boolean
-  onChangeText: (value: string) => void
-  onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void
-  selection?: MobileMarkdownTextSelection
-  testID: string
-  value: string
-}) {
-  const themeStyles = useMobileStyles(createSourceEditorStyles)
-  const { editorStyles } = themeStyles
-  const mobileColors = useMobileColors()
-  const scrollY = useSharedValue(0)
-  const syntaxTransform = useAnimatedStyle(() => ({ transform: [{ translateY: -scrollY.value }] }))
-  const onScroll = useEvent<NativeSyntheticEvent<TextInputScrollEventData>>((event) => {
-    'worklet'
-    scrollY.set(event.contentOffset.y)
-  }, ['onScroll'])
-  const onWebScroll = useCallback((event: NativeSyntheticEvent<TextInputScrollEventData>) => {
-    const target = event.currentTarget
-    if (target && typeof target === 'object' && 'scrollTop' in target && typeof target.scrollTop === 'number') scrollY.set(target.scrollTop)
-  }, [scrollY])
+function InlineAutocompleteSuggestions({ autocomplete }: { autocomplete: ReturnType<typeof useMarkdownInlineAutocomplete> }) {
+  const { editorStyles } = useMobileStyles(createSourceEditorStyles)
+  if (autocomplete.suggestions.length === 0) return null
   return (
-    <View style={editorStyles.sourceInputHost}>
-      <Animated.View pointerEvents="none" style={[editorStyles.syntaxLayer, syntaxTransform]} testID="editor-markdown-syntax">
-        <Text style={editorStyles.syntaxText}>
-          {sourceFindSyntaxTokens(value, findMatch).map((token, index) => (
-            <Text key={`${index}:${token.text}`} style={[token.kind ? editorStyles[token.kind] : undefined,
-              token.highlighted ? { backgroundColor: mobileColors.yellowSoft, color: mobileColors.text } : undefined]}>{token.text}</Text>
-          ))}
-        </Text>
-      </Animated.View>
-      <AnimatedInput
-        ref={inputRef}
-        multiline
-        scrollEnabled
-        editable={editable}
-        className="border-0 bg-transparent py-3 text-[15px]"
-        underlineColorAndroid="transparent"
-        placeholderTextColor={mobileColors.textFaint}
-        selectionColor={mobileColors.primary}
-        style={editorStyles.highlightedInput}
-        testID={testID}
-        textAlignVertical="top"
-        value={value}
-        selection={selection}
-        onChangeText={onChangeText}
-        onScroll={Platform.OS === 'web' ? onWebScroll : onScroll}
-        onSelectionChange={onSelectionChange}
-      />
+    <View style={editorStyles.suggestions} testID={autocomplete.suggestionsTestId}>
+      {autocomplete.suggestions.map((suggestion) => (
+        <Pressable
+          accessibilityLabel={suggestion.title}
+          accessibilityRole="button"
+          key={suggestion.id}
+          style={({ pressed }) => [editorStyles.suggestionRow, pressed ? editorStyles.suggestionRowPressed : null]}
+          testID={`${autocomplete.rowTestIdPrefix}-${testIdSegment(suggestion.id)}`}
+          onPress={() => autocomplete.insertSuggestion(suggestion)}
+        >
+          <Text numberOfLines={1} style={editorStyles.suggestionTitle}>{suggestion.title}</Text>
+          <MobileChip label={suggestion.chipLabel} tone="gray" />
+        </Pressable>
+      ))}
     </View>
   )
 }
@@ -310,55 +244,13 @@ function mobileSourceFrontmatterIssueText(issue: MobileSourceFrontmatterIssue) {
   return mobileText('editor.source.yamlError.unclosedFrontmatter')
 }
 
-function MobilePlainTextSourceEditor({
-  note,
-  onRegisterEditorCommands,
-  onUpdateContent,
-  idleSave,
-  sourceSelectionProbe,
-}: Pick<MobileMarkdownSourceEditorProps, 'idleSave' | 'note' | 'onRegisterEditorCommands' | 'onUpdateContent' | 'sourceSelectionProbe'>) {
-  const themeStyles = useMobileStyles(createSourceEditorStyles)
-  const { editorStyles } = themeStyles
+type PlainTextSourceEditorProps = Pick<MobileMarkdownSourceEditorProps,
+  'idleSave' | 'note' | 'onRegisterEditorCommands' | 'onUpdateContent' | 'sourceSelectionProbe'>
+
+function MobilePlainTextSourceEditor(props: PlainTextSourceEditorProps) {
+  const { editorStyles } = useMobileStyles(createSourceEditorStyles)
   const mobileColors = useMobileColors()
-  const { content, paused, save, updateContent } = useMobileSourceEditorDraft({
-    noteId: note.id,
-    idleSave,
-    onCommit: onUpdateContent,
-    sourceContent: note.rawContent ?? '',
-  })
-  const findInputRef = useRef<TextInput>(null)
-  const find = useMobileSourceFind({ input: findInputRef, content, register: onRegisterEditorCommands,
-    onUpdate: (value) => updateContent(note.id, value) })
-  const [selection, setSelection] = useState<MobileMarkdownTextSelection>(textStartSelection())
-  const [controlledSelection, setControlledSelection] = useState<MobileMarkdownTextSelection | undefined>(textStartSelection())
-  const handleSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-    setSelection(event.nativeEvent.selection)
-    setControlledSelection(undefined)
-  }, [])
-  const handleTextChange = useCallback((nextContent: string) => {
-    updateContent(note.id, nextContent)
-    setSelection(mobileMarkdownSelectionAfterTextChange(content, nextContent, selection))
-    setControlledSelection(undefined)
-  }, [content, note.id, selection, updateContent])
-  const pastePlainText = useCallback(async () => {
-    const text = await readMobileClipboardText()
-    if (!text) return
-
-    const result = insertMobileMarkdownPlainText({
-      selection,
-      text: content,
-      value: text,
-    })
-    updateContent(note.id, result.text)
-    setSelection(result.selection)
-    setControlledSelection(result.selection)
-  }, [content, note.id, selection, updateContent])
-  useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
-    pastePlainText,
-    save,
-  })
-  useNativeSourceSelectionProbe(sourceSelectionProbe === true)
-
+  const { content, controlledSelection, find, findInputRef, handleSelectionChange, handleTextChange, paused } = usePlainTextSourceDraft(props)
   return (
     <MobileKeyboardAvoidingView style={editorStyles.container} testID="editor-text-file-form">
       {find.bar}
@@ -380,85 +272,47 @@ function MobilePlainTextSourceEditor({
   )
 }
 
-function useMobileSourceEditorDraft({
-  idleSave = true,
-  noteId,
-  onCommit,
-  sourceContent,
-}: {
-  idleSave?: boolean
-  noteId: string
-  onCommit: (noteId: string, content: string) => void
-  sourceContent: string
-}) {
-  const commitTimerRef = useRef<TimerHandle | null>(null)
-  const onCommitRef = useRef(onCommit)
-  const [draft, setDraft] = useState(() => createMobileEditorDraft(noteId, sourceContent))
-  const draftRef = useRef<MobileEditorDraftState>(draft)
-  const pausedRef = useRef(false)
-  const [paused, setPaused] = useState(false)
-
-  useEffect(() => {
-    onCommitRef.current = onCommit
-  }, [onCommit])
-  useEffect(() => {
-    draftRef.current = draft
-  }, [draft])
-
-  const clearScheduledCommit = useCallback(() => {
-    if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-    commitTimerRef.current = null
+function usePlainTextSourceDraft({
+  note,
+  onRegisterEditorCommands,
+  onUpdateContent,
+  idleSave,
+  sourceSelectionProbe,
+}: PlainTextSourceEditorProps) {
+  const findInputRef = useRef<TextInput>(null)
+  const { content, paused, save, updateContent } = useMobileSourceEditorDraft({
+    inputRef: findInputRef,
+    plainText: true,
+    noteId: note.id,
+    idleSave,
+    onCommit: onUpdateContent,
+    sourceContent: note.rawContent ?? '',
+  })
+  const find = useMobileSourceFind({ input: findInputRef, content, register: onRegisterEditorCommands,
+    onUpdate: (value) => updateContent(note.id, value) })
+  const [selection, setSelection] = useState<MobileMarkdownTextSelection>(textStartSelection())
+  const [controlledSelection, setControlledSelection] = useState<MobileMarkdownTextSelection | undefined>(textStartSelection())
+  const handleSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+    setSelection(event.nativeEvent.selection)
+    setControlledSelection(undefined)
   }, [])
-  const flushDraft = useCallback((updateState: boolean) => {
-    clearScheduledCommit()
-    const current = draftRef.current
-    if (!mobileEditorDraftNeedsCommit(current)) return
+  const handleTextChange = useCallback((nextContent: string) => {
+    updateContent(note.id, nextContent)
+    setSelection(mobileMarkdownSelectionAfterTextChange(content, nextContent, selection))
+    setControlledSelection(undefined)
+  }, [content, note.id, selection, updateContent])
+  const pastePlainText = useCallback(() => pasteSourceText(content, selection, result => {
+    updateContent(note.id, result.text)
+    setSelection(result.selection)
+    setControlledSelection(result.selection)
+  }), [content, note.id, selection, updateContent])
+  useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
+    pastePlainText,
+    save,
+  })
+  useNativeSourceSelectionProbe(sourceSelectionProbe === true)
 
-    onCommitRef.current(current.noteId, current.draftContent)
-    const committed = commitMobileEditorDraft(current)
-    draftRef.current = committed
-    if (updateState) setDraft(committed)
-  }, [clearScheduledCommit])
-  const commitDraft = useCallback(() => flushDraft(true), [flushDraft])
-  const scheduleCommit = useCallback(() => {
-    clearScheduledCommit()
-    commitTimerRef.current = setTimeout(commitDraft, mobileEditorDraftCommitDelayMs)
-  }, [clearScheduledCommit, commitDraft])
-  const updateContent = useCallback((_noteId: string, nextContent: string) => {
-    if (pausedRef.current) return
-    const nextDraft = editMobileEditorDraft(draftRef.current, nextContent)
-    draftRef.current = nextDraft
-    setDraft(nextDraft)
-    if (mobileEditorDraftNeedsCommit(nextDraft) && idleSave) scheduleCommit()
-    else clearScheduledCommit()
-  }, [clearScheduledCommit, idleSave, scheduleCommit])
-  useWorkspaceSyncEditor(async () => {
-    commitDraft()
-    pausedRef.current = true
-    setPaused(true)
-    return () => {
-      pausedRef.current = false
-      setPaused(false)
-    }
-  }, noteId)
-
-  useEffect(() => {
-    setDraft((current) => {
-      const nextDraft = syncMobileEditorDraft(current, { content: sourceContent, noteId })
-      draftRef.current = nextDraft
-      return nextDraft
-    })
-  }, [noteId, sourceContent])
-  useEffect(() => () => {
-    flushDraft(false)
-  }, [flushDraft])
-
-  return {
-    content: draft.draftContent,
-    paused,
-    save: commitDraft,
-    updateContent,
-  }
+  return { content, controlledSelection, find, findInputRef, handleSelectionChange, handleTextChange, paused }
 }
 
 function useNativeSourceSelectionProbe(enabled: boolean) {
@@ -505,17 +359,11 @@ function useMarkdownInlineAutocomplete({
   }, [content, noteId, onUpdateContent, selection])
   const applyFormat = useCallback(async (action: MobileMarkdownFormatAction) => {
     if (action === 'pastePlainText') {
-      const text = await readMobileClipboardText()
-      if (!text) return
-
-      const result = insertMobileMarkdownPlainText({
-        selection,
-        text: content,
-        value: text,
+      await pasteSourceText(content, selection, result => {
+        onUpdateContent(noteId, result.text)
+        setSelection(result.selection)
+        setControlledSelection(result.selection)
       })
-      onUpdateContent(noteId, result.text)
-      setSelection(result.selection)
-      setControlledSelection(result.selection)
       return
     }
 
@@ -643,6 +491,15 @@ function hasActiveInlineAutocomplete(text: string, cursor: number): boolean {
   if (activeMobileWikilinkQuery(text, cursor)) return true
   if (activeMobilePersonMentionQuery(text, cursor)) return true
   return activeMobileEmojiShortcodeQuery(text, cursor) !== null
+}
+
+async function pasteSourceText(
+  content: string,
+  selection: MobileMarkdownTextSelection,
+  apply: (result: ReturnType<typeof insertMobileMarkdownPlainText>) => void,
+) {
+  const value = await readMobileClipboardText()
+  if (value) apply(insertMobileMarkdownPlainText({ selection, text: content, value }))
 }
 
 function textStartSelection(): MobileMarkdownTextSelection {

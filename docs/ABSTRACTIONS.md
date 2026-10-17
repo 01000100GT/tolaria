@@ -521,6 +521,14 @@ Markdown and plain-text editors share `MobileKeyboardAvoidingView` with the rich
 editor so keyboard and rotation changes resize the real input, not just its
 visual overlay.
 
+`useMobileSourceEditorDraft` owns the shared Markdown/plain-text edit buffer,
+idle and unmount saves, and sync preparation. Foreground automatic sync defers
+before flushing or disabling a focused native input; manual/background sync
+still flushes and pauses it. New-note focus requests are consumed once at the
+document body (after frontmatter and the initial H1 marker), cancelled on
+unmount, and never replayed by save acknowledgements or later editor modes.
+`MobileSourceEditorInput` retains the RNR input and native syntax-scroll layer.
+
 Current primitives:
 
 | Primitive | Purpose |

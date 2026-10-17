@@ -68,6 +68,12 @@ the empty H1 and body, and checks focus survives a pause. The raw source must
 retain the heading, body and frontmatter. Opening an existing note must not show
 the keyboard. All edits stay in an isolated in-memory fixture.
 
+`MobileSourceFocusTests` creates a note while source mode is selected, types into
+the H1 and body without another tap, and checks that the keyboard stays visible.
+Switching to rich mode must not replay the consumed creation-focus request. Run
+on iPhone and iPad using the in-memory fixture. Automatic-sync deferral is covered
+by the source draft hook tests; this fixture is not an end-to-end AutoGit check.
+
 `TabletVaultBacklinkTests` requires an isolated on-disk vault with `review.md`
 and `codex-prepared-action-qa.md`, titled `Codex Prepared Action QA`, containing
 `[[review]]` and `Original full body for native Undo.`. It measures the backlink
