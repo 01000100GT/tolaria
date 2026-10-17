@@ -51,22 +51,24 @@ export function PhoneWorkspaceDragPreview(props: PhoneWorkspaceDragPreviewProps)
   if (!dragPreview.previewState) return null
 
   return (
-    <PhoneWorkspaceStateView
-      controller={controller}
-      options={phoneWorkspacePreviewOptions(options)}
-      openEditor={openEditor}
-      openSourceEditor={openSourceEditor}
-      openCommandPalette={openCommandPalette}
-      openList={openList}
-      openProperties={openProperties}
-      openSidebar={openSidebar}
-      phoneLayoutProbe={disabledPhoneLayoutProbe}
-      phoneState={dragPreview.previewState}
-      phoneSwipePreview={dragPreview}
-      sourceModeRequest={sourceModeRequest}
-      suggestionNotes={suggestionNotes}
-      tableOfContentsTarget={null}
-    />
+    <PhoneScreenLayer active insetBottom={dragPreview.previewState !== 'sidebar'}>
+      <PhoneWorkspaceStateView
+        controller={controller}
+        options={phoneWorkspacePreviewOptions(options)}
+        openEditor={openEditor}
+        openSourceEditor={openSourceEditor}
+        openCommandPalette={openCommandPalette}
+        openList={openList}
+        openProperties={openProperties}
+        openSidebar={openSidebar}
+        phoneLayoutProbe={disabledPhoneLayoutProbe}
+        phoneState={dragPreview.previewState}
+        phoneSwipePreview={dragPreview}
+        sourceModeRequest={sourceModeRequest}
+        suggestionNotes={suggestionNotes}
+        tableOfContentsTarget={null}
+      />
+    </PhoneScreenLayer>
   )
 }
 
@@ -98,7 +100,7 @@ export function PhoneWorkspaceScreens(props: PhoneWorkspaceStateViewProps) {
       <PhoneScreenLayer active={props.phoneState === 'editor'} retain>
         <PhoneEditorScreen {...props} />
       </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'sidebar'}>
+      <PhoneScreenLayer active={props.phoneState === 'sidebar'} insetBottom={false}>
         <PhoneSidebarDrawer {...props} />
       </PhoneScreenLayer>
       <PhoneScreenLayer active={props.phoneState === 'properties'}>

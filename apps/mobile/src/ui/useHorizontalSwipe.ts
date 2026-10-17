@@ -53,10 +53,15 @@ function createHorizontalSwipeResponder(initial: NormalizedHorizontalSwipeOption
 }
 
 function createHorizontalSwipeHandlers(options: () => NormalizedHorizontalSwipeOptions) {
+  let touchStart: { x: number; y: number } | undefined
   return PanResponder.create({
+    onStartShouldSetPanResponderCapture: (event) => {
+      touchStart = { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY }
+      return false
+    },
     onStartShouldSetPanResponder: () => shouldStartHorizontalSwipe(options()),
-    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options()),
-    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options()),
+    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options(), touchStart),
+    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options(), touchStart),
     onPanResponderRelease: (_, gesture) => releaseHorizontalSwipe(gesture, options()),
     onPanResponderTerminationRequest: () => true,
     onPanResponderMove: (_, gesture) => options().onSwipeProgress?.({ dx: gesture.dx, dy: gesture.dy }),
@@ -82,10 +87,10 @@ function commitHorizontalSwipe(
   action?.()
 }
 
-function shouldCapture(gesture: PanResponderGestureState, options: NormalizedHorizontalSwipeOptions) {
+function shouldCapture(gesture: PanResponderGestureState, options: NormalizedHorizontalSwipeOptions, start: { x: number; y: number } | undefined) {
   if (options.disabled || gesture.numberActiveTouches !== 1) return false
-  // x0/y0 are populated only after responder grant, too late for this decision.
-  const start = { x: gesture.moveX - gesture.dx, y: gesture.moveY - gesture.dy }
+  // Movement samples can begin after touch-down; x0/y0 are unset before grant.
+  if (!start) return false
   if (options.canStart?.(start) === false) return false
   return horizontalSwipeCapturesMovement(gesture)
 }

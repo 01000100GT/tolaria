@@ -15,8 +15,10 @@ export type PhoneTableOfContentsTargetRequest = MobileTableOfContentsTarget & { 
 
 export function usePhonePanelDragSurface(state: PhoneWorkspaceState) {
   const { width } = useWindowDimensions()
-  const { top } = useSafeAreaInsets()
-  return useCallback((start: { x: number; y: number }) => phonePanelDragSurface(state, start, width, top), [state, width, top])
+  const { top, left, right } = useSafeAreaInsets()
+  return useCallback((start: { x: number; y: number }) => (
+    phonePanelDragSurface(state, { x: start.x - left, y: start.y }, width - left - right, top)
+  ), [state, width, top, left, right])
 }
 
 export type PhoneWorkspaceController = ReturnType<typeof useTabletWorkspaceController>

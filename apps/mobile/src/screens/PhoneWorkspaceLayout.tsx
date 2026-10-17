@@ -44,7 +44,7 @@ export function PhoneWorkspaceRoot(props: PhoneWorkspaceRootProps) {
   const insets = useSafeAreaInsets()
   const topColor = props.phoneState === 'sidebar' ? mobileColors.sidebar : mobileColors.card
   return (
-    <View {...props.phoneLayoutProbe('phone.root')} style={[styles.root, { paddingBottom: props.phoneState === 'sidebar' ? 0 : insets.bottom }]}>
+    <View {...props.phoneLayoutProbe('phone.root')} style={styles.root}>
       <View testID="phone-top-inset" style={{ height: insets.top, backgroundColor: topColor }} />
       <PhoneWorkspaceContent {...props} />
       <MobileWorkspaceEditNotice retry={props.controller.retryFailedEdit} />

@@ -387,6 +387,15 @@ Phone drag responders retain their gesture identity while reading the latest
 callbacks. A completed native animation commits navigation in a microtask, after
 React Native synchronizes its final animated value, so that synchronization cannot
 overwrite the zero-offset destination. Interrupted drags never commit navigation.
+Phone edge hit zones translate window touch coordinates into the horizontally
+safe-area-inset workspace, keeping both editor edges reachable in landscape.
+They retain the original touch-down position rather than reconstructing it from
+movement samples, which can start after the finger has already left the edge.
+The raw editor permits responder handoff for these edge gestures; interior text
+selection and vertical scrolling remain outside the panel drag hit zone.
+Each retained phone screen owns its bottom inset independently of the active
+screen. Opening the edge-to-edge sidebar therefore cannot resize the hidden list
+and clamp away its saved scroll offset.
 
 When the adaptive iPad window cannot fit both left panes plus the 520-point
 editor minimum, the animated left strip is clipped to the 340-point list slot.

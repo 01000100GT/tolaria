@@ -49,6 +49,7 @@ export function SourceEditorInput(props: SourceEditorInputProps) {
         ref={inputRef}
         multiline
         scrollEnabled
+        rejectResponderTermination={false}
         editable={editable}
         className="border-0 bg-transparent py-3 text-[15px]"
         underlineColorAndroid="transparent"

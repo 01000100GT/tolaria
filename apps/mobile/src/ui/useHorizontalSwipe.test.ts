@@ -11,6 +11,7 @@ vi.mock('react-native', () => ({ PanResponder: { create: responder } }))
 
 type Options = Parameters<typeof useHorizontalSwipe>[0]
 type Callbacks = {
+  onStartShouldSetPanResponderCapture?: (event: { nativeEvent: { pageX: number; pageY: number } }) => boolean
   onMoveShouldSetPanResponderCapture: (event: null, gesture: Pick<PanResponderGestureState,
     'x0' | 'y0' | 'moveX' | 'moveY' | 'dx' | 'dy' | 'numberActiveTouches'>) => boolean
   onPanResponderRelease: (event: null, gesture: { dx: number; dy: number }) => void
@@ -37,8 +38,11 @@ describe('native horizontal gesture continuity', () => {
     try {
       flushSync(() => root.render(createElement(Surface, { canStart })))
       const callbacks = responder.mock.calls[0][0] as Callbacks
+      callbacks.onStartShouldSetPanResponderCapture?.({ nativeEvent: { pageX: startX, pageY: 400 } })
       // Native PanResponder leaves x0/y0 at zero until after capture is granted.
-      const gesture = { x0: 0, y0: 0, moveX: startX - 40, moveY: 402, dx: -40, dy: 2, numberActiveTouches: touches }
+      // Its first movement sample need not start at the original touch-down.
+      const initialDrift = startX < 24 ? 19 : -19
+      const gesture = { x0: 0, y0: 0, moveX: startX + initialDrift - 40, moveY: 402, dx: -40, dy: 2, numberActiveTouches: touches }
       expect(callbacks.onMoveShouldSetPanResponderCapture(null, gesture)).toBe(captures)
     } finally { root.unmount() }
   })
