@@ -134,6 +134,13 @@ export const mobileParityInventory = [
     surface: 'Note list panel',
   },
   {
+    assertions: ['MobileCreateNoteButtonTests: 57.6-point circular target at 120%, list-bound placement, immediate editor focus, and bulk-selection exclusion'],
+    contracts: ['desktopToolbarActionParity'],
+    desktopSource: 'NoteListHeader create-note command; owner-requested native adaptation moves it to the bottom of the note list',
+    mobileFile: 'src/components/workspace/MobileCreateNoteButton.tsx',
+    surface: 'Native note creation action',
+  },
+  {
     assertions: ['note-list bulk-selection user-flow checks'],
     contracts: ['desktopNoteItemParity'],
     desktopSource: 'BulkActionBar and NoteList multi-select actions',

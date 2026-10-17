@@ -2,6 +2,14 @@
 
 Key abstractions and domain models in Tolaria.
 
+## Mobile Note-List Creation
+
+`MobileNoteListPanel` keeps a round create action anchored inside the list body,
+above the open/archive and bulk-action controls. The list reserves trailing space
+so the last row can scroll clear of the action. Bulk selection hides it. The
+existing create command still owns persistence, analytics and initial H1 focus;
+moving its button introduces no second creation path.
+
 ## Mobile Installation Settings
 
 `apps/mobile/src/settings/` owns validated, installation-local preferences.

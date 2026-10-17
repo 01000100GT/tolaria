@@ -1,7 +1,14 @@
 import type { MobileNoteListFilter } from '../../workspace/mobileNoteFilters'
 
 export const mobileNoteListToolbarChrome = {
-  actionTestIds: ['note-list-search-action', 'note-list-create-action'],
+  actionTestIds: ['note-list-search-action'],
+} as const
+
+export const mobileNoteListCreateChrome = {
+  testID: 'note-list-create-action',
+  diameter: 48,
+  inset: 16,
+  iconSize: 24,
 } as const
 
 export const mobileNoteListFilterOptions: ReadonlyArray<{

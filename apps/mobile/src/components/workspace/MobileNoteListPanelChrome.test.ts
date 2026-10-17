@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
   mobileNoteListEmptyStateChrome,
+  mobileNoteListCreateChrome,
   mobileNoteListFilterOptions,
   mobileNoteListToolbarChrome,
 } from './MobileNoteListPanelChrome'
 
 describe('mobile note-list panel chrome', () => {
-  it('keeps note-list toolbar actions to search and direct create', () => {
+  it('keeps search in the header and direct create in a separate large action', () => {
     expect(mobileNoteListToolbarChrome.actionTestIds).toEqual([
       'note-list-search-action',
-      'note-list-create-action',
     ])
+    expect(mobileNoteListCreateChrome.testID).toBe('note-list-create-action')
+    expect(mobileNoteListCreateChrome.diameter).toBeGreaterThanOrEqual(44)
   })
 
   it('does not reserve toolbar chrome for open/archive selectors', () => {

@@ -146,3 +146,10 @@ environment variables. The test creates a note through the native UI and checks
 its H1, body and frontmatter after relaunch. Verify the filesystem contains the
 new note and exactly one root `note.md` with `type: Type` and `# Note`, then restore
 the original catalog and remove the disposable vault. Run on both device sizes.
+
+## Bottom Note Creation
+
+`MobileCreateNoteButtonTests` runs against the disposable in-memory fixture on
+both phone and tablet. It checks the round action's native frame, separation from
+the filter controls, and direct creation into a focused H1 without a title dialog.
+It never opens or modifies an existing vault.

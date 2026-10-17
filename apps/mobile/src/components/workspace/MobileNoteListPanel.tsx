@@ -1,8 +1,9 @@
-import type { MobileMetrics } from '../../ui/mobileMetrics'
+import { createThemeStyles } from './MobileNoteListPanel.styles'
+import { MobileCreateNoteButton } from './MobileCreateNoteButton'
+import { useMobileNoteListBulkSelection, type MobileNoteListBulkActions } from './useMobileNoteListSelection'
 import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
-import type { MobileColors } from '../../ui/theme/mobilePalette'
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
-import { FolderOpen, MagnifyingGlass, Plus } from 'phosphor-react-native'
+import { useMemo, type ReactNode } from 'react'
+import { FolderOpen, MagnifyingGlass } from 'phosphor-react-native'
 import { FlatList, StyleSheet, View } from 'react-native'
 import { Button } from '../ui/button'
 import { Text } from '../ui/text'
@@ -15,7 +16,6 @@ import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobileListRow } from '../../ui/MobileListRow'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { desktopPanelParity, desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileRadius } from '../../ui/tokens'
 import { mobileNoteRowChips } from '../../workspace/mobileNoteDisplay'
 import type { MobileNoteListFilter } from '../../workspace/mobileNoteFilters'
 import type { MobileNeighborhood, MobileNeighborhoodGroup } from '../../workspace/mobileNeighborhood'
@@ -28,24 +28,8 @@ import {
   mobileNoteListFilterOptions,
   mobileNoteListToolbarChrome,
 } from './MobileNoteListPanelChrome'
-import {
-  addMobileNoteListSelection,
-  mobileNoteListSelectionIsArchived,
-  selectedMobileNoteListIds,
-  selectedMobileNoteListNotes,
-  toggleMobileNoteListSelection,
-} from './mobileNoteListBulkSelection'
+import { mobileNoteListSelectionIsArchived } from './mobileNoteListBulkSelection'
 import { noteTypeSoftColor } from './mobileWorkspaceTone'
-
-type MobileNoteListBulkActions = {
-  onArchive: (noteIds: string[], archived: boolean) => void
-  onDelete: (noteIds: string[]) => void
-  onOrganize: (noteIds: string[]) => void
-}
-type MobileNoteListSelectionState = {
-  noteIds: ReadonlySet<string>
-  scope: string
-}
 
 type MobileNoteListPanelProps = {
   bulkActions?: MobileNoteListBulkActions
@@ -120,27 +104,27 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
         <MobileIconButton accessibilityLabel={mobileCopy.searchNotes} testID={mobileNoteListToolbarChrome.actionTestIds[0]} onPress={onOpenSearch}>
           <MagnifyingGlass color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
         </MobileIconButton>
-        <MobileIconButton accessibilityLabel={mobileCopy.createNote} testID={mobileNoteListToolbarChrome.actionTestIds[1]} onPress={onOpenCreateNote}>
-          <Plus color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
-        </MobileIconButton>
       </MobileToolbar>
       {searchQuery ? <SearchPill searchQuery={searchQuery} /> : null}
-      <NoteListContent
-        rowActions={noteListRowActions(props)}
-        activeNoteId={activeNoteId}
-        bulkSelection={bulkSelection}
-        displayPropertyKeys={displayPropertyKeys}
-        emptyVault={emptyVault}
-        layoutProbe={layoutProbe.probe}
-        neighborhood={neighborhood}
-        notes={notes}
-        onSelectNote={onSelectNote}
-        onOpenVault={onOpenVault}
-        propertyDisplayModes={propertyDisplayModes}
-        searchQuery={searchQuery}
-        selectedNoteId={selectedNoteId}
-        typeDefinitions={typeDefinitions}
-      />
+      <View style={styles.listBody}>
+        <NoteListContent
+          rowActions={noteListRowActions(props)}
+          activeNoteId={activeNoteId}
+          bulkSelection={bulkSelection}
+          displayPropertyKeys={displayPropertyKeys}
+          emptyVault={emptyVault}
+          layoutProbe={layoutProbe.probe}
+          neighborhood={neighborhood}
+          notes={notes}
+          onSelectNote={onSelectNote}
+          onOpenVault={onOpenVault}
+          propertyDisplayModes={propertyDisplayModes}
+          searchQuery={searchQuery}
+          selectedNoteId={selectedNoteId}
+          typeDefinitions={typeDefinitions}
+        />
+        <MobileCreateNoteButton visible={bulkSelection.selectedNotes.length === 0} onPress={onOpenCreateNote} />
+      </View>
       <BulkSelectionBar bulkActions={bulkActions} bulkSelection={bulkSelection} />
       {noteListFilterVisible && onNoteListFilterChange ? (
         <NoteListFilterPills
@@ -159,15 +143,13 @@ function noteListRowActions({ bulkActions, onToggleNoteFavorite }: MobileNoteLis
   return { ...bulkActions, onToggleFavorite: onToggleNoteFavorite }
 }
 
-function NoteListFilterPills({
-  active,
-  counts,
-  onChange,
-}: {
+type NoteListFilterPillsProps = {
   active: MobileNoteListFilter
   counts: Record<MobileNoteListFilter, number>
   onChange: (filter: MobileNoteListFilter) => void
-}) {
+}
+
+function NoteListFilterPills({ active, counts, onChange }: NoteListFilterPillsProps) {
   const { styles } = useMobileStyles(createThemeStyles)
   return (
     <View accessibilityRole="tablist" style={styles.filterBar} testID="note-list-filter-pills">
@@ -301,132 +283,6 @@ function BulkSelectionBar({
       onOrganize={bulkSelection.organizeSelected}
     />
   )
-}
-
-function useMobileNoteListBulkSelection({
-  bulkActions,
-  neighborhood,
-  notes,
-  onSelectNote,
-}: {
-  bulkActions?: MobileNoteListBulkActions
-  neighborhood: MobileNeighborhood | null
-  notes: MobileNote[]
-  onSelectNote: (noteId: string) => void
-}) {
-  const selectionEnabled = Boolean(bulkActions && !neighborhood)
-  const emptySelection = useMemo(() => new Set<string>(), [])
-  const [selectionState, setSelectionState] = useState<MobileNoteListSelectionState>({
-    noteIds: emptySelection,
-    scope: '',
-  })
-  const visibleNoteIds = useMemo(() => notes.map((note) => note.id), [notes])
-  const visibleNoteIdsSignature = visibleNoteIds.join('\u0000')
-  const selectionScope = selectionEnabled ? visibleNoteIdsSignature : ''
-  const selectedNoteIds = scopedSelectedNoteIds({ emptySelection, selectionScope, selectionState })
-  const selectedNotes = useMemo(
-    () => selectedMobileNoteListNotes(notes, selectedNoteIds),
-    [notes, selectedNoteIds],
-  )
-  const selectedNoteIdsSignature = [...selectedNoteIds].join('\u0000')
-  const clearSelection = useCallback(() => {
-    setSelectionState({ noteIds: new Set(), scope: selectionScope })
-  }, [selectionScope])
-
-  const beginSelection = useCallback((noteId: string) => {
-    if (!selectionEnabled) return
-    setSelectionState((current) => selectionWithNote(current, selectionScope, noteId, addMobileNoteListSelection))
-  }, [selectionEnabled, selectionScope])
-
-  const pressNote = useCallback((noteId: string) => {
-    if (shouldSelectNoteImmediately(selectionEnabled, selectedNoteIds)) {
-      onSelectNote(noteId)
-      return
-    }
-    setSelectionState((current) => selectionWithNote(current, selectionScope, noteId, toggleMobileNoteListSelection))
-  }, [onSelectNote, selectedNoteIds, selectionEnabled, selectionScope])
-
-  const selectedIdsInOrder = useCallback(() => selectedMobileNoteListIds(notes, selectedNoteIds), [notes, selectedNoteIds])
-
-  const runBulkAction = useCallback((action: (noteIds: string[]) => void) => {
-    const noteIds = selectedIdsInOrder()
-    if (noteIds.length > 0) {
-      clearSelection()
-      action(noteIds)
-    }
-  }, [clearSelection, selectedIdsInOrder])
-  const archiveSelected = useArchiveSelectionAction({ bulkActions, runBulkAction, selectedNotes })
-
-  return {
-    archiveSelected,
-    beginSelection,
-    clearSelection,
-    deleteSelected: useOptionalBulkAction(bulkActions?.onDelete, runBulkAction),
-    organizeSelected: useOptionalBulkAction(bulkActions?.onOrganize, runBulkAction),
-    pressNote,
-    rowExtraData: useCallback((selectedNoteId: string | null) => (
-      `${selectedNoteId ?? ''}:${selectedNoteIdsSignature}`
-    ), [selectedNoteIdsSignature]),
-    selectedNoteIds,
-    selectedNotes,
-  }
-}
-
-function scopedSelectedNoteIds({
-  emptySelection,
-  selectionScope,
-  selectionState,
-}: {
-  emptySelection: ReadonlySet<string>
-  selectionScope: string
-  selectionState: MobileNoteListSelectionState
-}) {
-  return selectionState.scope === selectionScope ? selectionState.noteIds : emptySelection
-}
-
-function selectionWithNote(
-  current: MobileNoteListSelectionState,
-  selectionScope: string,
-  noteId: string,
-  updateSelection: (noteIds: ReadonlySet<string>, noteId: string) => ReadonlySet<string>,
-): MobileNoteListSelectionState {
-  return {
-    noteIds: updateSelection(scopedNoteSelection(current, selectionScope), noteId),
-    scope: selectionScope,
-  }
-}
-
-function shouldSelectNoteImmediately(selectionEnabled: boolean, selectedNoteIds: ReadonlySet<string>) {
-  return !selectionEnabled || selectedNoteIds.size === 0
-}
-
-function useArchiveSelectionAction({
-  bulkActions,
-  runBulkAction,
-  selectedNotes,
-}: {
-  bulkActions?: MobileNoteListBulkActions
-  runBulkAction: (action: (noteIds: string[]) => void) => void
-  selectedNotes: MobileNote[]
-}) {
-  return useCallback(() => {
-    if (!bulkActions) return
-    const archived = !mobileNoteListSelectionIsArchived(selectedNotes)
-    runBulkAction((noteIds) => bulkActions.onArchive(noteIds, archived))
-  }, [bulkActions, runBulkAction, selectedNotes])
-}
-
-function useOptionalBulkAction(
-  action: ((noteIds: string[]) => void) | undefined,
-  runBulkAction: (action: (noteIds: string[]) => void) => void,
-) {
-  return useCallback(() => {
-    if (action) runBulkAction(action)
-  }, [action, runBulkAction])
-}
-
-function scopedNoteSelection(state: MobileNoteListSelectionState, scope: string) {
-  return state.scope === scope ? state.noteIds : new Set<string>()
 }
 
 type NeighborhoodRow =
@@ -667,117 +523,3 @@ const panelStyles = StyleSheet.create({
     width: '100%',
   },
 })
-
-function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { space: mobileSpace, type: mobileType } = metrics
-  const styles = StyleSheet.create({
-    chipRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: mobileSpace.xs,
-    },
-    emptyState: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: mobileSpace.xl,
-    },
-    emptyAction: {
-      marginTop: mobileSpace.lg,
-    },
-    emptyText: {
-      marginTop: mobileSpace.sm,
-      color: mobileColors.textMuted,
-      fontSize: mobileType.body,
-      textAlign: 'center',
-    },
-    emptyTitle: {
-      color: mobileColors.text,
-      fontSize: mobileType.title,
-      fontWeight: '600',
-      textAlign: 'center',
-    },
-    filterBar: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      gap: mobileSpace.sm,
-      borderTopColor: mobileColors.border,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileSpace.lg,
-      paddingVertical: mobileSpace.md,
-    },
-    filterPill: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: metrics.size(6),
-      minHeight: 28,
-      borderRadius: mobileRadius.pill,
-      paddingHorizontal: metrics.size(10),
-      paddingVertical: metrics.size(4),
-    },
-    filterPillSelected: {
-      backgroundColor: mobileColors.control,
-    },
-    filterPillText: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.caption,
-      fontWeight: '500',
-    },
-    filterPillTextSelected: {
-      color: mobileColors.text,
-    },
-    filterPillCount: {
-      color: mobileColors.textFaint,
-      fontSize: mobileType.micro,
-      fontVariant: ['tabular-nums'],
-    },
-    filterPillCountSelected: {
-      color: mobileColors.textMuted,
-    },
-    groupCount: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.micro,
-      fontWeight: '400',
-      fontVariant: ['tabular-nums'],
-    },
-    groupHeader: {
-      minHeight: 32,
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      backgroundColor: mobileColors.graySoft,
-      paddingHorizontal: mobileSpace.lg,
-    },
-    groupLabel: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.micro,
-      fontWeight: '500',
-      textTransform: 'uppercase',
-    },
-    listContent: {
-      paddingHorizontal: 0,
-      paddingVertical: 0,
-    },
-    searchPill: {
-      minHeight: 36,
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.sm,
-      borderBottomColor: mobileColors.border,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: mobileSpace.lg,
-    },
-    searchText: {
-      flex: 1,
-      color: mobileColors.text,
-      fontSize: mobileType.body,
-      fontWeight: '500',
-    },
-    toolbarTitleBlock: {
-      minWidth: 0,
-    },
-  })
-  return { mobileColors, styles }
-}
