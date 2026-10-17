@@ -89,13 +89,27 @@ export function mobileActionSheetLongFormHeight(windowHeight: number) {
   return Math.max(0, Math.min(windowHeight, Math.max(mobileActionSheetLayoutContract.longFormSheetMinHeight, availableHeight)))
 }
 
-export function mobileActionSheetUsesCompactViewForm({ action, phone, width, height }: {
+export function mobileActionSheetUsesCompactForm({ action, phone, width, height }: {
   action: string
   phone: boolean
   width: number
   height: number
 }) {
-  return phone && width > height && (action === 'createView' || action === 'editView')
+  return phone && width > height && ['createView', 'editView', 'addProperty', 'editProperty', 'addRelationship'].includes(action)
+}
+
+export function mobileFormScrollOffset({ offset, fieldTop, fieldHeight, viewportHeight }: {
+  offset: number
+  fieldTop: number
+  fieldHeight: number
+  viewportHeight: number
+}) {
+  if (viewportHeight <= 0) return offset
+  if (fieldTop < offset) return Math.max(0, fieldTop)
+  if (fieldTop + fieldHeight > offset + viewportHeight) {
+    return Math.max(0, fieldTop + fieldHeight - viewportHeight)
+  }
+  return offset
 }
 
 export function mobileSingleTextFieldSubmitDisabled({

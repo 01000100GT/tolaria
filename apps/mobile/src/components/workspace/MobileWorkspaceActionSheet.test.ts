@@ -6,7 +6,8 @@ import {
   mobileSingleTextFieldSubmitDisabled,
   mobileWorkspaceRelationshipTargetMaxSuggestions,
   mobileActionSheetLongFormHeight,
-  mobileActionSheetUsesCompactViewForm,
+  mobileActionSheetUsesCompactForm,
+  mobileFormScrollOffset,
   mobilePropertyDeleteActionVisible,
   mobileWorkspacePropertyActionTestIds,
   mobileWorkspaceRelationshipActionTestIds,
@@ -45,10 +46,17 @@ describe('mobile workspace action sheet', () => {
     { action: 'createView', phone: true, width: 390, height: 844, expected: false },
     { action: 'editView', phone: true, width: 600, height: 600, expected: false },
     { action: 'createView', phone: false, width: 1366, height: 1024, expected: false },
-    { action: 'addProperty', phone: true, width: 844, height: 390, expected: false },
+    { action: 'addProperty', phone: true, width: 844, height: 390, expected: true },
+    { action: 'editProperty', phone: true, width: 844, height: 390, expected: true },
+    { action: 'addProperty', phone: true, width: 390, height: 844, expected: false },
+    { action: 'editProperty', phone: false, width: 1366, height: 1024, expected: false },
+    { action: 'addRelationship', phone: true, width: 844, height: 390, expected: true },
+    { action: 'addRelationship', phone: true, width: 390, height: 844, expected: false },
+    { action: 'addRelationship', phone: false, width: 1366, height: 1024, expected: false },
+    { action: 'moreActions', phone: true, width: 844, height: 390, expected: false },
   ])('uses compact actions for $action on phone=$phone at $width x $height', (testCase) => {
     const { expected, ...input } = testCase
-    expect(mobileActionSheetUsesCompactViewForm(input)).toBe(expected)
+    expect(mobileActionSheetUsesCompactForm(input)).toBe(expected)
   })
 
   it('allows title-less note creation while keeping required field guards', () => {
@@ -66,6 +74,17 @@ describe('mobile workspace action sheet', () => {
       inputValue: '',
       submitDisabled: true,
     })).toBe(true)
+  })
+
+  it.each([
+    { offset: 0, fieldTop: 20, fieldHeight: 34, viewportHeight: 100, expected: 0 },
+    { offset: 0, fieldTop: 200, fieldHeight: 34, viewportHeight: 100, expected: 134 },
+    { offset: 180, fieldTop: 100, fieldHeight: 34, viewportHeight: 100, expected: 100 },
+    { offset: 30, fieldTop: 100, fieldHeight: 34, viewportHeight: 100, expected: 34 },
+    { offset: 30, fieldTop: -10, fieldHeight: 34, viewportHeight: 100, expected: 0 },
+    { offset: 40, fieldTop: 200, fieldHeight: 34, viewportHeight: 0, expected: 40 },
+  ])('reveals the focused field without moving an already visible input: $expected', ({ expected, ...geometry }) => {
+    expect(mobileFormScrollOffset(geometry)).toBe(expected)
   })
 
   it('opens workspace form sheets without forcing the native keyboard over the sheet', () => {

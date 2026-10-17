@@ -1,9 +1,7 @@
-import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
-import type { MobileColors } from '../../ui/theme/mobilePalette'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
-import { Keyboard, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native'
 import { ArrowSquareOut, CheckCircle, ClipboardText, FilePlus, FolderOpen, Trash } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
@@ -14,7 +12,6 @@ import { MobileTextInput } from '../../ui/MobileTextInput'
 import { MobileKeyboardAvoidingView } from '../../ui/MobileKeyboardAvoidingView'
 import { useMobileDeviceLayout } from '../../ui/useMobileDeviceLayout'
 import { desktopToolbarActionParity } from '../../ui/desktopParity'
-import { mobileRadius } from '../../ui/tokens'
 import type { MobileEditorBlock, MobileNote, MobileSidebarIcon, MobileTone, MobileTypeDefinitions, MobileViewFilterGroup } from '../../workspace/mobileWorkspaceModel'
 import type {
   MobileTypeSchemaProperty,
@@ -58,10 +55,11 @@ import { MobileWorkspaceSuggestionList } from './MobileWorkspaceSuggestionList'
 import type { MobileWorkspaceSuggestionItem } from './MobileWorkspaceSuggestionListModel'
 import { MobileQuickOpenSheet } from './MobileQuickOpenSheet'
 import { chipTone } from './mobileWorkspaceTone'
+import { createMobileWorkspaceSheetStyles as createThemeStyles } from './mobileWorkspaceActionSheetStyles'
 import {
   mobileActionSheetLongFormHeight,
-  mobileActionSheetUsesCompactViewForm,
-  mobileActionSheetLayoutContract,
+  mobileActionSheetUsesCompactForm,
+  mobileFormScrollOffset,
   mobilePropertyDeleteActionVisible,
   mobileSingleTextFieldSubmitDisabled,
   mobileWorkspacePropertyActionTestIds,
@@ -69,7 +67,6 @@ import {
   mobileWorkspaceRelationshipTargetMaxSuggestions,
   mobileWorkspaceFormSheetAutoFocus,
   mobileWorkspaceFormSheetMaxSuggestions,
-  mobileWorkspaceSuggestionRowLayoutContract,
 } from './MobileWorkspaceActionSheetModel'
 
 export type MobileWorkspaceAction =
@@ -302,11 +299,11 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
     if (props.action !== 'search') Keyboard.dismiss()
   }, [props.action])
   const { height: windowHeight, width: windowWidth } = useWindowDimensions()
-  const compactViewForm = mobileActionSheetUsesCompactViewForm({
+  const compactForm = mobileActionSheetUsesCompactForm({
     action: props.action, phone, width: windowWidth, height: windowHeight,
   })
   const longFormSheetHeight = mobileActionSheetLongFormHeight(windowHeight)
-  const longFormSheetStyle = usesLongFormSheet(props.action)
+  const longFormSheetStyle = usesLongFormSheet(props.action) || compactForm
     ? { height: longFormSheetHeight, maxHeight: longFormSheetHeight }
     : null
 
@@ -319,18 +316,18 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
           style={[sheetStyles.sheet, longFormSheetStyle, phone && phoneSheetStyles.sheet]}
           testID={`workspace-action-sheet-${props.action}`}
         >
-          <WorkspaceSheetHeader {...props} compactViewForm={compactViewForm} />
-          <ActionContent {...props} compactViewForm={compactViewForm} />
+          <WorkspaceSheetHeader {...props} compactForm={compactForm} />
+          <ActionContent {...props} compactForm={compactForm} />
         </MobilePanel>
       </View>
     </MobileKeyboardAvoidingView>
   )
 }
 
-type ActionContentProps = MobileWorkspaceActionSheetProps & { compactViewForm: boolean }
+type ActionContentProps = MobileWorkspaceActionSheetProps & { compactForm: boolean }
 
 function WorkspaceSheetHeader(props: ActionContentProps) {
-  if (props.compactViewForm) return null
+  if (props.compactForm) return null
   return (
     <MobileToolbar testID="workspace-action-sheet-toolbar">
       <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
@@ -399,7 +396,7 @@ function SearchContent(props: MobileWorkspaceActionSheetProps) {
 
 function ViewFormContent(props: ActionContentProps) {
   return <SingleTextFieldContent
-    compactTitle={props.compactViewForm ? actionTitle(props.action, props.propertyName) : undefined}
+    compactTitle={props.compactForm ? actionTitle(props.action, props.propertyName) : undefined}
     config={singleTextFieldConfig(props)}
   />
 }
@@ -850,93 +847,176 @@ function VisibilitySwitchRow({
   )
 }
 
-function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
+function AddPropertyContent(props: ActionContentProps) {
   const { styles } = useMobileStyles(createThemeStyles)
-  const phone = useMobileDeviceLayout() === 'phone'
-  const {
-    action,
-    notes,
-    onClose,
-    onPropertyNameChange,
-    onPropertyValueChange,
-    onPropertyValueKindChange,
-    onDeleteProperty,
-    onSaveProperty,
-    propertyName,
-    propertyValue,
-    propertyValueKind,
-    selectedNote,
-    typeDefinitions,
-  } = props
-  const editingProperty = action === 'editProperty'
-  const lockedListKind = isMobileListPropertyKey(propertyName)
-  const selectedValueKind = mobilePropertyValueKindForKey(propertyName, propertyValueKind)
-  const canSaveProperty = canSubmitMobilePropertyValue({
-    key: propertyName,
-    kind: propertyValueKind,
-    valueText: propertyValue,
-  })
-  const keySuggestions = editingProperty ? [] : mobilePropertyKeySuggestions(notes, selectedNote, propertyName, typeDefinitions)
-  const valueSuggestions = mobilePropertyValueSuggestions(notes, propertyName, propertyValue, selectedValueKind, {
-    selectedNote,
-    typeDefinitions,
-  })
-
+  const { compactForm } = props
+  const focusedScroll = useFocusedFormScroll()
   return (
-    <View style={styles.formBody}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
+    <View style={[styles.formBody, compactForm && phoneSheetStyles.compactBody]}>
+      <PropertyFormHeader form={props} />
+      <ScrollView {...focusedScroll} contentContainerStyle={[styles.content, compactForm && phoneSheetStyles.compactContent]} keyboardShouldPersistTaps="handled" style={styles.scrollArea} testID="workspace-property-form-scroll">
+        <PropertyFormFields form={props} />
+        {compactForm ? <PropertyDeleteAction form={props} /> : null}
+      </ScrollView>
+      <PropertyFormFooter form={props} />
+    </View>
+  )
+}
+
+type WorkspaceFormProps = { form: ActionContentProps }
+
+function PropertyFormHeader({ form: props }: WorkspaceFormProps) {
+  if (!props.compactForm) return null
+  return (<MobileToolbar testID="workspace-action-sheet-toolbar">
+    <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
+    <MobileToolbarSpacer />
+    <PropertyFormActions form={props} />
+  </MobileToolbar>)
+}
+
+function PropertyFormFooter({ form: props }: WorkspaceFormProps) {
+  if (props.compactForm) return null
+  return (<SheetFooter pinned>
+    <PropertyDeleteAction form={props} />
+    <PropertyFormActions form={props} />
+  </SheetFooter>)
+}
+
+function PropertyFormFields({ form: props }: WorkspaceFormProps) {
+  const phone = useMobileDeviceLayout() === 'phone'
+  const editingProperty = props.action === 'editProperty'
+  const lockedListKind = isMobileListPropertyKey(props.propertyName)
+  const kind = mobilePropertyValueKindForKey(props.propertyName, props.propertyValueKind)
+  const keys = editingProperty ? [] : mobilePropertyKeySuggestions(props.notes, props.selectedNote, props.propertyName, props.typeDefinitions)
+  const values = mobilePropertyValueSuggestions(props.notes, props.propertyName, props.propertyValue, kind, {
+    selectedNote: props.selectedNote, typeDefinitions: props.typeDefinitions,
+  })
+  return (
+    <>
       {!(phone && editingProperty) ? <MobileTextInput
         autoFocus={mobileWorkspaceFormSheetAutoFocus}
         label={mobileText('inspector.properties.propertyName')}
         placeholder={mobileText('inspector.properties.propertyName')}
         testID="workspace-property-name-input"
-        value={propertyName}
+        value={props.propertyName}
         editable={!editingProperty}
-        onChangeText={onPropertyNameChange}
+        onChangeText={props.onPropertyNameChange}
       /> : null}
-      {keySuggestions.length > 0 ? (
+      {keys.length > 0 ? (
         <MobileWorkspaceSuggestionList
-          labels={keySuggestions}
+          labels={keys}
           maxVisibleItems={mobileWorkspaceFormSheetMaxSuggestions}
           testID="workspace-property-key-suggestions"
           testIDPrefix="workspace-property-key-suggestion"
-          onSelect={onPropertyNameChange}
+          onSelect={props.onPropertyNameChange}
         />
       ) : null}
       <MobilePropertyValueEditor
-        kind={selectedValueKind}
+        kind={kind}
         lockedListKind={lockedListKind}
         showKindPicker={!(phone && lockedListKind)}
-        propertyName={propertyName}
-        suggestions={valueSuggestions}
-        value={propertyValue}
-        onKindChange={onPropertyValueKindChange}
-        onValueChange={onPropertyValueChange}
+        propertyName={props.propertyName}
+        suggestions={values}
+        value={props.propertyValue}
+        onKindChange={props.onPropertyValueKindChange}
+        onValueChange={props.onPropertyValueChange}
       />
+    </>
+  )
+}
+
+function PropertyFormActions({ form: props }: WorkspaceFormProps) {
+  const canSave = canSubmitMobilePropertyValue({ key: props.propertyName, kind: props.propertyValueKind, valueText: props.propertyValue })
+  return (<>
+    <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspacePropertyActionTestIds.cancel} variant="ghost" onPress={props.onClose} />
+    <MobileButton disabled={!canSave} label={mobileText('common.save')} testID={mobileWorkspacePropertyActionTestIds.save} variant="primary" onPress={props.onSaveProperty} />
+  </>)
+}
+
+function PropertyDeleteAction({ form: props }: WorkspaceFormProps) {
+  const note = props.selectedNote
+  if (!mobilePropertyDeleteActionVisible({ editingProperty: props.action === 'editProperty', hasSelectedNote: note !== null }) || !note) return null
+  return (<MobileButton
+    label={mobileText('inspector.properties.deleteProperty')}
+    testID={mobileWorkspacePropertyActionTestIds.delete}
+    tone="danger"
+    variant="ghost"
+    onPress={() => props.onDeleteProperty(note.id, props.propertyName)}
+  />)
+}
+
+function AddRelationshipContent(props: ActionContentProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
+  const focusedScroll = useFocusedFormScroll()
+  const phone = useMobileDeviceLayout() === 'phone'
+  const { compactForm } = props
+  return (
+    <View style={[styles.formBody, compactForm && phoneSheetStyles.compactBody]}>
+      <RelationshipFormHeader form={props} />
+      <ScrollView {...focusedScroll} contentContainerStyle={[styles.content, compactForm && phoneSheetStyles.compactContent]} keyboardShouldPersistTaps="handled" style={styles.scrollArea} testID="workspace-relationship-form-scroll">
+        <RelationshipFormFields form={props} />
+        <RelationshipFormFooter form={props} visible={!phone} />
       </ScrollView>
-      <SheetFooter pinned>
-        {mobilePropertyDeleteActionVisible({
-          editingProperty,
-          hasSelectedNote: selectedNote !== null,
-        }) && selectedNote ? (
-          <MobileButton
-            label={mobileText('inspector.properties.deleteProperty')}
-            testID={mobileWorkspacePropertyActionTestIds.delete}
-            tone="danger"
-            variant="ghost"
-            onPress={() => onDeleteProperty(selectedNote.id, propertyName)}
-          />
-        ) : null}
-        <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspacePropertyActionTestIds.cancel} variant="ghost" onPress={onClose} />
-        <MobileButton disabled={!canSaveProperty} label={mobileText('common.save')} testID={mobileWorkspacePropertyActionTestIds.save} variant="primary" onPress={onSaveProperty} />
-      </SheetFooter>
+      <RelationshipFormFooter form={props} visible={phone && !compactForm} pinned />
     </View>
   )
 }
 
-function AddRelationshipContent(props: MobileWorkspaceActionSheetProps) {
-  const { styles } = useMobileStyles(createThemeStyles)
+function RelationshipFormHeader({ form: props }: WorkspaceFormProps) {
+  if (!props.compactForm) return null
+  return (<MobileToolbar testID="workspace-action-sheet-toolbar">
+    <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
+    <MobileToolbarSpacer />
+    <RelationshipFormActions form={props} />
+  </MobileToolbar>)
+}
+
+function RelationshipFormFooter({ form, visible, pinned = false }: WorkspaceFormProps & { visible: boolean; pinned?: boolean }) {
+  if (!visible) return null
+  return (<SheetFooter pinned={pinned}>
+    <RelationshipFormActions form={form} />
+  </SheetFooter>)
+}
+
+function RelationshipFormActions({ form: props }: WorkspaceFormProps) {
+  const disabled = props.relationshipName.trim().length === 0 || props.relationshipNoteTitle.trim().length === 0
+  return (<>
+    <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspaceRelationshipActionTestIds.cancel} variant="ghost" onPress={props.onClose} />
+    <MobileButton disabled={disabled} label={mobileText('inspector.relationship.add')} testID={mobileWorkspaceRelationshipActionTestIds.save} variant="primary" onPress={props.onSaveRelationship} />
+  </>)
+}
+
+function RelationshipFormFields({ form: props }: WorkspaceFormProps) {
   const keySuggestions = mobileRelationshipKeySuggestions(props.notes, props.relationshipName, props.selectedNote, props.typeDefinitions)
+  return (<>
+    <MobileTextInput
+      autoFocus={mobileWorkspaceFormSheetAutoFocus}
+      label={mobileText('inspector.relationship.name')}
+      placeholder={mobileText('inspector.relationship.name')}
+      testID="workspace-relationship-name-input"
+      value={props.relationshipName}
+      onChangeText={props.onRelationshipNameChange}
+    />
+    <MobileWorkspaceSuggestionList
+      labels={keySuggestions}
+      maxVisibleItems={mobileWorkspaceFormSheetMaxSuggestions}
+      testID="workspace-relationship-key-suggestions"
+      testIDPrefix="workspace-relationship-key-suggestion"
+      onSelect={props.onRelationshipNameChange}
+    />
+    <MobileTextInput
+      label={mobileText('inspector.relationship.noteTitle')}
+      placeholder={mobileText('inspector.relationship.noteTitle')}
+      testID="workspace-relationship-note-title-input"
+      value={props.relationshipNoteTitle}
+      onChangeText={props.onRelationshipNoteTitleChange}
+    />
+    <RelationshipTargetOptions form={props} />
+  </>)
+}
+
+function RelationshipTargetOptions({ form: props }: WorkspaceFormProps) {
+  const { styles } = useMobileStyles(createThemeStyles)
   const suggestions = mobileRelationshipTargetSuggestions(props.notes, props.relationshipNoteTitle, {
     relationshipKey: props.relationshipName,
     selectedNote: props.selectedNote,
@@ -945,29 +1025,7 @@ function AddRelationshipContent(props: MobileWorkspaceActionSheetProps) {
   const showCreateTarget = shouldShowMobileRelationshipCreateTarget(props.notes, createTargetTitle)
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
-      <MobileTextInput
-        autoFocus={mobileWorkspaceFormSheetAutoFocus}
-        label={mobileText('inspector.relationship.name')}
-        placeholder={mobileText('inspector.relationship.name')}
-        testID="workspace-relationship-name-input"
-        value={props.relationshipName}
-        onChangeText={props.onRelationshipNameChange}
-      />
-      <MobileWorkspaceSuggestionList
-        labels={keySuggestions}
-        maxVisibleItems={mobileWorkspaceFormSheetMaxSuggestions}
-        testID="workspace-relationship-key-suggestions"
-        testIDPrefix="workspace-relationship-key-suggestion"
-        onSelect={props.onRelationshipNameChange}
-      />
-      <MobileTextInput
-        label={mobileText('inspector.relationship.noteTitle')}
-        placeholder={mobileText('inspector.relationship.noteTitle')}
-        testID="workspace-relationship-note-title-input"
-        value={props.relationshipNoteTitle}
-        onChangeText={props.onRelationshipNoteTitleChange}
-      />
+    <>
       {suggestions.length > 0 ? (
         <View style={styles.suggestionList} testID="workspace-relationship-note-suggestions">
           {suggestions.slice(0, mobileWorkspaceRelationshipTargetMaxSuggestions).map((note) => (
@@ -998,12 +1056,35 @@ function AddRelationshipContent(props: MobileWorkspaceActionSheetProps) {
       {showCreateTarget ? (
         <CreateRelationshipTargetRow title={createTargetTitle} onPress={props.onCreateRelationshipTarget} />
       ) : null}
-      <SheetFooter>
-        <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspaceRelationshipActionTestIds.cancel} variant="ghost" onPress={props.onClose} />
-        <MobileButton disabled={props.relationshipName.trim().length === 0 || props.relationshipNoteTitle.trim().length === 0} label={mobileText('inspector.relationship.add')} testID={mobileWorkspaceRelationshipActionTestIds.save} variant="primary" onPress={props.onSaveRelationship} />
-      </SheetFooter>
-    </ScrollView>
+    </>
   )
+}
+
+function useFocusedFormScroll() {
+  const scroll = useRef<ScrollView>(null)
+  const viewportHeight = useRef(0)
+  const offset = useRef(0)
+  const reveal = () => {
+    if (Platform.OS === 'web') return
+    const field = TextInput.State.currentlyFocusedInput()
+    const host = scroll.current?.getNativeScrollRef()
+    if (!field || !host) return
+    field.measureLayout(host, (_x, fieldTop, _width, fieldHeight) => {
+      const next = mobileFormScrollOffset({ offset: offset.current, fieldTop, fieldHeight, viewportHeight: viewportHeight.current })
+      if (next !== offset.current) scroll.current?.scrollTo({ y: next, animated: false })
+    }, () => {})
+  }
+  return {
+    ref: scroll,
+    onLayout: (event: LayoutChangeEvent) => {
+      viewportHeight.current = event.nativeEvent.layout.height
+      reveal()
+    },
+    onContentSizeChange: reveal,
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      offset.current = event.nativeEvent.contentOffset.y
+    },
+  }
 }
 
 function CreateRelationshipTargetRow({
@@ -1187,174 +1268,3 @@ const phoneSheetStyles = StyleSheet.create({
   compactBody: { flex: 1 },
   compactContent: { padding: 8 },
 })
-
-function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { space: mobileSpace, type: mobileType, toolbarAction: desktopToolbarActionParity } = metrics
-  const styles = StyleSheet.create({
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: mobileColors.overlay,
-    },
-    content: {
-      alignSelf: 'stretch',
-      gap: metrics.size(mobileActionSheetLayoutContract.contentGap),
-      padding: metrics.size(mobileActionSheetLayoutContract.contentPadding),
-    },
-    footer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: mobileSpace.sm,
-      borderTopColor: mobileColors.border,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      paddingTop: mobileSpace.md,
-    },
-    formBody: {
-      flexShrink: 1,
-      minHeight: 0,
-    },
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      elevation: 1000,
-      zIndex: 1000,
-    },
-    sheetContainer: {
-      flex: 1,
-      minHeight: 0,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: metrics.size(mobileActionSheetLayoutContract.overlayPaddingHorizontal),
-      paddingVertical: metrics.size(mobileActionSheetLayoutContract.overlayPaddingVertical),
-    },
-    scrollArea: {
-      flexShrink: 1,
-      minHeight: 0,
-    },
-    pinnedFooter: {
-      paddingBottom: metrics.size(mobileActionSheetLayoutContract.footerPaddingBottom),
-      paddingHorizontal: metrics.size(mobileActionSheetLayoutContract.footerPaddingHorizontal),
-    },
-    suggestionList: {
-      gap: mobileSpace.xs,
-    },
-    suggestionPressable: {
-      alignSelf: 'stretch',
-      width: '100%',
-    },
-    suggestionRow: {
-      minHeight: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.minHeight),
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.gap),
-      backgroundColor: mobileColors.control,
-      borderColor: mobileColors.border,
-      borderRadius: mobileWorkspaceSuggestionRowLayoutContract.radius,
-      borderWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingHorizontal),
-      paddingVertical: metrics.size(mobileWorkspaceSuggestionRowLayoutContract.paddingVertical),
-    },
-    suggestionRowPressed: {
-      backgroundColor: mobileColors.graySoft,
-    },
-    suggestionTitle: {
-      minWidth: 0,
-      flex: 1,
-      color: mobileColors.text,
-      fontSize: mobileType.body,
-      fontWeight: '500',
-    },
-    visibilityDescription: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.caption,
-      lineHeight: metrics.size(16),
-    },
-    visibilityHeader: {
-      gap: mobileSpace.xs,
-    },
-    visibilityLabel: {
-      color: mobileColors.text,
-      fontSize: mobileType.body,
-      fontWeight: '500',
-    },
-    visibilityRow: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
-      gap: mobileSpace.sm,
-      borderRadius: 6,
-      padding: mobileSpace.sm,
-    },
-    visibilityRowPressed: {
-      backgroundColor: mobileColors.control,
-    },
-    visibilitySection: {
-      gap: mobileSpace.xs,
-      borderColor: mobileColors.border,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      paddingTop: mobileSpace.md,
-    },
-    visibilityText: {
-      minWidth: 0,
-      flex: 1,
-      gap: metrics.size(2),
-    },
-    visibilityTitle: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.caption,
-      fontWeight: '500',
-    },
-  })
-
-  const sheetStyles = StyleSheet.create({
-    sheet: {
-      flexShrink: 1,
-      minHeight: 0,
-      maxHeight: mobileActionSheetLayoutContract.sheetMaxHeight,
-      maxWidth: mobileActionSheetLayoutContract.sheetMaxWidth,
-      width: '100%',
-      backgroundColor: mobileColors.card,
-      borderColor: mobileColors.borderStrong,
-      borderRadius: mobileRadius.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      overflow: 'hidden',
-      shadowColor: '#000000',
-      shadowOffset: { height: 10, width: 0 },
-      shadowOpacity: 0.14,
-      shadowRadius: 28,
-    },
-  })
-
-  const actionStyles = StyleSheet.create({
-    actionRow: {
-      minWidth: 0,
-      alignSelf: 'stretch',
-      width: '100%',
-      borderRadius: 4,
-      paddingHorizontal: mobileSpace.sm,
-      paddingVertical: mobileSpace.sm,
-    },
-    actionIcon: {
-      width: desktopToolbarActionParity.iconSize,
-      alignItems: 'center',
-    },
-    actionRowContent: {
-      minWidth: 0,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: mobileSpace.sm,
-    },
-    actionRowPressed: {
-      backgroundColor: mobileColors.control,
-    },
-    actionText: {
-      minWidth: 0,
-      flex: 1,
-      flexShrink: 1,
-      color: mobileColors.text,
-      fontSize: mobileType.body,
-    },
-    actionTextDestructive: {
-      color: mobileColors.red,
-    },
-  })
-  return { mobileColors, styles, sheetStyles, actionStyles }
-}
