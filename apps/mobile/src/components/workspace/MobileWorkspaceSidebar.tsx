@@ -8,7 +8,7 @@ import {
   Eye,
   Plus,
 } from 'phosphor-react-native'
-import { Pressable, ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileCopy, mobileText } from '../../i18n/mobileText'
 import { MobileLayoutProbeReadout } from '../../qa/MobileLayoutProbeReadout'
@@ -389,15 +389,16 @@ type SectionTitleProps = {
 }
 
 function SectionTitle(props: SectionTitleProps) {
-  const { count, createAccessibilityLabel, label, layoutProbe, onCreate, onVisibility, sectionId, visibilityAccessibilityLabel } = props
+  const { count, label, layoutProbe, sectionId } = props
   const themeStyles = useMobileStyles(createThemeStyles)
   const { styles, mobileColors } = themeStyles
+  const { fontScale } = useWindowDimensions()
   const metricId = `sidebar.section.${sectionId}`
 
   return (
     <View
       {...probeProps(layoutProbe, `${metricId}.row`)}
-      style={[styles.sectionTitleRow, themeStyles.nativeSectionTitleRowStyle, count ? styles.sectionTitleRowWithCount : styles.sectionTitleRowRegular]}
+      style={[styles.sectionTitleRow, themeStyles.nativeSectionTitleRowStyle, count ? styles.sectionTitleRowWithCount : styles.sectionTitleRowRegular, fontScale > 1.3 && styles.sectionTitleRowStacked]}
       testID={`sidebar-section-title-${sectionId}`}
     >
       <CaretDown color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />
@@ -408,35 +409,48 @@ function SectionTitle(props: SectionTitleProps) {
       >
         {label}
       </Text>
+      <SectionTitleActions {...props} />
+    </View>
+  )
+}
+
+function SectionTitleActions(props: SectionTitleProps) {
+  const { count, layoutProbe, sectionId } = props
+  const { styles, mobileColors, metrics } = useMobileStyles(createThemeStyles)
+  const { fontScale } = useWindowDimensions()
+  const actions = sectionTitleActions(props)
+  if (!count && actions.length === 0) return null
+
+  return (
+    <View style={[styles.sectionTitleActions, fontScale > 1.3 && styles.sectionTitleActionsStacked]}>
       {count ? (
         <MobileSidebarCountPill
           compact
           layoutProbe={layoutProbe}
-          metricId={`${metricId}.count`}
+          metricId={`sidebar.section.${sectionId}.count`}
           testID={`sidebar-section-count-${sectionId}`}
           value={count}
         />
       ) : null}
-      {onVisibility ? (
+      {actions.map(({ accessibilityLabel, Icon, id, onPress }) => (
         <MobileIconButton
-          accessibilityLabel={visibilityAccessibilityLabel ?? mobileText('sidebar.section.showInSidebar')}
-          testID={`sidebar-section-visibility-${sectionId}`}
-          onPress={onVisibility}
+          key={id}
+          accessibilityLabel={accessibilityLabel}
+          testID={`sidebar-section-${id}-${sectionId}`}
+          onPress={onPress}
         >
-          <Eye color={mobileColors.textMuted} size={themeStyles.metrics.size(12)} />
+          <Icon color={mobileColors.textMuted} size={metrics.size(12)} />
         </MobileIconButton>
-      ) : null}
-      {onCreate ? (
-        <MobileIconButton
-          accessibilityLabel={createAccessibilityLabel ?? mobileText('sidebar.action.createView')}
-          testID={`sidebar-section-create-${sectionId}`}
-          onPress={onCreate}
-        >
-          <Plus color={mobileColors.textMuted} size={themeStyles.metrics.size(12)} />
-        </MobileIconButton>
-      ) : null}
+      ))}
     </View>
   )
+}
+
+function sectionTitleActions(props: SectionTitleProps) {
+  return [
+    { id: 'visibility', Icon: Eye, onPress: props.onVisibility, accessibilityLabel: props.visibilityAccessibilityLabel ?? mobileText('sidebar.section.showInSidebar') },
+    { id: 'create', Icon: Plus, onPress: props.onCreate, accessibilityLabel: props.createAccessibilityLabel ?? mobileText('sidebar.action.createView') },
+  ].filter((action) => action.onPress)
 }
 
 function sidebarIcon(themeStyles: ReturnType<typeof createThemeStyles>, icon: MobileSidebarIcon, tone?: MobileNote['typeTone'] | 'primary') {

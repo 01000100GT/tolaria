@@ -1,6 +1,11 @@
 import XCTest
 
 final class MobileSidebarTextScalingTests: XCTestCase {
+  override func tearDown() {
+    XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev").terminate()
+    super.tearDown()
+  }
+
   func testSidebarRowsGrowWithSystemText() {
     let app = launchSidebar(category: .accessibilityLarge)
     for name in ["inbox", "all-notes", "archive"] {
@@ -29,6 +34,24 @@ final class MobileSidebarTextScalingTests: XCTestCase {
     let count = element(app, "sidebar-item-inbox-count")
     XCTAssertEqual(count.frame.height, 24, accuracy: 1)
     XCTAssertEqual(row.frame.height, 38.4, accuracy: 1)
+    let title = element(app, "sidebar-section-title-text-types")
+    let visibility = element(app, "sidebar-section-visibility-types")
+    XCTAssertEqual(title.frame.midY, visibility.frame.midY, accuracy: 1)
+    capture()
+  }
+
+  func testLargeSectionHeadingKeepsItsWordAndActionsVisible() {
+    let app = launchSidebar(category: .accessibilityLarge)
+    let title = element(app, "sidebar-section-title-text-types")
+    let reference = element(app, "sidebar-section-title-text-favorites")
+    let create = element(app, "sidebar-section-create-types")
+    let visibility = element(app, "sidebar-section-visibility-types")
+    XCTAssertEqual(title.frame.height, reference.frame.height, accuracy: 1,
+      "Types must not wrap midword to make room for its actions")
+    XCTAssertTrue(create.isHittable)
+    XCTAssertTrue(visibility.isHittable)
+    XCTAssertFalse(title.frame.intersects(create.frame))
+    XCTAssertFalse(title.frame.intersects(visibility.frame))
     capture()
   }
 

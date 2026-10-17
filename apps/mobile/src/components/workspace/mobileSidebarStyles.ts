@@ -62,6 +62,9 @@ function createSectionTitleStyles(colors: MobileColors, metrics: MobileMetrics) 
       fontWeight: sidebar.sectionTitleFontWeight, letterSpacing: sidebar.sectionTitleLetterSpacing,
     },
     sectionTitleRow: { alignItems: 'center', flexDirection: 'row', gap: space.xs },
+    sectionTitleRowStacked: { flexWrap: 'wrap' },
+    sectionTitleActions: { alignItems: 'center', flexDirection: 'row', gap: space.xs },
+    sectionTitleActionsStacked: { width: '100%', justifyContent: 'flex-end' },
     sectionTitleRowRegular: {
       paddingBottom: sidebar.groupHeaderPadding.regular.bottom,
       paddingLeft: sidebar.groupHeaderPadding.regular.left,
