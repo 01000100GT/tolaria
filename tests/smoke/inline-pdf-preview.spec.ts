@@ -102,7 +102,13 @@ test("@smoke /File renders imported PDF content inside the saved note", async ({
 		)
 		.toBe(true);
 	await page.waitForTimeout(1500);
-	await page.reload();
+	await openFixtureVaultTauri(page, vault);
+	await page.evaluate(() => {
+		Object.assign(window.__TAURI_INTERNALS__, {
+			convertFileSrc: (path: string) =>
+				`http://asset.localhost/${encodeURIComponent(path)}`,
+		});
+	});
 	await page
 		.getByTestId("note-title-row")
 		.filter({ hasText: "Inline PDF preview" })
