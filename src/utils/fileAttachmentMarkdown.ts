@@ -63,7 +63,9 @@ interface TransformedLine {
 const FILE_ATTACHMENT_TOKEN_PREFIX = "@@TOLARIA_FILE_ATTACHMENT:";
 const FILE_ATTACHMENT_TOKEN_SUFFIX = "@@";
 const STANDALONE_ATTACHMENT_LINK_PATTERN =
-	/^( {0,3})\[((?:\\.|[^\]\\\n])*)\]\((<[^>\n]+>|(?:\\.|[^)\s\n])+)(?:[ \t]+"((?:\\.|[^"\\\n])*)")?\)[ \t]*$/u;
+	/^( {0,3})\[((?:\\.|[^\]\\\n])*)\]\((<[^>\n]+>|(?:\\.|[^)\s\n])+)\)[ \t]*$/u;
+const CAPTIONED_ATTACHMENT_LINK_PATTERN =
+	/^( {0,3})\[((?:\\.|[^\]\\\n])*)\]\((<[^>\n]+>|(?:\\.|[^)\s\n])+)[ \t]+"((?:\\.|[^"\\\n])*)"\)[ \t]*$/u;
 
 function splitMarkdownLines(markdown: Markdown): MarkdownLine[] {
 	const lines = markdown.match(/[^\n]*(?:\n|$)/g) ?? [];
@@ -206,7 +208,9 @@ function readStandaloneFileAttachmentLink(
 	text: MarkdownText,
 	readUrl: AttachmentUrlReader = readAttachmentUrl,
 ): FileAttachmentPayload | null {
-	const match = STANDALONE_ATTACHMENT_LINK_PATTERN.exec(text);
+	const match =
+		STANDALONE_ATTACHMENT_LINK_PATTERN.exec(text) ??
+		CAPTIONED_ATTACHMENT_LINK_PATTERN.exec(text);
 	if (!match) return null;
 
 	const url = matchedAttachmentUrl(match, readUrl);

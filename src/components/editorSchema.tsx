@@ -25,10 +25,7 @@ import {
 	useState,
 } from "react";
 import type { VaultEntry } from "../types";
-import {
-	HTML_BLOCK_DEFAULT_HEIGHT,
-	HTML_BLOCK_TYPE,
-} from "../utils/htmlBlockMarkdown";
+import { HTML_BLOCK_TYPE as EMBEDDED_BLOCK_TYPE } from "../utils/htmlBlockMarkdown";
 import { MARKDOWN_HIGHLIGHT_STYLE } from "../utils/markdownHighlightMarkdown";
 import {
 	MATH_BLOCK_TYPE,
@@ -49,6 +46,7 @@ import { resolveWikilinkColor as resolveColor } from "../utils/wikilinkColors";
 import { CalloutBlockSpec } from "./CalloutBlock";
 import { createTolariaCodeBlockOptions } from "./codeBlockOptions";
 import { dispatchRichEditorExternalChange } from "./editorExternalChangeEvents";
+import { readEmbeddedPreElement } from "./embeddedBlockParsing";
 import { HtmlBlock } from "./HtmlBlock";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { NoteTitleIcon } from "./NoteTitleIcon";
@@ -359,28 +357,6 @@ function readMermaidPreElement(
 	};
 }
 
-function readHtmlPreElement(
-	element: HTMLElement,
-): { height: string; html: string } | undefined {
-	if (element.tagName !== "PRE") return undefined;
-	if (
-		element.childElementCount !== 1 ||
-		element.firstElementChild?.tagName !== "CODE"
-	)
-		return undefined;
-
-	const code = element.firstElementChild;
-	if (readCodeElementLanguage(code) !== "html") return undefined;
-
-	const html = code.textContent?.endsWith("\n")
-		? code.textContent
-		: `${code.textContent ?? ""}\n`;
-	return {
-		height: HTML_BLOCK_DEFAULT_HEIGHT,
-		html,
-	};
-}
-
 const MermaidBlock = createReactBlockSpec(
 	{
 		type: MERMAID_BLOCK_TYPE,
@@ -477,8 +453,8 @@ const TldrawBlock = createReactBlockSpec(
 	},
 );
 
-const htmlBlockConfig = {
-	type: HTML_BLOCK_TYPE,
+const embeddedBlockConfig = {
+	type: EMBEDDED_BLOCK_TYPE,
 	propSchema: {
 		height: { default: "320" },
 		html: { default: "" },
@@ -487,16 +463,16 @@ const htmlBlockConfig = {
 	content: "none",
 } as const;
 
-const HtmlBlockSpec = createReactBlockSpec(htmlBlockConfig, {
+const EmbeddedBlockSpec = createReactBlockSpec(embeddedBlockConfig, {
 	runsBefore: ["codeBlock"],
 	meta: { selectable: false },
-	parse: readHtmlPreElement,
+	parse: readEmbeddedPreElement,
 	render: (props) => <HtmlBlock block={props.block} editor={props.editor} />,
 });
 
 const codeBlock = createCodeBlockSpec(createTolariaCodeBlockOptions());
 const audioBlock = AudioBlockSpec();
-const htmlBlock = HtmlBlockSpec();
+const embeddedBlock = EmbeddedBlockSpec();
 const mathBlock = MathBlock();
 const mermaidBlock = MermaidBlock();
 const tldrawBlock = TldrawBlock();
@@ -520,7 +496,7 @@ const MarkdownHighlightStyle = createStyleSpec(
 	},
 	{
 		render: markdownHighlightElement,
-		toExternalHTML: markdownHighlightElement,
+		toExternalHTML: () => markdownHighlightElement(),
 		parse: (element) => (element.tagName === "MARK" ? true : undefined),
 	},
 );
@@ -539,7 +515,7 @@ export const schema = BlockNoteSchema.create({
 		audio: audioBlock,
 		file: tolariaFileBlock,
 		calloutBlock,
-		htmlBlock,
+		[EMBEDDED_BLOCK_TYPE]: embeddedBlock,
 		mathBlock,
 		mermaidBlock,
 		tldrawBlock,

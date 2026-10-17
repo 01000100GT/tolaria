@@ -66,7 +66,7 @@ vi.mock('@blocknote/core', () => ({
   BlockNoteSchema: { create: () => ({ extend: () => ({}) }) },
   createAudioBlockConfig: vi.fn(() => ({})),
   createFileBlockConfig: vi.fn(() => ({})),
-  createFileBlockSpec: vi.fn(() => ({ implementation: { toExternalHTML: vi.fn() } })),
+  createFileBlockSpec: vi.fn(() => ({ implementation: { toExternalHTML: () => null } })),
   fileParse: vi.fn(() => undefined),
   createCodeBlockSpec: vi.fn(() => ({})),
   createExtension: (factory: unknown) => () => factory,

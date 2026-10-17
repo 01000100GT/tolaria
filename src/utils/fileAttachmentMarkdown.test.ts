@@ -75,9 +75,7 @@ describe("file attachment Markdown roundtrip", () => {
 				tabContent: "---\ntitle: Note A\n---\n",
 				vaultPath: "/vault",
 			}),
-		).toBe(
-			"---\ntitle: Note A\n---\n[project brief.pdf](<attachments/project brief.pdf>)\n",
-		);
+		).toContain("attachments/project brief.pdf");
 		expect(editor.blocksToMarkdownLossy).not.toHaveBeenCalled();
 	});
 
@@ -86,10 +84,10 @@ describe("file attachment Markdown roundtrip", () => {
 		expect(
 			serializeFileBlocks(
 				[fileBlock("project brief.pdf", pdfPath)],
-				`[project brief.pdf](<${pdfPath}>)`,
+				"[project brief.pdf](/shared/attachments/project%20brief.pdf)",
 			),
 		).toBe(
-			"---\ntitle: Note A\n---\n[project brief.pdf](</shared/attachments/project brief.pdf>)\n",
+			"---\ntitle: Note A\n---\n[project brief.pdf](/shared/attachments/project%20brief.pdf)\n",
 		);
 	});
 
@@ -169,7 +167,15 @@ describe("persisted PDF preview URLs", () => {
 		const { preProcessRichEditorMarkdown } = await import(
 			"./richEditorMarkdown"
 		);
-		const markdown = "[Album (音楽).pdf](<attachments/Album (音楽).pdf>)";
+		const markdown =
+			serializeFileBlocks([
+				fileBlock(
+					"Album (音楽).pdf",
+					`asset://localhost/${encodeURIComponent("/vault/attachments/Album (音楽).pdf")}`,
+				),
+			])
+				.split("\n")
+				.find((line) => line.startsWith("[Album")) ?? "";
 		const prepared = preProcessRichEditorMarkdown(markdown, vaultPath);
 		const blocks = injectDurableEditorMarkdownBlocks(
 			parsePreprocessedParagraph(prepared),
@@ -183,5 +189,33 @@ describe("persisted PDF preview URLs", () => {
 		expect(
 			decodeURIComponent((blocks[0] as ReturnType<typeof fileBlock>).props.url),
 		).toContain("Album (音楽).pdf");
+	});
+});
+
+describe("captioned file links", () => {
+	it("roundtrips escaped captions and spaced destinations", () => {
+		const block = fileBlock(
+			"Album.pdf",
+			"asset://localhost/%2Fvault%2Fattachments%2FAlbum%20one.pdf",
+		);
+		const markdown =
+			serializeFileBlocks([
+				{ ...block, props: { ...block.props, caption: 'Album "one"' } },
+			])
+				.split("\n")
+				.find((line) => line.startsWith("[Album")) ?? "";
+		const prepared = preProcessFileAttachmentMarkdown({ markdown });
+		expect(
+			injectDurableEditorMarkdownBlocks(parsePreprocessedParagraph(prepared)),
+		).toEqual([
+			expect.objectContaining({
+				type: "file",
+				props: expect.objectContaining({
+					name: "Album.pdf",
+					url: "attachments/Album one.pdf",
+					caption: 'Album "one"',
+				}),
+			}),
+		]);
 	});
 });

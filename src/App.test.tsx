@@ -367,7 +367,7 @@ vi.mock('./hooks/useUpdater', async () => {
 vi.mock('@blocknote/core', () => ({
   audioParse: vi.fn(() => undefined), createAudioBlockConfig: vi.fn(() => ({})),
   createFileBlockConfig: vi.fn(() => ({})),
-  createFileBlockSpec: vi.fn(() => ({ implementation: { toExternalHTML: vi.fn() } })),
+  createFileBlockSpec: vi.fn(() => ({ implementation: { toExternalHTML: () => null } })),
   fileParse: vi.fn(() => undefined),
   BlockNoteSchema: { create: () => ({ extend: () => ({}) }) },
   createCodeBlockSpec: vi.fn(() => ({})),
