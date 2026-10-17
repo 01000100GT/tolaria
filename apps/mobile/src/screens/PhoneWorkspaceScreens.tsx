@@ -8,6 +8,7 @@ import { probeProps, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
 import type { MobileNote } from '../workspace/mobileWorkspaceModel'
+import { noteFilename, noteWritePath } from '../workspace/mobileWorkspacePathRewrites'
 import { mobileWorkspaceHasNoVault } from '../workspace/mobileWorkspaceEmptyState'
 import { PhoneScreenLayer } from './PhoneScreenLayer'
 import { PhoneEditorScreen } from './PhoneWorkspaceEditorScreen'
@@ -244,6 +245,9 @@ function PhonePropertiesScreen(props: PhoneWorkspaceStateViewProps) {
     openList()
   }, [controller, openList])
   const referenceGroups = useMobileInspectorReferenceGroups(controller.selectedNote, controller.snapshot)
+  const title = controller.selectedNote
+    ? noteFilename(noteWritePath(controller.selectedNote))
+    : mobileText('inspector.title.properties')
   const swipeHandlers = useHorizontalSwipe({
     ...phoneSwipePreviewHandlers(phoneSwipePreview),
     onSwipeRight: commitEditor,
@@ -251,7 +255,7 @@ function PhonePropertiesScreen(props: PhoneWorkspaceStateViewProps) {
 
   return (
     <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.properties.screen')} style={styles.screen} testID="phone-properties-screen">
-      <PhoneTopBar title={mobileText('inspector.title.properties')} onBack={returnToEditor}>
+      <PhoneTopBar title={title} onBack={returnToEditor}>
         <PhoneCommandPaletteButton onPress={openCommandPalette} />
       </PhoneTopBar>
       <MobilePropertiesPanel

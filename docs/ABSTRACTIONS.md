@@ -672,6 +672,8 @@ The tablet workspace controller owns temporary interaction state: selected sideb
 `PhoneWorkspaceLayout` composes the phone shell; `PhoneWorkspaceScreens` and
 `PhoneWorkspaceEditorScreen` render its retained and transient panels. Shared
 chrome, styles, and editor options remain separate from navigation callbacks.
+The standalone phone inspector uses the editor's literal filename identity in
+its existing single header; tablet Properties chrome remains unchanged.
 `usePhoneDragPreview` owns continuous drag and settlement. A successful native
 settlement resets the attached animated value before navigation, and marks that
 route as already animated. `PhoneWorkspaceTransition` animates only a new route,
