@@ -13,11 +13,10 @@ import {
   nativeWysiwygMarkdownBlockProbeTableGrowthJson,
 } from '../../qa/nativeWysiwygMarkdownBlockProbe'
 
-import { mobileHtmlWithResolvedAttachmentUris } from '../../workspace/mobileAttachmentUris'
+import { isMobileImageAttachment } from '../../workspace/mobileAttachments'
 import { readMobileClipboardText } from '../../workspace/mobileClipboard'
 import {
   mobileDocumentBody,
-  mobileMarkdownBodyToTentapHtml,
   mobileNoteEditableContent,
 } from '../../workspace/mobileDocumentContent'
 import {
@@ -67,6 +66,7 @@ import { useFlushEditorDocument } from './MobileWysiwygPersistence.native'
 import { MobileTableBridge } from './MobileWysiwygTableBridge'
 import { useNativeWysiwygTableCommandMutationProbe } from './MobileWysiwygTableCommandMutationProbe.native'
 import { mobileWysiwygTentapEditorHtml } from './MobileWysiwygTentapEditorHtml'
+import { mobileEditorPreviewHtml, useMobileEditorFileSource } from './mobileEditorFileSource.native'
 import {
   type NativeWysiwygAttachmentPayload,
   type NativeWysiwygInlineAutocomplete,
@@ -135,6 +135,8 @@ type NativeTentapEditorBridgeOptions = Omit<MobileWysiwygMarkdownEditorProps, 'n
   onInlineAutocomplete: NativeWysiwygInlineAutocompleteHandler
 }
 type NativeTentapEditorSurfaceProps = {
+  vaultRootUri?: string | null
+  previewMarkdown: string
   activateEditorChanges: () => void
   editor: EditorBridge
   externalLinkState: NativeWysiwygExternalLinkSheetState | null
@@ -295,6 +297,8 @@ export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorPr
   return (
     <NativeTentapEditorSurface
       {...bridge}
+      vaultRootUri={vaultRootUri}
+      previewMarkdown={mobileDocumentBody(initialNativeEditorContent({ blocks, bullets, note }))}
       layoutProbe={layoutProbe}
       notes={notes}
       onImportAttachment={onImportAttachment}
@@ -313,6 +317,7 @@ export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorPr
 
 function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
   const { nativeEditorStyles } = useMobileStyles(createThemeStyles)
+  const fileSource = useMobileEditorFileSource(props.vaultRootUri, props.previewMarkdown)
   const {
     activateEditorChanges,
     editor,
@@ -345,7 +350,11 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
     insertWikilink,
     onCloseExternalLinkSheet,
     onCloseWikilinkPicker,
-    onImportAttachment,
+    onImportAttachment: async () => {
+      const attachment = await onImportAttachment?.()
+      if (attachment && isMobileImageAttachment(attachment)) await fileSource.prepareAttachment?.(attachment.path)
+      return attachment ?? null
+    },
     onOpenExternalLinkSheet,
     onOpenToolbarWikilinkPicker,
     pickerState,
@@ -364,13 +373,16 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
       onTouchStart={activateEditorChanges}
     >
       <MobileWysiwygFind editor={editor} register={onRegisterEditorCommands} onBeforeReplace={activateEditorChanges} />
-      <RichText
-        editor={editor}
-        {...probeProps(layoutProbe, 'editor.wysiwyg.richText')}
-        style={nativeEditorStyles.richText}
-        testID="editor-wysiwyg-input"
-        onLoadEnd={injectEditorCss}
-      />
+      {fileSource.ready && (
+        <RichText
+          editor={editor}
+          {...fileSource.webViewProps}
+          {...probeProps(layoutProbe, 'editor.wysiwyg.richText')}
+          style={nativeEditorStyles.richText}
+          testID="editor-wysiwyg-input"
+          onLoadEnd={injectEditorCss}
+        />
+      )}
       <MobileWysiwygSlashMenu editor={editor} />
       <View
         {...probeProps(layoutProbe, 'editor.wysiwyg.toolbarHost')}
@@ -575,31 +587,32 @@ function initialNativeEditorContent(
   })
 }
 
-function useNativeTentapEditorBridge({
-  blocks,
-  bullets,
-  compact,
-  initialDocumentContent,
-  note,
-  onInlineAutocomplete,
-  onTableOfContentsScrollProof,
-  onUpdateContent,
-  tableOfContentsTarget,
-  vaultRootUri = null,
-  wysiwygAutocompleteProbe = false,
-  wysiwygExternalLinkProbe = false,
-  wysiwygFormatCommandProbe = false,
-  wysiwygInputTransformProbe = false,
-  wysiwygMarkdownBlockProbe = false,
-  wysiwygMathEditProbe = false,
-  wysiwygTableCommandMutationProbe = false,
-  wysiwygWikilinkInsertProbe = false,
-  wysiwygMutationProbe = false,
-}: NativeTentapEditorBridgeOptions) {
+function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
+  const {
+    blocks,
+    bullets,
+    compact,
+    initialDocumentContent,
+    note,
+    onInlineAutocomplete,
+    onTableOfContentsScrollProof,
+    onUpdateContent,
+    tableOfContentsTarget,
+    vaultRootUri = null,
+    wysiwygAutocompleteProbe = false,
+    wysiwygExternalLinkProbe = false,
+    wysiwygFormatCommandProbe = false,
+    wysiwygInputTransformProbe = false,
+    wysiwygMarkdownBlockProbe = false,
+    wysiwygMathEditProbe = false,
+    wysiwygTableCommandMutationProbe = false,
+    wysiwygWikilinkInsertProbe = false,
+    wysiwygMutationProbe = false,
+  } = options
   const initialBody = mobileDocumentBody(initialDocumentContent)
   const initialBodyHasContent = initialBody.trim().length > 0
   const initialContent = useMemo(
-    () => mobileHtmlWithResolvedAttachmentUris(mobileMarkdownBodyToTentapHtml(initialBody), vaultRootUri),
+    () => mobileEditorPreviewHtml(initialBody, vaultRootUri),
     [initialBody, vaultRootUri],
   )
   const refs = useNativeTentapEditorRefs(initialDocumentContent)

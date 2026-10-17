@@ -597,6 +597,7 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileWorkspaceActionSheet` | Search, create, property, relationship, and more-action sheets |
 | `TabletEditorPanel` | Editor rendering plus full raw markdown/frontmatter editing with wikilink suggestions |
 | `MobileWysiwygMarkdownEditor` | Native TenTap editor wrapper, custom bridge registration, markdown hydration/serialization, and editor command registration |
+| `mobileEditorFileSource.native` | Per-editor disposable shell/image cache with scoped WebView reads, portable image URLs, serialized preparation, and cleanup outside user vaults (ADR 0232) |
 | `MobileWysiwygFormattingToolbar.native` | Small TenTap cursor-state subscriber feeding the shared tablet command strip or compact phone toolbar; state changes do not own document rendering |
 | `MobileCompactFormattingToolbar` / `mobileFormattingToolbarModel` | Existing command registry grouped into primary actions and contextual menus, with 44-point native touch targets |
 | `MobileSwipeableNoteRow` / `MobileNoteSwipeActions` | Gesture Handler row actions routed to existing favorite/archive/delete callbacks; full swipe never deletes, and bulk selection disables swipes |
