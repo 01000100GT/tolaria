@@ -156,6 +156,10 @@ and object counts, coalescing progress notifications without synthesizing an
 overall percentage. Cancellation aborts transport and stops at cooperative Git
 boundaries; cleanup is limited to the newly allocated clone directory. A
 completed clone is retained if catalog publication fails, preserving recovery.
+`MobileCloneProgress` keeps phase/count progress and cancellation above the vault
+manager's scrollable content. Counts describe the current library phase, not an
+invented overall completion percentage. Cancellation stays pending through
+cleanup and is no longer offered once catalog publication starts.
 `githubAccountState.ts` isolates cancellation and ordered
 SecureStore writes from React. Native Git HTTP uses Expo's streaming fetch with
 redirects disabled. Its 120-second timeout bounds connection/header waits and

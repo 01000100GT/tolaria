@@ -40,7 +40,7 @@ export function activateManagedGitVault(id: string | null) {
 }
 
 export async function cloneManagedGitVault(repositoryUrl: string, http: HttpClient, token?: string,
-  control: Pick<GitRemoteOptions, 'signal' | 'onProgress'> = {}): Promise<ManagedGitVault> {
+  control: Pick<GitRemoteOptions, 'signal' | 'onProgress'> & { onPublish?: () => void } = {}): Promise<ManagedGitVault> {
   const url = githubRepositoryUrl(repositoryUrl)
   const vault = { id: `vault-${randomUUID()}`, repositoryUrl: url, label: (url.split('/').at(-1) ?? 'GitHub').replace(/\.git$/u, '') }
   const directory = managedDirectory(vault)
@@ -54,6 +54,7 @@ export async function cloneManagedGitVault(repositoryUrl: string, http: HttpClie
     throw error
   }
   // Once publication starts, retain the completed clone even if catalog IO fails.
+  control.onPublish?.()
   await updateManagedGitCatalog(catalog => ({ ...catalog, vaults: [...catalog.vaults, vault] }))
   return vault
 }

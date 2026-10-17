@@ -60,6 +60,20 @@ it('ignores late callbacks from a finished clone and does not overlap jobs', asy
   expect(current().progress).toBeNull()
 })
 
+it('stops accepting cancellation once the completed clone is being published', async () => {
+  const current = await mountProgress()
+  const job = deferredJob()
+  let finished: Promise<void>
+  await act(async () => { finished = current().run(job.start) })
+  await act(async () => job.options().onPublish())
+  expect(current().publishing).toBe(true)
+  await act(async () => current().cancel())
+  expect(job.options().signal.aborted).toBe(false)
+  expect(current().cancelling).toBe(false)
+  await act(async () => { job.finish(); await finished })
+  expect(current().publishing).toBe(false)
+})
+
 function deferredJob() {
   let options: GitCloneControl
   let finish = () => {}

@@ -2,6 +2,7 @@ import type { MobileTelemetryContext } from './mobileTelemetryContext'
 
 export type MobileAnalyticsEvent =
   | { name: 'note_created' | 'note_deleted' | 'vault_opened' | 'vault_switched' | 'search_used' | 'commit_made' }
+  | { name: 'mobile_git_clone_cancel_requested' }
   | { name: 'theme_mode_changed'; mode: 'system' | 'light' | 'dark' }
   | { name: 'mobile_note_swipe_used'; action: 'favorite' | 'archive' | 'delete' }
   | { name: 'mobile_setting_changed'; setting: 'theme' | 'uiScale' | 'autoGit' }

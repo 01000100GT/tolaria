@@ -1,4 +1,13 @@
 {
+  "mobile.vaults.cloneCounting": "Padlik abjektaŭ...",
+  "mobile.vaults.cloneCompressing": "Ściskańnie abjektaŭ...",
+  "mobile.vaults.cloneReceiving": "Spampoŭvajucca abjekty...",
+  "mobile.vaults.cloneResolving": "Vyrašeńnie kanfliktaŭ zmianieńniaŭ...",
+  "mobile.vaults.cloneAnalyzing": "Padrychtoŭka lakaĺnych fajłaŭ...",
+  "mobile.vaults.cloneWriting": "Zapis fajłaŭ...",
+  "mobile.vaults.clonePublishing": "Adkryćcio schovišča...",
+  "mobile.vaults.cloneCancelling": "Admiena...",
+  "mobile.vaults.cloneCount": "{loaded} z {total}",
   "mobile.vaults.folderSaved": "Zachavana ŭ papku",
   "mobile.vaults.folderLinked": "Zviazanaja tečka. Zmieny aŭtamatyčna zachoŭvajucca, pakuĺ Tolaria aktyŭnaja. iCloud abo vaš pastaŭščyk fajlaŭ ažycciaŭliaje sinchranizacyju pamiž pryładami.",
   "mobile.vaults.folderOpenHint": "Zviazać papku z «Fajłaŭ», uklučajučy iCloud Drive. Isnujučyja impartavanyja kopii zastajucca lakaĺnymi; znoŭ vybierycie ich zychodnuju papku, kab zviazać jaje.",

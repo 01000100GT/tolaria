@@ -104,6 +104,10 @@ test runner environment (the Xcode scheme's Test action) and select that test:
 - `TOLARIA_QA_AUTHENTICATED_CLONE=1`: `TabletAuthenticatedRepositoryTests`, with
   an existing authorized GitHub session and explicit permission to clone Laputa.
   It does not enable AutoGit or push, but can download a large repository.
+- `TOLARIA_QA_PUBLIC_CLONE=1`: `MobileCloneProgressTests`, only on a disposable
+  simulator. Downloads part of the public isomorphic-git repository, displays
+  actual counts, and cancels. Verify the saved catalog and existing vault files
+  are unchanged and the incomplete clone directory has been removed.
 - `TOLARIA_QA_LINKED_FOCUS=1`: `MobileEditorFocusTests` linked-folder case, with
   an isolated active folder imported through Files. The source and app-owned
   working copy must both be disposable. The test creates a note, types across

@@ -43,11 +43,14 @@ it('keeps a completed clone if catalog publication fails, for recovery', async (
 
 it('forwards progress and publishes the vault only after successful clone', async () => {
   const onProgress = vi.fn()
+  const onPublish = vi.fn()
   state.clone.mockImplementation(async options => {
     expect(state.publish).not.toHaveBeenCalled()
+    expect(onPublish).not.toHaveBeenCalled()
     options.onProgress({ phase: 'Updating workdir', loaded: 1, total: 1 })
   })
-  const vault = await cloneManagedGitVault(url, http, undefined, { onProgress })
+  state.publish.mockImplementation(async () => { expect(onPublish).toHaveBeenCalledOnce() })
+  const vault = await cloneManagedGitVault(url, http, undefined, { onProgress, onPublish })
   expect(onProgress).toHaveBeenCalledWith({ phase: 'Updating workdir', loaded: 1, total: 1 })
   expect(state.publish).toHaveBeenCalledWith({ vaults: [vault], activeId: null })
   expect(state.removed).not.toHaveBeenCalled()

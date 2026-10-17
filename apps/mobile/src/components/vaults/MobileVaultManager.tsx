@@ -1,6 +1,6 @@
 import { useMobileColors, useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { useState } from 'react'
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native'
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native'
 import { CloudArrowDown, FolderOpen, X } from 'phosphor-react-native'
 import { Text } from '../ui/text'
 import { mobileText } from '../../i18n/mobileText'
@@ -17,6 +17,8 @@ import { createVaultManagerStyles } from './vaultManagerStyles'
 import { MobileSavedVaults } from './MobileSavedVaults'
 import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorkspaceAccess'
 import { MobileConflictReview } from './MobileConflictReview'
+import { MobileCloneProgress } from './MobileCloneProgress'
+import { MobileVaultSyncHistory } from './MobileVaultSyncHistory'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
@@ -31,11 +33,13 @@ export function MobileVaultManager({ manager }: { manager: VaultManager }) {
           <MobileToolbarSpacer />
           {!manager.busy && <MobileIconButton accessibilityLabel={mobileText('window.close')} onPress={manager.close}><X size={18} color={mobileColors.textMuted} /></MobileIconButton>}
         </MobileToolbar>
+        <MobileCloneProgress clone={manager.cloneProgress} />
+        <VaultBusyProgress manager={manager} />
         {manager.conflictReview ? <MobileConflictReview key={manager.conflictReview.value.files.map(file => file.path).join('|')}
           files={manager.conflictReview.value.files} busy={manager.busy} failure={manager.conflictFailure}
           cancel={manager.cancelConflictReview} apply={choices => { void manager.resolveConflicts(choices) }} /> : <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           <VaultOperationStatus manager={manager} />
-          <VaultSyncHistory manager={manager} />
+          <MobileVaultSyncHistory manager={manager} />
           <ReviewConflictsButton manager={manager} />
           <MobileGitControls manager={manager} />
           {manager.linked && <View style={styles.section}>
@@ -63,25 +67,13 @@ function ReviewConflictsButton({ manager }: { manager: VaultManager }) {
     onPress={() => { void manager.reviewConflicts() }} style={{ minHeight: 44 }} testID="review-sync-conflicts" />
 }
 
-function VaultSyncHistory({ manager }: { manager: VaultManager }) {
-  const styles = useMobileStyles(createVaultManagerStyles)
-  const { record, failed } = manager.syncHistory
-  return <View style={styles.section} testID="vault-sync-history">
-    {record.status === 'pending' && (manager.active.git || manager.linked) && <Text style={styles.detail}>{mobileText('mobile.sync.pending')}</Text>}
-    {record.lastSuccessAt !== null && <Text style={styles.detail} testID="vault-last-sync">{mobileText('mobile.sync.lastSuccess').replace('{time}', new Date(record.lastSuccessAt).toLocaleString())}</Text>}
-    {record.lastCommitId && <Text style={styles.detail}>{mobileText('mobile.sync.lastCommit').replace('{commit}', record.lastCommitId)}</Text>}
-    {record.error && <Text style={styles.detail}>{mobileText(`mobile.sync.${record.error}`)}</Text>}
-    {failed && <Text style={styles.error}>{mobileText('mobile.sync.historyFailed')}</Text>}
-  </View>
-}
-
 function CloneRepository({ manager }: { manager: VaultManager }) {
   const styles = useMobileStyles(createVaultManagerStyles)
   const mobileColors = useMobileColors()
   const [url, setUrl] = useState('')
   return <View style={styles.section}>
     <MobileTextInput label={mobileText('mobile.vaults.repositoryUrl')} value={url} onChangeText={setUrl} editable={!manager.busy} autoCorrect={false} keyboardType="url" testID="git-repository-url" />
-    <MobileButton label={mobileText('mobile.vaults.clone')} disabled={manager.busy || !validRepository(url)} icon={<CloudArrowDown size={16} color={mobileColors.textInverse} />} variant="primary" onPress={() => { void manager.clone(url.trim()) }} testID="clone-git-vault" />
+    <MobileButton label={mobileText('mobile.vaults.clone')} disabled={manager.busy || !validRepository(url)} icon={<CloudArrowDown size={16} color={mobileColors.textInverse} />} variant="primary" onPress={() => { Keyboard.dismiss(); void manager.clone(url.trim()) }} testID="clone-git-vault" />
   </View>
 }
 
@@ -91,14 +83,26 @@ function validRepository(url: string) {
 
 function VaultOperationStatus({ manager }: { manager: VaultManager }) {
   const styles = useMobileStyles(createVaultManagerStyles)
-  const mobileColors = useMobileColors()
+  if (!hasVaultProblem(manager)) return null
   return <View style={styles.section} accessibilityLiveRegion="polite">
-    {manager.busy && <View style={styles.progress}><ActivityIndicator color={mobileColors.primary} /><Text style={styles.detail}>{progressLabel(manager.phase)}</Text></View>}
     {manager.error && <Text accessibilityRole="alert" style={styles.error}>{mobileText(manager.error)}</Text>}
     {manager.catalog.error === 'catalog' && <Text style={styles.error}>{mobileText('mobile.vaults.catalogFailed')}</Text>}
     {manager.catalog.error && <MobileButton disabled={manager.busy} label={mobileText('pulse.retry')} onPress={manager.catalog.retry} testID="vault-restore-retry" />}
     {manager.status === 'diverged' && manager.active.git && <Text style={styles.error}>{mobileText('mobile.vaults.diverged')}</Text>}
     {manager.status === 'saveFailed' && <MobileButton disabled={manager.busy} label={mobileText('pulse.retry')} onPress={() => { void manager.sync() }} testID="vault-manager-retry" />}
+  </View>
+}
+
+function hasVaultProblem(manager: VaultManager) {
+  return Boolean(manager.error || manager.catalog.error || ['diverged', 'saveFailed'].includes(manager.status))
+}
+
+function VaultBusyProgress({ manager }: { manager: VaultManager }) {
+  const styles = useMobileStyles(createVaultManagerStyles)
+  const colors = useMobileColors()
+  if (!manager.busy || manager.cloneProgress.running) return null
+  return <View style={[styles.content, styles.progress]} accessibilityLiveRegion="polite">
+    <ActivityIndicator color={colors.primary} /><Text style={styles.detail}>{progressLabel(manager.phase)}</Text>
   </View>
 }
 
