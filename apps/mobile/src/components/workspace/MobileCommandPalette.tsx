@@ -1,11 +1,8 @@
-import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
-import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   Pressable,
   ScrollView,
-  StyleSheet,
   View,
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
@@ -22,8 +19,9 @@ import {
   mobileCommandPaletteResults,
   type MobileCommandPaletteCommand,
 } from '../../workspace/mobileCommandPalette'
-import { mobileCommandPaletteLayoutContract } from './MobileCommandPaletteLayout'
+import { createCommandPaletteStyles as createThemeStyles } from './MobileCommandPaletteStyles'
 import { optionalNativeMobileKeyCommandsModule } from '../../native/mobileNativeKeyCommands'
+import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
 
 type MobileCommandPaletteProps = {
   commands: MobileCommandPaletteCommand[]
@@ -31,6 +29,7 @@ type MobileCommandPaletteProps = {
 }
 
 export function MobileCommandPalette({ commands, onClose }: MobileCommandPaletteProps) {
+  useMobileModalDismiss(onClose)
   const { surfaceStyles, mobileColors, styles } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -54,8 +53,6 @@ export function MobileCommandPalette({ commands, onClose }: MobileCommandPalette
       setSelectedIndex((index) => Math.max(index - 1, 0))
     } else if (key === 'Enter') {
       selectActiveCommand()
-    } else if (key === 'Escape') {
-      onClose()
     }
   }
   useNativePaletteKeys(handleKey)
@@ -109,7 +106,7 @@ function useNativePaletteKeys(onKey: (key: string) => void) {
     const module = optionalNativeMobileKeyCommandsModule()
     if (!module) return
     const subscription = module.addListener('onShortcut', (event) => {
-      if (!event.metaKey && !event.ctrlKey && !event.altKey) current.current(event.key)
+      if (event.key !== 'Escape' && !event.metaKey && !event.ctrlKey && !event.altKey) current.current(event.key)
     })
     module.setCommandPaletteOpen?.(true)
     return () => {
@@ -223,137 +220,3 @@ function CommandFooter() {
   )
 }
 
-function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { space: mobileSpace, type: mobileType } = metrics
-  const styles = StyleSheet.create({
-    emptyState: {
-      minHeight: metrics.size(mobileCommandPaletteLayoutContract.emptyMinHeight),
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: mobileSpace.lg,
-    },
-    emptyText: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.body,
-    },
-    groupLabel: {
-      color: mobileColors.textMuted,
-      fontSize: metrics.size(11),
-      fontWeight: '500',
-      lineHeight: metrics.size(14),
-      paddingBottom: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingBottom),
-      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingHorizontal),
-      paddingTop: metrics.size(mobileCommandPaletteLayoutContract.groupLabelPaddingTop),
-    },
-    group: {
-      alignSelf: 'stretch',
-      width: '100%',
-    },
-    input: {
-      minHeight: metrics.size(mobileCommandPaletteLayoutContract.inputMinHeight),
-      borderBottomColor: mobileColors.border,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderRadius: 0,
-      borderWidth: 0,
-      color: mobileColors.text,
-      fontSize: metrics.size(mobileCommandPaletteLayoutContract.inputTextSize),
-      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.inputPaddingHorizontal),
-      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.inputPaddingVertical),
-    },
-    results: {
-      alignItems: 'stretch',
-      paddingBottom: mobileSpace.sm,
-      paddingTop: mobileSpace.xs,
-      width: '100%',
-    },
-    resultsScroll: {
-      flexShrink: 1,
-      minHeight: 0,
-      alignSelf: 'stretch',
-      width: '100%',
-    },
-    row: {
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      borderRadius: mobileCommandPaletteLayoutContract.rowBorderRadius,
-      flexDirection: 'row',
-      gap: mobileSpace.sm,
-      justifyContent: 'space-between',
-      minHeight: metrics.size(mobileCommandPaletteLayoutContract.rowMinHeight),
-      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.rowPaddingHorizontal),
-      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.rowPaddingVertical),
-      width: '100%',
-    },
-    rowPressable: {
-      alignSelf: 'stretch',
-      marginHorizontal: metrics.size(mobileCommandPaletteLayoutContract.rowMarginHorizontal),
-      width: 'auto',
-    },
-    rowLabel: {
-      flex: 1,
-      minWidth: 0,
-      color: mobileColors.text,
-      fontSize: metrics.size(mobileCommandPaletteLayoutContract.rowTextSize),
-      lineHeight: metrics.size(18),
-    },
-    rowPressed: {
-      opacity: 0.78,
-    },
-    rowSelected: {
-      backgroundColor: mobileColors.control,
-    },
-    shortcut: {
-      color: mobileColors.textMuted,
-      fontSize: metrics.size(mobileCommandPaletteLayoutContract.shortcutTextSize),
-      lineHeight: metrics.size(16),
-    },
-    footer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.md,
-      borderTopColor: mobileColors.border,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      paddingHorizontal: metrics.size(mobileCommandPaletteLayoutContract.footerPaddingHorizontal),
-      paddingVertical: metrics.size(mobileCommandPaletteLayoutContract.footerPaddingVertical),
-    },
-    footerText: {
-      color: mobileColors.textMuted,
-      fontSize: mobileType.micro,
-    },
-  })
-
-  const surfaceStyles = StyleSheet.create({
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: mobileColors.overlay,
-    },
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      zIndex: 30,
-    },
-    paletteContainer: {
-      flex: 1,
-      minHeight: 0,
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      paddingTop: metrics.size(mobileCommandPaletteLayoutContract.overlayPaddingTop),
-    },
-    palette: {
-      flexShrink: 1,
-      minHeight: 0,
-      maxHeight: mobileCommandPaletteLayoutContract.paletteMaxHeight,
-      maxWidth: mobileCommandPaletteLayoutContract.paletteMaxWidth,
-      width: '92%',
-      backgroundColor: mobileColors.card,
-      borderColor: mobileColors.borderStrong,
-      borderRadius: mobileCommandPaletteLayoutContract.paletteBorderRadius,
-      borderWidth: StyleSheet.hairlineWidth,
-      overflow: 'hidden',
-      shadowColor: '#000000',
-      shadowOffset: { height: 10, width: 0 },
-      shadowOpacity: 0.14,
-      shadowRadius: 28,
-    },
-  })
-  return { mobileColors, styles, surfaceStyles }
-}

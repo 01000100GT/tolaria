@@ -588,6 +588,13 @@ Workspace surfaces now sit one level above those primitives:
 
 Mobile UI copy should reuse the localization catalog in `src/lib/locales/en.json` whenever the desktop concept already exists. New mobile-specific copy must be added to that catalog and translated through the normal Lara workflow.
 
+`useMobileModalDismiss` registers a visible sheet's existing Cancel/Close callback
+with `mobileModalDismissal`. The last opened dialog owns Escape until cleanup;
+rerenders update the callback without changing ownership. A single native/browser
+subscription and event deduplication prevent one Escape from closing two dialogs.
+Native modal eligibility is separate from palette arrow navigation, preserving
+text-input cursor keys and busy-operation close guards (ADR 0231).
+
 The mobile UI lab uses a fixture-backed repository. The same boundary reads an
 injected host snapshot from `tolaria:mobile-workspace-snapshot` for local
 large-vault QA and native vaults through `source=native-vault`. Native startup

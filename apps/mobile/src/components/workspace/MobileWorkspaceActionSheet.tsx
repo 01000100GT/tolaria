@@ -2,6 +2,7 @@ import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useEffect, type ReactNode } from 'react'
+import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
 import { Keyboard, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 import { ArrowSquareOut, CheckCircle, ClipboardText, FilePlus, FolderOpen, Trash } from 'phosphor-react-native'
 import { Text } from '../ui/text'
@@ -293,6 +294,7 @@ type SuggestionInputActionConfig = {
 type RetargetNoteAction = 'changeType' | 'moveFolder'
 
 export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProps) {
+  useMobileModalDismiss(props.onClose)
   const { styles, sheetStyles } = useMobileStyles(createThemeStyles)
   const phone = useMobileDeviceLayout() === 'phone'
   useEffect(() => {
@@ -657,7 +659,18 @@ function TypeSectionContent(props: MobileWorkspaceActionSheetProps) {
         onMoveDown={props.onMoveTypeDown}
         onMoveUp={props.onMoveTypeUp}
       />
-      <MobileTypeSectionEditor
+      <TypeSectionEditorContent {...props} />
+      <SheetFooter>
+        <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
+        <MobileButton disabled={props.typeRenameName.trim().length === 0} label={mobileText('common.save')} variant="primary" onPress={props.onSaveTypeDefinition} />
+      </SheetFooter>
+    </ScrollView>
+  )
+}
+
+function TypeSectionEditorContent(props: MobileWorkspaceActionSheetProps) {
+  return (
+    <MobileTypeSectionEditor
         displayProperties={props.typeDisplayProperties}
         notes={props.notes}
         propertyOptions={props.typePropertyOptions}
@@ -699,11 +712,6 @@ function TypeSectionContent(props: MobileWorkspaceActionSheetProps) {
         onToneChange={props.onTypeToneChange}
         onVisibleChange={props.onTypeVisibleChange}
       />
-      <SheetFooter>
-        <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
-        <MobileButton disabled={props.typeRenameName.trim().length === 0} label={mobileText('common.save')} variant="primary" onPress={props.onSaveTypeDefinition} />
-      </SheetFooter>
-    </ScrollView>
   )
 }
 

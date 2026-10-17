@@ -2,6 +2,7 @@ import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 import { useMemo, useState } from 'react'
+import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { mobileText } from '../../i18n/mobileText'
 import { MobileButton } from '../../ui/MobileButton'
@@ -26,6 +27,7 @@ export function MobileWysiwygExternalLinkSheet({
   onClose,
   onRemove,
 }: MobileWysiwygExternalLinkSheetProps) {
+  useMobileModalDismiss(onClose)
   const { styles } = useMobileStyles(createThemeStyles)
   const [url, setUrl] = useState(initialUrl)
   const normalizedUrl = useMemo(() => nativeWysiwygNormalizedExternalLink(url), [url])

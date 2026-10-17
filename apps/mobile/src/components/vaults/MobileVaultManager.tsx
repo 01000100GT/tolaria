@@ -19,10 +19,12 @@ import { optionalNativeWorkspaceAccessModule } from '../../workspace/nativeWorks
 import { MobileConflictReview } from './MobileConflictReview'
 import { MobileCloneProgress } from './MobileCloneProgress'
 import { MobileVaultSyncHistory } from './MobileVaultSyncHistory'
+import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
 
 type VaultManager = ReturnType<typeof useMobileVaults>
 
 export function MobileVaultManager({ manager }: { manager: VaultManager }) {
+  useMobileModalDismiss(manager.close, manager.opened)
   const styles = useMobileStyles(createVaultManagerStyles)
   const mobileColors = useMobileColors()
   return <Modal visible={manager.opened} transparent animationType="fade" onRequestClose={manager.close}>

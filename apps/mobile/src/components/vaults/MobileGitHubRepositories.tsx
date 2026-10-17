@@ -15,12 +15,14 @@ import { MobileTextInput } from '../../ui/MobileTextInput'
 import { filterGitHubRepositories } from '../../workspace/git/githubRepositorySearch'
 import type { GitHubRepository } from '../../workspace/git/githubAuth'
 import type { useGitHubAccount } from '../../workspace/git/useGitHubAccount'
+import { useMobileModalDismiss } from '../../workspace/useMobileModalDismiss'
 
 type Props = { account: ReturnType<typeof useGitHubAccount>; disabled: boolean; clone: (url: string) => Promise<void> }
 
 export function MobileGitHubRepositories({ account, clone, disabled }: Props) {
   const { mobileColors, styles } = useMobileStyles(createThemeStyles)
   const [open, setOpen] = useState(false)
+  useMobileModalDismiss(() => setOpen(false), open)
   const [query, setQuery] = useState('')
   const repositories = useMemo(() => filterGitHubRepositories(account.repositories, query), [account.repositories, query])
   const choose = (repository: GitHubRepository) => {

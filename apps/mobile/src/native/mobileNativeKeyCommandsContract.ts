@@ -17,6 +17,7 @@ export type NativeMobileKeyCommandsModule = {
   isSupported?: () => boolean
   launchArguments?: () => string[]
   setCommandPaletteOpen?: (open: boolean) => Promise<void>
+  setModalOpen?: (open: boolean) => Promise<void>
 }
 
 export const mobileLaunchSearchEnvironmentName = 'TOLARIA_MOBILE_SEARCH'

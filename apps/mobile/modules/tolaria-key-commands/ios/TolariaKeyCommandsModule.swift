@@ -33,7 +33,10 @@ public struct TolariaApplicationKeyCommand {
 
 public class TolariaKeyCommandsModule: Module {
   private static weak var activeModule: TolariaKeyCommandsModule?
-  public private(set) static var commandPaletteOpen = false
+  private static var paletteOpen = false
+  private static var modalOpen = false
+  public static var commandPaletteOpen: Bool { paletteOpen }
+  public static var dismissibleModalOpen: Bool { modalOpen }
   private static let commands: [TolariaKeyCommand] = [
     TolariaKeyCommand("commandPalette", key: "k", code: "KeyK"),
     TolariaKeyCommand("findInNote", key: "f", code: "KeyF"),
@@ -45,7 +48,7 @@ public class TolariaKeyCommandsModule: Module {
     TolariaKeyCommand("viewEditorList", key: "2", code: "Digit2"),
     TolariaKeyCommand("viewAll", key: "3", code: "Digit3"),
     TolariaKeyCommand("toggleProperties", key: "i", code: "KeyI", modifiers: [.command, .shift]),
-    TolariaKeyCommand("closeCommandPalette", key: "Escape", code: "Escape", input: UIKeyCommand.inputEscape, modifiers: []),
+    TolariaKeyCommand("dismissModal", key: "Escape", code: "Escape", input: UIKeyCommand.inputEscape, modifiers: []),
     TolariaKeyCommand(
       "previousNote",
       key: "ArrowUp",
@@ -72,7 +75,12 @@ public class TolariaKeyCommandsModule: Module {
     }
 
     AsyncFunction("setCommandPaletteOpen") { (open: Bool) in
-      Self.commandPaletteOpen = open
+      Self.paletteOpen = open
+    }.runOnQueue(.main)
+
+    AsyncFunction("setModalOpen") { (open: Bool) in
+      Self.modalOpen = open
+      self.logKeyboardProbe(["kind": "modal", "open": open])
     }.runOnQueue(.main)
 
     Function("launchArguments") {
@@ -98,7 +106,8 @@ public class TolariaKeyCommandsModule: Module {
     OnStopObserving("onShortcut") {
       if Self.activeModule === self {
         Self.activeModule = nil
-        Self.commandPaletteOpen = false
+        Self.paletteOpen = false
+        Self.modalOpen = false
       }
     }
   }
@@ -190,7 +199,7 @@ private final class TolariaKeyCommandsRootViewController: UIViewController {
   override var keyCommands: [UIKeyCommand]? {
     let textInputFocused = containsFocusedTextInput(view.window ?? view)
     return TolariaKeyCommandsModule.applicationKeyCommands().filter {
-      if $0.input == UIKeyCommand.inputEscape { return TolariaKeyCommandsModule.commandPaletteOpen }
+      if $0.input == UIKeyCommand.inputEscape { return TolariaKeyCommandsModule.dismissibleModalOpen }
       return !$0.modifierFlags.isEmpty || !textInputFocused || TolariaKeyCommandsModule.commandPaletteOpen
     }.map { specification in
       let command = UIKeyCommand(

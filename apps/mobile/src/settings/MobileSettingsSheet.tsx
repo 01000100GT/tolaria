@@ -16,6 +16,7 @@ import { MobilePrivacySettings } from './MobilePrivacySettings'
 import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
 import { MobileGitHubAccount } from '../components/vaults/MobileGitHubAccount'
 import type { useMobileVaults } from '../workspace/git/useMobileVaults'
+import { useMobileModalDismiss } from '../workspace/useMobileModalDismiss'
 
 export function MobileSettingsSheet({ manager }: { manager: ReturnType<typeof useMobileVaults> }) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
@@ -24,6 +25,7 @@ export function MobileSettingsSheet({ manager }: { manager: ReturnType<typeof us
   const disabled = !preferences.ready || preferences.saving
   const gitAvailable = Boolean(manager.active.git)
   const close = () => { manager.account.cancelSignIn(); preferences.close() }
+  useMobileModalDismiss(close, preferences.opened)
   const openVaults = () => { close(); void manager.open() }
   const clone = async (url: string) => { preferences.close(); await manager.clone(url) }
   return <Modal visible={preferences.opened} transparent animationType="fade" onRequestClose={close}

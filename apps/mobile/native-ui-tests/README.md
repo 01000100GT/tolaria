@@ -1,5 +1,10 @@
 # Native Mobile Interaction Tests
 
+`MobileModalEscapeTests` exercises hardware Escape on a focused unsaved workspace
+form, Settings, the vault manager and the command palette. Run it on both phone
+and tablet simulators with disposable fixtures; cancellation must not create the
+draft View or change the underlying pane navigation.
+
 These XCUITest checks drive the **standalone iOS app**, not Safari, Expo web,
 or synthetic JavaScript gesture callbacks. They can run without operating the
 Mac's Simulator window. They do not unlock the Mac or change its permissions.
@@ -93,9 +98,11 @@ sidebar remains 260 points wide while the editor starts at x=340 and retains at
 least 520 points, entirely inside the screen. `TabletPanelGestureTests` explicitly
 sets landscape rather than depending on whichever orientation a prior test left.
 
-`TabletVaultManagerTests` uses the installed app's isolated native vault copy.
-It opens/closes the manager, rejects an invalid repository URL without contacting
-a remote, and fails if credential restoration reports a Keychain access error.
+`TabletVaultManagerTests` opens Sidebar Settings and vault management on both
+iPhone and iPad using the disposable workspace fixture. It cancels the system
+folder picker twice, rejects an invalid repository URL without contacting a
+remote, and fails if credential restoration reports a Keychain access error.
+It never selects a folder, clones a repository or changes the saved vault list.
 The app (unlike the disposable test runner) must be built with normal simulator
 signing enabled. `CODE_SIGNING_ALLOWED=NO` drops the simulator app identity and
 can produce Keychain error -34018 even when all filesystem probes pass. Use
