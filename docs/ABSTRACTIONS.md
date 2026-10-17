@@ -60,6 +60,10 @@ text remains verbatim in a SHA-256 manifest and images are separate native asset
 `node apps/mobile/scripts/generate-starter-vault.ts <local-template-repo> <full-commit-sha>`
 to regenerate; existing user copies are never an output target. The bundled
 revision and original relative paths remain recorded in `manifest.json`.
+`starterVaultFiles.native.ts` copies that manifest into the preparation-owned
+staging directory sequentially, resolving binary assets through a supplied native
+file resolver. It reads back SHA-256 checksums before completion and reuses only
+verified staged files on retry. The caller never passes a published vault here.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
 publication. Catalog reads prefer the published file, then its backup, then a
 validated pending file only when both published copies are absent. An invalid
