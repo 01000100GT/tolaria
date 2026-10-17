@@ -9,8 +9,27 @@ import {
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 
 export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { property: desktopPropertyParity, panel: desktopPanelParity, space: mobileSpace, type: mobileType, relationship: desktopRelationshipParity } = metrics
-  const panelStyles = StyleSheet.create({
+  return {
+    panelStyles: createPanelStyles(metrics),
+    emptyStateStyles: createEmptyStateStyles(mobileColors, metrics),
+    relationshipStyles: createRelationshipStyles(metrics),
+    referenceStyles: createReferenceStyles(mobileColors, metrics),
+    propertyStyles: {
+      ...createSectionStyles(mobileColors, metrics),
+      ...createPlaceholderButtonStyles(metrics),
+      ...createPlaceholderValueStyles(mobileColors, metrics),
+      ...createEditableValueStyles(mobileColors, metrics),
+      ...createEditableTextStyles(mobileColors, metrics),
+    },
+    typeStyles: createTypeStyles(mobileColors, metrics),
+    propertyDisplayStyles: createPropertyDisplayStyles(mobileColors, metrics),
+    actionStyles: createActionStyles(mobileColors, metrics),
+  }
+}
+
+function createPanelStyles(metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, panel: desktopPanelParity } = metrics
+  return StyleSheet.create({
     content: { padding: desktopPropertyParity.panelPadding },
     emptyContent: { flexGrow: 1 },
     panel: {
@@ -20,10 +39,13 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
       width: desktopPanelParity.inspectorWidth,
     },
     panelCompact: { width: 280 },
-    panelFullWidth: { width: '100%' },
+    panelFullWidth: { width: '100%', height: 'auto', flex: 1, minHeight: 0 },
   })
+}
 
-  const emptyStateStyles = StyleSheet.create({
+function createEmptyStateStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
+  return StyleSheet.create({
     emptyState: {
       flex: 1,
       alignItems: 'center',
@@ -43,8 +65,11 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
       textAlign: 'center',
     },
   })
+}
 
-  const relationshipStyles = StyleSheet.create({
+function createRelationshipStyles(metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace, relationship: desktopRelationshipParity } = metrics
+  return StyleSheet.create({
     remove: {
       minHeight: desktopRelationshipParity.removeIconSize,
       minWidth: desktopRelationshipParity.removeIconSize,
@@ -75,8 +100,11 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
     },
     values: { alignItems: 'stretch', gap: mobileSpace.xs },
   })
+}
 
-  const referenceStyles = StyleSheet.create({
+function createReferenceStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, relationship: desktopRelationshipParity } = metrics
+  return StyleSheet.create({
     container: {
       marginTop: mobileSpace.sm,
       borderTopColor: mobileColors.border,
@@ -100,130 +128,11 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
       fontWeight: mobileInspectorReferenceRowLayoutContract.textFontWeight,
     },
   })
+}
 
-  const propertySectionStyles = StyleSheet.create({
-    sectionLabel: {
-      color: mobileColors.textMuted,
-      fontSize: desktopPropertyParity.labelTextSize,
-    },
-    sectionRow: {
-      minHeight: desktopPropertyParity.rowMinHeight,
-      borderBottomColor: mobileColors.border,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      gap: mobileSpace.sm,
-      paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
-      paddingVertical: mobileSpace.sm,
-    },
-    sectionValue: { alignSelf: 'stretch', minWidth: 0 },
-    placeholderButton: {
-      minHeight: desktopPropertyParity.rowMinHeight,
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-      borderRadius: desktopPropertyParity.actionRowRadius,
-      paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
-      width: '100%',
-    },
-    placeholderRelationshipButton: {
-      minHeight: desktopPropertyParity.rowMinHeight,
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-      borderRadius: desktopRelationshipParity.rowRadius,
-      paddingHorizontal: 0,
-      width: '100%',
-    },
-    placeholderButtonText: {
-      minWidth: 0,
-      flex: 1,
-      color: mobileColors.textFaint,
-      fontSize: desktopPropertyParity.labelTextSize,
-    },
-    placeholderLabel: {
-      color: mobileColors.textFaint,
-      fontSize: desktopPropertyParity.labelTextSize,
-    },
-    placeholderAddValue: {
-      minHeight: metrics.size(mobileInspectorPlaceholderRowLayoutContract.minHeight),
-      minWidth: 0,
-      alignItems: 'center',
-      flex: 1,
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-      justifyContent: 'flex-end',
-      borderRadius: 4,
-      paddingHorizontal: mobileSpace.xs,
-    },
-    placeholderValue: {
-      minWidth: 0,
-      flex: 1,
-      color: mobileColors.textFaint,
-      fontSize: mobileType.caption,
-      textAlign: 'right',
-    },
-  })
-
-  const propertyEditableStyles = StyleSheet.create({
-    editableText: {
-      minWidth: 0,
-      flexShrink: 1,
-      color: mobileColors.text,
-      fontSize: mobileType.caption,
-    },
-    emptyEditableText: {
-      color: mobileColors.textFaint,
-      fontSize: mobileType.caption,
-    },
-    emptyEditableValue: {
-      minHeight: desktopPropertyParity.rowMinHeight,
-      minWidth: 0,
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      borderRadius: 4,
-      paddingHorizontal: mobileSpace.xs,
-      paddingVertical: metrics.size(2),
-    },
-    editableValue: {
-      maxHeight: 96,
-      minWidth: 0,
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: mobileSpace.xs,
-      justifyContent: 'flex-end',
-      borderRadius: 4,
-      paddingHorizontal: mobileSpace.xs,
-      paddingVertical: metrics.size(2),
-      width: '100%',
-    },
-    editableValuePressed: { backgroundColor: mobileColors.graySoft },
-    tagWrap: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: mobileSpace.xs,
-    },
-    workspaceBadge: {
-      overflow: 'hidden',
-      borderRadius: mobileRadius.pill,
-      backgroundColor: mobileColors.graySoft,
-      color: mobileColors.textMuted,
-      fontSize: mobileType.micro,
-      fontWeight: '400',
-      paddingHorizontal: metrics.size(6),
-      paddingVertical: metrics.size(2),
-    },
-  })
-
-  const propertyStyles = {
-    ...propertySectionStyles,
-    ...propertyEditableStyles,
-  }
-
-  const typeStyles = StyleSheet.create({
+function createTypeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
     value: {
       minWidth: 0,
       alignItems: 'center',
@@ -248,8 +157,11 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
       lineHeight: desktopPropertyParity.chipHeight,
     },
   })
+}
 
-  const propertyDisplayStyles = StyleSheet.create({
+function createPropertyDisplayStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace } = metrics
+  return StyleSheet.create({
     colorSwatch: {
       height: 12,
       width: 12,
@@ -277,8 +189,11 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
     numberText: { fontVariant: ['tabular-nums'] },
     urlText: { color: mobileColors.primary },
   })
+}
 
-  const actionStyles = StyleSheet.create({
+function createActionStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
     iconSlot: {
       width: desktopPropertyParity.labelIconSlot,
       alignItems: 'center',
@@ -313,5 +228,145 @@ export function createPropertyPanelStyles(mobileColors: MobileColors, metrics: M
     },
     value: { flex: 1, zIndex: 1 },
   })
-  return { panelStyles, emptyStateStyles, relationshipStyles, referenceStyles, propertyStyles, typeStyles, propertyDisplayStyles, actionStyles }
+}
+
+function createSectionStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
+    sectionLabel: {
+      color: mobileColors.textMuted,
+      fontSize: desktopPropertyParity.labelTextSize,
+    },
+    sectionRow: {
+      minHeight: desktopPropertyParity.rowMinHeight,
+      borderBottomColor: mobileColors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      gap: mobileSpace.sm,
+      paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
+      paddingVertical: mobileSpace.sm,
+    },
+    sectionValue: { alignSelf: 'stretch', minWidth: 0 },
+  })
+}
+
+function createPlaceholderButtonStyles(metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace, relationship: desktopRelationshipParity } = metrics
+  return StyleSheet.create({
+    placeholderButton: {
+      minHeight: desktopPropertyParity.rowMinHeight,
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      borderRadius: desktopPropertyParity.actionRowRadius,
+      paddingHorizontal: desktopPropertyParity.rowPaddingHorizontal,
+      width: '100%',
+    },
+    placeholderRelationshipButton: {
+      minHeight: desktopPropertyParity.rowMinHeight,
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      borderRadius: desktopRelationshipParity.rowRadius,
+      paddingHorizontal: 0,
+      width: '100%',
+    },
+  })
+}
+
+function createPlaceholderValueStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace, type: mobileType } = metrics
+  return StyleSheet.create({
+    placeholderButtonText: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.textFaint,
+      fontSize: desktopPropertyParity.labelTextSize,
+    },
+    placeholderLabel: {
+      color: mobileColors.textFaint,
+      fontSize: desktopPropertyParity.labelTextSize,
+    },
+    placeholderAddValue: {
+      minHeight: metrics.size(mobileInspectorPlaceholderRowLayoutContract.minHeight),
+      minWidth: 0,
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      justifyContent: 'flex-end',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.xs,
+    },
+    placeholderValue: {
+      minWidth: 0,
+      flex: 1,
+      color: mobileColors.textFaint,
+      fontSize: mobileType.caption,
+      textAlign: 'right',
+    },
+  })
+}
+
+function createEditableValueStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { property: desktopPropertyParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
+    emptyEditableValue: {
+      minHeight: desktopPropertyParity.rowMinHeight,
+      minWidth: 0,
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.xs,
+      paddingVertical: metrics.size(2),
+    },
+    editableValue: {
+      maxHeight: 96,
+      minWidth: 0,
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: mobileSpace.xs,
+      justifyContent: 'flex-end',
+      borderRadius: 4,
+      paddingHorizontal: mobileSpace.xs,
+      paddingVertical: metrics.size(2),
+      width: '100%',
+    },
+    editableValuePressed: { backgroundColor: mobileColors.graySoft },
+  })
+}
+
+function createEditableTextStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
+  return StyleSheet.create({
+    editableText: {
+      minWidth: 0,
+      flexShrink: 1,
+      color: mobileColors.text,
+      fontSize: mobileType.caption,
+    },
+    emptyEditableText: {
+      color: mobileColors.textFaint,
+      fontSize: mobileType.caption,
+    },
+    tagWrap: {
+      alignItems: 'flex-start',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: mobileSpace.xs,
+    },
+    workspaceBadge: {
+      overflow: 'hidden',
+      borderRadius: mobileRadius.pill,
+      backgroundColor: mobileColors.graySoft,
+      color: mobileColors.textMuted,
+      fontSize: mobileType.micro,
+      fontWeight: '400',
+      paddingHorizontal: metrics.size(6),
+      paddingVertical: metrics.size(2),
+    },
+  })
 }
