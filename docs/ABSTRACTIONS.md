@@ -46,6 +46,12 @@ workspace as if restore had succeeded.
 `managedLocalVaults.ts` validates local catalog entries and contained relative
 directories. `managedLocalStorage.native.ts` registers imports, migrates the
 legacy local copy in place, and resolves current sandbox paths on activation.
+`starterVaultStorage.native.ts` prepares a bundled starter in an owned staging
+directory and publishes the complete tree before returning a catalog record.
+Its retained revision marker supports interrupted-copy and registration retries
+without rewriting published files. Existing catalog files, orphaned vaults, and
+ambiguous preparation state prevent automatic replacement (ADR 0230). This
+storage primitive does not itself enable first-launch initialization.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
 publication. `useManagedVaultCatalog` is the single restoration owner;
 `useMobileVaults` saves pending editor work before add, switch, and forget.
