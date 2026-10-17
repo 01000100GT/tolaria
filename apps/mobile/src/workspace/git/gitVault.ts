@@ -10,7 +10,8 @@ export type GitVaultContext = { fs: FsClient; dir: string; cache?: object }
 export { githubRepositoryUrl } from './githubRepositoryUrl'
 
 export function createGitVault(options: GitVaultContext) {
-  const context = { ...options, cache: options.cache ?? {} }
+  // Transport options can include a short ref; local writes must follow HEAD.
+  const context = { fs: options.fs, dir: options.dir, cache: options.cache ?? {} }
   return {
     checkpoint: (author: GitAuthor, message?: string) => checkpoint(context, author, message),
     requireClean: () => requireClean(context),

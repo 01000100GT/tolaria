@@ -97,7 +97,8 @@ async function localAccess<T>(options: GitRemoteOptions, operation: () => Promis
 async function pushCurrentHead(options: GitRemoteOptions, connection: GitConnection) {
   emitPhase(options, 'push')
   try {
-    return (await git.push({ ...connection, force: false })).ok
+    const ref = `refs/heads/${connection.ref}`
+    return (await git.push({ ...connection, ref, remoteRef: ref, force: false })).ok
   } catch (error) {
     if (error instanceof git.Errors.PushRejectedError && error.data.reason === 'not-fast-forward') return false
     throw error

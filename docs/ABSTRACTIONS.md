@@ -29,6 +29,9 @@ legacy local copy in place, and resolves current sandbox paths on activation.
 Local and Git records share `updateManagedGitCatalog` and its serialized atomic
 publication. `useManagedVaultCatalog` is the single restoration owner;
 `useMobileVaults` saves pending editor work before add, switch, and forget.
+Restoration distinguishes catalog decoding failures from selected-vault recovery
+failures, retains readable catalog entries, and exposes a retry without deleting
+the catalog or working copy.
 `MobileSavedVaults` renders both kinds and confirms metadata-only removal.
 Settings shares `MobileGitHubAccount` with the manager rather than creating a
 second authorization session. Consented `mobile_vault_catalog_used` events carry
@@ -37,7 +40,11 @@ only action and kind, never vault names, paths, URLs, or content. See ADR 0216.
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
 authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
 checkpoints and commit-graph classification. `gitRemote.ts` performs serialized
-clone and sync. `gitMerge.ts` builds conflict-free merge objects without changing
+clone and sync. Local Git contexts whitelist filesystem, directory and cache options so a
+transport's short branch ref cannot redirect a checkpoint away from HEAD.
+Recovery and push use fully-qualified branch refs, including when older working
+copies contain a stray pseudo-ref that shadows the branch's short name.
+`gitMerge.ts` builds conflict-free merge objects without changing
 HEAD or the working tree, rejects lossy binary/text conversion, and publishes
 through the existing checkout journal. Genuine conflicts preserve both histories;
 push races receive at most three fetch/integrate/push attempts (ADR 0218).

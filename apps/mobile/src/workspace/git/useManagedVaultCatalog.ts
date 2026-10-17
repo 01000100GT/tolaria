@@ -13,27 +13,35 @@ export function useManagedVaultCatalog() {
   const [localVaults, setLocalVaults] = useState<ManagedLocalVault[]>([])
   const [restored, setRestored] = useState<ActiveVault | null>(null)
   const [pending, setPending] = useState(true)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<'catalog' | 'selection' | null>(null)
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     let active = true
+    let stage: 'catalog' | 'selection' = 'catalog'
     void initializeLocalVaultCatalog().then(async (catalog) => {
       if (!active) return
       setVaults(catalog.vaults)
       setLocalVaults(catalog.localVaults ?? [])
+      stage = 'selection'
       const restored = await restoreCatalogSelection(catalog)
       const selection = await preloadNativeWorkspace(restored.selection)
       if (active) setRestored({ ...restored, selection })
-    }).catch(() => { if (active) setError(true) })
+    }).catch(() => { if (active) setError(stage) })
       .finally(() => { if (active) setPending(false) })
     return () => { active = false }
-  }, [])
+  }, [attempt])
   const reload = useCallback(async () => {
     const catalog = await readManagedGitCatalog()
     setVaults(catalog.vaults)
     setLocalVaults(catalog.localVaults ?? [])
-    setError(false)
+    setError(previous => previous === 'catalog' ? null : previous)
   }, [])
-  return { vaults, localVaults, restored, pending, error, reload }
+  const retry = useCallback(() => {
+    setPending(true)
+    setError(null)
+    setAttempt(value => value + 1)
+  }, [])
+  return { vaults, localVaults, restored, pending, error, reload, retry }
 }
 
 async function restoreCatalogSelection(catalog: ManagedGitVaultCatalog): Promise<ActiveVault> {
