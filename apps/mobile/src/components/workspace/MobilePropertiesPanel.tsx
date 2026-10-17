@@ -730,20 +730,7 @@ function RelationshipValues(props: {
                 if (value.id) onEnterNeighborhood?.(value.id)
               }}
             >
-              <MobileTypeIcon
-                size={desktopRelationshipParity.iconSize}
-                tone={value.typeTone}
-                type={value.type}
-                typeDefinitions={typeDefinitions}
-              />
-              <Text
-                numberOfLines={1}
-                {...propertyProbe(layoutProbe, `properties.relationship.${rowSegment}`, 'text')}
-                style={[relationshipStyles.text, { color: noteTypeColor(value.typeTone, colors) }]}
-                testID={`relationship-row-${rowSegment}-text`}
-              >
-                {value.title}
-              </Text>
+              <RelationshipValueLabel value={value} typeDefinitions={typeDefinitions} layoutProbe={layoutProbe} rowSegment={rowSegment} />
             </Pressable>
             <Pressable
               accessibilityLabel={mobileText('common.remove')}
@@ -761,6 +748,30 @@ function RelationshipValues(props: {
         )
       })}
     </View>
+  )
+}
+
+function RelationshipValueLabel(props: {
+  layoutProbe: MobileLayoutProbe
+  rowSegment: string
+  typeDefinitions?: MobileTypeDefinitions
+  value: MobileRelationship['values'][number]
+}) {
+  const { layoutProbe, rowSegment, typeDefinitions, value } = props
+  const colors = useMobileColors()
+  const { relationshipStyles } = useMobileStyles(createPropertyPanelStyles)
+  return (
+    <>
+      <MobileTypeIcon size={desktopRelationshipParity.iconSize} tone={value.typeTone} type={value.type} typeDefinitions={typeDefinitions} />
+      <Text
+        numberOfLines={1}
+        {...propertyProbe(layoutProbe, `properties.relationship.${rowSegment}`, 'text')}
+        style={[relationshipStyles.text, { color: noteTypeColor(value.typeTone, colors) }]}
+        testID={`relationship-row-${rowSegment}-text`}
+      >
+        {value.title}
+      </Text>
+    </>
   )
 }
 

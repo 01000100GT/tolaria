@@ -316,6 +316,9 @@ in the vault manager. Non-sidebar panels reserve their own bottom safe area.
 Phone drawers pass `fullWidth` to the shared sidebar so its measured trailing
 edge meets the note-list preview without a desktop-width gap.
 
+The properties panel's local `RelationshipValueLabel` owns the shared typed icon
+and colored label; the relationship row retains navigation and removal actions.
+
 Phone drag responders retain their gesture identity while reading the latest
 callbacks. A completed native animation commits navigation in a microtask, after
 React Native synchronizes its final animated value, so that synchronization cannot
