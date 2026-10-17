@@ -36,13 +36,11 @@ export function MobileButton(props: MobileButtonProps) {
     disabled = false,
     icon,
     label,
-    onPress,
     style,
-    testID,
     tone = 'default',
     variant = 'secondary',
+    ...buttonProps
   } = props
-  const buttonVariant = buttonVariantByMobileVariant[variant]
   const buttonStyle = [
       styles.base,
       buttonDensityStyles[density],
@@ -54,6 +52,7 @@ export function MobileButton(props: MobileButtonProps) {
 
   return (
     <Button
+      {...buttonProps}
       accessibilityLabel={accessibilityLabel ?? label}
       role={accessibilityRole ?? 'button'}
       accessibilityState={accessibilityState}
@@ -63,11 +62,9 @@ export function MobileButton(props: MobileButtonProps) {
       aria-busy={accessibilityState?.busy}
       className={cn(buttonDensityClassNames[density], buttonClassNames[variant])}
       disabled={disabled}
-      onPress={onPress}
       size="sm"
       style={StyleSheet.flatten(buttonStyle)}
-      testID={testID}
-      variant={buttonVariant}
+      variant={buttonVariantByMobileVariant[variant]}
     >
       {icon}
       <Text
@@ -120,7 +117,7 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       gap: metrics.size(6),
     },
     default: {
-      minHeight: metrics.size(36),
+      minHeight: Math.max(44, metrics.size(36)),
       borderRadius: 6,
       paddingHorizontal: metrics.size(12),
     },

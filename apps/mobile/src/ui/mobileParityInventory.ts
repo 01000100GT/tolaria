@@ -78,11 +78,11 @@ export const mobileParityInventory = [
     surface: 'Panel and toolbar chrome',
   },
   {
-    assertions: ['sync footer computed styles'],
+    assertions: ['sync footer computed styles', 'MobileFormKeyboardTests: default actions remain at least 44 points and above the native keyboard through rotation'],
     contracts: ['desktopStatusBarParity'],
-    desktopSource: 'StatusBarFooter and StatusBarAction',
+    desktopSource: 'shadcn Button, StatusBarFooter and StatusBarAction; native default actions have a 44-point minimum',
     mobileFile: 'src/ui/MobileButton.tsx',
-    surface: 'Status-density buttons',
+    surface: 'Modal and status-density buttons',
   },
   {
     assertions: ['action-sheet input computed styles through user-flow checks'],
