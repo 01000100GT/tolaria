@@ -8,7 +8,7 @@ export type MobileAnalyticsEvent =
   | { name: 'mobile_setting_changed'; setting: 'theme' | 'uiScale' | 'autoGit' }
   | { name: 'mobile_git_operation_requested'; operation: 'commit' | 'sync' | 'autoSync' | 'resolveConflicts' }
   | { name: 'mobile_folder_sync_requested'; operation: 'sync' | 'resolveConflicts' }
-  | { name: 'mobile_editor_tool_opened'; tool: 'find' | 'replace' | 'slash' }
+  | { name: 'mobile_editor_tool_opened'; tool: 'find' | 'replace' | 'slash' | 'filename' }
   | { name: 'mobile_vault_catalog_used'; action: 'add' | 'switch' | 'forget'; kind: 'local' | 'git' }
 
 export type MobileAnalyticsBody = { event: MobileAnalyticsEvent['name']; distinct_id: string; properties: Record<string, string | boolean> }

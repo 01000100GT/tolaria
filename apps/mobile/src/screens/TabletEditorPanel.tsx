@@ -133,6 +133,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         leading={leading}
         trailing={trailing}
         note={note}
+        renameFilename={props.renameFilename}
         onOpenMoreActions={onOpenMoreActions}
         onOpenTableOfContents={onOpenTableOfContents}
         onToggleSourceMode={toggleSourceMode}
@@ -251,11 +252,12 @@ function EditorToolbar(props: EditorToolbarProps) {
   return (
     <MobileToolbar testID="editor-toolbar">
       {props.leading}
-      <MobileEditorFileIdentity note={props.note} typeDefinitions={props.typeDefinitions} />
-      {chipLabel ? <MobileChip label={chipLabel} tone="gray" /> : null}
-      <MobileToolbarSpacer />
-      <EditorToolbarActions {...props} />
-      {props.trailing}
+      <MobileEditorFileIdentity key={props.note.id} note={props.note} rename={props.renameFilename} typeDefinitions={props.typeDefinitions}>
+        {chipLabel ? <MobileChip label={chipLabel} tone="gray" /> : null}
+        <MobileToolbarSpacer />
+        <EditorToolbarActions {...props} />
+        {props.trailing}
+      </MobileEditorFileIdentity>
     </MobileToolbar>
   )
 }

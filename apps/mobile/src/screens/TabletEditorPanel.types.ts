@@ -13,6 +13,7 @@ import type { RegisterMobileEditorCommands } from '../workspace/mobileEditorComm
 import type { MobileTableOfContentsTarget } from '../workspace/mobileTableOfContents'
 import type { MobileEditorBlock, MobileNote, MobileTypeDefinitions } from '../workspace/mobileWorkspaceModel'
 import type { MobileNoteReadState } from '../workspace/mobileNoteRead'
+import type { MobileFilenameRename } from '../components/workspace/MobileEditorFileIdentity'
 
 export type EditorEditingMode = 'source' | 'wysiwyg'
 export type EditorFileMode = 'binary' | 'markdown' | 'text'
@@ -38,6 +39,7 @@ export type TabletEditorPanelProps = {
   onToggleFavorite: () => void
   onUpdateContent: (noteId: string, content: string) => void
   propertiesVisible?: boolean
+  renameFilename?: MobileFilenameRename
   sourceIdleSave?: boolean
   sourceSelectionProbe?: boolean
   tableOfContentsTarget?: MobileTableOfContentsTarget | null
@@ -67,6 +69,7 @@ export type EditorToolbarProps = {
   onToggleSourceMode: () => void
   onToggleFavorite: () => void
   propertiesVisible?: boolean
+  renameFilename?: MobileFilenameRename
   typeDefinitions?: MobileTypeDefinitions
 }
 

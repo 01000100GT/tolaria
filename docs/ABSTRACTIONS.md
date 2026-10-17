@@ -10,6 +10,17 @@ so the last row can scroll clear of the action. Bulk selection hides it. The
 existing create command still owns persistence, analytics and initial H1 focus;
 moving its button introduces no second creation path.
 
+## Mobile Filename Breadcrumb
+
+`MobileEditorFileIdentity` shows the literal filename and resolved type icon. A
+Markdown filename can be edited directly in the toolbar using the existing RNR
+Input and Button primitives. The inline form reuses the controller's filename
+draft and rename command, including collision/path validation and the existing
+write queue, backlink rewrites and undo history. Save/Return confirms; Cancel or
+Escape discards the draft. Changing the selected note resets the inline form.
+The note title/body is not a filename input. Non-Markdown file names remain
+read-only because the current rename command is Markdown-specific.
+
 ## Mobile Installation Settings
 
 `apps/mobile/src/settings/` owns validated, installation-local preferences.

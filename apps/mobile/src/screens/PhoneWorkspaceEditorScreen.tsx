@@ -57,6 +57,8 @@ function PhoneEditorBody(props: PhoneEditorBodyProps) {
       onRegisterEditorCommands={onRegisterEditorCommands}
       onToggleFavorite={controller.onToggleFavorite}
       onUpdateContent={controller.onUpdateNoteContent}
+      renameFilename={{ value: controller.readOnlyForm.filenameStem, notes,
+        onChange: controller.onFilenameStemChange, onSubmit: controller.onRenameNoteFile }}
       sourceIdleSave={options.sourceIdleSave}
       sourceSelectionProbe={options.sourceSelectionProbe}
       tableOfContentsTarget={tableOfContentsTarget}

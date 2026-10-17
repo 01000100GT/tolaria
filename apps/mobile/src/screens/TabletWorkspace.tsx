@@ -47,34 +47,7 @@ import { useMobileInspectorReferenceGroups } from './useMobileInspectorReference
 import { useInitialActionSheetQaTarget } from './useInitialActionSheetQaTarget'
 import { useTabletPanelGestures } from './useTabletPanelGestures'
 
-export function TabletWorkspace({
-  forceDesktopPanels = false,
-  initialCommandPaletteOpen = false,
-  initialEditorEditing = true,
-  initialEditorEditingMode = 'wysiwyg',
-  initialActionSheet,
-  commandPaletteProbe = false,
-  keyboardShortcutProbe = false,
-  layoutProbe = false,
-  onOpenNativeVault,
-  onTableOfContentsScrollProof,
-  repository = fixtureReadOnlyWorkspaceRepository,
-  repositoryRequest,
-  sourceIdleSave = true,
-  sourceSelectionProbe = false,
-  snapshot,
-  tableOfContentsProbe = false,
-  tabletTransitionProbe = false,
-  wysiwygAutocompleteProbe = false,
-  wysiwygExternalLinkProbe = false,
-  wysiwygFormatCommandProbe = false,
-  wysiwygInputTransformProbe = false,
-  wysiwygMarkdownBlockProbe = false,
-  wysiwygMathEditProbe = false,
-  wysiwygTableCommandMutationProbe = false,
-  wysiwygWikilinkInsertProbe = false,
-  wysiwygMutationProbe = false,
-}: {
+type TabletWorkspaceProps = {
   forceDesktopPanels?: boolean
   initialCommandPaletteOpen?: boolean
   initialEditorEditing?: boolean
@@ -101,7 +74,37 @@ export function TabletWorkspace({
   wysiwygTableCommandMutationProbe?: boolean
   wysiwygWikilinkInsertProbe?: boolean
   wysiwygMutationProbe?: boolean
-}) {
+}
+
+export function TabletWorkspace(props: TabletWorkspaceProps) {
+  const {
+    forceDesktopPanels = false,
+    initialCommandPaletteOpen = false,
+    initialEditorEditing = true,
+    initialEditorEditingMode = 'wysiwyg',
+    initialActionSheet,
+    commandPaletteProbe = false,
+    keyboardShortcutProbe = false,
+    layoutProbe = false,
+    onOpenNativeVault,
+    onTableOfContentsScrollProof,
+    repository = fixtureReadOnlyWorkspaceRepository,
+    repositoryRequest,
+    sourceIdleSave = true,
+    sourceSelectionProbe = false,
+    snapshot,
+    tableOfContentsProbe = false,
+    tabletTransitionProbe = false,
+    wysiwygAutocompleteProbe = false,
+    wysiwygExternalLinkProbe = false,
+    wysiwygFormatCommandProbe = false,
+    wysiwygInputTransformProbe = false,
+    wysiwygMarkdownBlockProbe = false,
+    wysiwygMathEditProbe = false,
+    wysiwygTableCommandMutationProbe = false,
+    wysiwygWikilinkInsertProbe = false,
+    wysiwygMutationProbe = false,
+  } = props
   const { styles } = useMobileStyles(createThemeStyles)
   const controller = useTabletWorkspaceController({ repository, repositoryRequest, snapshot })
   const onCreateNote = controller.snapshot.sync.kind === 'noVault' || controller.snapshot.sync.kind === 'readOnly'
@@ -539,6 +542,9 @@ type TabletEditorPanelHostProps = Pick<
   | 'initialEditorEditingMode'
   | 'layoutProbe'
   | 'onOpenMoreActions'
+  | 'onFilenameStemChange'
+  | 'onRenameNoteFile'
+  | 'readOnlyForm'
   | 'onOpenTableOfContents'
   | 'onTableOfContentsScrollProof'
   | 'onToggleFavorite'
@@ -588,6 +594,8 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     onTableOfContentsScrollProof: props.onTableOfContentsScrollProof,
     onToggleFavorite: props.onToggleFavorite,
     onUpdateContent: props.onUpdateNoteContent,
+    renameFilename: { value: props.readOnlyForm.filenameStem, notes: props.suggestionNotes,
+      onChange: props.onFilenameStemChange, onSubmit: props.onRenameNoteFile },
     sourceIdleSave: props.sourceIdleSave,
     sourceSelectionProbe: props.sourceSelectionProbe,
     tableOfContentsTarget: props.tableOfContentsTarget,
