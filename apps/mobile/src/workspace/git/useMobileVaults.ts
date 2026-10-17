@@ -25,6 +25,8 @@ import { inspectVaultConflicts, resolveVaultConflicts, type VaultConflictReview 
 import type { SyncConflictChoices } from '../syncConflictModel'
 import { useGitCloneProgress } from './useGitCloneProgress'
 import { useVaultNotices } from '../useVaultNotices'
+import type { ManagedGitVault } from './managedGitVaults'
+import type { ManagedLocalVault } from './managedLocalVaults'
 
 export type { VaultSyncState } from '../syncLedgerModel'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | 'mobile.vaults.folderUnavailable' | 'mobile.vaults.folderConflict' | null
@@ -216,12 +218,17 @@ export function useMobileVaults() {
     syncFolder: signal => perform(() => syncTask(false, signal), false, undefined, signal),
   })
 
+  const catalogActions = () => createMobileVaultCatalogActions({
+    active, catalog, perform, capture: analytics.capture,
+    currentSession: account.currentSession, runClone: cloneProgress.run,
+    startClone: () => setPhase('clone'),
+  })
   return {
-    ...createMobileVaultCatalogActions({
-      active, catalog, perform, capture: analytics.capture,
-      currentSession: account.currentSession, runClone: cloneProgress.run,
-      startClone: () => setPhase('clone'),
-    }),
+    openFolder: () => catalogActions().openFolder(),
+    select: (vault: ManagedGitVault) => catalogActions().select(vault),
+    selectLocal: (vault: ManagedLocalVault) => catalogActions().selectLocal(vault),
+    forget: (id: string) => catalogActions().forget(id),
+    clone: (url: string) => catalogActions().clone(url),
     account, active, busy, catalog, close, cloneProgress, editors, error, open, opened, linked, syncHistory, notices,
     phase, restorePending, revision, status, sync, commit, lastCommitId,
     conflictReview, conflictFailure, reviewConflicts, resolveConflicts, cancelConflictReview,
