@@ -6,7 +6,6 @@ import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from 'rea
 import Reanimated from 'react-native-reanimated'
 import { GestureDetector } from 'react-native-gesture-handler'
 import { MobilePanelSafeArea } from '../ui/MobilePanelSafeArea'
-import { CaretLeft, CaretRight, SidebarSimple } from 'phosphor-react-native'
 import { MobileCommandPalette } from '../components/workspace/MobileCommandPalette'
 import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
 import { MobilePropertiesPanel } from '../components/workspace/MobilePropertiesPanel'
@@ -22,8 +21,6 @@ import {
 } from '../workspace/readOnlyWorkspaceRepository'
 
 
-import { MobileIconButton } from '../ui/MobileIconButton'
-import { mobileText } from '../i18n/mobileText'
 import { useMobileEditorCommandRegistry, useMobileEditorOverlayFocus, type RegisterMobileEditorCommands, type MobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { MobileEditorActionRedirect } from '../components/workspace/MobileEditorActionRedirect'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
@@ -431,25 +428,14 @@ function TabletLeftChromeHost(props: TabletSidebarHostProps) {
   )
 }
 
-function TabletSidebarHost({
-  activeFolderId,
-  activeItemId,
-  gestures,
-  layoutProbe,
-  onOpenCreateFolder,
-  onOpenCreateType,
-  onOpenCreateView,
-  onOpenFolderActions,
-  onOpenFavoriteActions,
-  onOpenCommandPalette,
-  onOpenPrimaryActions,
-  onOpenTypeActions,
-  onOpenTypeVisibility,
-  onOpenViewActions,
-  onSelectFolder,
-  onSelectSidebarItem,
-  snapshot,
-}: TabletSidebarHostProps) {
+function TabletSidebarHost(props: TabletSidebarHostProps) {
+  const {
+    activeFolderId, activeItemId, gestures, layoutProbe, snapshot,
+    onOpenCreateFolder, onOpenCreateType, onOpenCreateView,
+    onOpenFolderActions, onOpenFavoriteActions, onOpenCommandPalette,
+    onOpenPrimaryActions, onOpenTypeActions, onOpenTypeVisibility,
+    onOpenViewActions, onSelectFolder, onSelectSidebarItem,
+  } = props
   const { styles } = useMobileStyles(createThemeStyles)
   if (!gestures.renderSidebar) return null
 
@@ -513,7 +499,6 @@ function tabletNoteListPanelProps(props: TabletPanelHostProps): ComponentProps<t
     displayPropertyKeys: props.noteListProperties,
     emptyVault: mobileWorkspaceHasNoVault(props.snapshot),
     layoutProbe: props.layoutProbe,
-    leading: <TabletNoteListSidebarAction gestures={props.gestures} />,
     neighborhood: props.noteListNeighborhood,
     noteListFilter: props.noteListFilter,
     noteListFilterCounts: props.noteListFilterCounts,
@@ -543,19 +528,6 @@ function tabletNoteListBulkActions(props: TabletPanelHostProps) {
     onDelete: props.onBulkDeleteNotes,
     onOrganize: props.onBulkOrganizeNotes,
   }
-}
-
-function TabletNoteListSidebarAction({ gestures }: { gestures: TabletPanelGestures }) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  return (
-    <MobileIconButton
-      accessibilityLabel={mobileText(gestures.showSidebar ? 'sidebar.action.collapse' : 'sidebar.action.expand')}
-      testID="tablet-note-list-sidebar-action"
-      onPress={gestures.toggleSidebar}
-    >
-      <SidebarSimple color={mobileColors.textMuted} size={16} />
-    </MobileIconButton>
-  )
 }
 
 type TabletEditorPanelHostProps = Pick<
@@ -606,7 +578,6 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     initialEditing: props.initialEditorEditing,
     initialEditingMode: props.initialEditorEditingMode,
     layoutProbe: props.layoutProbe,
-    leading: <TabletEditorChromeToggle gestures={props.gestures} />,
     note: props.selectedNote,
     noteRead: props.selectedNoteRead,
     notes: props.suggestionNotes,
@@ -616,9 +587,7 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     onRegisterEditorCommands: props.onRegisterEditorCommands,
     onTableOfContentsScrollProof: props.onTableOfContentsScrollProof,
     onToggleFavorite: props.onToggleFavorite,
-    onToggleProperties: props.gestures.toggleProperties,
     onUpdateContent: props.onUpdateNoteContent,
-    propertiesVisible: props.gestures.propertiesVisible,
     sourceIdleSave: props.sourceIdleSave,
     sourceSelectionProbe: props.sourceSelectionProbe,
     tableOfContentsTarget: props.tableOfContentsTarget,
@@ -634,22 +603,6 @@ function tabletEditorPanelProps(props: TabletEditorPanelHostProps): ComponentPro
     wysiwygTableCommandMutationProbe: props.wysiwygTableCommandMutationProbe,
     wysiwygWikilinkInsertProbe: props.wysiwygWikilinkInsertProbe,
   }
-}
-
-function TabletEditorChromeToggle({ gestures }: { gestures: TabletPanelGestures }) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  const chromeVisible = gestures.showSidebar || gestures.noteListVisible
-  const Icon = chromeVisible ? CaretLeft : CaretRight
-
-  return (
-    <MobileIconButton
-      accessibilityLabel={mobileText(chromeVisible ? 'sidebar.action.collapse' : 'sidebar.action.expand')}
-      testID="tablet-editor-chrome-toggle"
-      onPress={gestures.toggleSidebarAndNoteList}
-    >
-      <Icon color={mobileColors.textMuted} size={16} />
-    </MobileIconButton>
-  )
 }
 
 function TabletPropertiesPanelHost(props: TabletPropertiesPanelHostProps) {

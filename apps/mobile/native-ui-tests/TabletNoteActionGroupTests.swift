@@ -40,8 +40,7 @@ final class TabletNoteActionGroupTests: XCTestCase {
   func testUndoRemainsAvailableInEditGroup() {
     continueAfterFailure = false
     let app = launchFixture()
-    let back = element(app, "phone-back-action")
-    if back.exists { back.tap() }
+    if element(app, "phone-editor-screen").exists { MobilePanelNavigation.back(app) }
     let row = element(app, "note-row-open-source-project")
     XCTAssertTrue(row.waitForExistence(timeout: 5))
     row.tap()

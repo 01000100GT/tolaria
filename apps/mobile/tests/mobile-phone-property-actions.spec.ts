@@ -1,3 +1,4 @@
+import { openPhoneProperties } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
 import { workspaceScenarioForId } from '../src/fixtures/workspaceFixtures'
@@ -59,12 +60,6 @@ async function createPhonePropertyNote(page: Page) {
   await page.getByTestId('note-row-phone-property-matrix.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expect(page.getByTestId('editor-toolbar-title')).toHaveText('phone-property-matrix.md')
-}
-
-async function openPhoneProperties(page: Page) {
-  await page.getByTestId('phone-properties-action').click()
-  await expect(page.getByTestId('phone-properties-screen')).toBeVisible()
-  await expect(page.getByTestId('properties-panel')).toBeVisible()
 }
 
 async function installSelectedHostWorkspace(page: Page, selectedNoteContent: string) {

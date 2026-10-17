@@ -1,3 +1,4 @@
+import { openPhoneProperties, openPhoneSidebar, phoneBack } from './mobile-panel-navigation'
 import { expect } from '@playwright/test'
 import type { Page as PageLike } from '@playwright/test'
 import { ensureMarkdownInput } from './mobile-workspace-property-flows'
@@ -5,11 +6,11 @@ import { ensureMarkdownInput } from './mobile-workspace-property-flows'
 export async function navigatePhoneSidebarSection(page: PageLike) {
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await expectToolbarLeadingActionBeforeTitle(page)
-  await page.getByTestId('phone-sidebar-action').click()
+  await openPhoneSidebar(page)
   await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
   await swipeHorizontally(page, { x: 220, y: 300 }, { x: 40, y: 300 })
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
-  await page.getByTestId('phone-sidebar-action').click()
+  await openPhoneSidebar(page)
   await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
   await page.getByRole('button', { name: 'All Notes' }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
@@ -18,7 +19,7 @@ export async function navigatePhoneSidebarSection(page: PageLike) {
 }
 
 async function expectToolbarLeadingActionBeforeTitle(page: PageLike) {
-  const actionBox = await page.getByTestId('phone-sidebar-action').boundingBox()
+  const actionBox = await page.getByTestId('phone-command-palette-action').boundingBox()
   const titleBox = await page.getByTestId('note-list-toolbar-title').boundingBox()
   if (!actionBox || !titleBox) throw new Error('Cannot measure phone note-list toolbar.')
 
@@ -29,7 +30,7 @@ export async function openPhoneEditorAndProperties(page: PageLike) {
   await page.getByTestId('note-row-workflow-orchestration').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expect(page.getByTestId('editor-toolbar-title')).toHaveText('Workflow Orchestration Essay.md')
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('phone-properties-screen')).toBeVisible()
   await expect(page.getByTestId('properties-panel')).toBeVisible()
 }
@@ -39,17 +40,17 @@ async function openPhoneFavoriteNeighborhood(page: PageLike) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await page.getByTestId('editor-favorite-action').click()
   await expect(page.getByTestId('editor-favorite-action')).toHaveAccessibleName('Remove from Favorites')
-  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
 
-  await page.getByTestId('phone-sidebar-action').click()
+  await openPhoneSidebar(page)
   await expect(page.getByTestId('sidebar-item-favorite-open-source-project')).toBeVisible()
   await page.getByTestId('sidebar-item-favorite-open-source-project').click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await expect(page.getByTestId('note-list-toolbar-title')).toHaveText('How I Run an Open Source Project')
   await expect(page.getByTestId('note-row-open-source-project')).toBeVisible()
 
-  await page.getByTestId('phone-sidebar-action').click()
+  await openPhoneSidebar(page)
   await page.getByRole('button', { name: 'All Notes' }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await expect(page.getByTestId('note-list-toolbar-title')).toHaveText('All Notes')
@@ -78,7 +79,7 @@ export async function editPhoneMarkdownWithWikilink(page: PageLike) {
 }
 
 export async function returnPhoneEditorToList(page: PageLike) {
-  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await expect(page.getByTestId('note-row-workflow-orchestration')).toBeVisible()
 }

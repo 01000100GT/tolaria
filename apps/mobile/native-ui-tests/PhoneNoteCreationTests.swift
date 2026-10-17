@@ -16,7 +16,7 @@ final class PhoneNoteCreationTests: XCTestCase {
     XCTAssertTrue(source.exists)
     source.tap()
     source.typeText("A body without a title.")
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(element(app, "phone-note-list-screen").waitForExistence(timeout: 5))
     let note = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "A body without a title.")).firstMatch
     XCTAssertTrue(note.waitForExistence(timeout: 5))

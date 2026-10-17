@@ -4,6 +4,7 @@ import { basename, join } from 'node:path'
 import { assertDesktopParitySources } from './mobile-ui-desktopParitySources'
 import { assertSidebarRuntimeLayoutProbe, assertTabletDesktopParity } from './mobile-ui-parityAssertions'
 import { installLocalVaultSnapshot, localVaultPath } from './local-vault-snapshot-loader'
+import { dragPanel, toggleTabletProperties } from './mobile-panel-navigation'
 
 type ScreenshotRecord = {
   description: string
@@ -214,13 +215,13 @@ test.describe('mobile UI lab screenshots', () => {
     await page.goto('/?tabletPanels=all')
 
     const viewportWidth = requiredViewportWidth(page)
-
-    await swipeHorizontally(page, { x: 580, y: 220 }, { x: 20, y: 220 })
+    await toggleTabletProperties(page)
+    await dragPanel(page, { x: 580, y: 30 }, { x: 20, y: 30 })
     await page.waitForTimeout(500)
     const editorOnlyBox = await requiredBox(page, 'editor-panel')
     expect(editorOnlyBox.x).toBeLessThanOrEqual(1)
 
-    await page.getByTestId('tablet-editor-chrome-toggle').click()
+    await dragPanel(page, { x: 12, y: 30 }, { x: 650, y: 30 })
     await page.waitForTimeout(500)
     const restoredSidebar = await requiredBox(page, 'workspace-sidebar-panel')
     expect(restoredSidebar.x).toBeGreaterThanOrEqual(0)
@@ -228,12 +229,12 @@ test.describe('mobile UI lab screenshots', () => {
     const hiddenProperties = await requiredBox(page, 'tablet-properties-panel-host')
     expect(hiddenProperties.x).toBeGreaterThanOrEqual(viewportWidth - 1)
 
-    await page.getByTestId('editor-properties-action').click()
+    await toggleTabletProperties(page)
     await page.waitForTimeout(500)
     const visibleProperties = await requiredBox(page, 'tablet-properties-panel-host')
     expect(visibleProperties.x + visibleProperties.width).toBeCloseTo(viewportWidth, 0)
 
-    await page.getByTestId('editor-properties-action').click()
+    await toggleTabletProperties(page)
     await page.waitForTimeout(500)
     const toggledProperties = await requiredBox(page, 'tablet-properties-panel-host')
     expect(toggledProperties.x).toBeGreaterThanOrEqual(viewportWidth - 1)
@@ -309,33 +310,6 @@ async function useDesktopReferenceScale(page: Page) {
   await page.addInitScript(() => {
     localStorage.setItem('tolaria-mobile-settings', JSON.stringify({ uiScale: 1 }))
   })
-}
-
-async function swipeHorizontally(
-  page: Page,
-  start: { x: number; y: number },
-  end: { x: number; y: number },
-) {
-  const client = await page.context().newCDPSession(page)
-  const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 }
-
-  await client.send('Input.dispatchTouchEvent', {
-    touchPoints: [start],
-    type: 'touchStart',
-  })
-  await client.send('Input.dispatchTouchEvent', {
-    touchPoints: [midpoint],
-    type: 'touchMove',
-  })
-  await client.send('Input.dispatchTouchEvent', {
-    touchPoints: [end],
-    type: 'touchMove',
-  })
-  await client.send('Input.dispatchTouchEvent', {
-    touchPoints: [],
-    type: 'touchEnd',
-  })
-  await client.detach()
 }
 
 async function requiredBox(page: Page, testId: string) {

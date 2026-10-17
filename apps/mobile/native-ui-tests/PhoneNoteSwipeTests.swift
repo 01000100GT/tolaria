@@ -28,12 +28,12 @@ final class PhoneNoteSwipeTests: XCTestCase {
     let favorite = element(app, "editor-favorite-action")
     XCTAssertTrue(favorite.waitForExistence(timeout: 5))
     let initialLabel = favorite.label
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(row.waitForExistence(timeout: 5))
     drag(row, from: 0.08, to: 0.92)
     row.tap()
     waitUntil { favorite.exists && favorite.label != initialLabel }
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(row.waitForExistence(timeout: 5))
     drag(row, from: 0.92, to: 0.08)
     verifyArchivedNote(app)
@@ -45,7 +45,7 @@ final class PhoneNoteSwipeTests: XCTestCase {
   private func verifyArchivedNote(_ app: XCUIApplication) {
     let row = element(app, "note-row-workflow-orchestration")
     waitUntil { !row.exists }
-    element(app, "phone-sidebar-action").tap()
+    MobilePanelNavigation.openSidebar(app)
     let archive = element(app, "sidebar-item-archive")
     XCTAssertTrue(archive.waitForExistence(timeout: 5))
     archive.tap()

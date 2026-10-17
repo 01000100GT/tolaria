@@ -32,7 +32,7 @@ final class TabletAppearanceTests: XCTestCase {
     app.launch()
     XCTAssertTrue(element(app, "editor-toolbar-title").waitForExistence(timeout: 30))
     selectTheme(app, "dark")
-    element(app, "editor-properties-action").tap()
+    MobilePanelNavigation.toggleProperties(app)
     let add = element(app, "relationship-add-belongs-to")
     XCTAssertTrue(add.waitForExistence(timeout: 5))
     record("dark-inspector")
@@ -40,11 +40,9 @@ final class TabletAppearanceTests: XCTestCase {
     XCTAssertTrue(element(app, "workspace-relationship-name-input").waitForExistence(timeout: 5))
     record("dark-relationship-picker")
     element(app, "workspace-relationship-cancel-action").tap()
-    element(app, "editor-properties-action").tap()
+    MobilePanelNavigation.toggleProperties(app)
     if !element(app, "sidebar-section-visibility-types").isHittable {
-      let listToggle = element(app, "tablet-note-list-sidebar-action")
-      let toggle = listToggle.isHittable ? listToggle : element(app, "tablet-editor-chrome-toggle")
-      toggle.tap()
+      MobilePanelNavigation.openSidebar(app)
     }
     element(app, "sidebar-section-visibility-types").tap()
     let row = element(app, "workspace-type-visibility-essay")

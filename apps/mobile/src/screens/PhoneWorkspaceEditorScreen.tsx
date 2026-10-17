@@ -1,9 +1,6 @@
 import { useCallback, type ReactNode } from 'react'
-import { Info } from 'phosphor-react-native'
 import { View } from 'react-native'
 import { probeProps } from '../qa/mobileLayoutProbe'
-import { mobileText } from '../i18n/mobileText'
-import { MobileIconButton } from '../ui/MobileIconButton'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
 import { mobileNoteIdForWikilinkTarget } from '../workspace/mobileWikilinks'
@@ -11,82 +8,9 @@ import type { RegisterMobileEditorCommands } from '../workspace/mobileEditorComm
 import type { MobileNote } from '../workspace/mobileWorkspaceModel'
 import { TabletEditorPanel } from './TabletEditorPanel'
 import type { PhoneWorkspaceEditorOptions } from './phoneWorkspaceEditorOptions'
-import { PhoneBackButton, PhoneCommandPaletteButton, PhoneTopBar } from './PhoneWorkspaceChrome'
+import { PhoneCommandPaletteButton, PhoneTopBar } from './PhoneWorkspaceChrome'
 import { createThemeStyles } from './phoneWorkspaceStyles'
 import { phoneSwipePreviewHandlers, usePhonePanelDragSurface, type PhoneWorkspaceStateViewProps, type PhoneWorkspaceController, type PhoneTableOfContentsTargetRequest } from './phoneWorkspaceScreenSupport'
-
-export function PhoneEditorScreen(props: PhoneWorkspaceStateViewProps) {
-  const {
-    controller,
-    options,
-    openList,
-    openCommandPalette,
-    openProperties,
-    onRegisterEditorCommands,
-    phoneLayoutProbe,
-    phoneSwipePreview,
-    sourceModeRequest,
-    suggestionNotes,
-    tableOfContentsTarget,
-  } = props
-  const { styles } = useMobileStyles(createThemeStyles)
-  const commitList = useCallback(
-    () => phoneSwipePreview.commit('list', openList),
-    [openList, phoneSwipePreview],
-  )
-  const commitProperties = useCallback(
-    () => phoneSwipePreview.commit('properties', openProperties),
-    [openProperties, phoneSwipePreview],
-  )
-  const swipeHandlers = useHorizontalSwipe({
-    ...phoneSwipePreviewHandlers(phoneSwipePreview),
-    canStart: usePhonePanelDragSurface('editor'),
-    onSwipeLeft: commitProperties,
-    onSwipeRight: commitList,
-  })
-  const handleNavigateWikilink = usePhoneWikilinkNavigation({ controller, suggestionNotes })
-
-  return (
-    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.editor.screen')} style={styles.screen} testID="phone-editor-screen">
-      {!controller.selectedNote && <PhoneTopBar title="" onBack={openList} />}
-      <PhoneEditorBody
-        controller={controller}
-        leading={<PhoneBackButton onBack={openList} />}
-        trailing={<PhoneEditorActions onOpenCommandPalette={openCommandPalette} onOpenProperties={openProperties} />}
-        notes={suggestionNotes}
-        onNavigateWikilink={handleNavigateWikilink}
-        onRegisterEditorCommands={onRegisterEditorCommands}
-        options={options}
-        sourceModeRequest={sourceModeRequest}
-        tableOfContentsTarget={tableOfContentsTarget}
-      />
-    </View>
-  )
-}
-
-type PhoneEditorActionsProps = {
-  onOpenCommandPalette: () => void
-  onOpenProperties: () => void
-}
-
-function PhoneEditorActions({
-  onOpenCommandPalette,
-  onOpenProperties,
-}: PhoneEditorActionsProps) {
-  const { mobileColors } = useMobileStyles(createThemeStyles)
-  return (
-    <>
-      <MobileIconButton
-        accessibilityLabel={mobileText('inspector.title.properties')}
-        testID="phone-properties-action"
-        onPress={onOpenProperties}
-      >
-        <Info color={mobileColors.textMuted} size={18} />
-      </MobileIconButton>
-      <PhoneCommandPaletteButton onPress={onOpenCommandPalette} />
-    </>
-  )
-}
 
 type PhoneEditorBodyProps = {
   controller: PhoneWorkspaceController
@@ -166,4 +90,53 @@ function usePhoneWikilinkNavigation({
 
     controller.onSelectNote(noteId)
   }, [controller, suggestionNotes])
+}
+
+
+export function PhoneEditorScreen(props: PhoneWorkspaceStateViewProps) {
+  const {
+    controller,
+    options,
+    openList,
+    openCommandPalette,
+    openProperties,
+    onRegisterEditorCommands,
+    phoneLayoutProbe,
+    phoneSwipePreview,
+    sourceModeRequest,
+    suggestionNotes,
+    tableOfContentsTarget,
+  } = props
+  const { styles } = useMobileStyles(createThemeStyles)
+  const commitList = useCallback(
+    () => phoneSwipePreview.commit('list', openList),
+    [openList, phoneSwipePreview],
+  )
+  const commitProperties = useCallback(
+    () => phoneSwipePreview.commit('properties', openProperties),
+    [openProperties, phoneSwipePreview],
+  )
+  const swipeHandlers = useHorizontalSwipe({
+    ...phoneSwipePreviewHandlers(phoneSwipePreview),
+    canStart: usePhonePanelDragSurface('editor'),
+    onSwipeLeft: commitProperties,
+    onSwipeRight: commitList,
+  })
+  const handleNavigateWikilink = usePhoneWikilinkNavigation({ controller, suggestionNotes })
+
+  return (
+    <View {...swipeHandlers} {...probeProps(phoneLayoutProbe, 'phone.editor.screen')} style={styles.screen} testID="phone-editor-screen">
+      {!controller.selectedNote && <PhoneTopBar title="" onBack={openList} />}
+      <PhoneEditorBody
+        controller={controller}
+        trailing={<PhoneCommandPaletteButton onPress={openCommandPalette} />}
+        notes={suggestionNotes}
+        onNavigateWikilink={handleNavigateWikilink}
+        onRegisterEditorCommands={onRegisterEditorCommands}
+        options={options}
+        sourceModeRequest={sourceModeRequest}
+        tableOfContentsTarget={tableOfContentsTarget}
+      />
+    </View>
+  )
 }

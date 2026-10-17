@@ -1,3 +1,5 @@
+import { openPhoneSidebar, phoneBack } from './mobile-panel-navigation'
+import { fileRevealAttempts, latestClipboardAttempt } from './mobile-browser-attempts'
 import { expect, test, type Page } from '@playwright/test'
 import { buildLocalVaultWorkspaceSnapshot, mobileFileKindForPath, type LocalVaultFile } from '../src/workspace/localVaultSnapshot'
 import {
@@ -5,10 +7,6 @@ import {
   HOST_WORKSPACE_SNAPSHOT_GLOBAL_KEY,
   HOST_WORKSPACE_SNAPSHOT_STORAGE_KEY,
 } from '../src/workspace/readOnlyWorkspaceRepository'
-
-const mobileClipboardAttemptsGlobalKey = '__TOLARIA_MOBILE_CLIPBOARD_ATTEMPTS__'
-const mobileFileOpenAttemptsGlobalKey = '__TOLARIA_MOBILE_FILE_OPEN_ATTEMPTS__'
-const mobileFileRevealAttemptsGlobalKey = '__TOLARIA_MOBILE_FILE_REVEAL_ATTEMPTS__'
 
 test.describe('mobile non-markdown file action parity', () => {
   test('exposes active file actions for selected text and binary vault entries', async ({ page }, testInfo) => {
@@ -71,7 +69,7 @@ test.describe('mobile non-markdown file action parity', () => {
       revealNoteId: 'Files/diagram.png',
     })
     await deleteSelectedFileFromMoreSheet(page, 'note-row-Files/diagram.png')
-    await page.getByTestId('phone-back-action').click()
+    await phoneBack(page)
     await expect(page.getByTestId('note-row-Files/diagram.png')).toBeHidden()
   })
 })
@@ -106,12 +104,12 @@ async function assertFileActionSheet(
 
   await page.getByTestId('workspace-action-copy-file-path').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await expect(latestGlobalEntry(page, mobileClipboardAttemptsGlobalKey)).resolves.toBe(copiedPath)
+  await expect(latestClipboardAttempt(page)).resolves.toBe(copiedPath)
 
   await page.getByTestId('editor-more-action').click()
   await page.getByTestId('workspace-action-reveal-file').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await expect(latestGlobalEntry(page, mobileFileRevealAttemptsGlobalKey)).resolves.toEqual({
+  await expect(fileRevealAttempts(page).then(attempts => attempts.at(-1))).resolves.toEqual({
     noteId: revealNoteId,
     path: copiedPath,
     title: fileTitle,
@@ -120,7 +118,7 @@ async function assertFileActionSheet(
   await page.getByTestId('editor-more-action').click()
   await page.getByTestId('workspace-action-open-default-app').click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await expect(latestGlobalEntry(page, mobileFileOpenAttemptsGlobalKey)).resolves.toEqual({
+  await expect(latestFileOpenAttempt(page)).resolves.toEqual({
     noteId: revealNoteId,
     path: copiedPath,
     title: fileTitle,
@@ -142,11 +140,11 @@ async function deleteSelectedFileFromMoreSheet(page: Page, rowTestId: string) {
   await expect(page.getByTestId(rowTestId)).toBeHidden()
 }
 
-function latestGlobalEntry(page: Page, key: string) {
-  return page.evaluate((globalKey) => {
-    const value = (window as unknown as Record<string, unknown>)[globalKey]
+function latestFileOpenAttempt(page: Page) {
+  return page.evaluate(() => {
+    const value = Reflect.get(window, '__TOLARIA_MOBILE_FILE_OPEN_ATTEMPTS__')
     return Array.isArray(value) ? value.at(-1) : null
-  }, key)
+  })
 }
 
 async function installFileEntryHostWorkspace(page: Page) {
@@ -184,7 +182,7 @@ async function installFileEntryHostWorkspace(page: Page) {
 }
 
 async function openPhoneFolder(page: Page, folderName: string) {
-  await page.getByTestId('phone-sidebar-action').click()
+  await openPhoneSidebar(page)
   await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
   await page.getByRole('button', { exact: true, name: folderName }).click()
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()

@@ -663,6 +663,12 @@ route as already animated. `PhoneWorkspaceTransition` animates only a new route,
 not a cleared handoff or a resize. Interrupted settlement never navigates.
 Native panel-drag tests verify the destination bounds alongside lifecycle tests
 for cancellation and duplicate-animation prevention.
+Mobile editor and list toolbars omit redundant pane toggles and editor back
+buttons. Panel navigation remains available through drags and command-palette
+commands; note-row swipes retain their quick actions. The phone root clips
+off-screen transitions so browser layout overflow cannot change gesture bounds.
+Shared native/browser navigation test helpers perform drags and wait for the
+destination geometry rather than activating removed toolbar controls.
 
 Mobile deep-link copying follows the same boundary. `mobileDeepLinks.ts` owns URL construction from `MobileWorkspaceSnapshot.source` and the selected note path, and `mobileClipboard.ts` owns the Expo Clipboard call plus deterministic QA logging. Components such as `MobileWorkspaceActionSheet` receive `onCopyDeepLink` and do not import clipboard or URL-building modules directly.
 

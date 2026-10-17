@@ -1,3 +1,4 @@
+import { openPhoneProperties, openPhoneSidebar, phoneBack } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
 import { longPressMouseTestId as longPressTestId } from './mobile-phone-test-gestures'
@@ -75,7 +76,7 @@ async function customizePhoneTypeSectionAndCreateTemplateNote(page: Page) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expect.poll(() => page.getByTestId('editor-markdown-input').inputValue()).toContain('## Phone Runbook')
   await expect.poll(() => page.getByTestId('editor-markdown-input').inputValue()).toContain('Phone type template body.')
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('property-row-priority')).toContainText('High')
   await expect(page.getByTestId('relationship-row-workflow-orchestration-essay')).toBeVisible()
 }
@@ -150,12 +151,12 @@ async function addSuggestedPhoneRelationship(page: Page) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expect(page.getByTestId('editor-toolbar-title')).toHaveText('How I Run an Open Source Project.md')
 
-  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await page.getByTestId('note-row-phone-relationship-source.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expectBodyOnlyPhoneNote(page, 'Phone Relationship Source')
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('relationship-row-how-i-run-an-open-source-project')).toBeVisible()
   await page.getByTestId('relationship-row-how-i-run-an-open-source-project-remove').click()
   await expect(page.getByTestId('relationship-row-how-i-run-an-open-source-project')).toBeHidden()
@@ -167,7 +168,7 @@ async function createPhoneSourceNoteProperties(page: Page, title: string) {
   await page.getByTestId(`note-row-${noteRowSlug(title)}.md`).click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expectBodyOnlyPhoneNote(page, title)
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('phone-properties-screen')).toBeVisible()
 }
 
@@ -182,12 +183,12 @@ async function createPhoneRelationshipTarget(page: Page) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expectBodyOnlyPhoneNote(page, 'Brand New Phone Target')
 
-  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
   await page.getByTestId('note-row-phone-target-source.md').click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await expectBodyOnlyPhoneNote(page, 'Phone Target Source')
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('relationship-row-brand-new-phone-target')).toBeVisible()
 }
 
@@ -198,11 +199,4 @@ async function expectBodyOnlyPhoneNote(page: Page, title: string) {
 
 function noteRowSlug(title: string) {
   return title.trim().toLowerCase().replace(/\s+/gu, '-')
-}
-
-async function openPhoneSidebar(page: Page) {
-  if (await page.getByTestId('phone-sidebar-screen').isVisible()) return
-
-  await page.getByTestId('phone-sidebar-action').click()
-  await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
 }

@@ -1,12 +1,10 @@
-import { useCallback, type ReactNode } from 'react'
-import { List } from 'phosphor-react-native'
+import { Fragment, useCallback, type ReactNode } from 'react'
 import { useWindowDimensions, View } from 'react-native'
 import { MobileNoteListPanel } from '../components/workspace/MobileNoteListPanel'
 import { MobilePropertiesPanel } from '../components/workspace/MobilePropertiesPanel'
 import { MobileWorkspaceSidebar } from '../components/workspace/MobileWorkspaceSidebar'
 import { mobileText } from '../i18n/mobileText'
 import { probeProps, type MobileLayoutProbe } from '../qa/mobileLayoutProbe'
-import { MobileIconButton } from '../ui/MobileIconButton'
 import { useMobileStyles } from '../ui/theme/useMobileTheme'
 import { useHorizontalSwipe } from '../ui/useHorizontalSwipe'
 import type { MobileNote } from '../workspace/mobileWorkspaceModel'
@@ -91,25 +89,6 @@ function phoneWorkspacePreviewOptions(options: PhoneWorkspaceEditorOptions): Pho
 
 const disabledPhoneLayoutProbe: MobileLayoutProbe = () => ({})
 
-export function PhoneWorkspaceScreens(props: PhoneWorkspaceStateViewProps) {
-  return (
-    <>
-      <PhoneScreenLayer active={props.phoneState === 'list'} retain>
-        <PhoneNoteListScreen {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'editor'} retain>
-        <PhoneEditorScreen {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'sidebar'}>
-        <PhoneSidebarDrawer {...props} />
-      </PhoneScreenLayer>
-      <PhoneScreenLayer active={props.phoneState === 'properties'}>
-        <PhonePropertiesScreen {...props} />
-      </PhoneScreenLayer>
-    </>
-  )
-}
-
 function PhoneWorkspaceStateView(props: PhoneWorkspaceStateViewProps) {
   if (props.phoneState === 'sidebar') return <PhoneSidebarDrawer {...props} />
   if (props.phoneState === 'properties') return <PhonePropertiesScreen {...props} />
@@ -126,7 +105,7 @@ function PhoneNoteListScreen({
   phoneLayoutProbe,
   phoneSwipePreview,
 }: PhoneWorkspaceStateViewProps) {
-  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { styles } = useMobileStyles(createThemeStyles)
   const commitSidebar = useCallback(
     () => phoneSwipePreview.commit('sidebar', openSidebar),
     [openSidebar, phoneSwipePreview],
@@ -142,23 +121,12 @@ function PhoneNoteListScreen({
       <MobileNoteListPanel
         compact
         onToggleNoteFavorite={controller.onToggleNoteFavorite}
-        bulkActions={{
-          onArchive: controller.onBulkArchiveNotes,
-          onDelete: controller.onBulkDeleteNotes,
-          onOrganize: controller.onBulkOrganizeNotes,
-        }}
+        bulkActions={phoneNoteListBulkActions(controller)}
         displayPropertyKeys={controller.noteListProperties}
         emptyVault={mobileWorkspaceHasNoVault(controller.snapshot)}
         fullWidth
         layoutProbe={options.layoutProbe}
-        leading={(
-          <View style={styles.leadingActions}>
-            <MobileIconButton accessibilityLabel={mobileText('sidebar.action.expand')} testID="phone-sidebar-action" onPress={openSidebar}>
-              <List color={mobileColors.textMuted} size={18} />
-            </MobileIconButton>
-            <PhoneCommandPaletteButton onPress={openCommandPalette} />
-          </View>
-        )}
+        leading={<PhoneCommandPaletteButton onPress={openCommandPalette} />}
         neighborhood={controller.noteListNeighborhood}
         noteListFilter={controller.noteListFilter}
         noteListFilterCounts={controller.noteListFilterCounts}
@@ -180,15 +148,16 @@ function PhoneNoteListScreen({
   )
 }
 
-function PhoneSidebarDrawer({
-  controller,
-  options,
-  openCommandPalette,
-  openEditor,
-  openList,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-}: PhoneWorkspaceStateViewProps) {
+function phoneNoteListBulkActions(controller: PhoneWorkspaceController) {
+  return {
+    onArchive: controller.onBulkArchiveNotes,
+    onDelete: controller.onBulkDeleteNotes,
+    onOrganize: controller.onBulkOrganizeNotes,
+  }
+}
+
+function PhoneSidebarDrawer(props: PhoneWorkspaceStateViewProps) {
+  const { controller, options, openCommandPalette, openList, phoneLayoutProbe, phoneSwipePreview } = props
   const { styles } = useMobileStyles(createThemeStyles)
   const { width } = useWindowDimensions()
   const drawerWidth = phoneWorkspaceSidebarDrawerWidth(width)
@@ -210,22 +179,7 @@ function PhoneSidebarDrawer({
         pointerEvents="none"
         style={[styles.drawerPreview, { left: drawerWidth, width }]}
       >
-        <MobileNoteListPanel
-          compact
-          displayPropertyKeys={controller.noteListProperties}
-          fullWidth
-          layoutProbe={options.layoutProbe}
-          neighborhood={controller.noteListNeighborhood}
-          notes={controller.notes}
-          propertyDisplayModes={controller.snapshot.vaultConfig?.propertyDisplayModes}
-          selectedNoteId={controller.selectedNoteId}
-          subtitle={controller.noteListSubtitle}
-          title={controller.noteListTitle}
-          typeDefinitions={controller.snapshot.typeDefinitions}
-          onOpenCreateNote={controller.onOpenCreateNote}
-          onOpenSearch={controller.onOpenSearch}
-          onSelectNote={openEditor}
-        />
+        <PhoneSidebarNoteListPreview {...props} />
       </View>
       <View {...probeProps(phoneLayoutProbe, 'phone.sidebar.drawer')} style={[styles.drawerPanel, { width: drawerWidth }]}>
         <MobileWorkspaceSidebar
@@ -253,16 +207,32 @@ function PhoneSidebarDrawer({
   )
 }
 
-function PhonePropertiesScreen({
-  controller,
-  options,
-  openEditor,
-  openSourceEditor,
-  openCommandPalette,
-  openList,
-  phoneLayoutProbe,
-  phoneSwipePreview,
-}: PhoneWorkspaceStateViewProps) {
+function PhoneSidebarNoteListPreview({ controller, options, openEditor }: PhoneWorkspaceStateViewProps) {
+  return (
+    <MobileNoteListPanel
+      compact
+      displayPropertyKeys={controller.noteListProperties}
+      fullWidth
+      layoutProbe={options.layoutProbe}
+      neighborhood={controller.noteListNeighborhood}
+      notes={controller.notes}
+      propertyDisplayModes={controller.snapshot.vaultConfig?.propertyDisplayModes}
+      selectedNoteId={controller.selectedNoteId}
+      subtitle={controller.noteListSubtitle}
+      title={controller.noteListTitle}
+      typeDefinitions={controller.snapshot.typeDefinitions}
+      onOpenCreateNote={controller.onOpenCreateNote}
+      onOpenSearch={controller.onOpenSearch}
+      onSelectNote={openEditor}
+    />
+  )
+}
+
+function PhonePropertiesScreen(props: PhoneWorkspaceStateViewProps) {
+  const {
+    controller, options, openEditor, openSourceEditor, openCommandPalette,
+    openList, phoneLayoutProbe, phoneSwipePreview,
+  } = props
   const { styles } = useMobileStyles(createThemeStyles)
   const returnToEditor = useCallback(() => openEditor(), [openEditor])
   const commitEditor = useCallback(
@@ -317,4 +287,24 @@ function useSelectAndOpenList<Selection>(
     select(selection)
     openList()
   }, [select, openList])
+}
+
+
+export function PhoneWorkspaceScreens(props: PhoneWorkspaceStateViewProps) {
+  return (
+    <Fragment>
+      <PhoneScreenLayer active={props.phoneState === 'list'} retain>
+        <PhoneNoteListScreen {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'editor'} retain>
+        <PhoneEditorScreen {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'sidebar'}>
+        <PhoneSidebarDrawer {...props} />
+      </PhoneScreenLayer>
+      <PhoneScreenLayer active={props.phoneState === 'properties'}>
+        <PhonePropertiesScreen {...props} />
+      </PhoneScreenLayer>
+    </Fragment>
+  )
 }

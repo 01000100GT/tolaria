@@ -1,3 +1,4 @@
+import { openPhoneSidebar, phoneBack } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { longPressMouseTestId } from './mobile-phone-test-gestures'
 
@@ -25,12 +26,7 @@ async function addOpenSourceProjectToFavorites(page: Page) {
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
   await page.getByTestId('editor-favorite-action').click()
   await expect(page.getByLabel('Remove from Favorites')).toBeVisible()
-  await page.getByTestId('phone-back-action').click()
-}
-
-async function openPhoneSidebar(page: Page) {
-  await page.getByTestId('phone-sidebar-action').click()
-  await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
+  await phoneBack(page)
 }
 
 async function expectFavoriteBefore(page: Page, firstNoteId: string, secondNoteId: string) {

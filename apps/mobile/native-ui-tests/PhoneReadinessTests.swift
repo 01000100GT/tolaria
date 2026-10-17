@@ -6,15 +6,15 @@ final class PhoneReadinessTests: XCTestCase {
     element(app, "editor-source-action").tap()
     let input = element(app, "editor-markdown-input")
     XCTAssertTrue(input.waitForExistence(timeout: 15))
-    element(app, "phone-properties-action").tap()
+    MobilePanelNavigation.openProperties(app)
     XCTAssertTrue(element(app, "phone-properties-screen").waitForExistence(timeout: 5))
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(input.waitForExistence(timeout: 5), "Returning from Properties must retain the editor mode")
   }
 
   func testPropertySaveRemainsAboveTheSoftwareKeyboard() {
     let app = launch("wysiwyg")
-    element(app, "phone-properties-action").tap()
+    MobilePanelNavigation.openProperties(app)
     let tags = element(app, "property-tags-edit")
     XCTAssertTrue(tags.waitForExistence(timeout: 5))
     tags.tap()
@@ -33,7 +33,7 @@ final class PhoneReadinessTests: XCTestCase {
     XCUIDevice.shared.orientation = .landscapeLeft
     XCTAssertTrue(element(app, "editor-format-menu-headings").waitForExistence(timeout: 5))
     XCTAssertFalse(element(app, "editor-format-heading-6").exists)
-    element(app, "phone-properties-action").tap()
+    MobilePanelNavigation.openProperties(app)
     XCTAssertTrue(element(app, "phone-properties-screen").waitForExistence(timeout: 5))
     XCTAssertFalse(element(app, "properties-toolbar").exists)
     XCUIDevice.shared.orientation = .portrait
@@ -46,7 +46,7 @@ final class PhoneReadinessTests: XCTestCase {
     app.launchArguments = ["--tolaria-mobile-search",
       "?source=fixture&phoneState=editor&editorMode=\(mode)&qaRun=phone-readiness"]
     app.launch()
-    XCTAssertTrue(element(app, "phone-properties-action").waitForExistence(timeout: 30))
+    XCTAssertTrue(element(app, "editor-toolbar").waitForExistence(timeout: 30))
     return app
   }
 

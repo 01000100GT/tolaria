@@ -1,3 +1,4 @@
+import { closePhoneSidebar, openPhoneProperties, openPhoneSidebar, phoneBack } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { longPressMouseTestId, longPressTestId } from './mobile-phone-test-gestures'
 
@@ -29,6 +30,7 @@ test.describe('phone saved view configuration parity', () => {
     await page.getByTestId('workspace-view-filter-value-input-0').fill('Procedure')
     await page.getByTestId('workspace-action-sheet-editView').getByRole('button', { name: 'Save' }).click()
     await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
+    await closePhoneSidebar(page)
     await expect(page.getByTestId('note-list-toolbar-title')).toHaveText('Phone Procedure View')
     await expect(page.getByTestId('note-row-open-source-project')).toBeVisible()
     await expect(page.getByTestId('note-row-workflow-orchestration')).toBeHidden()
@@ -69,6 +71,8 @@ test.describe('phone saved view configuration parity', () => {
     await page.getByTestId('workspace-action-sheet-editView').getByRole('button', { name: 'Save' }).click()
     await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
 
+    await closePhoneSidebar(page)
+
     await expect(await rowY(page, 'note-row-open-source-project')).toBeLessThan(
       await rowY(page, 'note-row-workflow-orchestration'),
     )
@@ -100,6 +104,7 @@ test.describe('phone saved view configuration parity', () => {
     await page.getByTestId('workspace-primary-property-option-priority').click()
     await page.getByTestId('workspace-action-sheet-editPrimaryListProperties').getByRole('button', { name: 'Save' }).click()
     await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
+    await closePhoneSidebar(page)
     await expect(page.getByTestId('note-row-workflow-orchestration').getByText('2')).toBeVisible()
     await expect(page.getByTestId('note-row-open-source-project').getByText('1')).toBeVisible()
   })
@@ -108,7 +113,7 @@ test.describe('phone saved view configuration parity', () => {
 async function addNumericPropertyToPhoneNote(page: Page, rowTestId: string, propertyName: string, propertyValue: string) {
   await page.getByTestId(rowTestId).click()
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await page.getByTestId('phone-properties-action').click()
+  await openPhoneProperties(page)
   await expect(page.getByTestId('phone-properties-screen')).toBeVisible()
   await page.getByTestId('property-action-add-property').click()
   await page.getByTestId('workspace-property-name-input').fill(propertyName)
@@ -117,17 +122,10 @@ async function addNumericPropertyToPhoneNote(page: Page, rowTestId: string, prop
   await page.getByTestId('workspace-action-sheet-addProperty').getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
   await expect(page.getByTestId(`property-row-${propertyName.toLowerCase()}`)).toContainText(propertyValue)
-  await page.getByTestId('phone-back-action').click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
-  await page.getByTestId('phone-back-action').click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
-}
-
-async function openPhoneSidebar(page: Page) {
-  if (await page.getByTestId('phone-sidebar-screen').isVisible()) return
-
-  await page.getByTestId('phone-sidebar-action').click()
-  await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
 }
 
 async function rowY(page: Page, testId: string) {

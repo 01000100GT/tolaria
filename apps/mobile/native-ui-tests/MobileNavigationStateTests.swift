@@ -80,18 +80,16 @@ final class MobileNavigationStateTests: XCTestCase {
   }
 
   private func visitPropertiesAndReturn() {
-    if element("phone-properties-action").exists {
-      element("phone-properties-action").tap()
+    if element("phone-editor-screen").exists {
+      MobilePanelNavigation.openProperties(app)
       XCTAssertTrue(element("phone-properties-screen").waitForExistence(timeout: 5))
       drag(element("phone-properties-screen"), from: 0.1, to: 0.9)
       waitUntil { self.element("editor-markdown-input").isHittable }
     } else {
-      let toggle = element("editor-properties-action")
-      XCTAssertTrue(toggle.isHittable)
       let wasVisible = element("properties-panel").exists
-      toggle.tap()
+      MobilePanelNavigation.toggleProperties(app)
       waitUntil { self.element("properties-panel").exists != wasVisible }
-      toggle.tap()
+      MobilePanelNavigation.toggleProperties(app)
       waitUntil { self.element("properties-panel").exists == wasVisible }
     }
   }

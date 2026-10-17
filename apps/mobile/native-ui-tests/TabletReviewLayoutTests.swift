@@ -24,9 +24,8 @@ final class TabletReviewLayoutTests: XCTestCase {
 
   func testInspectorExposesPropertyAndRelationshipAddition() {
     let app = launchFixture()
-    let toggle = element(app, "editor-properties-action")
-    XCTAssertTrue(toggle.waitForExistence(timeout: 30))
-    if !element(app, "properties-toolbar-add").isHittable { toggle.tap() }
+    XCTAssertTrue(element(app, "editor-toolbar").waitForExistence(timeout: 30))
+    if !element(app, "properties-toolbar-add").isHittable { MobilePanelNavigation.openProperties(app) }
     let addProperty = element(app, "properties-toolbar-add")
     XCTAssertTrue(addProperty.waitForExistence(timeout: 5))
     XCTAssertTrue(addProperty.isHittable)

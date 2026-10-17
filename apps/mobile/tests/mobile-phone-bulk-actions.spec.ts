@@ -1,5 +1,6 @@
+import { openPhoneSidebar } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
-import { longPressTestId } from './mobile-phone-test-gestures'
+import { longPressMouseTestId } from './mobile-phone-test-gestures'
 
 test.describe('phone bulk note action parity', () => {
   test('applies phone note-list bulk actions', async ({ page }, testInfo) => {
@@ -44,14 +45,8 @@ test.describe('phone bulk note action parity', () => {
 })
 
 async function bulkSelectDefaultNotes(page: Page) {
-  await longPressTestId(page, 'note-row-workflow-orchestration')
+  // Native touch release is covered by MobilePanelNavigationTests; RN-web synthesizes an extra touch click.
+  await longPressMouseTestId(page, 'note-row-workflow-orchestration')
   await page.getByTestId('note-row-open-source-project').click()
   await expect(page.getByTestId('note-list-bulk-action-bar')).toBeVisible()
-}
-
-async function openPhoneSidebar(page: Page) {
-  if (await page.getByTestId('phone-sidebar-screen').isVisible()) return
-
-  await page.getByTestId('phone-sidebar-action').click()
-  await expect(page.getByTestId('phone-sidebar-screen')).toBeVisible()
 }

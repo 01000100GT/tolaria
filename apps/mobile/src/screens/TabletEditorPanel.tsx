@@ -1,5 +1,5 @@
 import { useMobileStyles, useMobileColors, useMobileMetrics } from '../ui/theme/useMobileTheme'
-import { Code, DotsThree, ListBullets, SidebarSimple, Star } from 'phosphor-react-native'
+import { Code, DotsThree, ListBullets, Star } from 'phosphor-react-native'
 import {
   ScrollView,
   View,
@@ -60,10 +60,8 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
     onOpenTableOfContents,
     onRegisterEditorCommands,
     onTableOfContentsScrollProof,
-    onToggleProperties,
     onToggleFavorite,
     onUpdateContent,
-    propertiesVisible,
     sourceIdleSave = true,
     sourceSelectionProbe = false,
     tableOfContentsTarget = null,
@@ -137,10 +135,8 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         note={note}
         onOpenMoreActions={onOpenMoreActions}
         onOpenTableOfContents={onOpenTableOfContents}
-        onToggleProperties={onToggleProperties}
         onToggleSourceMode={toggleSourceMode}
         onToggleFavorite={onToggleFavorite}
-        propertiesVisible={propertiesVisible}
         typeDefinitions={typeDefinitions}
       />
       <EditorPanelBody
@@ -273,21 +269,13 @@ function FileToolbarActions(props: EditorToolbarProps) {
   const mobileColors = useMobileColors()
   const desktopToolbarActionParity = useMobileMetrics().toolbarAction
   return (
-    <>
-      <MobileIconButton
-        accessibilityLabel={mobileText('editor.toolbar.moreActions')}
-        testID="editor-more-action"
-        onPress={props.onOpenMoreActions}
-      >
-        <DotsThree color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} weight="bold" />
-      </MobileIconButton>
-      {props.onToggleProperties ? (
-        <PropertiesToolbarAction
-          onToggleProperties={props.onToggleProperties}
-          propertiesVisible={props.propertiesVisible}
-        />
-      ) : null}
-    </>
+    <MobileIconButton
+      accessibilityLabel={mobileText('editor.toolbar.moreActions')}
+      testID="editor-more-action"
+      onPress={props.onOpenMoreActions}
+    >
+      <DotsThree color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} weight="bold" />
+    </MobileIconButton>
   )
 }
 
@@ -296,10 +284,8 @@ function MarkdownToolbarActions({
   note,
   onOpenMoreActions,
   onOpenTableOfContents,
-  onToggleProperties,
   onToggleFavorite,
   onToggleSourceMode,
-  propertiesVisible,
 }: EditorToolbarProps) {
   const mobileColors = useMobileColors()
   const sourceModeActive = editingMode === 'source'
@@ -343,39 +329,7 @@ function MarkdownToolbarActions({
       >
         <DotsThree color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} weight="bold" />
       </MobileIconButton>
-      {onToggleProperties ? (
-        <PropertiesToolbarAction
-          onToggleProperties={onToggleProperties}
-          propertiesVisible={propertiesVisible}
-        />
-      ) : null}
     </>
-  )
-}
-
-function PropertiesToolbarAction({
-  onToggleProperties,
-  propertiesVisible,
-}: {
-  onToggleProperties: () => void
-  propertiesVisible?: boolean
-}) {
-  const mobileColors = useMobileColors()
-  const desktopToolbarActionParity = useMobileMetrics().toolbarAction
-  return (
-    <MobileIconButton
-      accessibilityLabel={mobileText(
-        propertiesVisible ? 'inspector.title.closePropertiesShortcut' : 'editor.toolbar.openProperties',
-      )}
-      selected={propertiesVisible}
-      testID="editor-properties-action"
-      onPress={onToggleProperties}
-    >
-      <SidebarSimple
-        color={propertiesVisible ? mobileColors.primary : mobileColors.textMuted}
-        size={desktopToolbarActionParity.iconSize}
-      />
-    </MobileIconButton>
   )
 }
 

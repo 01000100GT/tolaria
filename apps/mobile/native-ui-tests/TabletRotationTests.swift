@@ -22,7 +22,7 @@ final class TabletRotationTests: XCTestCase {
     let screenshot = XCTAttachment(screenshot: app.screenshot())
     screenshot.lifetime = .keepAlways
     add(screenshot)
-    app.buttons.matching(identifier: "editor-properties-action").firstMatch.tap()
+    MobilePanelNavigation.toggleProperties(app)
     let properties = app.descendants(matching: .any).matching(identifier: "properties-panel").firstMatch
     XCTAssertTrue(properties.waitForExistence(timeout: 5))
     XCTAssertGreaterThanOrEqual(editor.frame.width, 520)
@@ -31,7 +31,8 @@ final class TabletRotationTests: XCTestCase {
     waitUntil { editor.frame.width >= 520 }
     XCTAssertEqual(title.label, "How I Run an Open Source Project.md")
     XCUIDevice.shared.orientation = .portrait
-    app.buttons.matching(identifier: "editor-properties-action").firstMatch.tap()
+    waitUntil { app.frame.width < app.frame.height && abs(properties.frame.maxX - app.frame.maxX) < 1 }
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { !properties.exists && editor.frame.width >= 520 }
     XCTAssertEqual(title.label, "How I Run an Open Source Project.md")
   }

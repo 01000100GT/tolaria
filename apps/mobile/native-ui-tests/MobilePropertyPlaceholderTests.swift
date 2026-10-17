@@ -14,7 +14,7 @@ final class MobilePropertyPlaceholderTests: XCTestCase {
     defer { app.terminate() }
     XCTAssertTrue(element(app, "properties-panel").waitForExistence(timeout: 5)
       || element(app, "editor-panel").waitForExistence(timeout: 30))
-    if !element(app, "properties-panel").exists { element(app, "editor-properties-action").tap() }
+    if !element(app, "properties-panel").exists { MobilePanelNavigation.toggleProperties(app) }
     let row = element(app, "property-placeholder-type-derived-priority")
     XCTAssertTrue(row.waitForExistence(timeout: 30))
     XCTAssertTrue(row.isHittable)

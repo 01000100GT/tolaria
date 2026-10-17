@@ -16,7 +16,7 @@ final class MobilePropertiesViewportTests: XCTestCase {
     let panel = element(app, "properties-panel")
     XCTAssertTrue(panel.waitForExistence(timeout: 5)
       || element(app, "editor-panel").waitForExistence(timeout: 30))
-    if !panel.exists { element(app, "editor-properties-action").tap() }
+    if !panel.exists { MobilePanelNavigation.toggleProperties(app) }
     XCTAssertTrue(panel.waitForExistence(timeout: 5))
     let screen = phone ? element(app, "phone-properties-screen") : app.windows.firstMatch
     XCTAssertLessThanOrEqual(panel.frame.maxY, screen.frame.maxY + 1)

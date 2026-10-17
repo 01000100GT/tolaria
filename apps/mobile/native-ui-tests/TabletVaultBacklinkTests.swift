@@ -13,7 +13,7 @@ final class TabletVaultBacklinkTests: XCTestCase {
     allNotes.tap()
     element(app, "note-row-review.md").tap()
     let addProperty = element(app, "properties-toolbar-add")
-    if !addProperty.isHittable { element(app, "editor-properties-action").tap() }
+    if !addProperty.isHittable { MobilePanelNavigation.toggleProperties(app) }
     let backlink = element(app, "inspector-reference-row-codex-prepared-action-qa")
     XCTAssertTrue(backlink.waitForExistence(timeout: 10))
     XCTAssertTrue(backlink.isHittable)

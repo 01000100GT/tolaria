@@ -14,7 +14,9 @@ final class PhoneEditorHeaderTests: XCTestCase {
     XCTAssertTrue(header.waitForExistence(timeout: 10))
     XCTAssertFalse(element(app, "phone-top-bar").exists)
     XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "editor-toolbar-title").count, 1)
-    for id in ["phone-back-action", "phone-properties-action", "phone-command-palette-action",
+    XCTAssertFalse(element(app, "phone-back-action").exists)
+    XCTAssertFalse(element(app, "phone-properties-action").exists)
+    for id in ["phone-command-palette-action",
                "editor-favorite-action", "editor-source-action", "editor-more-action"] {
       let button = element(app, id)
       XCTAssertTrue(button.isHittable, id)
@@ -22,14 +24,14 @@ final class PhoneEditorHeaderTests: XCTestCase {
     }
     element(app, "editor-source-action").tap()
     XCTAssertTrue(element(app, "editor-markdown-input").waitForExistence(timeout: 5))
-    element(app, "phone-properties-action").tap()
+    MobilePanelNavigation.openProperties(app)
     XCTAssertTrue(element(app, "phone-properties-screen").waitForExistence(timeout: 5))
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(header.waitForExistence(timeout: 5))
     let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
     attachment.lifetime = .keepAlways
     add(attachment)
-    element(app, "phone-back-action").tap()
+    MobilePanelNavigation.back(app)
     XCTAssertTrue(row.waitForExistence(timeout: 5))
   }
 

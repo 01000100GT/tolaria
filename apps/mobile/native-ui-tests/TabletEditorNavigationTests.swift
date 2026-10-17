@@ -9,7 +9,7 @@ final class TabletEditorNavigationTests: XCTestCase {
     app.launch()
     let editor = element(app, "editor-panel")
     XCTAssertTrue(editor.waitForExistence(timeout: 30))
-    element(app, "editor-properties-action").tap()
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { !self.element(app, "properties-panel").exists }
     XCTAssertEqual(editor.frame.minX, 600, accuracy: 1)
     dragEditor(editor, dx: -220)

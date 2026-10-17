@@ -1,10 +1,10 @@
 import XCTest
 
 final class TabletPortraitNavigationTests: XCTestCase {
-  func testToolbarSidebarPreservesEditorAndReturnsToFullList() throws {
+  func testSidebarNavigationPreservesEditorAndReturnsToFullList() throws {
     let app = launchPortrait()
     defer { app.terminate(); XCUIDevice.shared.orientation = .landscapeLeft }
-    app.buttons.matching(identifier: "tablet-note-list-sidebar-action").firstMatch.tap()
+    MobilePanelNavigation.openSidebar(app)
     assertSidebarDrawer(app)
     app.buttons.matching(identifier: "sidebar-item-all-notes").firstMatch.tap()
     waitUntil { !self.element(app, "workspace-sidebar-panel").exists }
@@ -12,11 +12,11 @@ final class TabletPortraitNavigationTests: XCTestCase {
     XCTAssertEqual(element(app, "note-list-panel").frame.width, 340, accuracy: 1)
     XCTAssertEqual(app.staticTexts.matching(identifier: "note-list-toolbar-title").firstMatch.label, "All Notes")
     XCTAssertTrue(element(app, "note-row-workflow-orchestration").waitForExistence(timeout: 5))
-    app.buttons.matching(identifier: "tablet-note-list-sidebar-action").firstMatch.tap()
+    MobilePanelNavigation.openSidebar(app)
     assertSidebarDrawer(app)
     drag(element(app, "workspace-sidebar-panel"), dx: -240)
     waitUntil { !self.element(app, "workspace-sidebar-panel").exists }
-    app.buttons.matching(identifier: "editor-properties-action").firstMatch.tap()
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { self.element(app, "properties-panel").exists }
     XCTAssertGreaterThanOrEqual(element(app, "editor-panel").frame.width, 520)
   }

@@ -1,3 +1,4 @@
+import { phoneBack } from './mobile-panel-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { MOBILE_ATTACHMENT_IMPORTS_GLOBAL_KEY } from '../src/workspace/mobileAttachmentImport'
 import { createTitledNoteFromQuickOpen } from './mobile-note-create-actions'
@@ -26,7 +27,7 @@ async function createPhonePersonNote(page: Page) {
   await page.getByTestId('workspace-change-type-input').fill('Person')
   await page.getByTestId('workspace-action-sheet-changeNoteType').getByRole('button', { name: 'Save' }).click()
   await expect(page.getByTestId('workspace-action-sheet')).toBeHidden()
-  await page.getByTestId('phone-back-action').filter({ visible: true }).click()
+  await phoneBack(page)
   await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
 }
 

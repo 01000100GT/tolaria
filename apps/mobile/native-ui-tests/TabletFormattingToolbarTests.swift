@@ -29,8 +29,7 @@ final class TabletFormattingToolbarTests: XCTestCase {
     let screenshot = XCTAttachment(screenshot: app.screenshot())
     screenshot.lifetime = .keepAlways
     add(screenshot)
-    let toggle = app.buttons.matching(identifier: "editor-properties-action").firstMatch
-    toggle.tap()
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { !self.element(app, "properties-panel").exists }
   }
 

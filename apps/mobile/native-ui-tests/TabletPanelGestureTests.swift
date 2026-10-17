@@ -12,8 +12,7 @@ final class TabletPanelGestureTests: XCTestCase {
     XCTAssertTrue(list.isHittable)
     let editor = app.descendants(matching: .any).matching(identifier: "editor-panel").firstMatch
     XCTAssertGreaterThan(editor.frame.minX, 400)
-    let toggle = app.buttons.matching(identifier: "editor-properties-action").firstMatch
-    toggle.tap()
+    MobilePanelNavigation.toggleProperties(app)
     let properties = app.descendants(matching: .any).matching(identifier: "properties-panel").firstMatch
     waitUntil { !properties.exists }
     let listHeader = app.descendants(matching: .any).matching(identifier: "note-list-toolbar").firstMatch
@@ -34,9 +33,9 @@ final class TabletPanelGestureTests: XCTestCase {
     XCTAssertEqual(properties.frame.width, 300, accuracy: 1)
     drag(properties, fromX: 0.1, dx: 240)
     waitUntil { !properties.exists }
-    toggle.tap()
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { properties.exists }
-    toggle.tap()
+    MobilePanelNavigation.toggleProperties(app)
     waitUntil { !properties.exists }
     list.swipeUp(velocity: XCUIGestureVelocity(rawValue: 250))
     XCTAssertEqual(editor.frame.minX, 600, accuracy: 1)
