@@ -1,16 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import {
-  desktopEditorParity,
-  desktopNoteItemParity,
-  desktopPanelParity,
-  desktopParityColors,
-  desktopPropertyParity,
-  desktopRelationshipParity,
-  desktopSidebarParity,
-  desktopStatusBarParity,
-  desktopToolbarParity,
-  desktopToolbarActionParity,
-} from '../src/ui/desktopParity'
+import { desktopParityColors } from '../src/ui/desktopParity'
+import { mobileMetrics } from '../src/ui/mobileMetrics'
+
+// Desktop tokens remain the source; the approved mobile default scales them to 120%.
+const {
+  editor: desktopEditorParity, noteItem: desktopNoteItemParity, panel: desktopPanelParity,
+  property: desktopPropertyParity, relationship: desktopRelationshipParity,
+  sidebar: desktopSidebarParity, toolbar: desktopToolbarParity, toolbarAction: desktopToolbarActionParity,
+} = mobileMetrics[1.2]
 
 const layoutTolerance = 1.5
 
@@ -41,7 +38,7 @@ export async function assertTabletDesktopParity(page: Page) {
   await assertPropertiesParity(page)
   await assertEditorParity(page)
   await assertToolbarActionParity(page)
-  await assertStatusBarParity(page)
+  await assertSidebarUtilities(page)
 }
 
 export async function assertSidebarRuntimeLayoutProbe(page: Page) {
@@ -129,12 +126,13 @@ async function assertSidebarParity(page: Page) {
   const primarySection = page.getByTestId('sidebar-section-primary')
   const favoritesTitle = page.getByTestId('sidebar-section-title-favorites')
   const favoritesTitleText = page.getByTestId('sidebar-section-title-text-favorites')
-  const typesCount = page.getByTestId('sidebar-section-count-types')
+  const typesCount = page.getByTestId('sidebar-item-essays-count')
   const inboxItem = page.getByTestId('sidebar-item-inbox')
 
   await expect(primarySection).toBeVisible()
   await expect(favoritesTitle).toBeVisible()
   await expect(inboxItem).toBeVisible()
+  await expect(page.getByTestId('sidebar-section-count-types')).toHaveCount(0)
 
   await expectCssValue({ locator: primarySection, property: 'padding-top', expected: `${desktopSidebarParity.topNavPadding.top}px` })
   await expectCssValue({ locator: primarySection, property: 'padding-left', expected: `${desktopSidebarParity.topNavPadding.left}px` })
@@ -143,7 +141,7 @@ async function assertSidebarParity(page: Page) {
   await expectCssValue({ locator: favoritesTitle, property: 'padding-left', expected: `${desktopSidebarParity.groupHeaderPadding.withCount.left}px` })
   await expectCssValue({ locator: favoritesTitleText, property: 'color', expected: await cssColor({ page, color: desktopParityColors.textSecondary }) })
   await expectCssValue({ locator: typesCount, property: 'font-size', expected: `${desktopSidebarParity.countPillTextSize}px` })
-  await expectCssValue({ locator: typesCount, property: 'height', expected: `${desktopSidebarParity.countPillCompactHeight}px` })
+  await expectCssValue({ locator: typesCount, property: 'height', expected: `${desktopSidebarParity.countPillHeight}px` })
   await expectCssValue({ locator: typesCount, property: 'border-radius', expected: `${desktopSidebarParity.countPillRadius}px` })
   await expectCssValue({ locator: inboxItem, property: 'background-color', expected: await cssColor({ page, color: desktopParityColors.accentBlueLight }) })
 }
@@ -223,27 +221,25 @@ async function assertSourceEditorParity(page: Page, sourceInput: Locator) {
   await expectCssValue({ locator: sourceInput, property: 'padding-top', expected: '12px' })
 }
 
-async function assertStatusBarParity(page: Page) {
-  const syncBar = page.getByTestId('sync-status-bar')
-  const syncLabel = page.getByTestId('sync-status-label')
-  const syncDetail = page.getByTestId('sync-status-detail')
-
-  await expect(syncBar).toBeVisible()
-  await expectCssValue({ locator: syncBar, property: 'height', expected: `${desktopStatusBarParity.height}px` })
-  await expectCssValue({ locator: syncBar, property: 'min-height', expected: `${desktopStatusBarParity.height}px` })
-  await expectCssValue({ locator: syncBar, property: 'padding-left', expected: `${desktopStatusBarParity.paddingHorizontal}px` })
-  await expectCssValue({ locator: syncBar, property: 'background-color', expected: await cssColor({ page, color: desktopParityColors.surfaceSidebar }) })
-  await expectCssValue({ locator: syncLabel, property: 'font-size', expected: `${desktopStatusBarParity.fontSize}px` })
-  await expectCssValue({ locator: syncLabel, property: 'font-weight', expected: '500' })
-  await expectCssValue({ locator: syncLabel, property: 'color', expected: await cssColor({ page, color: desktopParityColors.textSecondary }) })
-  await expectCssValue({ locator: syncDetail, property: 'font-size', expected: `${desktopStatusBarParity.fontSize}px` })
+async function assertSidebarUtilities(page: Page) {
+  await expect(page.getByTestId('sync-status-bar')).toHaveCount(0)
+  const command = page.getByTestId('sidebar-command-palette-action')
+  const settings = page.getByTestId('open-mobile-settings')
+  for (const button of [command, settings]) {
+    await expect(button).toBeVisible()
+    await expectCssValue({ locator: button, property: 'height', expected: '48px' })
+    await expectCssValue({ locator: button, property: 'width', expected: '48px' })
+    await expectCssValue({ locator: button, property: 'border-radius', expected: '24px' })
+  }
+  const commandBox = await requiredBox(command)
+  const settingsBox = await requiredBox(settings)
+  expect(commandBox.x + commandBox.width).toBeLessThan(settingsBox.x)
+  await expect(page.getByTestId('sidebar-vault-picker')).toBeVisible()
 }
 
 async function assertToolbarActionParity(page: Page) {
   const actionButtons = [
-    page.getByTestId('sidebar-collapse-action'),
     page.getByTestId('note-list-search-action'),
-    page.getByTestId('note-list-create-action'),
     page.getByTestId('editor-favorite-action'),
     page.getByTestId('editor-more-action'),
   ]
@@ -255,6 +251,13 @@ async function assertToolbarActionParity(page: Page) {
     await expectCssValue({ locator: button, property: 'border-radius', expected: `${desktopToolbarActionParity.borderRadius}px` })
     await expectCssValue({ locator: button, property: 'background-color', expected: 'rgba(0, 0, 0, 0)' })
   }
+  await expect(page.getByTestId('sidebar-collapse-action')).toHaveCount(0)
+  const create = page.getByTestId('note-list-create-action')
+  const createSize = mobileMetrics[1.2].size(48)
+  await expectCssValue({ locator: create, property: 'width', expected: `${createSize}px` })
+  await expectCssValue({ locator: create, property: 'height', expected: `${createSize}px` })
+  await expectCssValue({ locator: create, property: 'border-radius', expected: `${createSize / 2}px` })
+  await expect(page.getByTestId('note-list-toolbar').getByTestId('note-list-create-action')).toHaveCount(0)
 }
 
 async function cssColor({ color, page }: ColorNormalizationRequest) {
@@ -281,11 +284,20 @@ async function childCssValue({ locator, property }: CssQuery) {
 }
 
 async function expectCssValue(expectation: CssExpectation) {
-  expect(await cssValue(expectation)).toBe(expectation.expected)
+  expectCss(await cssValue(expectation), expectation.expected)
 }
 
 async function expectChildCssValue(expectation: CssExpectation) {
-  expect(await childCssValue(expectation)).toBe(expectation.expected)
+  expectCss(await childCssValue(expectation), expectation.expected)
+}
+
+function expectCss(actual: string, expected: string) {
+  if (expected.endsWith('px')) {
+    // Chromium quantizes fractional layout sizes to 1/64 CSS pixel.
+    expect(Math.abs(Number.parseFloat(actual) - Number.parseFloat(expected))).toBeLessThanOrEqual(1 / 64)
+  } else {
+    expect(actual).toBe(expected)
+  }
 }
 
 async function requiredBox(locator: Locator) {

@@ -1,4 +1,5 @@
 import { Plus } from 'phosphor-react-native'
+import { StyleSheet } from 'react-native'
 import { mobileCopy } from '../../i18n/mobileText'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import { Button } from '../ui/button'
@@ -13,7 +14,7 @@ export function MobileCreateNoteButton({ onPress, visible }: { onPress: () => vo
       accessibilityLabel={mobileCopy.createNote}
       className="shadow-md active:opacity-80"
       size="icon"
-      style={styles.createAction}
+      style={StyleSheet.flatten(styles.createAction)}
       testID={mobileNoteListCreateChrome.testID}
       onPress={onPress}
     >
