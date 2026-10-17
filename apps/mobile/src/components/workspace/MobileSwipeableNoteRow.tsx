@@ -28,11 +28,9 @@ export function MobileSwipeableNoteRow(props: Props) {
   return <SwipeableNoteRow {...props} actions={props.actions} />
 }
 
-function SwipeableNoteRow({ actions, children, note }: Props & { actions: MobileNoteRowActions }) {
-  const mobileColors = useMobileColors()
+function useSwipeableNoteActions(actions: MobileNoteRowActions, note: MobileNote) {
   const analytics = useMobileAnalytics()
   const swipeable = useRef<SwipeableMethods>(null)
-  const width = useSharedValue(0)
   const perform = useCallback((action: MobileNoteSwipeAction | 'delete') => {
     swipeable.current?.close()
     if (action === 'favorite') actions.onToggleFavorite(note.id)
@@ -40,12 +38,19 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
     if (action === 'delete') actions.onDelete([note.id])
     analytics.capture({ name: 'mobile_note_swipe_used', action })
   }, [actions, analytics, note.id, note.archived])
+  return { perform, swipeable }
+}
+
+function SwipeableNoteRow({ actions, children, note }: Props & { actions: MobileNoteRowActions }) {
+  const mobileColors = useMobileColors()
+  const { perform, swipeable } = useSwipeableNoteActions(actions, note)
+  const width = useSharedValue(0)
   // Swipeable owns dragging/snapping. This simultaneous observer only commits a full swipe on release.
   const fullSwipe = useMemo(() => Gesture.Pan()
     .activeOffsetX([-16, 16])
     .failOffsetY([-12, 12])
     .onEnd((event) => {
-      const action = fullSwipeNoteAction(event.translationX, width.value)
+      const action = fullSwipeNoteAction(event.translationX, width.get())
       if (action) runOnJS(perform)(action)
     }), [perform, width])
   const actionProps = {
@@ -59,7 +64,7 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
   }
   return (
     <GestureDetector gesture={fullSwipe}>
-      <View onLayout={(event) => { width.value = event.nativeEvent.layout.width }}>
+      <View onLayout={(event) => width.set(event.nativeEvent.layout.width)}>
         <Swipeable
           ref={swipeable}
           childrenContainerStyle={{ backgroundColor: mobileColors.card }}

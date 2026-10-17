@@ -543,7 +543,6 @@ function PlaceholderPropertyRow({
 }) {
   const themeStyles = useMobileStyles(createPropertyPanelStyles)
   const { propertyStyles } = themeStyles
-  const mobileColors = useMobileColors()
   const sourceSegment = slot.source === 'typeDerived' ? 'type-derived' : 'suggested'
   const testID = `property-placeholder-${sourceSegment}-${testIdSegment(slot.key)}`
 
@@ -557,7 +556,6 @@ function PlaceholderPropertyRow({
       onPress={onPress}
       value={
         <View pointerEvents="none" style={propertyStyles.placeholderAddValue} testID={`${testID}-add`}>
-          <Plus color={mobileColors.textFaint} size={14} />
           <Text numberOfLines={1} style={propertyStyles.placeholderValue}>
             {mobileInspectorPlaceholderActionLabel('property')}
           </Text>
@@ -690,15 +688,7 @@ function PlaceholderRelationshipSection({
   )
 }
 
-function RelationshipValues({
-  layoutProbe,
-  noteId,
-  onRemoveRelationship,
-  onEnterNeighborhood,
-  onSelectNote,
-  relationship,
-  typeDefinitions,
-}: {
+function RelationshipValues(props: {
   layoutProbe: MobileLayoutProbe
   noteId: string
   relationship: MobileRelationship
@@ -707,6 +697,7 @@ function RelationshipValues({
   onEnterNeighborhood?: (noteId: string) => void
   onSelectNote: (noteId: string) => void
 }) {
+  const { layoutProbe, noteId, onRemoveRelationship, onEnterNeighborhood, onSelectNote, relationship, typeDefinitions } = props
   const colors = useMobileColors()
   const themeStyles = useMobileStyles(createPropertyPanelStyles)
   const { relationshipStyles } = themeStyles

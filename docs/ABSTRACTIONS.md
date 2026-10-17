@@ -303,7 +303,10 @@ See ADR 0195.
 
 Editor-interior horizontal drags retain sequential panel navigation. Note-list
 rows own their touch quick actions and leave two-finger trackpad gestures to the
-list's native scrolling; the formatting strip uses Gesture Handler's native
+list's native scrolling. The row's local `useSwipeableNoteActions` hook owns its
+imperative close-and-dispatch handler; gesture construction only registers that
+handler and reads measured width through Reanimated's shared-value accessors.
+The formatting strip uses Gesture Handler's native
 scroll view to keep horizontal tool scrolling from moving panels. Phone navigation
 uses the editor toolbar's leading/trailing slots, not a second title bar. The
 workspace has no permanent bottom status bar. `MobileSidebarSettings` anchors
