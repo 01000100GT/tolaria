@@ -2,30 +2,34 @@ import { useEffect } from 'react'
 import { Linking } from 'react-native'
 import { requireOptionalNativeModule } from 'expo'
 import { nativeStorageQaEnabled } from './nativeStorageQaCapability'
+import { nativeMobileLaunchSearch } from '../native/mobileNativeKeyCommands'
 
 export function useNativeGitProbe() {
   useEffect(() => {
     if (!storageProbeAvailable()) return
-    const run = async (url: string | null) => {
-      if (!url) return
-      try {
-        const endpoint = new URL(url).searchParams.get('gitProbe')
-        if (!endpoint || !isLoopbackEndpoint(endpoint)) return
-        const recoveryPhase = new URL(url).searchParams.get('writeRecoveryProbe')
-        if (recoveryPhase) {
-          const { runNativeWriteRecoveryProbe } = await import('./nativeWriteRecoveryProbe')
-          await runNativeWriteRecoveryProbe(endpoint, recoveryPhase)
-          return
-        }
-        await runGitProbe(url, endpoint)
-      } catch (error) {
-        console.warn('[native-git-probe] Unable to run probe', error)
-      }
-    }
-    const subscription = Linking.addEventListener('url', ({ url }) => { void run(url) })
-    void Linking.getInitialURL().then(run).catch(() => undefined)
+    const subscription = Linking.addEventListener('url', ({ url }) => { void runProbeUrl(url) })
+    const search = nativeMobileLaunchSearch()
+    if (search) void runProbeUrl(`tolaria:///${search}`)
+    else void Linking.getInitialURL().then(runProbeUrl).catch(() => undefined)
     return () => subscription.remove()
   }, [])
+}
+
+async function runProbeUrl(url: string | null) {
+  if (!url) return
+  try {
+    const endpoint = new URL(url).searchParams.get('gitProbe')
+    if (!endpoint || !isLoopbackEndpoint(endpoint)) return
+    const recoveryPhase = new URL(url).searchParams.get('writeRecoveryProbe')
+    if (recoveryPhase) {
+      const { runNativeWriteRecoveryProbe } = await import('./nativeWriteRecoveryProbe')
+      await runNativeWriteRecoveryProbe(endpoint, recoveryPhase)
+      return
+    }
+    await runGitProbe(url, endpoint)
+  } catch (error) {
+    console.warn('[native-git-probe] Unable to run probe', error)
+  }
 }
 
 async function runGitProbe(url: string, endpoint: string) {

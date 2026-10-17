@@ -106,6 +106,10 @@ clone and sync. New clones retain the complete current tree at depth one;
 lacks a common base. Existing full clones are unchanged. Unavailable history,
 cancellation, and unchanged boundaries fail before working-copy publication;
 remote history is never rewritten (ADR 0229).
+`gitSelectiveStaging.ts` verifies fresh regular-file bytes against staged blobs
+before individually staging a small batch. Unchanged packed objects stay packed;
+timestamps alone never exclude an edit. Unsupported adapters, conversion, file
+kinds and larger batches retain recursive serial library staging (ADR 0234).
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 Recovery and push use fully-qualified branch refs, including when older working
@@ -137,8 +141,11 @@ save barrier from the subsequent remote operation. Failed local saves expose a
 retry through the same serialized write queue, including local-only vaults.
 `assert-native-git.mjs` exercises real smart-HTTP transport through Hermes and
 Expo's filesystem on the booted iOS simulator, using disposable repositories only.
-Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in large-vault fixture and separate
-clone/push/pull timings; routine checks retain the fast two-note fixture.
+Standalone probes use the existing QA-only native launch arguments, without
+depending on delivery of a cold-start URL. The native capability and loopback
+endpoint checks remain required. Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in
+large-vault fixture and separate clone/push/pull/unchanged-sync timings; routine
+checks retain the fast two-note fixture.
 `TOLARIA_GIT_QA_HISTORY_MIB=128` additionally creates incompressible historical
 attachment revisions, removed from the current tree but retained in Git history.
 This checks that current-tree clone cost is independent of deleted attachment

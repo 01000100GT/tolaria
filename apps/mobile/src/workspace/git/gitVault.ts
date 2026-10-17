@@ -2,6 +2,7 @@ import './gitRuntime'
 import git, { type FsClient } from 'isomorphic-git'
 import { checkoutGitFastForward, recoverGitCheckout } from './gitCheckoutRecovery'
 import { mergeGitHeads } from './gitMerge'
+import { stageVerifiedGitChanges } from './gitSelectiveStaging'
 
 export type GitAuthor = { name: string; email: string }
 export type GitRelationship = 'equal' | 'ahead' | 'behind' | 'diverged'
@@ -27,8 +28,7 @@ async function changes(context: GitVaultContext) {
 
 async function refreshedChanges(context: GitVaultContext) {
   await recoverGitCheckout(context)
-  // Do not trust second-resolution stat matches for rapid equal-length edits.
-  await git.add({ ...context, filepath: '.', parallel: false })
+  await stageVerifiedGitChanges(context)
   return changes(context)
 }
 

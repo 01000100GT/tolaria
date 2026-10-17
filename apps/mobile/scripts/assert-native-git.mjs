@@ -100,7 +100,10 @@ async function runProbe() {
     try {
       execFileSync('xcrun', ['simctl', 'terminate', 'booted', bundleId], { stdio: 'pipe' })
     } catch { /* Expo may not be running. */ }
-    execFileSync('xcrun', ['simctl', 'openurl', 'booted', url])
+    const launch = standalone
+      ? ['launch', 'booted', bundleId, '--tolaria-mobile-search', new URL(url).search]
+      : ['openurl', 'booted', url]
+    execFileSync('xcrun', ['simctl', ...launch])
     const result = await proof
     console.log(JSON.stringify({ fileCount, historyMiB, remoteObjects, ...result }, null, 2))
     if (!result.passed || (standalone && !result.nativeFiles)) process.exitCode = 1

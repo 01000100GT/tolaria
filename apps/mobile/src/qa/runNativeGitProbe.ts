@@ -1,7 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system'
 import { requireOptionalNativeModule } from 'expo'
 import { nativeGitHttp } from '../workspace/git/nativeGitHttp'
-import type { HttpClient } from 'isomorphic-git'
+import git, { type HttpClient } from 'isomorphic-git'
 import { cloneGitVault, syncGitVault } from '../workspace/git/gitRemote'
 import { createExpoGitFileSystem } from '../workspace/git/expoGitFileSystem'
 import { gitVirtualRoot } from '../workspace/git/gitFileSystemPaths'
@@ -38,9 +38,8 @@ export async function runNativeGitProbe(endpoint: string) {
 }
 
 async function verifyNativeDigest() {
-  const digest = await crypto.subtle.digest('SHA-1', new Uint8Array())
-  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
-  if (hex !== 'da39a3ee5e6b4b0d3255bfef95601890afd80709') throw new Error('nativeDigestVerificationFailed')
+  const { oid } = await git.hashBlob({ object: new Uint8Array() })
+  if (oid !== 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391') throw new Error('nativeDigestVerificationFailed')
   return true
 }
 
@@ -81,18 +80,28 @@ async function roundTrip(root: Directory, endpoint: string) {
   const firstSynced = Date.now()
   const pulled = await syncGitVault(connection(second), author)
   const secondSynced = Date.now()
-  const saved = await new File(second, 'note.md').text()
-  const binary = await new File(second, 'attachments', 'bytes.bin').bytes()
-  const binaryPreserved = binary.length === attachment.length && binary.every((byte, index) => byte === attachment[index])
-  const deletionPreserved = !new File(second, 'deleted.md').exists
-  const passed = saved === content && pushed.kind === 'synced' && pulled.kind === 'synced' && binaryPreserved && deletionPreserved
+  const unchanged = await syncGitVault(connection(second), author)
+  const unchangedSynced = Date.now()
+  const unchangedSync = unchanged.kind === 'synced' && unchanged.changedFiles === 0 && !unchanged.workspaceChanged
+  const preserved = await verifyRoundTrip(second, content, attachment)
+  const passed = preserved.binaryPreserved && preserved.deletionPreserved && preserved.contentPreserved
+    && pushed.kind === 'synced' && pulled.kind === 'synced' && unchangedSync
   const timings = {
     firstCloneMs: firstCloned - started,
     secondCloneMs: secondCloned - firstCloned,
     pushMs: firstSynced - secondCloned,
     pullMs: secondSynced - firstSynced,
+    unchangedSyncMs: unchangedSynced - secondSynced,
   }
-  return { passed, binaryPreserved, deletionPreserved, pushed: pushed.kind, pulled: pulled.kind, timings }
+  return { passed, ...preserved, unchangedSync, pushed: pushed.kind, pulled: pulled.kind, timings }
+}
+
+async function verifyRoundTrip(second: Directory, content: string, attachment: Uint8Array) {
+  const saved = await new File(second, 'note.md').text()
+  const binary = await new File(second, 'attachments', 'bytes.bin').bytes()
+  const binaryPreserved = binary.length === attachment.length && binary.every((byte, index) => byte === attachment[index])
+  const deletionPreserved = !new File(second, 'deleted.md').exists
+  return { binaryPreserved, deletionPreserved, contentPreserved: saved === content }
 }
 
 function publishProof(endpoint: string, proof: Record<string, unknown>) {
