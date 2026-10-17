@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { PanResponder, type PanResponderGestureState } from 'react-native'
 
 import {
@@ -37,47 +37,31 @@ export function useHorizontalSwipe({
   onSwipeProgress,
   onSwipeRight,
 }: HorizontalSwipeOptions) {
-  const options = useMemo(
-    () => ({ canStart, captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight }),
-    [canStart, captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight],
-  )
-
-  return useMemo(
-    () => createHorizontalSwipeHandlers(options),
-    [options],
-  )
+  const options = { canStart, captureOnStart, disabled, onSwipeEnd, onSwipeLeft, onSwipeProgress, onSwipeRight }
+  // Preview updates must not replace PanResponder's in-flight gesture state.
+  const [responder] = useState(() => createHorizontalSwipeResponder(options))
+  useLayoutEffect(() => { responder.update(options) })
+  return responder.panHandlers
 }
 
-function createHorizontalSwipeHandlers(options: NormalizedHorizontalSwipeOptions) {
+function createHorizontalSwipeResponder(initial: NormalizedHorizontalSwipeOptions) {
+  let options = initial
+  return {
+    panHandlers: createHorizontalSwipeHandlers(() => options),
+    update: (next: NormalizedHorizontalSwipeOptions) => { options = next },
+  }
+}
+
+function createHorizontalSwipeHandlers(options: () => NormalizedHorizontalSwipeOptions) {
   return PanResponder.create({
-    onStartShouldSetPanResponder: () => shouldStartHorizontalSwipe(options),
-    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options),
-    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options),
-    onPanResponderRelease: (_, gesture) => releaseHorizontalSwipe(gesture, options),
+    onStartShouldSetPanResponder: () => shouldStartHorizontalSwipe(options()),
+    onMoveShouldSetPanResponder: (_, gesture) => shouldCapture(gesture, options()),
+    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldCapture(gesture, options()),
+    onPanResponderRelease: (_, gesture) => releaseHorizontalSwipe(gesture, options()),
     onPanResponderTerminationRequest: () => true,
-    ...moveResponder(options.onSwipeProgress),
-    ...terminateResponder(options.onSwipeEnd),
+    onPanResponderMove: (_, gesture) => options().onSwipeProgress?.({ dx: gesture.dx, dy: gesture.dy }),
+    onPanResponderTerminate: () => options().onSwipeEnd?.(false),
   }).panHandlers
-}
-
-function moveResponder(onSwipeProgress: HorizontalSwipeOptions['onSwipeProgress']) {
-  return onSwipeProgress
-    ? {
-      onPanResponderMove: (_: unknown, gesture: PanResponderGestureState) => {
-        onSwipeProgress({ dx: gesture.dx, dy: gesture.dy })
-      },
-    }
-    : {}
-}
-
-function terminateResponder(onSwipeEnd: HorizontalSwipeOptions['onSwipeEnd']) {
-  return onSwipeEnd
-    ? {
-      onPanResponderTerminate: () => {
-        onSwipeEnd(false)
-      },
-    }
-    : {}
 }
 
 function releaseHorizontalSwipe(

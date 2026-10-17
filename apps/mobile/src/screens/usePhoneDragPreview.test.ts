@@ -16,17 +16,20 @@ const animation = vi.hoisted(() => {
       completion?.({ finished: false })
     }
   }
-  let current: Value | undefined
+  let current: { value: Value; toValue: number } | undefined
   return {
     Value,
-    timing: vi.fn((value: Value) => ({ start: (completion: Completion) => {
-      current = value
+    timing: vi.fn((value: Value, config: { toValue: number }) => ({ start: (completion: Completion) => {
+      current = { value, toValue: config.toValue }
       value.completion = completion
     } })),
     finish: () => {
-      const completion = current?.completion
-      if (current) current.completion = undefined
+      const completed = current
+      const completion = completed?.value.completion
+      if (completed) completed.value.completion = undefined
       completion?.({ finished: true })
+      // Native Animated synchronizes its JS value after calling completion.
+      if (completed) completed.value.value = completed.toValue
     },
   }
 })
@@ -43,7 +46,7 @@ afterEach(async () => {
   vi.unstubAllGlobals()
 })
 
-it('lets a committed drag finish settling before changing the current panel', async () => {
+it('clears the native completion offset before displaying the destination panel', async () => {
   const drag = await mountPreview()
   const navigate = vi.fn()
   await act(async () => {

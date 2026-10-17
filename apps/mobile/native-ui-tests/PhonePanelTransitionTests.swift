@@ -37,11 +37,12 @@ final class PhonePanelTransitionTests: XCTestCase {
     let settled = NSPredicate { _, _ in
       abs(panel.frame.minX - bounds.minX) < 1 && abs(panel.frame.width - bounds.width) < 1
     }
-    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)], timeout: 5), .completed)
+    let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)], timeout: 5)
     let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
     screenshot.name = panel.identifier
     screenshot.lifetime = .keepAlways
     add(screenshot)
+    XCTAssertEqual(result, .completed, "Panel \(panel.identifier): \(panel.frame); app: \(bounds)")
     XCTAssertEqual(panel.frame.minX, bounds.minX, accuracy: 1)
   }
 

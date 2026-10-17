@@ -82,13 +82,16 @@ function usePhoneDragCommit({ clearGestureHandoff, dragX, enabled, phoneState, s
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (!finished) return
-      setHandoffState(nextState)
-      dragX.setValue(0)
-      setPreviewState(null)
-      action()
-      requestAnimationFrame(() => {
-        setHandoffState(null)
-        clearGestureHandoff()
+      // Native Animated syncs the final offset after this callback returns.
+      queueMicrotask(() => {
+        setHandoffState(nextState)
+        dragX.setValue(0)
+        setPreviewState(null)
+        action()
+        requestAnimationFrame(() => {
+          setHandoffState(null)
+          clearGestureHandoff()
+        })
       })
     })
   }, [clearGestureHandoff, dragX, enabled, phoneState, screenWidth, setPreviewState, setHandoffState])
