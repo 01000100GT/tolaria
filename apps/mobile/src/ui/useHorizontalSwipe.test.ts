@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { PanResponderGestureState } from 'react-native'
 import { useHorizontalSwipe } from './useHorizontalSwipe'
 
 const responder = vi.hoisted(() => vi.fn((callbacks: object) => ({ panHandlers: callbacks })))
@@ -10,6 +11,8 @@ vi.mock('react-native', () => ({ PanResponder: { create: responder } }))
 
 type Options = Parameters<typeof useHorizontalSwipe>[0]
 type Callbacks = {
+  onMoveShouldSetPanResponderCapture: (event: null, gesture: Pick<PanResponderGestureState,
+    'x0' | 'y0' | 'moveX' | 'moveY' | 'dx' | 'dy' | 'numberActiveTouches'>) => boolean
   onPanResponderRelease: (event: null, gesture: { dx: number; dy: number }) => void
   onPanResponderMove: (event: null, gesture: { dx: number; dy: number }) => void
   onPanResponderTerminate: () => void
@@ -23,6 +26,23 @@ function Surface(props: Options) {
 afterEach(() => responder.mockClear())
 
 describe('native horizontal gesture continuity', () => {
+  it.each([
+    { startX: 200, touches: 1, captures: false },
+    { startX: 10, touches: 1, captures: true },
+    { startX: 390, touches: 1, captures: true },
+    { startX: 10, touches: 2, captures: false },
+  ])('checks the pre-grant touch origin and pointer count: $startX / $touches', ({ startX, touches, captures }) => {
+    const root = createRoot(document.createElement('div'))
+    const canStart = (start: { x: number; y: number }) => start.x < 24 || start.x > 378
+    try {
+      flushSync(() => root.render(createElement(Surface, { canStart })))
+      const callbacks = responder.mock.calls[0][0] as Callbacks
+      // Native PanResponder leaves x0/y0 at zero until after capture is granted.
+      const gesture = { x0: 0, y0: 0, moveX: startX - 40, moveY: 402, dx: -40, dy: 2, numberActiveTouches: touches }
+      expect(callbacks.onMoveShouldSetPanResponderCapture(null, gesture)).toBe(captures)
+    } finally { root.unmount() }
+  })
+
   it('keeps the same responder during preview rerenders and uses the latest actions', () => {
     const root = createRoot(document.createElement('div'))
     const oldRight = vi.fn()

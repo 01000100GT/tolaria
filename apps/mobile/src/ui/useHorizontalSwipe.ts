@@ -83,6 +83,9 @@ function commitHorizontalSwipe(
 }
 
 function shouldCapture(gesture: PanResponderGestureState, options: NormalizedHorizontalSwipeOptions) {
-  if (options.disabled || options.canStart?.({ x: gesture.x0, y: gesture.y0 }) === false) return false
+  if (options.disabled || gesture.numberActiveTouches !== 1) return false
+  // x0/y0 are populated only after responder grant, too late for this decision.
+  const start = { x: gesture.moveX - gesture.dx, y: gesture.moveY - gesture.dy }
+  if (options.canStart?.(start) === false) return false
   return horizontalSwipeCapturesMovement(gesture)
 }

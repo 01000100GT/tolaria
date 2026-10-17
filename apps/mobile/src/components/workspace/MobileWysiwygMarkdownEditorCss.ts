@@ -131,6 +131,11 @@ function blockRules(mobileColors: MobileColors, metrics: MobileMetrics): string[
 function tableRules(mobileColors: MobileColors, metrics: MobileMetrics): string[] {
   const { editor: desktopEditorParity, space: mobileSpace } = metrics
   return [
+    cssRule('.ProseMirror .tableWrapper', [
+      ['max-width', '100%'],
+      ['overflow-x', 'auto'],
+      ['overscroll-behavior-x', 'contain'],
+    ]),
     cssRule('.ProseMirror table', [
       ['border-collapse', 'collapse'],
       ['font-size', `${desktopEditorParity.tableFontSize}px`],

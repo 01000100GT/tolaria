@@ -198,7 +198,7 @@ const mobileTenTapBridgeExtensions = [
   MobileWysiwygOutlineBridge,
   MobileWysiwygSlashBridge,
   MobileWysiwygFindBridge,
-  MobileTableBridge,
+  MobileTableBridge.configureExtension({ renderWrapper: true }),
 ]
 
 export function MobileWysiwygMarkdownEditor(props: MobileWysiwygMarkdownEditorProps) {
@@ -385,21 +385,7 @@ function NativeTentapEditorSurface(props: NativeTentapEditorSurfaceProps) {
   )
 }
 
-function useNativeTentapEditorSurfaceActions({
-  editor,
-  externalLinkState,
-  flushEditorDocument,
-  insertAttachment,
-  insertMarkdownBlock,
-  insertPlainText,
-  insertWikilink,
-  onCloseExternalLinkSheet,
-  onCloseWikilinkPicker,
-  onImportAttachment,
-  onOpenExternalLinkSheet,
-  onOpenToolbarWikilinkPicker,
-  pickerState,
-}: Pick<
+function useNativeTentapEditorSurfaceActions(props: Pick<
   NativeTentapEditorSurfaceProps,
   | 'editor'
   | 'externalLinkState'
@@ -415,6 +401,12 @@ function useNativeTentapEditorSurfaceActions({
   | 'onOpenToolbarWikilinkPicker'
   | 'pickerState'
 >): NativeTentapEditorSurfaceActions {
+  const {
+    editor, externalLinkState, flushEditorDocument, insertAttachment,
+    insertMarkdownBlock, insertPlainText, insertWikilink,
+    onCloseExternalLinkSheet, onCloseWikilinkPicker, onImportAttachment,
+    onOpenExternalLinkSheet, onOpenToolbarWikilinkPicker, pickerState,
+  } = props
   const handleFormat = useNativeWysiwygToolbarHandler({
     editor,
     insertAttachment,
