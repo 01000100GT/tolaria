@@ -622,7 +622,7 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileCompactFormattingToolbar` / `mobileFormattingToolbarModel` | Existing command registry grouped into primary actions and contextual menus, with 44-point native touch targets |
 | `MobileSwipeableNoteRow` / `MobileNoteSwipeActions` | Gesture Handler row actions routed to existing favorite/archive/delete callbacks; full swipe never deletes, and bulk selection disables swipes |
 | `components/ui/dropdown-menu` | Thin RNR dropdown composition with Tolaria colors/spacing and a root portal host; primitive-owned anchoring and dismissal |
-| `MobilePropertiesPanel` | Scalar properties, tags, and typed relationship display/removal |
+| `MobilePropertiesPanel` | Scalar properties, tags, and typed relationship display/removal; phones defer empty schema suggestions until after populated properties, relationships and references, while tablets preserve desktop ordering |
 | `MobileSidebarSettings` | Sidebar-bottom Settings entry point; vault management and sync controls live inside Settings instead of a permanent workspace footer |
 
 Mobile UI copy should reuse the localization catalog in `src/lib/locales/en.json` whenever the desktop concept already exists. New mobile-specific copy must be added to that catalog and translated through the normal Lara workflow.

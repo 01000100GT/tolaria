@@ -3,20 +3,11 @@ import UIKit
 
 final class MobilePropertyPlaceholderTests: XCTestCase {
   func testEmptyPropertyHasTrailingActionAndOpensItsEditor() {
-    continueAfterFailure = false
-    let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.terminate()
-    XCUIDevice.shared.orientation = UIDevice.current.userInterfaceIdiom == .pad ? .landscapeLeft : .portrait
-    let search = "?source=fixture&phoneState=properties&forceDesktopPanels=1&qaRun=property-placeholder"
-    app.launchArguments = ["--tolaria-mobile-search", search]
-    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
-    app.launch()
+    let app = launchProperties()
     defer { app.terminate() }
-    XCTAssertTrue(element(app, "properties-panel").waitForExistence(timeout: 5)
-      || element(app, "editor-panel").waitForExistence(timeout: 30))
-    if !element(app, "properties-panel").exists { MobilePanelNavigation.toggleProperties(app) }
     let row = element(app, "property-placeholder-type-derived-priority")
     XCTAssertTrue(row.waitForExistence(timeout: 30))
+    scrollTo(row, in: app)
     XCTAssertTrue(row.isHittable)
     let action = row.staticTexts.matching(NSPredicate(format: "label == %@", "Add property")).firstMatch
     XCTAssertTrue(action.exists)
@@ -38,6 +29,44 @@ final class MobilePropertyPlaceholderTests: XCTestCase {
     XCTAssertEqual(element(app, "workspace-property-name-input").value as? String, "Priority")
     element(app, "workspace-property-cancel-action").tap()
     XCTAssertTrue(row.isHittable)
+  }
+
+  func testPopulatedRelationshipsPrecedePhoneSuggestionsWithoutChangingTabletOrder() {
+    let app = launchProperties()
+    defer { app.terminate() }
+    let relationship = element(app, "property-section-belongsTo")
+    let placeholder = element(app, "property-placeholder-type-derived-priority")
+    XCTAssertTrue(relationship.waitForExistence(timeout: 5))
+    XCTAssertTrue(placeholder.exists)
+    XCTAssertGreaterThan(relationship.frame.height, 0)
+    XCTAssertGreaterThan(placeholder.frame.height, 0)
+    if UIDevice.current.userInterfaceIdiom == .phone {
+      XCTAssertLessThan(relationship.frame.maxY, placeholder.frame.minY)
+    } else {
+      XCTAssertLessThan(placeholder.frame.maxY, relationship.frame.minY)
+    }
+  }
+
+  private func launchProperties() -> XCUIApplication {
+    continueAfterFailure = false
+    let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
+    app.terminate()
+    XCUIDevice.shared.orientation = UIDevice.current.userInterfaceIdiom == .pad ? .landscapeLeft : .portrait
+    let search = "?source=fixture&phoneState=properties&forceDesktopPanels=1&qaRun=property-placeholder"
+    app.launchArguments = ["--tolaria-mobile-search", search]
+    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
+    app.launch()
+    XCTAssertTrue(element(app, "properties-panel").waitForExistence(timeout: 5)
+      || element(app, "editor-panel").waitForExistence(timeout: 30))
+    if !element(app, "properties-panel").exists { MobilePanelNavigation.toggleProperties(app) }
+    return app
+  }
+
+  private func scrollTo(_ row: XCUIElement, in app: XCUIApplication) {
+    let panel = element(app, "properties-panel")
+    for _ in 0..<8 where !row.isHittable || !panel.frame.contains(row.frame) {
+      panel.swipeUp()
+    }
   }
 
   private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {

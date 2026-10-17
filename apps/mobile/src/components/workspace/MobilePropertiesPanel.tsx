@@ -10,6 +10,7 @@ import { MobileChip } from '../../ui/MobileChip'
 import { MobilePanel, MobileToolbar, MobileToolbarSpacer, MobileToolbarTitle } from '../../ui/MobilePanel'
 import { MobileIconButton } from '../../ui/MobileIconButton'
 import { MobilePropertyRow } from '../../ui/MobilePropertyRow'
+import { useMobileDeviceLayout } from '../../ui/useMobileDeviceLayout'
 
 import { mobileFrontmatterState, needsMobileFrontmatterNotice } from '../../workspace/mobileFrontmatterState'
 import {
@@ -166,6 +167,7 @@ type NotePropertiesProps = {
 }
 
 function NoteProperties(props: NotePropertiesProps) {
+  const phone = useMobileDeviceLayout() === 'phone'
   const { layoutProbe, note, onFixInvalidFrontmatter, onInitializeProperties, onSelectNote, referenceGroups, typeDefinitions } = props
   const frontmatterState = mobileFrontmatterState(note)
   const propertySlots = mobileInspectorPropertySlots(note, typeDefinitions)
@@ -193,9 +195,10 @@ function NoteProperties(props: NotePropertiesProps) {
   return (
     <>
       <StandardPropertyRows missingTypeName={missingTypeName} props={props} />
-      <CustomPropertyRows propertySlots={propertySlots} props={props} />
-      <RelationshipPropertyRows relationshipSlots={relationshipSlots} props={props} />
+      <CustomPropertyRows propertySlots={phone ? [] : propertySlots} props={props} />
+      <RelationshipPropertyRows relationshipSlots={phone ? [] : relationshipSlots} props={props} />
       <PropertyActionsAndReferences props={props} />
+      {phone ? <InspectorPlaceholderRows propertySlots={propertySlots} relationshipSlots={relationshipSlots} props={props} /> : null}
     </>
   )
 }
@@ -246,7 +249,7 @@ function StandardPropertyRows({ missingTypeName, props }: { missingTypeName: str
 }
 
 function CustomPropertyRows({ propertySlots, props }: { propertySlots: MobileInspectorPropertySlot[]; props: NotePropertiesProps }) {
-  const { layoutProbe, note, onAddProperty, onEditProperty, propertyDisplayModes } = props
+  const { layoutProbe, note, onEditProperty, propertyDisplayModes } = props
 
   return (
     <>
@@ -268,9 +271,7 @@ function CustomPropertyRows({ propertySlots, props }: { propertySlots: MobileIns
           onEditProperty={onEditProperty}
         />
       ))}
-      {propertySlots.map((slot) => (
-        <PlaceholderPropertyRow key={`${slot.source}:${slot.key}`} layoutProbe={layoutProbe} slot={slot} onPress={() => onAddProperty(slot.key)} />
-      ))}
+      <InspectorPlaceholderRows propertySlots={propertySlots} props={props} />
     </>
   )
 }
@@ -304,11 +305,24 @@ function RelationshipPropertyRows({ relationshipSlots, props }: { relationshipSl
           />
         </PropertySection>
       ))}
-      {relationshipSlots.map((slot) => (
-        <PlaceholderRelationshipSection key={`${slot.source}:${slot.key}`} layoutProbe={layoutProbe} slot={slot} onPress={() => onAddRelationship(slot.key)} />
-      ))}
+      <InspectorPlaceholderRows relationshipSlots={relationshipSlots} props={props} />
     </>
   )
+}
+
+function InspectorPlaceholderRows({ propertySlots = [], relationshipSlots = [], props }: {
+  propertySlots?: MobileInspectorPropertySlot[]
+  relationshipSlots?: MobileInspectorRelationshipSlot[]
+  props: NotePropertiesProps
+}) {
+  return <>
+    {propertySlots.map((slot) => (
+      <PlaceholderPropertyRow key={`${slot.source}:${slot.key}`} layoutProbe={props.layoutProbe} slot={slot} onPress={() => props.onAddProperty(slot.key)} />
+    ))}
+    {relationshipSlots.map((slot) => (
+      <PlaceholderRelationshipSection key={`${slot.source}:${slot.key}`} layoutProbe={props.layoutProbe} slot={slot} onPress={() => props.onAddRelationship(slot.key)} />
+    ))}
+  </>
 }
 
 function PropertyActionsAndReferences({ props }: { props: NotePropertiesProps }) {
@@ -572,40 +586,35 @@ function PlaceholderPropertyRow({
   )
 }
 
-function PropertySection({
-  children,
-  label,
-  labelVariant = 'default',
-  layoutProbe,
-  layoutProbeId,
-  testID,
-}: {
+type PropertySectionProps = {
   children: ReactNode
   label: string
   labelVariant?: 'default' | 'placeholder'
   layoutProbe?: MobileLayoutProbe
   layoutProbeId?: string
   testID?: string
-}) {
+}
+
+function PropertySection(props: PropertySectionProps) {
   const themeStyles = useMobileStyles(createPropertyPanelStyles)
   const { propertyStyles } = themeStyles
-  const metricId = layoutProbeId ?? testID
+  const metricId = props.layoutProbeId ?? props.testID
 
   return (
-    <View {...propertyProbe(layoutProbe, metricId, 'row')} style={propertyStyles.sectionRow} testID={testID}>
+    <View {...propertyProbe(props.layoutProbe, metricId, 'row')} style={propertyStyles.sectionRow} testID={props.testID}>
       <Text
-        {...propertyProbe(layoutProbe, metricId, 'label')}
-        style={[propertyStyles.sectionLabel, labelVariant === 'placeholder' ? propertyStyles.placeholderLabel : null]}
-        testID={testID ? `${testID}-label` : undefined}
+        {...propertyProbe(props.layoutProbe, metricId, 'label')}
+        style={[propertyStyles.sectionLabel, props.labelVariant === 'placeholder' ? propertyStyles.placeholderLabel : null]}
+        testID={props.testID ? `${props.testID}-label` : undefined}
       >
-        {label}
+        {props.label}
       </Text>
       <View
-        {...propertyProbe(layoutProbe, metricId, 'value')}
+        {...propertyProbe(props.layoutProbe, metricId, 'value')}
         style={propertyStyles.sectionValue}
-        testID={testID ? `${testID}-value` : undefined}
+        testID={props.testID ? `${props.testID}-value` : undefined}
       >
-        {children}
+        {props.children}
       </View>
     </View>
   )
