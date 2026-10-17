@@ -125,3 +125,13 @@ Back up the simulator catalog before preparing these fixtures, restore it after
 the test, and remove only the disposable copies created for that run. Retain
 before/after file hashes for any existing user vault. A skipped integration test
 is not a passing integration check.
+
+## Default Note Type
+
+`MobileDefaultNoteTypeTests` requires `TOLARIA_QA_DEFAULT_NOTE_TYPE=1` and an
+empty, disposable local vault selected in a backed-up catalog. Set the generated
+scheme Test action's `shouldUseLaunchSchemeArgsEnv` to `NO` when supplying its own
+environment variables. The test creates a note through the native UI and checks
+its H1, body and frontmatter after relaunch. Verify the filesystem contains the
+new note and exactly one root `note.md` with `type: Type` and `# Note`, then restore
+the original catalog and remove the disposable vault. Run on both device sizes.

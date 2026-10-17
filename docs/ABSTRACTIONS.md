@@ -197,6 +197,13 @@ has settled, places the cursor at the empty H1, and enables its normal change
 pipeline. Unmount, timeout and workspace replacement cancel stale requests, so
 late readiness or background refresh cannot steal focus back.
 
+`mobileDefaultNoteType` completes successful writable note-creation plans with a
+missing root `note.md` Type definition, using the existing type reducer. It keeps
+the new note selected, preserves existing definitions and legacy paths, and never
+overwrites a filename collision. Read-only workspaces, unsuccessful creation and
+ordinary edits do not bootstrap definitions. The definition shares the existing
+repository write queue rather than adding a separate filesystem path.
+
 `WorkspaceTextRecovery` atomically publishes a pending text save outside the vault,
 replaces the destination, and removes the record last. Replay checks the previous
 or intended SHA-256 digest; conflicts retain both versions and prevent further

@@ -40,6 +40,7 @@ describe('applyWorkspaceEditToWritableSnapshot', () => {
     })
 
     expect(result.snapshot.notes).toHaveLength(snapshot.notes.length + 1)
-    expect(result.writes).toHaveLength(1)
+    expect(result.writes).toHaveLength(2)
+    expect(result.writes[1]).toMatchObject({ kind: 'createNote', path: 'note.md' })
   })
 })

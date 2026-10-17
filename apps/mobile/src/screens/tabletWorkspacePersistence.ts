@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 import { requestCreatedNoteFocus } from '../workspace/mobileEditorFocus'
+import { withDefaultNoteType } from '../workspace/mobileDefaultNoteType'
 import { useMobileAnalytics } from '../analytics/useMobileAnalytics'
 import { trackSuccessfulMobileEdit } from '../analytics/mobileSuccessfulEdit'
 import { captureMobileError } from '../analytics/mobileCrashChannel'
@@ -129,7 +130,7 @@ export function applyWorkspaceEditToWritableSnapshot(
   if (isMobileNoteHydration(edit)) return applyMobileWorkspaceEditWithWrites(snapshot, edit)
   if (snapshot.sync.kind === 'noVault' || snapshot.sync.kind === 'readOnly') return { snapshot, writes: [] }
   if (mobileEditNeedsNoteRead(edit, snapshot, source)) return { snapshot, writes: [] }
-  return applyMobileWorkspaceEditWithWrites(snapshot, edit)
+  return withDefaultNoteType(applyMobileWorkspaceEditWithWrites(snapshot, edit))
 }
 
 function useWorkspaceHistoryControls({
