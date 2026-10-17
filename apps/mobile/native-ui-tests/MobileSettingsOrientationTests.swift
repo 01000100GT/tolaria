@@ -4,9 +4,13 @@ final class MobileSettingsOrientationTests: XCTestCase {
   func testSettingsPreservesLandscapeAndRemainsDismissible() {
     continueAfterFailure = false
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
+    app.terminate()
     app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&qaRun=settings-orientation"]
-    XCUIDevice.shared.orientation = .portrait
-    defer { XCUIDevice.shared.orientation = .portrait }
+    XCUIDevice.shared.orientation = .landscapeLeft
+    defer {
+      app.terminate()
+      XCUIDevice.shared.orientation = .portrait
+    }
     app.launch()
     let settings = app.descendants(matching: .any).matching(identifier: "open-mobile-settings").firstMatch
     XCTAssertTrue(settings.waitForExistence(timeout: 30))
