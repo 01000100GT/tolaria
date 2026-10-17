@@ -60,6 +60,7 @@ import { MobileQuickOpenSheet } from './MobileQuickOpenSheet'
 import { chipTone } from './mobileWorkspaceTone'
 import {
   mobileActionSheetLongFormHeight,
+  mobileActionSheetUsesCompactViewForm,
   mobileActionSheetLayoutContract,
   mobilePropertyDeleteActionVisible,
   mobileSingleTextFieldSubmitDisabled,
@@ -300,7 +301,10 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
   useEffect(() => {
     if (props.action !== 'search') Keyboard.dismiss()
   }, [props.action])
-  const { height: windowHeight } = useWindowDimensions()
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions()
+  const compactViewForm = mobileActionSheetUsesCompactViewForm({
+    action: props.action, phone, width: windowWidth, height: windowHeight,
+  })
   const longFormSheetHeight = mobileActionSheetLongFormHeight(windowHeight)
   const longFormSheetStyle = usesLongFormSheet(props.action)
     ? { height: longFormSheetHeight, maxHeight: longFormSheetHeight }
@@ -315,19 +319,28 @@ export function MobileWorkspaceActionSheet(props: MobileWorkspaceActionSheetProp
           style={[sheetStyles.sheet, longFormSheetStyle, phone && phoneSheetStyles.sheet]}
           testID={`workspace-action-sheet-${props.action}`}
         >
-          <MobileToolbar testID="workspace-action-sheet-toolbar">
-            <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
-            <MobileToolbarSpacer />
-            <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
-          </MobileToolbar>
-          <ActionContent {...props} />
+          <WorkspaceSheetHeader {...props} compactViewForm={compactViewForm} />
+          <ActionContent {...props} compactViewForm={compactViewForm} />
         </MobilePanel>
       </View>
     </MobileKeyboardAvoidingView>
   )
 }
 
-function ActionContent(props: MobileWorkspaceActionSheetProps) {
+type ActionContentProps = MobileWorkspaceActionSheetProps & { compactViewForm: boolean }
+
+function WorkspaceSheetHeader(props: ActionContentProps) {
+  if (props.compactViewForm) return null
+  return (
+    <MobileToolbar testID="workspace-action-sheet-toolbar">
+      <MobileToolbarTitle title={actionTitle(props.action, props.propertyName)} />
+      <MobileToolbarSpacer />
+      <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={props.onClose} />
+    </MobileToolbar>
+  )
+}
+
+function ActionContent(props: ActionContentProps) {
   const Content = Object.hasOwn(actionContentByAction, props.action) ? actionContentByAction[props.action] : null
   return Content ? <Content {...props} /> : null
 }
@@ -339,20 +352,20 @@ function usesLongFormSheet(action: MobileWorkspaceAction) {
     || action === 'editPrimaryListProperties'
 }
 
-const actionContentByAction: Record<MobileWorkspaceAction, (props: MobileWorkspaceActionSheetProps) => ReactNode> = {
+const actionContentByAction: Record<MobileWorkspaceAction, (props: ActionContentProps) => ReactNode> = {
   addProperty: (props) => <AddPropertyContent {...props} />,
   addRelationship: (props) => <AddRelationshipContent {...props} />,
   changeNoteType: (props) => <RetargetNoteContent {...props} retargetAction="changeType" />,
   createFolder: (props) => <SingleTextFieldContent config={singleTextFieldConfig(props)} />,
   createType: (props) => <SingleTextFieldContent config={singleTextFieldConfig(props)} />,
-  createView: (props) => <SingleTextFieldContent config={singleTextFieldConfig(props)} />,
+  createView: (props) => <ViewFormContent {...props} />,
   editFolder: (props) => <FolderActionsContent {...props} />,
   editFavorite: (props) => <FavoriteActionsContent {...props} />,
   editProperty: (props) => <AddPropertyContent {...props} />,
   editPrimaryListProperties: (props) => <PrimaryListPropertiesContent {...props} />,
   editTypeSection: (props) => <TypeSectionContent {...props} />,
   editTypeVisibility: (props) => <MobileTypeVisibilityEditor typeDefinitions={props.typeDefinitions} onToggleTypeVisibility={props.onToggleTypeVisibility} />,
-  editView: (props) => <SingleTextFieldContent config={singleTextFieldConfig(props)} />,
+  editView: (props) => <ViewFormContent {...props} />,
   findInNote: (props) => <MobileEditorFindSheet editorBlocks={props.editorBlocks} editorBullets={props.editorBullets} note={props.selectedNote} replace={false} onClose={props.onClose} onUpdateContent={props.onUpdateNoteContent} />,
   moreActions: (props) => <MoreActionsContent {...props} />,
   moveNoteToFolder: (props) => <RetargetNoteContent {...props} retargetAction="moveFolder" />,
@@ -384,48 +397,58 @@ function SearchContent(props: MobileWorkspaceActionSheetProps) {
   )
 }
 
-function SingleTextFieldContent({ config }: { config: SingleTextFieldConfig }) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  const {
-    allowEmptyInput,
-    extraContent,
-    inputLabel,
-    inputPlaceholder,
-    inputTestId,
-    inputValue,
-    onCancel,
-    onChangeText,
-    onSubmit,
-    secondaryAction,
-    submitDisabled = false,
-    submitLabel,
-  } = config
+function ViewFormContent(props: ActionContentProps) {
+  return <SingleTextFieldContent
+    compactTitle={props.compactViewForm ? actionTitle(props.action, props.propertyName) : undefined}
+    config={singleTextFieldConfig(props)}
+  />
+}
 
+function SingleTextFieldContent({ config, compactTitle }: { config: SingleTextFieldConfig; compactTitle?: string }) {
+  const { styles } = useMobileStyles(createThemeStyles)
+  const secondaryInContent = useMobileDeviceLayout() === 'phone'
   return (
-    <View style={styles.formBody}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
+    <View style={[styles.formBody, compactTitle && phoneSheetStyles.compactBody]}>
+      <SingleTextFieldHeader config={config} title={compactTitle} />
+      <ScrollView contentContainerStyle={[styles.content, compactTitle && phoneSheetStyles.compactContent]} keyboardShouldPersistTaps="handled" style={styles.scrollArea} testID="workspace-single-field-scroll">
         <MobileTextInput
           autoFocus={mobileWorkspaceFormSheetAutoFocus}
-          label={inputLabel}
-          placeholder={inputPlaceholder}
-          testID={inputTestId}
-          value={inputValue}
-          onChangeText={onChangeText}
+          label={config.inputLabel}
+          placeholder={config.inputPlaceholder}
+          testID={config.inputTestId}
+          value={config.inputValue}
+          onChangeText={config.onChangeText}
         />
-        {extraContent}
+        {config.extraContent}
+        {secondaryInContent ? config.secondaryAction : null}
       </ScrollView>
-      <SheetFooter pinned>
-        {secondaryAction}
-        <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={onCancel} />
-        <MobileButton
-          disabled={mobileSingleTextFieldSubmitDisabled({ allowEmptyInput, inputValue, submitDisabled })}
-          label={submitLabel}
-          variant="primary"
-          onPress={onSubmit}
-        />
-      </SheetFooter>
+      {!compactTitle ? <SheetFooter pinned><SingleTextFieldActions config={config} primaryOnly={secondaryInContent} /></SheetFooter> : null}
     </View>
   )
+}
+
+function SingleTextFieldHeader({ config, title }: { config: SingleTextFieldConfig; title?: string }) {
+  if (!title) return null
+  return (
+    <MobileToolbar testID="workspace-action-sheet-toolbar">
+      <MobileToolbarTitle title={title} />
+      <MobileToolbarSpacer />
+      <SingleTextFieldActions config={config} primaryOnly />
+    </MobileToolbar>
+  )
+}
+
+function SingleTextFieldActions({ config, primaryOnly = false }: { config: SingleTextFieldConfig; primaryOnly?: boolean }) {
+  return <>
+    {!primaryOnly ? config.secondaryAction : null}
+    <MobileButton label={mobileText('common.cancel')} variant="ghost" onPress={config.onCancel} />
+    <MobileButton
+      disabled={mobileSingleTextFieldSubmitDisabled(config)}
+      label={config.submitLabel}
+      variant="primary"
+      onPress={config.onSubmit}
+    />
+  </>
 }
 
 function singleTextFieldConfig(props: MobileWorkspaceActionSheetProps) {
@@ -911,27 +934,15 @@ function AddPropertyContent(props: MobileWorkspaceActionSheetProps) {
   )
 }
 
-function AddRelationshipContent({
-  notes,
-  onClose,
-  onCreateRelationshipTarget,
-  onRelationshipNameChange,
-  onRelationshipNoteSelect,
-  onRelationshipNoteTitleChange,
-  onSaveRelationship,
-  relationshipName,
-  relationshipNoteTitle,
-  selectedNote,
-  typeDefinitions,
-}: MobileWorkspaceActionSheetProps) {
+function AddRelationshipContent(props: MobileWorkspaceActionSheetProps) {
   const { styles } = useMobileStyles(createThemeStyles)
-  const keySuggestions = mobileRelationshipKeySuggestions(notes, relationshipName, selectedNote, typeDefinitions)
-  const suggestions = mobileRelationshipTargetSuggestions(notes, relationshipNoteTitle, {
-    relationshipKey: relationshipName,
-    selectedNote,
+  const keySuggestions = mobileRelationshipKeySuggestions(props.notes, props.relationshipName, props.selectedNote, props.typeDefinitions)
+  const suggestions = mobileRelationshipTargetSuggestions(props.notes, props.relationshipNoteTitle, {
+    relationshipKey: props.relationshipName,
+    selectedNote: props.selectedNote,
   })
-  const createTargetTitle = relationshipNoteTitle.trim()
-  const showCreateTarget = shouldShowMobileRelationshipCreateTarget(notes, createTargetTitle)
+  const createTargetTitle = props.relationshipNoteTitle.trim()
+  const showCreateTarget = shouldShowMobileRelationshipCreateTarget(props.notes, createTargetTitle)
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" style={styles.scrollArea}>
@@ -940,22 +951,22 @@ function AddRelationshipContent({
         label={mobileText('inspector.relationship.name')}
         placeholder={mobileText('inspector.relationship.name')}
         testID="workspace-relationship-name-input"
-        value={relationshipName}
-        onChangeText={onRelationshipNameChange}
+        value={props.relationshipName}
+        onChangeText={props.onRelationshipNameChange}
       />
       <MobileWorkspaceSuggestionList
         labels={keySuggestions}
         maxVisibleItems={mobileWorkspaceFormSheetMaxSuggestions}
         testID="workspace-relationship-key-suggestions"
         testIDPrefix="workspace-relationship-key-suggestion"
-        onSelect={onRelationshipNameChange}
+        onSelect={props.onRelationshipNameChange}
       />
       <MobileTextInput
         label={mobileText('inspector.relationship.noteTitle')}
         placeholder={mobileText('inspector.relationship.noteTitle')}
         testID="workspace-relationship-note-title-input"
-        value={relationshipNoteTitle}
-        onChangeText={onRelationshipNoteTitleChange}
+        value={props.relationshipNoteTitle}
+        onChangeText={props.onRelationshipNoteTitleChange}
       />
       {suggestions.length > 0 ? (
         <View style={styles.suggestionList} testID="workspace-relationship-note-suggestions">
@@ -966,7 +977,7 @@ function AddRelationshipContent({
               key={note.id}
               style={styles.suggestionPressable}
               testID={`workspace-relationship-note-suggestion-${note.id}`}
-              onPress={() => onRelationshipNoteSelect(note.title, `[[${mobileWikilinkTargetForNote(note, selectedNote)}]]`)}
+              onPress={() => props.onRelationshipNoteSelect(note.title, `[[${mobileWikilinkTargetForNote(note, props.selectedNote)}]]`)}
             >
               {({ pressed }) => (
                 <View style={[styles.suggestionRow, pressed ? styles.suggestionRowPressed : null]}>
@@ -974,7 +985,7 @@ function AddRelationshipContent({
                     size={16}
                     tone={note.typeTone}
                     type={note.type}
-                    typeDefinitions={typeDefinitions}
+                    typeDefinitions={props.typeDefinitions}
                   />
                   <Text numberOfLines={1} style={styles.suggestionTitle}>{note.title}</Text>
                   <MobileChip label={note.type} tone={chipTone(note.typeTone)} />
@@ -985,11 +996,11 @@ function AddRelationshipContent({
         </View>
       ) : null}
       {showCreateTarget ? (
-        <CreateRelationshipTargetRow title={createTargetTitle} onPress={onCreateRelationshipTarget} />
+        <CreateRelationshipTargetRow title={createTargetTitle} onPress={props.onCreateRelationshipTarget} />
       ) : null}
       <SheetFooter>
-        <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspaceRelationshipActionTestIds.cancel} variant="ghost" onPress={onClose} />
-        <MobileButton disabled={relationshipName.trim().length === 0 || relationshipNoteTitle.trim().length === 0} label={mobileText('inspector.relationship.add')} testID={mobileWorkspaceRelationshipActionTestIds.save} variant="primary" onPress={onSaveRelationship} />
+        <MobileButton label={mobileText('common.cancel')} testID={mobileWorkspaceRelationshipActionTestIds.cancel} variant="ghost" onPress={props.onClose} />
+        <MobileButton disabled={props.relationshipName.trim().length === 0 || props.relationshipNoteTitle.trim().length === 0} label={mobileText('inspector.relationship.add')} testID={mobileWorkspaceRelationshipActionTestIds.save} variant="primary" onPress={props.onSaveRelationship} />
       </SheetFooter>
     </ScrollView>
   )
@@ -1173,6 +1184,8 @@ const actionTitleByAction: Record<MobileWorkspaceAction, Parameters<typeof mobil
 const phoneSheetStyles = StyleSheet.create({
   container: { paddingHorizontal: 8, paddingVertical: 8 },
   sheet: { maxHeight: '100%' },
+  compactBody: { flex: 1 },
+  compactContent: { padding: 8 },
 })
 
 function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {

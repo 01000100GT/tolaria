@@ -6,6 +6,7 @@ import {
   mobileSingleTextFieldSubmitDisabled,
   mobileWorkspaceRelationshipTargetMaxSuggestions,
   mobileActionSheetLongFormHeight,
+  mobileActionSheetUsesCompactViewForm,
   mobilePropertyDeleteActionVisible,
   mobileWorkspacePropertyActionTestIds,
   mobileWorkspaceRelationshipActionTestIds,
@@ -36,6 +37,18 @@ describe('mobile workspace action sheet', () => {
   it('derives long form sheet height from native window bounds', () => {
     expect(mobileActionSheetLongFormHeight(800)).toBe(800 - (mobileActionSheetLayoutContract.overlayPaddingVertical * 2))
     expect(mobileActionSheetLongFormHeight(360)).toBe(320)
+  })
+
+  it.each([
+    { action: 'createView', phone: true, width: 844, height: 390, expected: true },
+    { action: 'editView', phone: true, width: 844, height: 390, expected: true },
+    { action: 'createView', phone: true, width: 390, height: 844, expected: false },
+    { action: 'editView', phone: true, width: 600, height: 600, expected: false },
+    { action: 'createView', phone: false, width: 1366, height: 1024, expected: false },
+    { action: 'addProperty', phone: true, width: 844, height: 390, expected: false },
+  ])('uses compact actions for $action on phone=$phone at $width x $height', (testCase) => {
+    const { expected, ...input } = testCase
+    expect(mobileActionSheetUsesCompactViewForm(input)).toBe(expected)
   })
 
   it('allows title-less note creation while keeping required field guards', () => {

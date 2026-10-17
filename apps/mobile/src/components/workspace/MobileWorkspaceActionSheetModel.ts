@@ -89,6 +89,15 @@ export function mobileActionSheetLongFormHeight(windowHeight: number) {
   return Math.max(0, Math.min(windowHeight, Math.max(mobileActionSheetLayoutContract.longFormSheetMinHeight, availableHeight)))
 }
 
+export function mobileActionSheetUsesCompactViewForm({ action, phone, width, height }: {
+  action: string
+  phone: boolean
+  width: number
+  height: number
+}) {
+  return phone && width > height && (action === 'createView' || action === 'editView')
+}
+
 export function mobileSingleTextFieldSubmitDisabled({
   allowEmptyInput = false,
   inputValue,
