@@ -42,14 +42,16 @@ export function createExpoGitFileSystem(
     promises: {
       readFile: async (path: GitPath, options?: string | { encoding?: string }) => {
         requireEntry(readInfo, uri(path), false)
-        const bytes = Buffer.from(await readNative(() => file(path).bytes()))
+        const nativeBytes = await readNative(() => file(path).bytes())
+        const bytes = Buffer.from(nativeBytes.buffer, nativeBytes.byteOffset, nativeBytes.byteLength)
         return options === 'utf8' || (typeof options === 'object' && options.encoding === 'utf8')
           ? bytes.toString('utf8') : bytes
       },
       writeFile: (path: GitPath, content: string | Uint8Array) => run(() => {
         requireParent(readInfo, uri(path))
-        // Expo's JSI converter requires a plain Uint8Array, not a Buffer subclass.
-        file(path).write(typeof content === 'string' ? content : new Uint8Array(content))
+        // Expo needs a plain Uint8Array. Share its bounded buffer instead of copying a whole Git pack.
+        file(path).write(typeof content === 'string' ? content
+          : new Uint8Array(content.buffer, content.byteOffset, content.byteLength))
       }),
       unlink: (path: GitPath) => run(() => {
         requireEntry(readInfo, uri(path), false)
@@ -112,7 +114,8 @@ function cachedHandle<T>(create: (path: string) => T) {
   // even when a connection is retained across operations on a very large vault.
   const entries = new Map<string, T>()
   return (path: string): T => {
-    if (entries.has(path)) return entries.get(path)!
+    const cached = entries.get(path)
+    if (cached !== undefined) return cached
     const entry = create(path)
     if (entries.size >= 8192) entries.clear()
     entries.set(path, entry)

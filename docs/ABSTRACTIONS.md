@@ -73,6 +73,9 @@ retry through the same serialized write queue, including local-only vaults.
 Expo's filesystem on the booted iOS simulator, using disposable repositories only.
 Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in large-vault fixture and separate
 clone/push/pull timings; routine checks retain the fast two-note fixture.
+`TOLARIA_GIT_QA_HISTORY_MIB=128` additionally creates incompressible historical
+attachment revisions, removed from the current tree but retained in Git history.
+This exercises large pack processing independently of the working-tree file count.
 `measureEventLoopDelay.ts` measures timer scheduling delay across the round trip,
 including a blocked tail, and always removes its timer. This is not an animation
 FPS measurement. `nativeStorageQaCapability.ts` accepts development mode or the
@@ -96,6 +99,8 @@ still require separate collection-path verification.
 one library-owned cache per sync operation, released afterwards (ADR 0200).
 The Expo adapter separately reuses bounded path handles without caching contents
 or metadata; directory enumeration returns names without allocating child handles.
+Binary reads and writes share bounded ArrayBuffer views rather than duplicating
+entire Git packs; writes still supply the plain Uint8Array required by Expo JSI.
 Standalone iOS additionally uses `WorkspaceGitMetadata` through `gitEntryInfo`
 for one fresh sandbox-relative stat lookup, including symlink rejection. The
 optional capability leaves Expo Go and Android on the existing path (ADR 0205).
