@@ -37,6 +37,9 @@ function documentRules(mobileColors: MobileColors, metrics: MobileMetrics, { hor
       ['margin', 0],
       ['padding', 0],
     ]),
+    cssRule('#root > div:first-child', [
+      ['overflow-x', 'hidden'],
+    ]),
     cssRule('.ProseMirror', [
       ['box-sizing', 'border-box'],
       ['caret-color', mobileColors.primary],
@@ -44,6 +47,7 @@ function documentRules(mobileColors: MobileColors, metrics: MobileMetrics, { hor
       ['max-width', wide ? 'none' : `${desktopEditorParity.contentMaxWidth}px`],
       ['min-height', '100vh'],
       ['outline', 'none'],
+      ['overflow-wrap', 'anywhere'],
       ['padding', `${desktopEditorParity.contentPaddingVertical}px ${wide ? widePadding : `${horizontalPadding}px`} ${metrics.size(96)}px`],
       ['width', '100%'],
     ]),

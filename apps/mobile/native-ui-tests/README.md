@@ -104,6 +104,12 @@ test runner environment (the Xcode scheme's Test action) and select that test:
 - `TOLARIA_QA_AUTHENTICATED_CLONE=1`: `TabletAuthenticatedRepositoryTests`, with
   an existing authorized GitHub session and explicit permission to clone Laputa.
   It does not enable AutoGit or push, but can download a large repository.
+- `TOLARIA_QA_LINKED_FOCUS=1`: `MobileEditorFocusTests` linked-folder case, with
+  an isolated active folder imported through Files. The source and app-owned
+  working copy must both be disposable. The test creates a note, types across
+  an eight-second pause, and backgrounds the app to flush. Verify the resulting
+  Markdown in both copies, including its frontmatter, before cleaning up. Run
+  on both iPhone and iPad. The fixture-only case needs no on-disk vault.
 
 Back up the simulator catalog before preparing these fixtures, restore it after
 the test, and remove only the disposable copies created for that run. Retain

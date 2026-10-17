@@ -55,6 +55,7 @@ export function useFlushEditorDocument(options: FlushEditorDocumentOptions) {
 
 function nativeEditorDocumentAdapter(options: FlushEditorDocumentOptions) {
   return {
+    isFocused: () => options.refs.editorRef.current?.getEditorState().isFocused === true,
     read: async () => ({ json: await readEditorJson(options), options }),
     commit: (document: { json: unknown; options: FlushEditorDocumentOptions }) => writeEditorJsonToMarkdown(document.options, document.json),
     setEditable: (editable: boolean) => {

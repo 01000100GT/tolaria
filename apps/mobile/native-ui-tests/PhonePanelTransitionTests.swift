@@ -20,11 +20,13 @@ final class PhonePanelTransitionTests: XCTestCase {
     app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Workflow Orchestration Essay")).firstMatch.tap()
     let editor = element(app, "phone-editor-screen")
     assertSettled(editor, in: app)
+    assertEditorContentAligned(in: app)
     drag(editor, from: 0.99, to: 0.1)
     let properties = element(app, "phone-properties-screen")
     assertSettled(properties, in: app)
     drag(properties, from: 0.1, to: 0.9)
     assertSettled(editor, in: app)
+    assertEditorContentAligned(in: app)
     drag(editor, from: 0.01, to: 0.85)
     assertSettled(list, in: app)
   }
@@ -41,6 +43,17 @@ final class PhonePanelTransitionTests: XCTestCase {
     screenshot.lifetime = .keepAlways
     add(screenshot)
     XCTAssertEqual(panel.frame.minX, bounds.minX, accuracy: 1)
+  }
+
+  private func assertEditorContentAligned(in app: XCUIApplication) {
+    let heading = app.webViews.descendants(matching: .any)
+      .matching(identifier: "Workflow Orchestration Essay").firstMatch
+    XCTAssertTrue(heading.waitForExistence(timeout: 5))
+    let aligned = NSPredicate { _, _ in
+      heading.frame.minX >= app.frame.minX + 20 && heading.frame.maxX <= app.frame.maxX - 20
+    }
+    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: aligned, object: nil)], timeout: 3), .completed,
+      "Heading: \(heading.frame); WebView: \(app.webViews.firstMatch.frame); app: \(app.frame)")
   }
 
   private func drag(_ panel: XCUIElement, from: Double, to: Double, y: Double = 0.4) {

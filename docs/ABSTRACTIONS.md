@@ -123,6 +123,11 @@ release blocker, not hidden behind a misleading success/performance claim.
 `workspaceWriteQueue.ts` retains failed mutations in order and drains them before
 Git. `workspaceSyncEditors.ts` collects awaitable editor preparation operations;
 `editorSaveGate.ts` prevents stale TenTap replies from overwriting pulled content.
+Automatic foreground sync defers at each local write barrier while the rich
+editor is focused, including the barrier after a Git network wait. This does not
+disable ordinary note autosave. The scheduler retains the pending sync and retries
+at its idle interval without counting focus as a transport failure. Manual sync
+and foreground departure retain the normal flush, drain and recovery barriers.
 The vault manager uses both boundaries (ADR 0196). `MobileVaultProvider` owns
 vault switching and manual sync, while a separate memoized workspace context
 prevents progress updates from re-indexing the vault. `useMobileWorkspaceResolution`
@@ -146,7 +151,12 @@ then filter candidate IDs with a set. They must not resolve a vault-wide link
 inside the per-note candidate loop.
 `managedGitStorage.native.ts` keeps app-owned working copies and a credential-free
 catalog. Catalog publication renames a validated pending file and retains a
-recoverable backup. `githubAccountState.ts` isolates cancellation and ordered
+recoverable backup. Git clone control forwards real library phases
+and object counts, coalescing progress notifications without synthesizing an
+overall percentage. Cancellation aborts transport and stops at cooperative Git
+boundaries; cleanup is limited to the newly allocated clone directory. A
+completed clone is retained if catalog publication fails, preserving recovery.
+`githubAccountState.ts` isolates cancellation and ordered
 SecureStore writes from React. Native Git HTTP uses Expo's streaming fetch with
 redirects disabled. Its 120-second timeout bounds connection/header waits and
 each pending body read, rather than the total pack download. The timer pauses

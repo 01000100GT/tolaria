@@ -6,6 +6,7 @@ export function createGitEditorAccess(options: {
   editors: ReturnType<typeof createWorkspaceSyncEditors>
   rootUri?: string
   refresh: (selectedNoteId?: string) => void
+  deferWhileFocused?: () => boolean
 }): GitLocalAccess {
   return async operation => {
     const wasBlocked = options.editors.isBlocked()

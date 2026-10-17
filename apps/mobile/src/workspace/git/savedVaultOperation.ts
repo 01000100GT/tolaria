@@ -7,11 +7,12 @@ type SavedVaultOperation = {
   // Unchanged permits Git metadata writes, but guarantees note files are intact.
   run: () => Promise<undefined | 'cancelled' | 'unchanged'>
   refresh: (selectedNoteId?: string) => void
+  deferWhileFocused?: () => boolean
 }
 
-export async function runSavedVaultOperation({ editors, rootUri, run, refresh }: SavedVaultOperation) {
+export async function runSavedVaultOperation({ editors, rootUri, run, refresh, deferWhileFocused }: SavedVaultOperation) {
   const selectedNoteId = editors.selectedNoteId()
-  const resume = await editors.prepare()
+  const resume = await editors.prepare(deferWhileFocused?.())
   let saved = false
   let cancelled = false
   let cancelReplacement = () => {}

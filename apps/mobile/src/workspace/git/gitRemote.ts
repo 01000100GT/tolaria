@@ -1,4 +1,4 @@
-import git, { type HttpClient } from 'isomorphic-git'
+import git, { type GitProgressEvent, type HttpClient } from 'isomorphic-git'
 import { createGitVault, githubRepositoryUrl, type GitAuthor, type GitVaultContext } from './gitVault'
 import { withWorkspaceOperation } from './workspaceOperationQueue'
 import { withSavedWorkspace } from './workspaceWriteQueue'
@@ -14,6 +14,7 @@ export type GitRemoteOptions = GitVaultContext & {
   getToken?: () => Promise<string | undefined>
   signal?: AbortSignal
   onPhase?: (phase: GitSyncPhase) => void
+  onProgress?: (progress: GitProgressEvent) => void
   operationKey?: string
   withLocalAccess?: GitLocalAccess
   onCheckpoint?: (oid: string) => void
@@ -21,14 +22,18 @@ export type GitRemoteOptions = GitVaultContext & {
 
 export function cloneGitVault(options: GitRemoteOptions, repositoryUrl: string) {
   const url = githubRepositoryUrl(repositoryUrl)
-  return withWorkspaceOperation(options.operationKey ?? options.dir, () => git.clone({
-    ...transport(options, url),
-    url,
-    singleBranch: true,
-    noTags: true,
-    nonBlocking: true,
-    batchSize: 20,
-  }))
+  return withWorkspaceOperation(options.operationKey ?? options.dir, async () => {
+    requireActiveSync(options.signal)
+    await git.clone({
+      ...transport(options, url),
+      url,
+      singleBranch: true,
+      noTags: true,
+      nonBlocking: true,
+      batchSize: 20,
+    })
+    requireActiveSync(options.signal)
+  })
 }
 
 export function syncGitVault(options: GitRemoteOptions, author: GitAuthor) {
@@ -111,7 +116,7 @@ function emitPhase(options: GitRemoteOptions, phase: GitSyncPhase) {
   requireActiveSync(options.signal)
 }
 
-function transport({ fs, dir, http, token, cache, signal }: GitRemoteOptions, repositoryUrl: string) {
+function transport({ fs, dir, http, token, cache, signal, onProgress }: GitRemoteOptions, repositoryUrl: string) {
   const { run } = createGitTaskRunner()
   return {
     fs,
@@ -121,7 +126,11 @@ function transport({ fs, dir, http, token, cache, signal }: GitRemoteOptions, re
       return http.request({ ...request, signal })
     } },
     cache,
-    onProgress: () => run(() => undefined),
+    onProgress: (progress: GitProgressEvent) => run(() => {
+      requireActiveSync(signal)
+      onProgress?.(progress)
+      requireActiveSync(signal)
+    }),
     onAuth: (url: string) => {
       if (githubRepositoryUrl(url) !== repositoryUrl || !token) return { cancel: true as const }
       return { username: 'x-access-token', password: token }

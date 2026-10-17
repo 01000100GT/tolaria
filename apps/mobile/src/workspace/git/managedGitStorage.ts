@@ -8,8 +8,9 @@ export async function readManagedGitCatalog(): Promise<ManagedGitVaultCatalog> {
 }
 export async function activateManagedGitVault(id: string | null) { void id; throw new Error('nativeOnly') }
 export async function forgetManagedVault(id: string) { void id; throw new Error('nativeOnly') }
-export async function cloneManagedGitVault(url: string, http: HttpClient, token?: string): Promise<ManagedGitVault> {
-  void url; void http; void token; throw new Error('nativeOnly')
+export async function cloneManagedGitVault(url: string, http: HttpClient, token?: string,
+  control: Pick<GitRemoteOptions, 'signal' | 'onProgress'> = {}): Promise<ManagedGitVault> {
+  void url; void http; void token; void control; throw new Error('nativeOnly')
 }
 export async function managedGitSelection(vault: ManagedGitVault): Promise<NativeWorkspaceSelection> { void vault; throw new Error('nativeOnly') }
 export function managedGitConnection(vault: ManagedGitVault): Omit<GitRemoteOptions, 'http'> { void vault; throw new Error('nativeOnly') }

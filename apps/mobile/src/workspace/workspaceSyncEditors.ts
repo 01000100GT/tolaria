@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef } from 'react'
 
-export type PrepareEditorForSync = () => Promise<() => void>
+export type PrepareEditorForSync = (deferWhileFocused?: boolean) => Promise<() => void>
 
 export function createWorkspaceSyncEditors() {
   const editors = new Map<PrepareEditorForSync, string | undefined>()
@@ -29,11 +29,11 @@ export function createWorkspaceSyncEditors() {
       editors.set(prepare, noteId)
       return () => { editors.delete(prepare) }
     },
-    prepare: async () => {
+    prepare: async (deferWhileFocused = false) => {
       const resumes: (() => void)[] = []
       const resume = () => { for (const action of resumes.splice(0).reverse()) action() }
       try {
-        for (const prepare of editors.keys()) resumes.push(await prepare())
+        for (const prepare of editors.keys()) resumes.push(await prepare(deferWhileFocused))
         return resume
       } catch (error) {
         resume()
@@ -49,5 +49,5 @@ export function useWorkspaceSyncEditor(prepare: PrepareEditorForSync, noteId?: s
   const registry = useContext(WorkspaceSyncEditorsContext)
   const prepareRef = useRef(prepare)
   useEffect(() => { prepareRef.current = prepare }, [prepare])
-  useEffect(() => registry?.register(() => prepareRef.current(), noteId), [noteId, registry])
+  useEffect(() => registry?.register(defer => prepareRef.current(defer), noteId), [noteId, registry])
 }

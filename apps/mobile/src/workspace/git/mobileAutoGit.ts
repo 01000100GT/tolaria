@@ -28,11 +28,19 @@ export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unkno
     retryAt = retry ? Date.now() + Math.min(300_000, 30_000 * 2 ** Math.min(failures - 1, 4)) : 0
   }
 
+  function succeeded(result: unknown) {
+    if (editorSyncDeferred(result)) {
+      attempted = -1
+      return
+    }
+    completed(retryRequested(result))
+  }
+
   function execute() {
     attempted = version
     const controller = new AbortController()
     const promise = Promise.resolve().then(() => run(controller.signal))
-      .then(result => { completed(retryRequested(result)) })
+      .then(succeeded)
       .catch(error => { completed(syncFailureKind(error) === 'retry') })
       .then(() => { running = undefined; schedule() })
     running = { controller, promise }
@@ -58,6 +66,11 @@ export function createMobileAutoGit(run: (signal?: AbortSignal) => Promise<unkno
     },
     dispose: () => { disposed = true; cancelTimer(); running?.controller.abort() },
   }
+}
+
+function editorSyncDeferred(result: unknown) {
+  if (typeof result !== 'object' || result === null) return false
+  return 'deferred' in result && result.deferred === true
 }
 
 async function followSync(operation: SyncOperation, signal?: AbortSignal) {

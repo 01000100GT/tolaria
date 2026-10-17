@@ -2,6 +2,7 @@ type EditorDocumentAdapter<Document> = {
   read: () => Promise<Document>
   commit: (document: Document) => void
   setEditable: (editable: boolean) => void
+  isFocused?: () => boolean
 }
 
 /** Invalidates older bridge replies before a checkout can replace the document. */
@@ -22,7 +23,8 @@ export function createEditorSaveGate<Document>(adapter: EditorDocumentAdapter<Do
       const document = await adapter.read()
       if (!paused && requestedVersion === version) adapter.commit(document)
     },
-    prepare: async () => {
+    prepare: async (deferWhileFocused = false) => {
+      if (shouldDeferEditorPause(adapter, deferWhileFocused)) throw new Error('editorSyncDeferred')
       if (paused) throw new Error('editorAlreadyPaused')
       paused = true
       version += 1
@@ -37,4 +39,8 @@ export function createEditorSaveGate<Document>(adapter: EditorDocumentAdapter<Do
       }
     },
   }
+}
+
+function shouldDeferEditorPause(adapter: Pick<EditorDocumentAdapter<unknown>, 'isFocused'>, requested: boolean) {
+  return requested && adapter.isFocused?.()
 }
