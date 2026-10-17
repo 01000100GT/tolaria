@@ -40,7 +40,12 @@ only action and kind, never vault names, paths, URLs, or content. See ADR 0216.
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
 authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
 checkpoints and commit-graph classification. `gitRemote.ts` performs serialized
-clone and sync. Local Git contexts whitelist filesystem, directory and cache options so a
+clone and sync. New clones retain the complete current tree at depth one;
+`gitHistory.ts` retrieves older shallow-boundary ancestors only when a merge
+lacks a common base. Existing full clones are unchanged. Unavailable history,
+cancellation, and unchanged boundaries fail before working-copy publication;
+remote history is never rewritten (ADR 0229).
+Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 Recovery and push use fully-qualified branch refs, including when older working
 copies contain a stray pseudo-ref that shadows the branch's short name.
@@ -75,7 +80,8 @@ Set `TOLARIA_GIT_QA_FILES=6000` for the opt-in large-vault fixture and separate
 clone/push/pull timings; routine checks retain the fast two-note fixture.
 `TOLARIA_GIT_QA_HISTORY_MIB=128` additionally creates incompressible historical
 attachment revisions, removed from the current tree but retained in Git history.
-This exercises large pack processing independently of the working-tree file count.
+This checks that current-tree clone cost is independent of deleted attachment
+history; it does not certify memory use for large current blobs or deepening.
 `measureEventLoopDelay.ts` measures timer scheduling delay across the round trip,
 including a blocked tail, and always removes its timer. This is not an animation
 FPS measurement. `nativeStorageQaCapability.ts` accepts development mode or the

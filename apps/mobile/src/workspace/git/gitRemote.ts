@@ -4,6 +4,7 @@ import { withWorkspaceOperation } from './workspaceOperationQueue'
 import { withSavedWorkspace } from './workspaceWriteQueue'
 import { createGitTaskRunner } from './gitTaskRunner'
 import { requireActiveSync } from '../syncCancellation'
+import { ensureGitMergeHistory } from './gitHistory'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
 export type GitLocalAccess = <T>(operation: () => Promise<{ value: T; workspaceChanged: boolean }>) => Promise<T>
@@ -28,6 +29,7 @@ export function cloneGitVault(options: GitRemoteOptions, repositoryUrl: string) 
       ...transport(options, url),
       url,
       singleBranch: true,
+      depth: 1,
       noTags: true,
       nonBlocking: true,
       batchSize: 20,
@@ -76,7 +78,14 @@ async function syncHeads(options: GitRemoteOptions, connection: GitConnection, a
 async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConnection, author: GitAuthor) {
   emitPhase(options, 'fetch')
   await git.fetch({ ...connection, singleBranch: true, tags: false })
-  const remoteOid = await git.resolveRef({ ...connection, ref: `refs/remotes/origin/${connection.ref}` })
+  const remoteHead = () => git.resolveRef({ ...connection, ref: `refs/remotes/origin/${connection.ref}` })
+  const remoteOid = await ensureGitMergeHistory(connection, await remoteHead(), async boundaries => {
+    for (const oid of boundaries) {
+      requireActiveSync(options.signal)
+      await git.fetch({ ...connection, ref: oid, remoteRef: oid, singleBranch: true, tags: false, relative: true, depth: 16 })
+    }
+    return remoteHead()
+  })
   emitPhase(options, 'checkout')
   return localAccess(options, async () => {
     requireActiveSync(options.signal)
