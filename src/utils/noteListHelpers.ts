@@ -21,8 +21,6 @@ import { buildTypeVisibilityLookup, isSectionEntryVisibleForType } from './typeV
 import {
   compareSortableValues,
   getDefaultDirection,
-  parseSortConfig,
-  serializeSortConfig,
   statusSortRank,
   type SortConfig,
   type SortDirection,

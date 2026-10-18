@@ -109,9 +109,9 @@ describe('DynamicRelationshipsPanel', () => {
         onNavigate={onNavigate}
       />
     )
-    const chip = container.querySelector('.group\\/link')
+    const chip = container.querySelector<HTMLElement>('.group\\/link')
     expect(chip).toBeTruthy()
-    expect(chip!.style.color).toBe(expectedColor)
+    expect(chip?.style.color).toBe(expectedColor)
   })
 
   it('hides empty state label when frontmatter has no relations', () => {
@@ -178,7 +178,7 @@ describe('DynamicRelationshipsPanel', () => {
       title: 'Book',
       isA: 'Type',
       properties: {
-        has_part: 'Chapter',
+        has: 'Chapter',
       },
     })
 
@@ -190,7 +190,7 @@ describe('DynamicRelationshipsPanel', () => {
     })
 
     const placeholder = screen.getByTestId('type-derived-relationship')
-    expect(within(placeholder).getByText('Has part')).toHaveClass('text-muted-foreground/40')
+    expect(within(placeholder).getByText('Has')).toHaveClass('text-muted-foreground/40')
   })
 
   it('navigates when clicking a relationship link', () => {
