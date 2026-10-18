@@ -134,6 +134,10 @@ local checkpoint therefore does not cause the server to resend unchanged objects
 Nonstandard remotes/upstreams retain the library's default selection. Fetch stays
 single-branch and does not alter the explicit shallow-history deepening path
 (ADR 0239).
+Type-swap preparation walks immutable before/target trees serially through the
+existing cooperative task runner. Identical object IDs and one-sided subtrees
+cannot contain type swaps, so their descendants are pruned. This never skips
+working-copy verification or the original-content guards before removing a swap.
 Recovery and push use fully-qualified branch refs, including when older working
 copies contain a stray pseudo-ref that shadows the branch's short name.
 `gitMerge.ts` builds conflict-free merge objects without changing

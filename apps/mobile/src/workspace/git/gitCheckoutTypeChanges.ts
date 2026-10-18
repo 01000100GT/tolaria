@@ -1,17 +1,29 @@
-import git from 'isomorphic-git'
+import git, { type WalkerIterate } from 'isomorphic-git'
 import type { GitVaultContext } from './gitVault'
+import { createGitTaskRunner } from './gitTaskRunner'
 
 type Entry = { path: string; oid: string; tree: boolean }
 
 /** isomorphic-git's checkout planner does not execute file/directory swaps. */
 export async function prepareGitTypeChanges(context: GitVaultContext, before: string, target: string) {
   const swaps: Entry[] = []
+  const tasks = createGitTaskRunner()
+  const iterate: WalkerIterate = async (walk, children) => {
+    for (const child of children) await tasks.run(() => walk(child))
+    return []
+  }
   await git.walk({ ...context, trees: [git.TREE({ ref: before }), git.TREE({ ref: target })],
+    iterate,
     map: async (path, [old, next]) => {
-      if (path === '.' || !old || !next) return
+      if (!old || !next) return null
+      // Only immutable commit-tree identities can justify pruning this walk.
+      if (await old.oid() === await next.oid()) return null
+      if (path === '.') return
       const previousType = await old.type()
       const nextType = await next.type()
-      if (previousType !== nextType) swaps.push({ path, oid: await old.oid(), tree: previousType === 'tree' })
+      if (previousType === nextType) return
+      swaps.push({ path, oid: await old.oid(), tree: previousType === 'tree' })
+      return null
     },
   })
   for (const swap of swaps) await prepareSwap(context, swap)
