@@ -2,7 +2,7 @@ import XCTest
 
 final class MobilePersistenceIsolationTests: XCTestCase {
   func testDisposableWorkspacePersistence() {
-    let app = launchProbe("phoneState=sidebar&workspacePersistenceProbe=1")
+    let app = launchProbe("phoneState=list&workspacePersistenceProbe=1")
     let list = app.descendants(matching: .any).matching(identifier: "note-list-panel").firstMatch
     XCTAssertTrue(list.waitForExistence(timeout: 30))
     XCTAssertTrue(list.isHittable)
