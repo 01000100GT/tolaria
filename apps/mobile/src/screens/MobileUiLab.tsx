@@ -7,7 +7,7 @@ import { useMobileDeviceLayout } from '../ui/useMobileDeviceLayout'
 import { PhoneWorkspace, type PhoneWorkspaceState } from './PhoneWorkspace'
 import { TabletWorkspace } from './TabletWorkspace'
 import type { TabletTransitionProbeMode } from './tabletWorkspaceTypes'
-import { readOnlyWorkspaceRepository, type ReadOnlyWorkspaceRequest } from '../workspace/readOnlyWorkspaceRepository'
+import type { ReadOnlyWorkspaceRequest } from '../workspace/readOnlyWorkspaceRepository'
 import {
   fetchDevVaultWorkspaceState,
   type DevVaultWorkspaceState,
@@ -50,16 +50,8 @@ import {
   nativeWysiwygTableCommandMutationProbeEnabled,
 } from '../qa/nativeWysiwygTableCommandMutationProbe'
 import {
-  nativeWysiwygPersistenceProbeRepository,
-  nativeWysiwygPersistenceProbeRequest,
-} from '../qa/nativeWysiwygPersistenceProbeRepository'
-import {
   nativeWorkspacePersistenceProbeEnabled,
 } from '../qa/nativeWorkspacePersistenceProbe'
-import {
-  nativeWorkspacePersistenceProbeRepository,
-  nativeWorkspacePersistenceProbeRequest,
-} from '../qa/nativeWorkspacePersistenceProbeRepository'
 import {
   nativeTableOfContentsLogLine,
   nativeTableOfContentsProbeContent,
@@ -98,8 +90,8 @@ import { requestedActionSheetQaTarget } from './mobileActionSheetQaTarget'
 import { tabletTransitionProbeMode } from './tabletTransitionProbeMode'
 import {
   initialMobileUiNativeSearch,
-  mobileUiRequestedWorkspaceSource,
 } from './mobileUiLabWorkspaceResolution'
+import { mobileRepositoryForProbes, mobileRepositoryRequestForProbes, mobileUiWorkspaceSourceRequest } from './mobileUiWorkspaceSourceRequest'
 import { useMobileWorkspaceResolution } from './useMobileWorkspaceResolution'
 import { mobileWorkspaceKey } from './mobileWorkspaceKey'
 
@@ -211,29 +203,12 @@ function mobileUiStatusScreen({
   return null
 }
 
-function currentScenarioId(searchParams: URLSearchParams) {
-  return searchParams.get('scenario') || envValue('EXPO_PUBLIC_TOLARIA_SCENARIO')
-}
-
 function currentPhoneState(searchParams: URLSearchParams): PhoneWorkspaceState {
   const value = searchParams.get('phoneState')
 
   if (value === 'editor' || value === 'properties' || value === 'sidebar') return value
 
   return 'list'
-}
-
-function currentSnapshotSource(
-  searchParams: URLSearchParams,
-  nativeWorkspace: NativeWorkspaceSelection | null,
-): NonNullable<ReadOnlyWorkspaceRequest['source']> {
-  const requestedSource = searchParams.get('source') ?? envValue('EXPO_PUBLIC_TOLARIA_WORKSPACE_SOURCE')
-  return mobileUiRequestedWorkspaceSource({
-    hasDevVaultUrl: currentDevVaultUrl(searchParams) !== null,
-    hasNativeWorkspace: nativeWorkspace !== null,
-    requestedSource,
-    searchParams,
-  })
 }
 
 function editorMode(searchParams: URLSearchParams) {
@@ -285,33 +260,6 @@ function initialEditorState(searchParams: URLSearchParams) {
   }
 }
 
-function mobileRepositoryForProbes({
-  workspacePersistenceProbe,
-  wysiwygPersistenceProbe,
-}: {
-  workspacePersistenceProbe: boolean
-  wysiwygPersistenceProbe: boolean
-}) {
-  if (workspacePersistenceProbe) return nativeWorkspacePersistenceProbeRepository(readOnlyWorkspaceRepository)
-  if (wysiwygPersistenceProbe) return nativeWysiwygPersistenceProbeRepository(readOnlyWorkspaceRepository)
-  return readOnlyWorkspaceRepository
-}
-
-function mobileRepositoryRequestForProbes(
-  request: ReadOnlyWorkspaceRequest,
-  {
-    workspacePersistenceProbe,
-    wysiwygPersistenceProbe,
-  }: {
-    workspacePersistenceProbe: boolean
-    wysiwygPersistenceProbe: boolean
-  },
-) {
-  if (workspacePersistenceProbe) return nativeWorkspacePersistenceProbeRequest(request)
-  if (wysiwygPersistenceProbe) return nativeWysiwygPersistenceProbeRequest(request)
-  return request
-}
-
 function useMobileUiWorkspaceSource({
   nativeWorkspace,
   searchParams,
@@ -323,18 +271,10 @@ function useMobileUiWorkspaceSource({
   workspacePersistenceProbe: boolean
   wysiwygPersistenceProbe: boolean
 }) {
-  const scenarioId = currentScenarioId(searchParams)
-  const source = currentSnapshotSource(searchParams, nativeWorkspace)
-  const devVaultUrl = currentDevVaultUrl(searchParams)
+  const { request: sourceRequest, devVaultUrl } = mobileUiWorkspaceSourceRequest(searchParams, nativeWorkspace)
+  const { scenarioId, source } = sourceRequest
   const devVault = useDevVaultWorkspaceState(source === 'dev', devVaultUrl)
-  const request = mobileRepositoryRequestForProbes({
-    scenarioId,
-    source,
-    vaultAlias: currentVaultAlias(searchParams, nativeWorkspace),
-    vaultLabel: currentVaultLabel(searchParams, nativeWorkspace),
-    vaultRootUri: currentVaultRootUri(searchParams, nativeWorkspace),
-    workspaceIndex: nativeWorkspace?.index,
-  }, { workspacePersistenceProbe, wysiwygPersistenceProbe })
+  const request = mobileRepositoryRequestForProbes(sourceRequest, { workspacePersistenceProbe, wysiwygPersistenceProbe })
   const probeRepository = useMemo(() => mobileRepositoryForProbes({
     workspacePersistenceProbe, wysiwygPersistenceProbe,
   }), [workspacePersistenceProbe, wysiwygPersistenceProbe])
@@ -355,34 +295,6 @@ function useMobileUiWorkspaceSource({
     scenarioId,
     source,
   }
-}
-
-function currentVaultRootUri(
-  searchParams: URLSearchParams,
-  nativeWorkspace: NativeWorkspaceSelection | null,
-): string | null {
-  if (nativeWorkspace) return nativeWorkspace.vaultRootUri
-  return searchParams.get('vaultUri') || envValue('EXPO_PUBLIC_TOLARIA_NATIVE_VAULT_URI')
-}
-
-function currentDevVaultUrl(searchParams: URLSearchParams): string | null {
-  return searchParams.get('devVaultUrl') || envValue('EXPO_PUBLIC_TOLARIA_DEV_VAULT_URL')
-}
-
-function currentVaultLabel(
-  searchParams: URLSearchParams,
-  nativeWorkspace: NativeWorkspaceSelection | null,
-): string | null {
-  if (nativeWorkspace) return nativeWorkspace.vaultLabel
-  return searchParams.get('vaultLabel') || envValue('EXPO_PUBLIC_TOLARIA_NATIVE_VAULT_LABEL')
-}
-
-function currentVaultAlias(
-  searchParams: URLSearchParams,
-  nativeWorkspace: NativeWorkspaceSelection | null,
-): string | null {
-  if (nativeWorkspace) return nativeWorkspace.vaultAlias
-  return searchParams.get('vaultAlias') || envValue('EXPO_PUBLIC_TOLARIA_NATIVE_VAULT_ALIAS')
 }
 
 function layoutProbeEnabled(searchParams: URLSearchParams) {
