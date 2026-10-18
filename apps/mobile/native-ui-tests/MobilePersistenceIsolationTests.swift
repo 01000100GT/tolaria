@@ -3,8 +3,9 @@ import XCTest
 final class MobilePersistenceIsolationTests: XCTestCase {
   func testDisposableWorkspacePersistence() {
     let app = launchProbe("phoneState=sidebar&workspacePersistenceProbe=1")
-    let inbox = app.descendants(matching: .any).matching(identifier: "sidebar-item-inbox").firstMatch
-    XCTAssertTrue(inbox.waitForExistence(timeout: 30))
+    let list = app.descendants(matching: .any).matching(identifier: "note-list-panel").firstMatch
+    XCTAssertTrue(list.waitForExistence(timeout: 30))
+    XCTAssertTrue(list.isHittable)
     XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "workspace-load-failure").firstMatch.exists)
     captureScreen()
   }
