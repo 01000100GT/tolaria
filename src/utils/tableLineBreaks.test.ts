@@ -71,8 +71,10 @@ describe("table break import boundaries", () => {
 		);
 	});
 	it("keeps escaped pipes and cell breaks in the same cell through both parsers", async () => {
-		const markdown =
-			"| Header | Other |\n| --- | --- |\n| left \\| right<br>next | value |";
+		const markdown = readFileSync(
+			"src/test/fixtures/table-escaped-pipe-breaks.md",
+			"utf8",
+		).trim();
 		const source = preProcessRichEditorMarkdown(markdown);
 		const editor = BlockNoteEditor.create({ schema });
 		const documents = [
