@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { phoneBack } from './mobile-panel-navigation'
 
 for (const action of ['button', 'shortcut', 'command'] as const) {
   test(`@smoke phone ${action} creates an untitled note directly in the editor`, async ({ page }, info) => {
@@ -8,7 +9,7 @@ for (const action of ['button', 'shortcut', 'command'] as const) {
     if (action === 'button') await page.getByTestId('note-list-create-action').click()
     if (action === 'shortcut') await page.keyboard.press('Meta+n')
     if (action === 'command') {
-      await page.getByTestId('phone-command-palette-action').click()
+      await page.getByTestId('phone-note-list-screen').getByTestId('phone-command-palette-action').click()
       await page.getByTestId('mobile-command-palette-command-file-new-note').click()
     }
     await expect(page.getByTestId('phone-editor-screen')).toBeVisible()
@@ -16,7 +17,7 @@ for (const action of ['button', 'shortcut', 'command'] as const) {
     const source = page.getByTestId('editor-markdown-input')
     await expect(source).toHaveValue(/type: Note/u)
     await source.fill('---\ntype: Note\n---\n\nA body without a title.')
-    await page.getByTestId('phone-back-action').click()
+    await phoneBack(page)
     await expect(page.getByTestId('phone-note-list-screen')).toBeVisible()
     await expect(page.getByTestId('phone-note-list-screen').getByText('A body without a title.', { exact: true })).toBeVisible()
   })

@@ -31,3 +31,22 @@ it('projects shared event properties without note content, queries or repository
   expect(send.mock.calls[1]?.[0]).toMatchObject({ event: 'search_used' })
   analytics.setEnabled(false)
 })
+
+it('attributes update adoption with build identifiers rather than manifest contents', () => {
+  const context = mobileTelemetryContext({ platform: 'ios', updates: {
+    isEnabled: true, updateId: '34393854-9cc5-44b2-8888-876543210abc',
+    runtimeVersion: 'a'.repeat(40), channel: 'alpha', isEmbeddedLaunch: false, isEmergencyLaunch: false,
+  } })
+  expect(context).toMatchObject({ ota_update_id: '34393854-9cc5-44b2-8888-876543210abc',
+    ota_runtime_version: 'a'.repeat(40), ota_channel: 'alpha', ota_launch_source: 'downloaded', ota_emergency_launch: 'false' })
+})
+
+it('rejects arbitrary update metadata and distinguishes embedded recovery', () => {
+  const context = mobileTelemetryContext({ platform: 'ios', updates: {
+    isEnabled: true, updateId: '/Users/private/vault', runtimeVersion: 'secret-token',
+    channel: 'private-repo', isEmbeddedLaunch: true, isEmergencyLaunch: true,
+  } })
+  expect(context).toMatchObject({ ota_update_id: 'unknown', ota_runtime_version: 'unknown',
+    ota_channel: 'unknown', ota_launch_source: 'embedded', ota_emergency_launch: 'true' })
+  expect(JSON.stringify(context)).not.toMatch(/private|secret/)
+})

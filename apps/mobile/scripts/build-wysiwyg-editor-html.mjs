@@ -1,7 +1,6 @@
 import { build } from 'esbuild'
 import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -10,7 +9,6 @@ const require = createRequire(import.meta.url)
 const mobileRoot = path.resolve(__dirname, '..')
 const repoRoot = path.resolve(mobileRoot, '..', '..')
 const entryPoint = path.join(mobileRoot, 'src/components/workspace/MobileWysiwygTentapWebEditor.tsx')
-const generatedFile = path.join(mobileRoot, 'src/components/workspace/MobileWysiwygTentapEditorHtml.ts')
 const mobileReactResolver = {
   name: 'mobile-react-resolver',
   setup(build) {
@@ -20,27 +18,40 @@ const mobileReactResolver = {
   },
 }
 
-const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tolaria-mobile-wysiwyg-editor-'))
-const bundleFile = path.join(tempDir, 'editor.js')
+export function buildEditorBundle() {
+  return build({
+    absWorkingDir: repoRoot,
+    alias: {
+      '@10play/tentap-editor/web': path.join(
+        path.dirname(require.resolve('@10play/tentap-editor/package.json')),
+        'src/webEditorUtils/index.ts',
+      ),
+    },
+    bundle: true,
+    define: { 'process.env.NODE_ENV': '"production"' },
+    entryPoints: [entryPoint],
+    external: ['expo-constants'],
+    format: 'iife',
+    jsx: 'automatic',
+    metafile: true,
+    minify: true,
+    outfile: 'editor.js',
+    platform: 'browser',
+    plugins: [mobileReactResolver],
+    write: false,
+  })
+}
 
-await build({
-  absWorkingDir: repoRoot,
-  bundle: true,
-  define: {
-    'process.env.NODE_ENV': '"production"',
-  },
-  entryPoints: [entryPoint],
-  external: ['expo-constants'],
-  format: 'iife',
-  jsx: 'automatic',
-  minify: true,
-  outfile: bundleFile,
-  platform: 'browser',
-  plugins: [mobileReactResolver],
-})
-
-const bundle = await fs.readFile(bundleFile, 'utf8')
-await fs.writeFile(generatedFile, generatedEditorHtmlModule(editorHtml(bundle)))
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const result = await buildEditorBundle()
+  const bundle = result.outputFiles.find(file => file.path.endsWith('.js'))?.text
+  if (!bundle) throw new Error('Missing mobile editor bundle')
+  process.chdir(repoRoot)
+  await fs.writeFile(
+    'apps/mobile/src/components/workspace/MobileWysiwygTentapEditorHtml.ts',
+    generatedEditorHtmlModule(editorHtml(bundle)),
+  )
+}
 
 function editorHtml(bundle) {
   return `<!DOCTYPE html>

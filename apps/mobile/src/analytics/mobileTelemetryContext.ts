@@ -1,4 +1,6 @@
-type Input = { platform: string; deviceFamily?: string; version?: string | null; build?: string | null; channel?: string; distribution?: string }
+import { mobileUpdateMetadata, type MobileUpdateContext } from './mobileUpdateMetadata'
+
+type Input = { platform: string; deviceFamily?: string; version?: string | null; build?: string | null; channel?: string; distribution?: string; updates?: MobileUpdateContext }
 export type MobileTelemetryContext = ReturnType<typeof mobileTelemetryContext>
 
 export function mobileTelemetryContext(input: Input) {
@@ -10,6 +12,7 @@ export function mobileTelemetryContext(input: Input) {
     build_number: version(input.build),
     release_channel: choice(input.channel, ['alpha', 'stable'], 'alpha'),
     distribution: choice(input.distribution, ['internal', 'testflight', 'store'], 'internal'),
+    ...(input.updates ? mobileUpdateMetadata(input.updates) : {}),
   }
 }
 

@@ -663,6 +663,9 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileWysiwygTentapWebEditor.tsx` | Tolaria TenTap WebView entrypoint that bundles custom mobile Tiptap extensions |
 | `MobileWysiwygContentBridge.ts` | Silent programmatic-content bridge that prevents initial hydration from being persisted as a user edit |
 | `MobileWysiwygTentapEditorHtml.ts` | Generated custom TenTap WebView HTML used by the native WYSIWYG editor |
+| `build-wysiwyg-editor-html.mjs` | Builds TenTap from its shipped web source against the installed dependency graph; the in-memory build exposes provenance metadata without rewriting generated HTML during imports/tests |
+| `updates.config.js` | SDK-native OTA launch configuration, explicit channel/profile matching and EAS project identity; validation uses a separate application container |
+| `mobileUpdateMetadata.ts` | Projects update UUID, native fingerprint, channel and launch source into consent-governed build metadata without copying manifests or recovery messages |
 | `nativeWysiwyg*Probe.ts` | Native Expo simulator proof models for mobile editor behavior that must be verified outside React Native Web |
 | `TabletWorkspace` | Tablet shell that owns selected-note state, panel layout, action-sheet forms, and editable snapshot state |
 | `tabletPanelResize` | Reconciles current pane visibility with a resized window and the existing readable-editor minimum; preserves hidden panes when widening |

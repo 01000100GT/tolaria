@@ -9,6 +9,7 @@ const configure: (context: { config: typeof manifest.expo }) => ExpoConfig = req
 beforeEach(() => {
   vi.stubEnv('TOLARIA_BUILD_PROFILE', undefined)
   vi.stubEnv('TOLARIA_IOS_BUILD_NUMBER', undefined)
+  vi.stubEnv('TOLARIA_UPDATE_CHANNEL', undefined)
   vi.stubEnv('EXPO_PUBLIC_DISTRIBUTION', 'testflight')
   vi.stubEnv('EXPO_PUBLIC_RELEASE_CHANNEL', 'alpha')
 })
@@ -68,4 +69,46 @@ it('keeps signing and upload secrets out of the public application manifest', ()
   const serialized = JSON.stringify(testFlight())
   expect(serialized).not.toContain('private-upload-placeholder')
   expect(serialized).not.toContain('private-signing-placeholder')
+})
+
+it('links the approved EAS project without activating updates in development', () => {
+  const app = configuredApp()
+  expect(app.owner).toBe('refactoring')
+  expect(app.extra?.eas?.projectId).toBe('ec8f7035-5dea-4264-8e40-8cdf0d5cb377')
+  expect(app.updates?.enabled).toBe(false)
+  expect(app.runtimeVersion).toEqual({ policy: 'fingerprint' })
+})
+
+it('downloads alpha updates without blocking launch or disabling embedded recovery', () => {
+  expect(testFlight().updates).toEqual({
+    enabled: true,
+    url: 'https://u.expo.dev/ec8f7035-5dea-4264-8e40-8cdf0d5cb377',
+    requestHeaders: { 'expo-channel-name': 'alpha' },
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 0,
+    useEmbeddedUpdate: true,
+    disableAntiBrickingMeasures: false,
+  })
+})
+
+it('isolates OTA acceptance from every existing development and release vault container', () => {
+  vi.stubEnv('TOLARIA_BUILD_PROFILE', 'ota-validation')
+  vi.stubEnv('TOLARIA_UPDATE_CHANNEL', 'ota-validation')
+  const app = configuredApp()
+  expect(app.ios?.bundleIdentifier).toBe('md.tolaria.mobile.ota-validation')
+  expect(app.android?.package).toBe('md.tolaria.mobile.ota_validation')
+  expect(app.updates?.requestHeaders).toEqual({ 'expo-channel-name': 'ota-validation' })
+})
+
+it('rejects accidental cross-channel publishing from a TestFlight build profile', () => {
+  vi.stubEnv('TOLARIA_UPDATE_CHANNEL', 'stable')
+  expect(() => testFlight()).toThrow('TOLARIA_UPDATE_CHANNEL')
+})
+
+it('keeps JavaScript-only validation markers out of the native fingerprint configuration', () => {
+  vi.stubEnv('TOLARIA_BUILD_PROFILE', 'ota-validation')
+  const embedded = configuredApp()
+  vi.stubEnv('EXPO_PUBLIC_OTA_VALIDATION_MARKER', 'update-b')
+  expect(JSON.stringify(configuredApp())).toBe(JSON.stringify(embedded))
+  expect(embedded.extra?.otaValidationMarker).toBeUndefined()
 })

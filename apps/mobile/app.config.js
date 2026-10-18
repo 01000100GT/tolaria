@@ -1,11 +1,17 @@
 /* global module, process, require */
 const { withSentry } = require('@sentry/react-native/expo')
+const { easProjectId, updateConfiguration } = require('./updates.config.js')
 
 module.exports = ({ config }) => withSentry({
   ...config,
+  owner: 'refactoring',
+  runtimeVersion: { policy: 'fingerprint' },
+  updates: updateConfiguration(process.env.TOLARIA_BUILD_PROFILE, process.env.TOLARIA_UPDATE_CHANNEL),
   ios: iosBuildConfiguration(config.ios),
+  android: androidBuildConfiguration(config.android),
   extra: {
     ...config.extra,
+    eas: { ...config.extra?.eas, projectId: easProjectId },
     // Only public ingestion credentials belong in the application manifest.
     telemetry: {
       sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN || process.env.VITE_SENTRY_DSN || '',
@@ -18,17 +24,24 @@ module.exports = ({ config }) => withSentry({
 function iosBuildConfiguration(ios) {
   const profile = process.env.TOLARIA_BUILD_PROFILE
   if (profile === undefined || profile === 'development') return ios
-  if (profile !== 'testflight') {
-    throw new Error('TOLARIA_BUILD_PROFILE must be development or testflight')
+  if (profile === 'ota-validation') return { ...ios, bundleIdentifier: 'md.tolaria.mobile.ota-validation' }
+  const distribution = { testflight: 'testflight', production: 'store' }[profile]
+  if (!distribution) {
+    throw new Error('TOLARIA_BUILD_PROFILE must be development, testflight, production or ota-validation')
   }
-  requireEnvironmentValue('EXPO_PUBLIC_DISTRIBUTION', 'testflight')
-  requireEnvironmentValue('EXPO_PUBLIC_RELEASE_CHANNEL', 'alpha')
+  requireEnvironmentValue('EXPO_PUBLIC_DISTRIBUTION', distribution)
+  requireEnvironmentValue('EXPO_PUBLIC_RELEASE_CHANNEL', profile === 'testflight' ? 'alpha' : 'stable')
   return {
     ...ios,
     bundleIdentifier: 'md.tolaria.mobile',
     appleTeamId: 'D84V3C272P',
     buildNumber: testFlightBuildNumber(),
   }
+}
+
+function androidBuildConfiguration(android) {
+  if (process.env.TOLARIA_BUILD_PROFILE !== 'ota-validation') return android
+  return { ...android, package: 'md.tolaria.mobile.ota_validation' }
 }
 
 function testFlightBuildNumber() {

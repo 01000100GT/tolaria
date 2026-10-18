@@ -5,7 +5,6 @@ exclude_paths:
   - "dist/**"
   - "e2e/**"
   - "node_modules/**"
-  - "pnpm-lock.yaml"
   - "scripts/**"
   - "site/.vitepress/cache/**"
   - "site/.vitepress/dist/**"
