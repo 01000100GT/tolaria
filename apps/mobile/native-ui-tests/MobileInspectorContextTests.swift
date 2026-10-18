@@ -14,8 +14,12 @@ final class MobileInspectorContextTests: XCTestCase {
     for _ in 0..<3 { verifyNoteChangeFromInspector() }
   }
 
-  private func verifyNoteChangeFromInspector() {
-    let app = launch()
+  func testSourceInspectorIdentifiesTheSelectedFileWithoutAddingAnotherHeader() {
+    for _ in 0..<3 { verifyNoteChangeFromInspector(source: true) }
+  }
+
+  private func verifyNoteChangeFromInspector(source: Bool = false) {
+    let app = launch(source: source)
     let first = openInspector(app)
     if phone {
       MobilePanelNavigation.back(app)
@@ -48,17 +52,19 @@ final class MobileInspectorContextTests: XCTestCase {
     capture("inspector-context-after-rotation")
   }
 
-  private func launch() -> XCUIApplication {
+  private func launch(source: Bool = false) -> XCUIApplication {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = phone ? .portrait : .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
     let diagnostics = ProcessInfo.processInfo.environment["TOLARIA_QA_GESTURE_TRACE_URL"]
       .map { "&layoutProbe=1&metricSink=\($0)" } ?? ""
-    let search = "?source=fixture&phoneState=editor&tabletPanels=all&forceDesktopPanels=1&qaRun=inspector-context" + diagnostics
+    let mode = source ? "source" : "wysiwyg"
+    let search = "?source=fixture&phoneState=editor&tabletPanels=all&forceDesktopPanels=1&qaRun=inspector-context&editorMode=\(mode)" + diagnostics
     app.launchArguments = ["--tolaria-mobile-search", search]
     app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
     app.launch()
     XCTAssertTrue(element(app, "editor-toolbar-title").waitForExistence(timeout: 30))
+    if source { XCTAssertTrue(element(app, "editor-markdown-input").waitForExistence(timeout: 10)) }
     return app
   }
 

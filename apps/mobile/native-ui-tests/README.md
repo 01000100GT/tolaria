@@ -56,17 +56,25 @@ against the installed bundle. Retain the `.xcresult`, and identify the tested
 source/bundle in the batch evidence. Do not count a browser capture as this test.
 
 `MobileInspectorContextTests` repeats inspector navigation and a single note-row
-tap across three cold launches. It does not retry a missed tap or swipe. For
+tap across three cold launches in each editor mode. It does not retry a missed
+tap or swipe. For
 diagnosis, set `TEST_RUNNER_TOLARIA_QA_GESTURE_TRACE_URL` to an existing loopback
 collector before `xcodebuild test`; the test opts into the layout probe and emits
 numeric phone gesture recognition/settlement snapshots. No note content is sent.
 Run acceptance again without that environment variable: diagnostic success alone
 does not establish ordinary native input reliability.
 
+The host `phoneNativeWorkletCapture.test.ts` compiles the real gesture modules
+with the production Babel configuration and executes their serialized closure
+graph. Its mutation control must reject a broken capture even when ordinary JS
+still works. This catches worklet initialization crashes that mocked gesture
+callbacks miss; it does not replace actual Reanimated/Hermes or touch-delivery QA.
+
 The generated test runner supports iPad and iPhone. `PhoneNoteSwipeTests` checks
-that row drags reveal Favorite/Delete/Archive without opening the sidebar, that
-full swipes toggle Favorite or archive without deleting, and that the archived
-note remains reachable through navigation. These checks use a disposable fixture.
+that leftward row drags reveal Favorite/Delete/Archive, the Favorite button
+toggles that state, and full swipes archive without deleting. Rightward drags
+remain available for sidebar navigation, and archived notes remain reachable.
+These checks use a disposable fixture.
 
 `TabletSourceScrollTests` checks the raw editor with fifty inserted lines:
 the syntax layer must lay out the entire document and follow real input scrolling.
