@@ -419,6 +419,12 @@ unread content from valid empty files and guards mutations that require that
 content. Hydration is a read-only operation, including for read-only repositories;
 failed reads never synthesize writable blank notes.
 
+`useMobileInspectorReferenceGroups` defers inverse relationships and backlinks
+from the current note pool. Its selection input contains only reference-matching
+fields (identity, title, type, path, aliases and workspace alias), so display-only
+note copies do not restart a whole-vault calculation. Selection and pool changes
+still invalidate it; navigation and unmount cancel pending publication.
+
 `mobilePreparedEdits.ts` prepares metadata-only note actions before mutation,
 including deletions whose Undo needs the original bytes. Bulk actions read all
 required notes before applying any edits; a failed read leaves the write plan

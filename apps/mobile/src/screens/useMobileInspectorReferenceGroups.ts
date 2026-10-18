@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   buildMobileInspectorReferenceGroups,
   type MobileNeighborhoodGroup,
@@ -20,19 +20,23 @@ export function useMobileInspectorReferenceGroups(
   snapshot: MobileWorkspaceSnapshot,
 ): MobileNeighborhoodGroup[] {
   const notes = snapshot.allNotes ?? snapshot.notes
+  const { id, title = '', type = '', path, aliases, workspaceAlias } = note ?? {}
+  const source = useMemo(() => id === undefined ? null : {
+    id, title, type, path, aliases, workspaceAlias,
+  }, [id, title, type, path, aliases, workspaceAlias])
   const [state, setState] = useState<ReferenceGroupState>(emptyReferenceGroupState)
 
   useEffect(() => {
-    if (!note) {
+    if (!source) {
       return undefined
     }
 
     let cancelled = false
-    const noteId = note.id
+    const noteId = source.id
     const timeoutId = setTimeout(() => {
       if (cancelled) return
       setState({
-        groups: buildMobileInspectorReferenceGroups(note, notes),
+        groups: buildMobileInspectorReferenceGroups(source, notes),
         noteId,
       })
     }, 0)
@@ -41,7 +45,7 @@ export function useMobileInspectorReferenceGroups(
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [note, notes])
+  }, [source, notes])
 
   return state.noteId === note?.id ? state.groups : []
 }

@@ -16,6 +16,8 @@ export type MobileNeighborhood = {
   source: MobileNote
 }
 
+type MobileReferenceSource = Pick<MobileNote, 'id' | 'title' | 'type' | 'path' | 'aliases' | 'workspaceAlias'>
+
 const preferredInverseLabels = ['Children', 'Events', 'Referenced by'] as const
 type MobileSourceMatcher = {
   noteId: string
@@ -35,7 +37,7 @@ export function buildMobileNeighborhood(source: MobileNote, notes: MobileNote[])
   }
 }
 
-export function buildMobileInspectorReferenceGroups(source: MobileNote, notes: MobileNote[]): MobileNeighborhoodGroup[] {
+export function buildMobileInspectorReferenceGroups(source: MobileReferenceSource, notes: MobileNote[]): MobileNeighborhoodGroup[] {
   return [
     ...instanceGroups(source, notes),
     ...inverseRelationshipGroups(source, notes),
@@ -75,7 +77,7 @@ export function flattenMobileNeighborhoodNotes(neighborhood: MobileNeighborhood 
   ]
 }
 
-function instanceGroups(source: MobileNote, notes: MobileNote[]): MobileNeighborhoodGroup[] {
+function instanceGroups(source: MobileReferenceSource, notes: MobileNote[]): MobileNeighborhoodGroup[] {
   if (source.type !== 'Type') return []
 
   return [
@@ -96,7 +98,7 @@ function directRelationshipGroups(source: MobileNote, notes: MobileNote[]): Mobi
     .filter(hasNotes)
 }
 
-function inverseRelationshipGroups(source: MobileNote, notes: MobileNote[]): MobileNeighborhoodGroup[] {
+function inverseRelationshipGroups(source: MobileReferenceSource, notes: MobileNote[]): MobileNeighborhoodGroup[] {
   const inverseGroups = new Map<string, MobileNote[]>()
   const sourceMatcher = mobileSourceMatcher(source)
 
@@ -112,7 +114,7 @@ function inverseRelationshipGroups(source: MobileNote, notes: MobileNote[]): Mob
   return orderInverseLabels(inverseGroups.keys()).map((label) => relationshipGroup(label, inverseGroups.get(label) ?? [], 'inverse'))
 }
 
-function backlinkGroups(source: MobileNote, notes: MobileNote[]): MobileNeighborhoodGroup[] {
+function backlinkGroups(source: MobileReferenceSource, notes: MobileNote[]): MobileNeighborhoodGroup[] {
   const sourceMatcher = mobileSourceMatcher(source)
 
   return [
@@ -160,7 +162,7 @@ function targetMatchesSource(target: string, source: MobileSourceMatcher) {
   return lastSegment ? source.targets.has(lastSegment) : false
 }
 
-function mobileSourceMatcher(note: MobileNote): MobileSourceMatcher {
+function mobileSourceMatcher(note: MobileReferenceSource): MobileSourceMatcher {
   return {
     noteId: note.id,
     rawTitle: note.title,
@@ -168,7 +170,7 @@ function mobileSourceMatcher(note: MobileNote): MobileSourceMatcher {
   }
 }
 
-function sourceLinkTargets(note: MobileNote): Set<string> {
+function sourceLinkTargets(note: MobileReferenceSource): Set<string> {
   const path = note.path ?? note.id
   const filename = path.split('/').pop() ?? path
   const filenameStem = filename.replace(/\.[^.]+$/u, '')
