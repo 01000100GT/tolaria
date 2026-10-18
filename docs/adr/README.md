@@ -251,3 +251,4 @@ proposed → active → superseded
 | [0203](0203-recoverable-ios-editor-text-saves.md) | Recoverable standalone iOS text saves | active |
 | [0204](0204-recoverable-ios-entry-mutations.md) | Recoverable standalone iOS moves and deletions | active |
 | [0235](0235-mobile-bounded-editor-document-reads.md) | Bounded native editor document reads | active |
+| [0236](0236-cooperative-mobile-workspace-preparation.md) | Cooperative mobile workspace preparation | active |

@@ -193,37 +193,68 @@ const extensionlessTextFilenames = new Set([
   'rakefile',
 ])
 
-export function buildLocalVaultWorkspaceSnapshot({
-  folderPaths = [],
-  files,
-  maxNotes = DEFAULT_MAX_NOTES,
-  vaultAlias,
-  vaultConfig,
-  vaultLabel,
-  vaultPath,
-}: LocalVaultSnapshotOptions): MobileWorkspaceSnapshot {
+export function buildLocalVaultWorkspaceSnapshot(options: LocalVaultSnapshotOptions): MobileWorkspaceSnapshot {
+  const work = localVaultWorkspaceSnapshotSteps(options)
+  let step = work.next()
+  while (!step.done) step = work.next()
+  return step.value
+}
+
+export function* localVaultWorkspaceSnapshotSteps(options: LocalVaultSnapshotOptions): Generator<void, MobileWorkspaceSnapshot> {
+  const { files, maxNotes = DEFAULT_MAX_NOTES, vaultAlias, vaultConfig, vaultLabel, vaultPath } = options
   const workspaceAlias = mobileWorkspaceAlias({ alias: vaultAlias, label: vaultLabel, path: vaultPath })
   const workspaceIdentity = { alias: workspaceAlias, label: vaultLabel }
-  const entries = applyTypeDefinitionTones(files.map(parseLocalVaultEntry))
+  const parsedEntries = yield* mapSnapshotItems(files, parseLocalVaultEntry)
+  const entries = applyTypeDefinitionTones(parsedEntries)
+  yield
   const typeDefinitions = localTypeDefinitions(entries)
+  yield
   const allNoteEntries = [...entries].sort(compareByModifiedDate)
   const visibleEntries = visibleNoteEntries(entries)
   const selectedEntries = visibleEntries.slice(0, maxNotes)
   const resolveRelationship = relationshipResolver(entries, workspaceAlias)
-  const allNotes = allNoteEntries.map((entry) => localEntryToMobileNote(entry, resolveRelationship, workspaceIdentity, 'summary'))
-  const notes = selectedEntries.map((entry) => localEntryToMobileNote(entry, resolveRelationship, workspaceIdentity, 'editable'))
-  const selectedNoteId = notes[0]?.id
-  const views = orderedMobileSavedViews(files.map(parseViewFile).filter(isMobileSavedView))
-  const normalizedVaultConfig = normalizeMobileVaultConfig(vaultConfig)
+  yield
+  const allNotes = yield* mapSnapshotItems(allNoteEntries, (entry) => localEntryToMobileNote(entry, resolveRelationship, workspaceIdentity, 'summary'))
+  const notes = yield* mapSnapshotItems(selectedEntries, (entry) => localEntryToMobileNote(entry, resolveRelationship, workspaceIdentity, 'editable'))
+  const parsedViews = yield* mapSnapshotItems(files, parseViewFile)
+  const views = orderedMobileSavedViews(parsedViews.filter(isMobileSavedView))
+  yield
+  return assembleLocalVaultSnapshot({
+    allNotes, entries, notes, options, typeDefinitions, views, workspaceAlias,
+    visibleCount: visibleEntries.length, normalizedVaultConfig: normalizeMobileVaultConfig(vaultConfig),
+  })
+}
 
+function* mapSnapshotItems<Value, Result>(values: readonly Value[], convert: (value: Value, index: number) => Result): Generator<void, Result[]> {
+  const result: Result[] = []
+  let index = 0
+  for (const value of values) { result.push(convert(value, index++)); yield }
+  return result
+}
+
+type LocalVaultSnapshotState = {
+  allNotes: MobileNote[]
+  entries: LocalVaultEntry[]
+  notes: MobileNote[]
+  normalizedVaultConfig: MobileVaultConfig
+  options: LocalVaultSnapshotOptions
+  typeDefinitions: MobileTypeDefinitions
+  views: MobileSavedView[]
+  visibleCount: number
+  workspaceAlias: string | null
+}
+
+function assembleLocalVaultSnapshot(state: LocalVaultSnapshotState): MobileWorkspaceSnapshot {
+  const { allNotes, entries, notes, normalizedVaultConfig, options, typeDefinitions, views, visibleCount, workspaceAlias } = state
+  const { folderPaths = [], vaultLabel, vaultPath } = options
   return {
     allNotes,
     editorBlocks: notes[0]?.editorBlocks ?? [],
     editorBullets: notes[0]?.editorBullets ?? [],
-    noteListSubtitle: noteListSubtitle(notes.length, visibleEntries.length),
+    noteListSubtitle: noteListSubtitle(notes.length, visibleCount),
     noteListPropertyOverrides: mobileNoteListPropertyOverridesFromVaultConfig(normalizedVaultConfig),
     notes,
-    selectedNoteId,
+    selectedNoteId: notes[0]?.id,
     folderPaths,
     sidebarSections: buildMobileSidebarSections({
       allNotesFileVisibility: mobileAllNotesFileVisibilityFromVaultConfig(normalizedVaultConfig),

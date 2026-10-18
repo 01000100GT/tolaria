@@ -1,5 +1,5 @@
 import { preloadNativeWorkspace } from '../workspace/preloadNativeWorkspace'
-import { buildLocalVaultWorkspaceSnapshot } from '../workspace/localVaultSnapshot'
+import { buildCooperativeWorkspaceSnapshot } from '../workspace/cooperativeWorkspaceSnapshot'
 import { applyMobileWorkspaceEditWithWrites } from '../workspace/mobileWorkspaceEditing'
 import type { MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
 import { noteListFilterCountsForSelection, notesForSidebarSelection } from '../screens/tabletWorkspaceNavigation'
@@ -10,7 +10,7 @@ export async function nativeVaultReadBenchmark(vaultRootUri: string) {
   const workspace = await preloadNativeWorkspace({ vaultAlias: null, vaultLabel: 'Native QA', vaultRootUri })
   if (!workspace?.index) return null
   const readFinished = performance.now()
-  const snapshot = buildLocalVaultWorkspaceSnapshot({
+  const snapshot = await buildCooperativeWorkspaceSnapshot({
     files: workspace.index.files,
     folderPaths: workspace.index.directories,
     vaultLabel: workspace.vaultLabel,

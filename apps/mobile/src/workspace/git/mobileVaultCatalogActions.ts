@@ -1,4 +1,5 @@
 import { pickNativeWorkspaceDirectory } from '../nativeWorkspacePicker'
+import { prepareNativeWorkspace } from '../prepareNativeWorkspace'
 import { requireActiveSync } from '../syncCancellation'
 import { activateManagedGitVault, cloneManagedGitVault, forgetManagedVault, managedGitSelection } from './managedGitStorage'
 import { activateManagedLocalVault, rememberLocalVault } from './managedLocalStorage'
@@ -29,7 +30,7 @@ export function createMobileVaultCatalogActions<Result>(context: CatalogActionsC
     const vault = await rememberLocalVault(selection)
     await catalog.reload()
     capture({ name: 'mobile_vault_catalog_used', action: 'add', kind: 'local' })
-    return { selection: await activateManagedLocalVault(vault), git: null }
+    return { selection: await prepareNativeWorkspace(await activateManagedLocalVault(vault)), git: null }
   })
   const select = (vault: ManagedGitVault) => perform(async () => {
     const next = await activateGit(vault)
@@ -39,7 +40,7 @@ export function createMobileVaultCatalogActions<Result>(context: CatalogActionsC
   const selectLocal = (vault: ManagedLocalVault) => perform(async () => {
     const selection = await activateManagedLocalVault(vault)
     capture({ name: 'mobile_vault_catalog_used', action: 'switch', kind: 'local' })
-    return { selection, git: null }
+    return { selection: await prepareNativeWorkspace(selection), git: null }
   })
   const forget = (id: string) => perform(async () => {
     const kind = catalog.vaults.some(vault => vault.id === id) ? 'git' : 'local'
@@ -58,7 +59,7 @@ export function createMobileVaultCatalogActions<Result>(context: CatalogActionsC
 async function activateGit(vault: ManagedGitVault): Promise<ActiveVault> {
   const selection = await managedGitSelection(vault)
   await activateManagedGitVault(vault.id)
-  return { git: vault, selection }
+  return { git: vault, selection: await prepareNativeWorkspace(selection) }
 }
 
 async function cloneVault<Result>(context: CatalogActionsContext<Result>, url: string, control: GitCloneControl) {

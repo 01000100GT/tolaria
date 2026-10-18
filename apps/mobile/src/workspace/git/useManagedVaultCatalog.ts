@@ -4,7 +4,7 @@ import { initializeLocalVaultCatalog, managedLocalSelection } from './managedLoc
 import type { ManagedLocalVault } from './managedLocalVaults'
 import type { ManagedGitVault, ManagedGitVaultCatalog } from './managedGitVaults'
 import type { NativeWorkspaceSelection } from '../nativeWorkspacePicker'
-import { preloadNativeWorkspace } from '../preloadNativeWorkspace'
+import { prepareNativeWorkspace } from '../prepareNativeWorkspace'
 
 export type ActiveVault = { selection: NativeWorkspaceSelection | null; git: ManagedGitVault | null }
 
@@ -17,6 +17,7 @@ export function useManagedVaultCatalog() {
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     let active = true
+    const cancellation = new AbortController()
     let stage: 'catalog' | 'selection' = 'catalog'
     void initializeLocalVaultCatalog().then(async (catalog) => {
       if (!active) return
@@ -24,11 +25,11 @@ export function useManagedVaultCatalog() {
       setLocalVaults(catalog.localVaults ?? [])
       stage = 'selection'
       const restored = await restoreCatalogSelection(catalog)
-      const selection = await preloadNativeWorkspace(restored.selection)
+      const selection = await prepareNativeWorkspace(restored.selection, cancellation.signal)
       if (active) setRestored({ ...restored, selection })
     }).catch(() => { if (active) setError(stage) })
       .finally(() => { if (active) setPending(false) })
-    return () => { active = false }
+    return () => { active = false; cancellation.abort() }
   }, [attempt])
   const reload = useCallback(async () => {
     const catalog = await readManagedGitCatalog()

@@ -27,6 +27,7 @@ import { useGitCloneProgress } from './useGitCloneProgress'
 import { useVaultNotices } from '../useVaultNotices'
 import type { ManagedGitVault } from './managedGitVaults'
 import type { ManagedLocalVault } from './managedLocalVaults'
+import { refreshedVault } from './mobileVaultSelection'
 
 export type { VaultSyncState } from '../syncLedgerModel'
 type VaultError = ReturnType<typeof githubFailure> | 'mobile.vaults.saveFailed' | 'mobile.vaults.folderUnavailable' | 'mobile.vaults.folderConflict' | null
@@ -311,11 +312,4 @@ function mobileGitAuthor(session: { login: string; userId: number } | null): Git
   return session
     ? { name: session.login, email: `${session.userId}+${session.login}@users.noreply.github.com` }
     : { name: 'Tolaria mobile', email: 'mobile@tolaria.app' }
-}
-
-function refreshedVault(next: ActiveVault, previous: ActiveVault, selectedNoteId?: string): ActiveVault {
-  if (!next.selection) return next
-  const selection = { ...next.selection, index: undefined }
-  if (selection.vaultRootUri === previous.selection?.vaultRootUri) selection.selectedNoteId = selectedNoteId
-  return { ...next, selection }
 }

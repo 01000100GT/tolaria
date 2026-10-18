@@ -6,6 +6,7 @@ import { persistWorkspaceOperations } from './git/workspaceWriteQueue'
 import { withWorkspaceOperation } from './git/workspaceOperationQueue'
 import { workspaceTextBatch, type WorkspaceTextBatchWriter } from './workspaceTextBatch'
 import { normalizedWorkspaceRelativePath, requireWorkspaceWritePath, validateWorkspaceWrites } from './workspaceWriteValidation'
+import { takePreparedWorkspaceSnapshot } from './preparedWorkspaceSnapshot'
 export { normalizedWorkspaceRelativePath } from './workspaceWriteValidation'
 
 type WorkspaceMutation = void | Promise<void>
@@ -51,18 +52,25 @@ export function createFileSystemWorkspaceRepository(fileSystem: WorkspaceFileSys
       const rootUri = workspaceRootUri(request)
       if (!rootUri) return emptyFileSystemSnapshot(request)
 
-      const index = recoveredWorkspaceIndex(fileSystem, rootUri, request)
-
-      return buildLocalVaultWorkspaceSnapshot({
-        files: index?.files ?? fileSystem.readVaultFiles(rootUri),
-        folderPaths: index?.directories ?? fileSystem.readVaultDirectories(rootUri),
-        vaultConfig: fileSystem.readVaultConfig?.(rootUri) ?? null,
-        vaultAlias: request?.vaultAlias,
-        vaultLabel: workspaceLabel(rootUri, request),
-        vaultPath: rootUri,
-      })
+      const options = workspaceSnapshotOptions(fileSystem, rootUri, request)
+      return takePreparedWorkspaceSnapshot(request?.workspaceIndex ?? undefined, options)
+        ?? buildLocalVaultWorkspaceSnapshot(options)
     },
   }
+}
+
+function workspaceSnapshotOptions(fileSystem: WorkspaceFileSystem, root: string, request?: ReadOnlyWorkspaceRequest) {
+  const index = recoveredWorkspaceIndex(fileSystem, root, request)
+  return {
+    ...workspaceSnapshotIdentity(root, request),
+    files: index?.files ?? fileSystem.readVaultFiles(root),
+    folderPaths: index?.directories ?? fileSystem.readVaultDirectories(root),
+    vaultConfig: fileSystem.readVaultConfig?.(root) ?? null,
+  }
+}
+
+function workspaceSnapshotIdentity(root: string, request?: ReadOnlyWorkspaceRequest) {
+  return { vaultAlias: request?.vaultAlias, vaultLabel: workspaceLabel(root, request), vaultPath: root }
 }
 
 function readWorkspaceNote(fileSystem: WorkspaceFileSystem, root: string, note: MobileNote) {
