@@ -60,6 +60,7 @@ export function typeSchemaSourceNote(
   snapshot: MobileWorkspaceSnapshot,
   typeName: string,
 ): MobileNote | null {
+  if (!typeName.trim()) return null
   const notes = workspaceNotes(snapshot)
   const definitionPath = snapshot.typeDefinitions?.[typeName]?.path
   if (definitionPath) {

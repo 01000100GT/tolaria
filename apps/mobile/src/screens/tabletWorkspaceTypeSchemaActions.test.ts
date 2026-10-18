@@ -4,6 +4,7 @@ import type { TabletReadOnlyForm } from './tabletWorkspaceTypes'
 import {
   addTypeSchemaPropertyFormValue,
   addTypeSchemaRelationshipFormValue,
+  typeSchemaSourceNote,
 } from './tabletWorkspaceTypeSchemaActions'
 
 type FormUpdate = {
@@ -12,6 +13,33 @@ type FormUpdate = {
 }
 
 describe('tablet workspace Type schema form actions', () => {
+  it.each(['', '   '])('does not scan a large vault for an idle type form (%j)', (typeName) => {
+    let reads = 0
+    const source = exampleNote()
+    const allNotes = Array.from({ length: 6000 }, (_, index) => ({
+      ...source, id: `note-${index}`,
+      get type() { reads += 1; return 'Essay' },
+    }))
+    expect(typeSchemaSourceNote({ ...workspaceScenarios.default, allNotes }, typeName)).toBeNull()
+    expect(reads).toBe(0)
+  })
+
+  it('prefers the configured Type document path over a matching title', () => {
+    const source = exampleNote()
+    const fallback = { ...source, id: 'fallback', type: 'Type', title: 'Essay' }
+    const configured = { ...fallback, id: 'configured', path: 'Types/Essay.md' }
+    const snapshot = { ...workspaceScenarios.default, allNotes: [fallback, configured],
+      typeDefinitions: { Essay: { path: configured.path } } }
+    expect(typeSchemaSourceNote(snapshot, 'Essay')).toBe(configured)
+  })
+
+  it('retains title fallback for types without a configured document path', () => {
+    const source = { ...exampleNote(), type: 'Type', title: 'Essay' }
+    const snapshot = { ...workspaceScenarios.default, allNotes: [source], typeDefinitions: {} }
+    expect(typeSchemaSourceNote(snapshot, 'Essay')).toBe(source)
+    expect(typeSchemaSourceNote(snapshot, 'Missing')).toBeNull()
+  })
+
   it('adds Type schema properties and clears fields only after a real add', () => {
     const updates: FormUpdate[] = []
 
@@ -58,7 +86,7 @@ describe('tablet workspace Type schema form actions', () => {
         typeSchemaRelationshipTargetRef: '',
       }),
       notes,
-      sourceNote: notes[0]!,
+      sourceNote: notes[0],
       updateReadOnlyForm: (key, value) => updates.push({ key, value }),
     })
 
@@ -93,11 +121,15 @@ describe('tablet workspace Type schema form actions', () => {
   })
 })
 
+function exampleNote() {
+  const note = workspaceScenarios.default.notes[0]
+  if (!note) throw new Error('The workspace fixture must contain a note')
+  return note
+}
+
 function baseForm(overrides: Partial<TabletReadOnlyForm> = {}): TabletReadOnlyForm {
   return {
-    allNotesShowImages: false,
-    allNotesShowPdfs: false,
-    allNotesShowUnsupported: false,
+    allNotesShowImages: false, allNotesShowPdfs: false, allNotesShowUnsupported: false,
     createTitle: '',
     editingFavoriteNoteId: '',
     editingFolderPath: '',
