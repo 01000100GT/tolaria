@@ -14,7 +14,7 @@ import {
 } from "./tableCellBreakMarkdown";
 
 const tableMarkdown = readFileSync(
-	"src/utils/__fixtures__/table-line-breaks.md",
+	"src/test/fixtures/table-line-breaks.md",
 	"utf8",
 ).trim();
 
@@ -62,7 +62,7 @@ describe("durable table cell line breaks", () => {
 describe("table break import boundaries", () => {
 	it("preserves literal breaks outside tables, inside code, and escaped tags", () => {
 		const source = readFileSync(
-			"src/utils/__fixtures__/table-break-boundaries.md",
+			"src/test/fixtures/table-break-boundaries.md",
 			"utf8",
 		);
 		expect(preProcessTableCellBreaks(source)).toBe(source);
