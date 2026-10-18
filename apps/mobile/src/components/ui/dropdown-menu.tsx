@@ -35,7 +35,7 @@ export function DropdownMenuContent({ children, style, ...props }: ContentProps)
 
 export function DropdownMenuItem({ className, style, ...props }: ItemProps) {
   const { styles } = useMobileStyles(createThemeStyles)
-  return <Primitive.Item className={cn('active:bg-accent', className)} style={[styles.item, style]} {...props} />
+  return <Primitive.Item className={cn('active:bg-accent', className)} style={StyleSheet.flatten([styles.item, style])} {...props} />
 }
 
 function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {

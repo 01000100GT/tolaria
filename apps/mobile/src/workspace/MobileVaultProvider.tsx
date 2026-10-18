@@ -22,6 +22,8 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
     linked: manager.linked,
     busy: manager.busy,
     status: manager.status,
+    lastSuccessAt: manager.syncHistory.record.lastSuccessAt,
+    historyAvailable: manager.syncHistory.ready && !manager.syncHistory.failed,
     open,
     sync: manager.sync,
   }

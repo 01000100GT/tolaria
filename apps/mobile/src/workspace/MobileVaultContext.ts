@@ -7,6 +7,8 @@ export const MobileVaultControlsContext = createContext<{
   linked?: boolean
   busy: boolean
   status: VaultSyncState
+  lastSuccessAt?: number | null
+  historyAvailable?: boolean
   open: () => Promise<void>
   sync: () => Promise<void>
 } | null>(null)

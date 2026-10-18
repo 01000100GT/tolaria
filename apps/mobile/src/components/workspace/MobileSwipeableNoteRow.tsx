@@ -47,7 +47,8 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
   const width = useSharedValue(0)
   // Swipeable owns dragging/snapping. This simultaneous observer only commits a full swipe on release.
   const fullSwipe = useMemo(() => Gesture.Pan()
-    .activeOffsetX([-16, 16])
+    .activeOffsetX(-16)
+    .failOffsetX(16)
     .failOffsetY([-12, 12])
     .onEnd((event) => {
       const action = fullSwipeNoteAction(event.translationX, width.get())
@@ -71,9 +72,10 @@ function SwipeableNoteRow({ actions, children, note }: Props & { actions: Mobile
           enableTrackpadTwoFingerGesture={false}
           friction={1}
           overshootFriction={1}
+          dragOffsetFromLeftEdge={Number.MAX_SAFE_INTEGER}
+          overshootLeft={false}
           simultaneousWithExternalGesture={fullSwipe}
-          renderLeftActions={(_, translation) => <MobileNoteSwipeActions {...actionProps} side="left" translation={translation} />}
-          renderRightActions={(_, translation) => <MobileNoteSwipeActions {...actionProps} side="right" translation={translation} />}
+          renderRightActions={(_, translation) => <MobileNoteSwipeActions {...actionProps} translation={translation} />}
         >
           {children}
         </Swipeable>

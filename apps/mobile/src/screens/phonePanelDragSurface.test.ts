@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest'
 import { phonePanelDragSurface } from './phonePanelDragSurface'
 
-it('reserves phone note rows for quick actions but retains header and edge navigation', () => {
-  expect(phonePanelDragSurface('list', { x: 180, y: 200 }, 390, 40)).toBe(false)
+it('permits sidebar navigation from note rows as well as the header and edges', () => {
+  expect(phonePanelDragSurface('list', { x: 180, y: 200 }, 390, 40)).toBe(true)
   expect(phonePanelDragSurface('list', { x: 180, y: 60 }, 390, 40)).toBe(true)
   expect(phonePanelDragSurface('list', { x: 10, y: 200 }, 390, 40)).toBe(true)
 })

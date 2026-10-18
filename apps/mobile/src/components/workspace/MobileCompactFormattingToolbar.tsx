@@ -1,8 +1,8 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
-import { Check, DotsThree, ListBullets, Plus, Table, TextH } from 'phosphor-react-native'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { CaretDown, Check, DotsThree, Keyboard as KeyboardIcon, ListBullets, Plus, Table, TextH } from 'phosphor-react-native'
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native'
 import type { ReactNode } from 'react'
 import { Button } from '../ui/button'
 import { Text } from '../ui/text'
@@ -13,13 +13,14 @@ import { probeProps, type MobileLayoutProbe } from '../../qa/mobileLayoutProbe'
 import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownFormatting'
 import { formattingCommands, type FormattingCommand } from './mobileFormattingCommands'
 import { formattingToolbarGroups, formattingToolbarTouchSize, type FormattingToolbarGroup } from './mobileFormattingToolbarModel'
-import { useMobileBottomInset } from '../../ui/useMobileBottomInset'
+import { useMobileKeyboardInset } from '../../ui/useMobileBottomInset'
 
 type Props = {
   actions: readonly MobileMarkdownFormatAction[]
   selected: MobileMarkdownFormatAction[]
   inTable: boolean
   onFormat: (action: MobileMarkdownFormatAction) => void
+  onDismissKeyboard?: () => void
   layoutProbe?: MobileLayoutProbe
   metricId?: string
 }
@@ -34,29 +35,35 @@ const menus = {
 const commands = new Map(formattingCommands.map((command) => [command.action, command]))
 
 export function MobileCompactFormattingToolbar(props: Props) {
-  const { styles } = useMobileStyles(createThemeStyles)
-  const bottom = useMobileBottomInset()
+  const { styles, mobileColors } = useMobileStyles(createThemeStyles)
+  const { bottom, keyboardVisible } = useMobileKeyboardInset()
   const groups = formattingToolbarGroups(props.actions, props.inTable)
   return (
-    <ScrollView
-      horizontal
-      accessibilityLabel={mobileText('editor.formatting.toolbar')}
-      keyboardShouldPersistTaps="always"
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={[styles.row, { paddingBottom: Math.max(styles.row.paddingBottom, bottom) }]}
-      style={styles.viewport}
-      testID="editor-formatting-toolbar"
-      {...metricProps(props)}
-    >
-      {groups.primary.map((action) => (
-        <View key={action} {...metricProps(props, `action.${action}`)} style={styles.action}>
-          <PrimaryAction command={commands.get(action)} selected={props.selected.includes(action)} onFormat={props.onFormat} />
-        </View>
-      ))}
-      {(Object.keys(menus) as (Exclude<FormattingToolbarGroup, 'primary'>)[]).map((group) => (
-        groups[group].length ? <FormattingMenu key={group} group={group} actions={groups[group]} toolbar={props} /> : null
-      ))}
-    </ScrollView>
+    <View style={styles.container} testID="editor-formatting-toolbar" {...metricProps(props)}>
+      <ScrollView
+        horizontal
+        accessibilityLabel={mobileText('editor.formatting.toolbar')}
+        keyboardShouldPersistTaps="always"
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.row, { paddingBottom: Math.max(styles.row.paddingBottom, bottom) }]}
+        style={styles.viewport}
+        testID="editor-formatting-actions"
+      >
+        {groups.primary.map((action) => (
+          <View key={action} {...metricProps(props, `action.${action}`)} style={styles.action}>
+            <PrimaryAction command={commands.get(action)} selected={props.selected.includes(action)} onFormat={props.onFormat} />
+          </View>
+        ))}
+        {(Object.keys(menus) as (Exclude<FormattingToolbarGroup, 'primary'>)[]).map((group) => (
+          groups[group].length ? <FormattingMenu key={group} group={group} actions={groups[group]} toolbar={props} /> : null
+        ))}
+      </ScrollView>
+      {keyboardVisible && <Button accessibilityLabel={mobileText('editor.formatting.hideKeyboard')} variant="ghost" size="icon"
+        style={styles.action} testID="editor-hide-keyboard-action" onPress={() => (props.onDismissKeyboard ?? Keyboard.dismiss)()}>
+        <KeyboardIcon size={24} color={mobileColors.textMuted} />
+        <CaretDown size={10} color={mobileColors.textMuted} />
+      </Button>}
+    </View>
   )
 }
 
@@ -79,8 +86,8 @@ function FormattingMenu({ group, actions, toolbar }: { group: keyof typeof menus
   return (
     <View {...metricProps(toolbar, `group.${group}`)} style={styles.action}>
       <DropdownMenu>
-        <DropdownMenuTrigger accessibilityLabel={mobileText(menu.label)} style={[styles.action, selected && styles.selected]} testID={`editor-format-menu-${group}`}>
-          <Icon size={18} color={selected ? mobileColors.primary : mobileColors.textMuted} />
+        <DropdownMenuTrigger accessibilityLabel={mobileText(menu.label)} style={StyleSheet.flatten([styles.action, selected && styles.selected])} testID={`editor-format-menu-${group}`}>
+          <Icon size={24} color={selected ? mobileColors.primary : mobileColors.textMuted} />
         </DropdownMenuTrigger>
         <DropdownMenuContent testID={`editor-format-options-${group}`}>
           {actions.map((action) => <FormattingMenuItem key={action} command={commands.get(action)} selected={toolbar.selected.includes(action)} onFormat={toolbar.onFormat} />)}
@@ -115,12 +122,13 @@ function metricProps(props: Props, segment?: string) {
 function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
-    viewport: { flexGrow: 0 },
+    container: { flexDirection: 'row', alignItems: 'flex-start', flexShrink: 0 },
+    viewport: { flex: 1, minWidth: 0 },
     row: { flexDirection: 'row', gap: mobileSpace.xs, paddingBottom: mobileSpace.xs },
     action: { width: formattingToolbarTouchSize, height: formattingToolbarTouchSize, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
     selected: { backgroundColor: mobileColors.primarySoft },
     label: { color: mobileColors.text, fontSize: metrics.size(13), flexShrink: 1, flexGrow: 1 },
-    icon: { width: 16, height: 16, alignItems: 'center', justifyContent: 'center' },
+    icon: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   })
   return { mobileColors, styles }
 }

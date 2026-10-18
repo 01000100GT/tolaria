@@ -114,6 +114,7 @@ function PhoneNoteListScreen({
   const swipeHandlers = useHorizontalSwipe({
     ...phoneSwipePreviewHandlers(phoneSwipePreview),
     canStart: usePhonePanelDragSurface('list'),
+    direction: 'right',
     onSwipeRight: commitSidebar,
   })
 

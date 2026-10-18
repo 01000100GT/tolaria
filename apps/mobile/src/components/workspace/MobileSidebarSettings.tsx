@@ -1,10 +1,14 @@
-import { Command, GearSix } from 'phosphor-react-native'
-import { StyleSheet, View } from 'react-native'
+import { ArrowClockwise, Command, GearSix } from 'phosphor-react-native'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { useContext, useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { mobileText } from '../../i18n/mobileText'
 import { useMobileSettings } from '../../settings/useMobileSettings'
 import { useMobileColors } from '../../ui/theme/useMobileTheme'
 import { Button } from '../ui/button'
+import { Text } from '../ui/text'
+import { MobileVaultControlsContext, MobileVaultDisplayContext } from '../../workspace/MobileVaultContext'
+import { sidebarSyncPresentation } from './mobileSidebarSyncStatus'
 
 export function MobileSidebarSettings({ onOpenCommandPalette }: { onOpenCommandPalette?: () => void }) {
   const preferences = useMobileSettings()
@@ -12,6 +16,7 @@ export function MobileSidebarSettings({ onOpenCommandPalette }: { onOpenCommandP
   const insets = useSafeAreaInsets()
   const buttonStyle = [styles.button, { backgroundColor: colors.control }]
   return <View style={[styles.footer, { paddingBottom: Math.max(8, insets.bottom) }]} testID="sidebar-settings">
+    <SidebarSyncPill autoGit={preferences.settings.autoGit} />
     {onOpenCommandPalette && <Button accessibilityLabel={mobileText('menu.view.commandPalette')} size="icon" variant="secondary" style={buttonStyle}
       className="h-12 w-12 rounded-[24px] sm:h-12 sm:w-12"
       onPress={onOpenCommandPalette} testID="sidebar-command-palette-action">
@@ -25,7 +30,40 @@ export function MobileSidebarSettings({ onOpenCommandPalette }: { onOpenCommandP
   </View>
 }
 
+function SidebarSyncPill({ autoGit }: { autoGit: boolean }) {
+  const controls = useContext(MobileVaultControlsContext)
+  const display = useContext(MobileVaultDisplayContext)
+  const colors = useMobileColors()
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+  const state = sidebarSyncPresentation(controls, display, autoGit, now)
+  if (!state || !controls) return null
+  const action = mobileText(state.action === 'sync' ? 'status.sync.now' : 'status.vault.manageWorkspaces')
+  const color = state.problem ? colors.danger : colors.textMuted
+  const label = [state.destination, state.state, state.lastSync, action].filter(Boolean).join('. ')
+  return <Button variant="secondary" accessibilityLabel={label} accessibilityHint={action} disabled={state.disabled}
+    accessibilityState={{ busy: state.busy, disabled: state.disabled }}
+    className="h-auto min-h-12 flex-1 rounded-[24px] px-3 py-2 sm:h-auto"
+    style={[styles.sync, { backgroundColor: colors.control }]} testID="sidebar-sync-action"
+    onPress={() => { void (state.action === 'sync' ? controls.sync() : controls.open()) }}>
+    {state.busy ? <ActivityIndicator size="small" color={color} /> : <ArrowClockwise size={18} color={color} />}
+    <View style={styles.syncText}>
+      <Text style={[styles.destination, { color: colors.text }]} testID="sidebar-sync-destination">{state.destination}</Text>
+      <Text style={[styles.detail, { color }]} testID="sidebar-sync-state">{state.state}</Text>
+      {state.lastSync && <Text style={[styles.detail, { color: colors.textMuted }]} testID="sidebar-sync-last-success">{state.lastSync}</Text>}
+    </View>
+  </Button>
+}
+
 const styles = StyleSheet.create({
-  footer: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingTop: 8, paddingHorizontal: 12, flexShrink: 0 },
+  footer: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 6, paddingTop: 8, paddingHorizontal: 8, flexShrink: 0 },
   button: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  sync: { flex: 1, minWidth: 0, minHeight: 48, height: 'auto', paddingHorizontal: 8, paddingVertical: 8,
+    borderRadius: 24, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'flex-start' },
+  syncText: { flex: 1, minWidth: 0 },
+  destination: { fontSize: 13, lineHeight: 17, fontWeight: '500' },
+  detail: { fontSize: 12, lineHeight: 16, fontWeight: '400' },
 })

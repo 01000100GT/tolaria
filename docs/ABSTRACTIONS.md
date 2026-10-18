@@ -452,8 +452,8 @@ indicator, using circular secondary controls. The vault-title chevron reuses the
 existing vault manager through `MobileVaultControlsContext`; it does not bypass
 the manager's save/switch barrier. Type rows retain their individual counts, but
 the Types section heading has no aggregate count. The existing
-Settings sheet exposes GitHub and vault management; sync/recovery controls remain
-in the vault manager. Panes extend to the bottom edge, including their backgrounds
+Settings sheet exposes GitHub and vault management. The sidebar sync pill uses the
+same sync/recovery operations as the vault manager. Panes extend to the bottom edge, including their backgrounds
 and dividers. The note list keeps controls within its own bottom padding; the
 inspector adds clearance to scrollable content, not a strip outside the panel.
 Formatting strips own their home-indicator clearance through `useMobileBottomInset`,
@@ -633,7 +633,7 @@ Current primitives:
 | `MobileIconButton` | Toolbar and compact icon actions |
 | `MobileTextInput` | Tolaria-styled text entry over the local RNR-style input primitive |
 | `MobilePanel` / `MobileToolbar` | Sidebar, note-list, editor, and properties structure |
-| `MobileKeyboardAvoidingView` | React Native keyboard avoidance for nested surfaces, using measured screen origin rather than guessed safe-area/header offsets |
+| `MobileKeyboardAvoidingView` | Keyboard avoidance for nested surfaces, using measured screen coordinates rather than guessed safe-area/header offsets. On iOS, public keyboard metrics and frame/show/hide events drive bounded inner padding, covering a keyboard already visible or appearing during mount without double-applying React Native avoidance. Other platforms keep native sizing. |
 | `MobileListRow` | Dense note-list rows with selected state, metadata, and chips |
 | `MobileChip` | Type, tag, and relationship labels |
 | `MobilePropertyRow` | Properties panel label/value rows |
@@ -686,11 +686,11 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileWysiwygDiagramBridge` / `mobileDiagramNodeView.web` | Atomic Mermaid/tldraw nodes preserve original fences and snapshot JSON. Visible Mermaid nodes lazily request offline SVG previews from a source-checked opaque iframe. Whiteboards and failed previews retain source; raw mode remains editable (ADR 0233). |
 | `MobileDiagramRenderer.web` / `mobileDiagramRendererAsset.native` | Separately bundled desktop Mermaid engine, staged only in diagram-containing editor caches. Strict CSP, serialized rendering, bounded messages, Blob-backed images, and explicit cleanup keep preview output outside authoritative vault content. |
 | `MobileWysiwygFormattingToolbar.native` | Small TenTap cursor-state subscriber feeding the shared tablet command strip or compact phone toolbar; state changes do not own document rendering |
-| `MobileCompactFormattingToolbar` / `mobileFormattingToolbarModel` | Existing command registry grouped into primary actions and contextual menus, with 44-point native touch targets |
-| `MobileSwipeableNoteRow` / `MobileNoteSwipeActions` | Gesture Handler row actions routed to existing favorite/archive/delete callbacks; full swipe never deletes, and bulk selection disables swipes |
+| `MobileCompactFormattingToolbar` / `mobileFormattingToolbarModel` | Existing command registry grouped into primary actions and contextual menus, with 24-point glyphs inside unchanged 44-point native touch targets. Source and rich editors share the phone layout; its fixed keyboard-dismiss action stays outside the horizontally scrolling commands. |
+| `MobileSwipeableNoteRow` / `MobileNoteSwipeActions` | Gesture Handler trailing Star/Delete/Archive actions routed to existing callbacks; full swipe archives and never deletes. Rightward phone drags remain available to reveal the sidebar, two-finger trackpad input stays with scrolling, and bulk selection disables row swipes. |
 | `components/ui/dropdown-menu` | Thin RNR dropdown composition with Tolaria colors/spacing and a root portal host; primitive-owned anchoring and dismissal |
 | `MobilePropertiesPanel` | Scalar properties, tags, and typed relationship display/removal; phones defer empty schema suggestions until after populated properties, relationships and references, while tablets preserve desktop ordering |
-| `MobileSidebarSettings` | Sidebar-bottom Settings entry point; vault management and sync controls live inside Settings instead of a permanent workspace footer |
+| `MobileSidebarSettings` / `mobileSidebarSyncStatus` | Sidebar-bottom sync pill before Command and Settings, without a workspace footer. The root-matched controls context supplies the existing ledger's availability and last success; the pill never invents a zero pending count or iCloud-upload confirmation. Linked folders report provider writeback, GitHub uses the existing manual sync operation, and local-only/conflict/manual-commit states open existing management controls. Minute labels update locally without re-indexing or re-mounting the editor. |
 
 Mobile UI copy should reuse the localization catalog in `src/lib/locales/en.json` whenever the desktop concept already exists. New mobile-specific copy must be added to that catalog and translated through the normal Lara workflow.
 

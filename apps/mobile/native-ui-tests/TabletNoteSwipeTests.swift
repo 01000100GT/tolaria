@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 final class TabletNoteSwipeTests: XCTestCase {
@@ -15,7 +16,7 @@ final class TabletNoteSwipeTests: XCTestCase {
     let archive = element(app, "note-swipe-archive-workflow-orchestration")
     XCTAssertTrue(archive.waitForExistence(timeout: 5))
     XCTAssertTrue(archive.isHittable)
-    XCTAssertTrue(element(app, "note-swipe-delete-workflow-orchestration").isHittable)
+    assertTrailingActionOrder(app)
     XCTAssertEqual(element(app, "note-list-panel").frame.minX, before.minX, accuracy: 1)
     XCTAssertTrue(element(app, "sidebar-item-all-notes").isHittable)
     archive.tap()
@@ -30,7 +31,9 @@ final class TabletNoteSwipeTests: XCTestCase {
     XCTAssertTrue(row.waitForExistence(timeout: 30))
     let favorite = element(app, "editor-favorite-action")
     let initialLabel = favorite.label
-    drag(row, from: 0.08, to: 0.92)
+    drag(row, from: 0.75, to: 0.40)
+    assertTrailingActionOrder(app)
+    element(app, "note-swipe-favorite-workflow-orchestration").tap()
     waitUntil { favorite.label != initialLabel }
     drag(row, from: 0.92, to: 0.08)
     waitUntil { !row.exists }
@@ -41,9 +44,55 @@ final class TabletNoteSwipeTests: XCTestCase {
     add(image)
   }
 
+  func testPhoneRightSwipeOpensSidebarWithoutFavoriting() throws {
+    try XCTSkipIf(UIDevice.current.userInterfaceIdiom == .pad, "Phone navigation gesture")
+    XCUIDevice.shared.orientation = .portrait
+    let app = launchFixture()
+    let row = element(app, "note-row-workflow-orchestration")
+    XCTAssertTrue(row.waitForExistence(timeout: 30))
+    drag(row, from: 0.15, to: 0.85)
+    let allNotes = element(app, "sidebar-item-all-notes")
+    waitUntil { allNotes.isHittable }
+    allNotes.tap()
+    waitUntil { row.isHittable }
+    drag(row, from: 0.75, to: 0.30)
+    assertTrailingActionOrder(app)
+    element(app, "note-swipe-favorite-workflow-orchestration").tap()
+    row.tap()
+    waitUntil { self.element(app, "editor-favorite-action").label == "Add to Favorites" }
+  }
+
+  func testPhoneFullSwipeArchivesWithoutDeleting() throws {
+    try XCTSkipIf(UIDevice.current.userInterfaceIdiom == .pad, "Phone navigation gesture")
+    XCUIDevice.shared.orientation = .portrait
+    let app = launchFixture()
+    let row = element(app, "note-row-workflow-orchestration")
+    XCTAssertTrue(row.waitForExistence(timeout: 30))
+    drag(row, from: 0.92, to: 0.08)
+    waitUntil { !row.exists }
+    let list = element(app, "note-list-panel")
+    drag(list, from: 0.15, to: 0.85)
+    let archive = element(app, "sidebar-item-archive")
+    waitUntil { archive.isHittable }
+    archive.tap()
+    waitUntil { row.isHittable }
+  }
+
+  private func assertTrailingActionOrder(_ app: XCUIApplication) {
+    let star = element(app, "note-swipe-favorite-workflow-orchestration")
+    let delete = element(app, "note-swipe-delete-workflow-orchestration")
+    let archive = element(app, "note-swipe-archive-workflow-orchestration")
+    waitUntil { star.isHittable && delete.isHittable && archive.isHittable }
+    XCTAssertLessThan(star.frame.maxX, delete.frame.maxX)
+    XCTAssertLessThan(delete.frame.maxX, archive.frame.maxX)
+  }
+
   private func launchFixture() -> XCUIApplication {
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&qaRun=row-swipe"]
+    let search = "?source=fixture&phoneState=list&editorMode=wysiwyg&qaRun=row-swipe-\(UUID().uuidString)"
+    app.launchArguments = ["--tolaria-mobile-search", search]
+    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
+    addTeardownBlock { app.terminate() }
     app.launch()
     return app
   }

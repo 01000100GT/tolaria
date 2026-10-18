@@ -942,6 +942,9 @@ files:
     status.vault.openLocal: a367344e0429a12a5cc9a6cecbbfcde5
     mobile.status.open: c3bf447eabe632720a3aa1a7ce401274
     mobile.status.minutesAgo: 6c0cef977fba600c9517c8a0c8dff73d
+    mobile.status.hoursAgo: c2ee59305b600b94ed59d4dd88996644
+    mobile.status.daysAgo: 3a5d763b93876c200fdf0bccaa574f94
+    mobile.status.now: 97bc592b27a9ada2d9a4bb418ed0ebed
     status.vault.cloneGit: a7d0aef7c6237a36e54fd5a26e9c23fe
     status.vault.cloneGettingStarted: 9953a11a477b441976a626a9acf5d7df
     status.vault.availableHeader: 2be36e986c7859a439c30bc5696c15a9
@@ -1099,6 +1102,7 @@ files:
     noteList.bulk.clear: 80ffff123555bd5173345bc8f144edeb
     editor.toolbar.openFileInDefaultApp: 66e8265021958aa54613b9c17320297e
     editor.formatting.toolbar: 767042e4dbdd6d8f737786f122d66d4f
+    editor.formatting.hideKeyboard: a032e35e45c5ebfc0315db9b5e61cd8b
     editor.formatting.headings: 545b1150d9c178bf41eee6c799b715d7
     editor.formatting.lists: 691d1860ec58dd973e803e209697d065
     editor.formatting.insert: a458be0f08b7e4ff3c0f633c100176c0
@@ -1236,6 +1240,11 @@ files:
     mobile.git.auto: 086247a9b57fde6eefee2a0c4752242d
     mobile.git.manual: e1ba155a9f2e8c3be94020eef32a0301
     mobile.sync.lastSuccess: c0d97dd3c454f8ea9060509b331b07e2
+    mobile.sync.folderDestination: 546c4c473c4d80d504505e526acbd206
+    mobile.sync.notLinked: 887992b5b243662c481c1c3b4970259a
+    mobile.sync.pendingShort: de11da8998b7e40ae3d1cc18c93877ef
+    mobile.sync.never: 45763fe019217d08c8c9463f0ae7b210
+    mobile.sync.unavailable: fea34444f71ba8f84b19d3c569fcb275
     mobile.sync.lastCommit: 5d16b28fc2aaa6d8956b722f1f69b213
     mobile.sync.pending: e6227498ede4ff116196b907aa4f2cb5
     mobile.sync.historyFailed: b86c74941e83e0a0f6d9e0360f990a6a

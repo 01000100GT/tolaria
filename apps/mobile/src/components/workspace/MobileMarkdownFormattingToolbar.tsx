@@ -12,6 +12,8 @@ import type { MobileMarkdownFormatAction } from '../../workspace/mobileMarkdownF
 import { formattingCommands } from './mobileFormattingCommands'
 import { formattingToolbarTouchSize } from './mobileFormattingToolbarModel'
 import { useMobileBottomInset } from '../../ui/useMobileBottomInset'
+import { useMobileDeviceLayout } from '../../ui/useMobileDeviceLayout'
+import { MobileCompactFormattingToolbar } from './MobileCompactFormattingToolbar'
 
 const nativeOnlyFormattingActions = new Set<MobileMarkdownFormatAction>([
   'tableAddColumnAfter',
@@ -24,21 +26,31 @@ const sourceMarkdownFormattingActions = formattingCommands
   .map((command) => command.action)
   .filter((action) => !nativeOnlyFormattingActions.has(action))
 
-export function MobileMarkdownFormattingToolbar({
+type FormattingToolbarProps = {
+  actions?: readonly MobileMarkdownFormatAction[]
+  layoutProbe?: MobileLayoutProbe
+  metricId?: string
+  onFormat: (action: MobileMarkdownFormatAction) => void
+  onDismissKeyboard?: () => void
+  selected?: readonly MobileMarkdownFormatAction[]
+  inTable?: boolean
+}
+
+export function MobileMarkdownFormattingToolbar(props: FormattingToolbarProps) {
+  const phone = useMobileDeviceLayout() === 'phone'
+  if (phone) return <MobileCompactFormattingToolbar {...props} actions={props.actions ?? sourceMarkdownFormattingActions}
+    selected={[...props.selected ?? []]} inTable={props.inTable ?? false} />
+  return <WideFormattingToolbar {...props} />
+}
+
+function WideFormattingToolbar({
   actions,
   layoutProbe,
   metricId,
   onFormat,
   selected = [],
   inTable = false,
-}: {
-  actions?: readonly MobileMarkdownFormatAction[]
-  layoutProbe?: MobileLayoutProbe
-  metricId?: string
-  onFormat: (action: MobileMarkdownFormatAction) => void
-  selected?: readonly MobileMarkdownFormatAction[]
-  inTable?: boolean
-}) {
+}: FormattingToolbarProps) {
   const { styles, mobileColors } = useMobileStyles(createThemeStyles)
   const bottom = useMobileBottomInset()
   const visibleActions = new Set((actions ?? sourceMarkdownFormattingActions)

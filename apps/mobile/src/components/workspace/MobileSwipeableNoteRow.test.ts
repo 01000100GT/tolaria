@@ -22,6 +22,7 @@ vi.mock('react-native-gesture-handler', () => ({
   Gesture: { Pan: () => {
     const pan = {
       activeOffsetX: () => pan,
+      failOffsetX: () => pan,
       failOffsetY: () => pan,
       onEnd: (handler: typeof input.onEnd) => { input.onEnd = handler; return pan },
     }
@@ -45,7 +46,8 @@ describe('note row input ownership', () => {
   it('leaves two-finger trackpad scrolling to the note list', () => {
     const props = renderRow()
     expect(props.enableTrackpadTwoFingerGesture).toBe(false)
-    expect(props.renderLeftActions).toEqual(expect.any(Function))
+    expect(props.renderLeftActions).toBeUndefined()
+    expect(props.dragOffsetFromLeftEdge).toBe(Number.MAX_SAFE_INTEGER)
     expect(props.renderRightActions).toEqual(expect.any(Function))
   })
 
@@ -59,6 +61,13 @@ describe('note row input ownership', () => {
     input.onLayout?.({ nativeEvent: { layout: { width: 300 } } })
     input.onEnd?.({ translationX: -290 })
     expect(input.onArchive).toHaveBeenCalledWith([fixtureNotes[0].id], !fixtureNotes[0].archived)
+  })
+
+  it('does not favorite or archive on a full right swipe', () => {
+    renderRow()
+    input.onLayout?.({ nativeEvent: { layout: { width: 300 } } })
+    input.onEnd?.({ translationX: 290 })
+    expect(input.onArchive).not.toHaveBeenCalled()
   })
 })
 
@@ -75,6 +84,7 @@ function renderRow(disabled = false) {
       enableTrackpadTwoFingerGesture?: boolean
       renderLeftActions?: unknown
       renderRightActions?: unknown
+      dragOffsetFromLeftEdge?: number
     }
   } finally { root.unmount() }
 }

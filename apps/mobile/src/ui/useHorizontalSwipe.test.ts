@@ -27,6 +27,20 @@ function Surface(props: Options) {
 afterEach(() => responder.mockClear())
 
 describe('native horizontal gesture continuity', () => {
+  it('only captures rightward list navigation, leaving left row actions and vertical scrolling alone', () => {
+    const root = createRoot(document.createElement('div'))
+    try {
+      flushSync(() => root.render(createElement(Surface, { direction: 'right', onSwipeRight: vi.fn() })))
+      const callbacks = responder.mock.calls[0][0] as Callbacks
+      callbacks.onStartShouldSetPanResponderCapture?.({ nativeEvent: { pageX: 180, pageY: 400 } })
+      const gesture = { x0: 0, y0: 0, moveX: 220, moveY: 402, dx: 40, dy: 2, numberActiveTouches: 1 }
+      expect(callbacks.onMoveShouldSetPanResponderCapture(null, gesture)).toBe(true)
+      expect(callbacks.onMoveShouldSetPanResponderCapture(null, { ...gesture, dx: -40 })).toBe(false)
+      expect(callbacks.onMoveShouldSetPanResponderCapture(null, { ...gesture, dy: 60 })).toBe(false)
+      expect(callbacks.onMoveShouldSetPanResponderCapture(null, { ...gesture, numberActiveTouches: 2 })).toBe(false)
+    } finally { root.unmount() }
+  })
+
   it.each([
     { startX: 200, touches: 1, captures: false },
     { startX: 10, touches: 1, captures: true },

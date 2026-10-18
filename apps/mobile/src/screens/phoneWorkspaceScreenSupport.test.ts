@@ -30,11 +30,11 @@ it('accepts both visible editor edges inside landscape safe areas, not the editi
   expect(surface.accepts({ x: 400, y: 160 })).toBe(false)
 })
 
-it('retains list header and edge navigation without capturing note-row swipes', async () => {
+it('accepts the list body as a surface for rightward sidebar navigation', async () => {
   const surface = await mountSurface('list')
   expect(surface.accepts({ x: 70, y: 160 })).toBe(true)
   expect(surface.accepts({ x: 400, y: 10 })).toBe(true)
-  expect(surface.accepts({ x: 400, y: 160 })).toBe(false)
+  expect(surface.accepts({ x: 400, y: 160 })).toBe(true)
 })
 
 it('updates the gesture bounds when rotation removes the horizontal safe areas', async () => {

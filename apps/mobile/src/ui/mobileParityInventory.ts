@@ -169,7 +169,7 @@ export const mobileParityInventory = [
     surface: 'Note-list bulk action bar',
   },
   {
-    assertions: ['TabletNoteSwipeTests: partial actions and full-swipe favorite/archive without panel movement'],
+    assertions: ['TabletNoteSwipeTests: trailing Star/Delete/Archive, full-swipe Archive only, and rightward phone sidebar navigation'],
     contracts: ['desktopNoteItemParity'],
     desktopSource: 'NoteItem and desktop favorite/archive/delete commands; owner-requested native swipe adaptation',
     mobileFile: 'src/components/workspace/MobileSwipeableNoteRow.tsx',
