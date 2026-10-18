@@ -245,10 +245,16 @@ function parsedProof(value: unknown): NativeWysiwygFormatCommandProof | null {
   return {
     action: candidate.action,
     args: candidate.args.filter(isFormatProbeArg),
-    ...(typeof candidate.effectApplied === 'boolean' ? { effectApplied: candidate.effectApplied } : {}),
-    ...(typeof candidate.effectMarkdown === 'string' ? { effectMarkdown: candidate.effectMarkdown } : {}),
+    ...formatEffectFields(candidate),
     forwarded: candidate.forwarded,
     method: candidate.method,
+  }
+}
+
+function formatEffectFields(candidate: Partial<NativeWysiwygFormatCommandProof>) {
+  return {
+    ...(typeof candidate.effectApplied === 'boolean' ? { effectApplied: candidate.effectApplied } : {}),
+    ...(typeof candidate.effectMarkdown === 'string' ? { effectMarkdown: candidate.effectMarkdown } : {}),
   }
 }
 
@@ -296,19 +302,22 @@ function isFormatProbeArg(value: unknown): value is number | string {
   return typeof value === 'number' || typeof value === 'string'
 }
 
+const probeNodeRenderers = new Map<string, (node: ProbeJsonNode) => string>([
+  ['text', markedProbeText],
+  ['heading', (node) => `${'#'.repeat(headingLevel(node))} ${probeChildMarkdown(node)}`],
+  ['paragraph', probeChildMarkdown],
+  ['blockquote', (node) => quoteProbeMarkdown(probeChildMarkdown(node))],
+  ['bulletList', (node) => listProbeMarkdown(node, '- ')],
+  ['orderedList', (node) => listProbeMarkdown(node, '1. ')],
+  ['taskList', taskListProbeMarkdown],
+  ['doc', (node) => (node.content ?? []).map(probeMarkdownFromJson).filter(Boolean).join('\n\n')],
+])
+
 function probeMarkdownFromJson(value: unknown): string {
   if (!value || typeof value !== 'object') return ''
   const node = value as ProbeJsonNode
-
-  if (node.type === 'text') return markedProbeText(node)
-  if (node.type === 'heading') return `${'#'.repeat(headingLevel(node))} ${probeChildMarkdown(node)}`
-  if (node.type === 'paragraph') return probeChildMarkdown(node)
-  if (node.type === 'blockquote') return quoteProbeMarkdown(probeChildMarkdown(node))
-  if (node.type === 'bulletList') return listProbeMarkdown(node, '- ')
-  if (node.type === 'orderedList') return listProbeMarkdown(node, '1. ')
-  if (node.type === 'taskList') return taskListProbeMarkdown(node)
-  if (node.type === 'doc') return (node.content ?? []).map(probeMarkdownFromJson).filter(Boolean).join('\n\n')
-  return probeChildMarkdown(node)
+  const render = probeNodeRenderers.get(node.type ?? '') ?? probeChildMarkdown
+  return render(node)
 }
 
 function probeChildMarkdown(node: ProbeJsonNode): string {

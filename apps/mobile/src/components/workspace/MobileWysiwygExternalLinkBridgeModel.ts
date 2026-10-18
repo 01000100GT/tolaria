@@ -31,17 +31,19 @@ function removeExternalLinkMarks(
   position: number,
 ): RemoveResult {
   if (typeof node.text === 'string') return removeExternalLinkMarksFromTextNode(node, selection, position)
-  if (!node.content || node.content.length === 0) {
+  const boundarySize = node.type === 'doc' ? 0 : 1
+  const children = node.content ?? []
+  if (children.length === 0) {
     return {
       changed: false,
-      nextPosition: position + (node.type === 'doc' ? 0 : 1),
+      nextPosition: position + boundarySize,
       node,
     }
   }
 
   let changed = false
-  let cursor = node.type === 'doc' ? position : position + 1
-  const content = node.content.map((child) => {
+  let cursor = position + boundarySize
+  const content = children.map((child) => {
     const result = removeExternalLinkMarks(child, selection, cursor)
     cursor = result.nextPosition
     changed = changed || result.changed
@@ -50,7 +52,7 @@ function removeExternalLinkMarks(
 
   return {
     changed,
-    nextPosition: node.type === 'doc' ? cursor : cursor + 1,
+    nextPosition: cursor + boundarySize,
     node: changed ? { ...node, content } : node,
   }
 }
@@ -66,14 +68,15 @@ function removeExternalLinkMarksFromTextNode(
     return { changed: false, nextPosition, node }
   }
 
-  const marks = node.marks?.filter((mark) => mark.type !== 'link')
-  const changed = (marks?.length ?? 0) !== (node.marks?.length ?? 0)
+  const previousMarks = node.marks ?? []
+  const marks = previousMarks.filter((mark) => mark.type !== 'link')
+  const changed = marks.length !== previousMarks.length
   if (!changed) return { changed: false, nextPosition, node }
 
   return {
     changed,
     nextPosition,
-    node: marks && marks.length > 0 ? { ...node, marks } : withoutMarks(node),
+    node: marks.length > 0 ? { ...node, marks } : withoutMarks(node),
   }
 }
 
