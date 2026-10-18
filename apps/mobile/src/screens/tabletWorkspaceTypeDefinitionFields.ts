@@ -19,8 +19,19 @@ export function typeDefinitionFields({
   typeName: string
 }): ReadOnlyFormField[] {
   return [
-    { key: 'typeDisplayProperties', value: definition?.listPropertiesDisplay ?? [] },
     { key: 'typeName', value: typeName },
+    { key: 'typeRenameName', value: typeName },
+    { key: 'typeSectionLabel', value: definition?.label ?? label },
+    { key: 'typeSort', value: definition?.sort ?? '' },
+    { key: 'typeTemplate', value: definition?.template ?? '' },
+    ...typeDefinitionSchemaFields(definition),
+    ...typeDefinitionAppearanceFields(definition),
+  ]
+}
+
+function typeDefinitionSchemaFields(definition: MobileTypeDefinitions[string] | undefined): ReadOnlyFormField[] {
+  return [
+    { key: 'typeDisplayProperties', value: definition?.listPropertiesDisplay ?? [] },
     { key: 'typePropertyQuery', value: '' },
     { key: 'typeSchemaProperties', value: typeSchemaPropertiesForForm(definition) },
     { key: 'typeSchemaPropertyName', value: '' },
@@ -29,10 +40,11 @@ export function typeDefinitionFields({
     { key: 'typeSchemaRelationshipName', value: '' },
     { key: 'typeSchemaRelationshipTargetRef', value: '' },
     { key: 'typeSchemaRelationshipTarget', value: '' },
-    { key: 'typeSectionLabel', value: definition?.label ?? label },
-    { key: 'typeRenameName', value: typeName },
-    { key: 'typeSort', value: definition?.sort ?? '' },
-    { key: 'typeTemplate', value: definition?.template ?? '' },
+  ]
+}
+
+function typeDefinitionAppearanceFields(definition: MobileTypeDefinitions[string] | undefined): ReadOnlyFormField[] {
+  return [
     { key: 'typeIcon', value: definition?.icon ?? 'file' },
     { key: 'typeTone', value: definition?.color ?? definition?.tone ?? 'gray' },
     { key: 'typeVisible', value: definition?.visible !== false },

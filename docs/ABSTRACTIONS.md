@@ -654,6 +654,7 @@ Workspace surfaces now sit one level above those primitives:
 | `mobileWorkspaceFolders.ts` | Shared mobile folder path normalization, portable folder-name validation, subtree matching, and sidebar tree derivation |
 | `mobileWorkspaceTypeEditing.ts` | Type document create/delete/update/reorder write planning for the mobile reducer |
 | `mobileTypeDefinitionSchema.ts` | Mobile form conversion for Type document instance schema/default fields |
+| `tabletWorkspaceTypeDefinitionSave.ts` | Validates Type rename/save edits and preserves custom labels; default section-label detection uses desktop `src/shared/typeLabels.ts` rather than a mobile pluralizer |
 | `mobileVaultConfig.ts` | Mobile vault-path-local config normalization for primary All Notes/Inbox display properties |
 | `mobileWikilinkAutocomplete.ts` | Cursor-aware mobile wikilink query detection, canonical target insertion, and desktop-style suggestion matching across title, aliases, filename, type, tags, and path |
 | `mobileEditorCommands.ts` | Active editor command registry for tablet/phone selection-sensitive actions and overlay focus handoff; stable forwarders call the latest registered editor without importing its internals |

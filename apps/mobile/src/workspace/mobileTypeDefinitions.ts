@@ -92,14 +92,13 @@ export function typeDefinitionsWithPatch(
 
 function normalizedTypePatch(patch: MobileTypeDefinitionPatch): MobileTypeDefinitionPatch {
   const normalized: MobileTypeDefinitionPatch = { ...patch }
-  if (patch.color !== undefined) normalized.color = normalizedTextPatch(patch.color)
-  if (patch.label !== undefined) normalized.label = normalizedTextPatch(patch.label)
+  const textFields = ['color', 'label', 'sort', 'template', 'view'] as const
+  for (const key of textFields) {
+    if (patch[key] !== undefined) normalized[key] = normalizedTextPatch(patch[key])
+  }
   if (patch.listPropertiesDisplay !== undefined) normalized.listPropertiesDisplay = normalizedListPatch(patch.listPropertiesDisplay)
   if (patch.properties !== undefined) normalized.properties = normalizedPropertiesPatch(patch.properties)
   if (patch.relationships !== undefined) normalized.relationships = normalizedRelationshipsPatch(patch.relationships)
-  if (patch.sort !== undefined) normalized.sort = normalizedTextPatch(patch.sort)
-  if (patch.template !== undefined) normalized.template = normalizedTextPatch(patch.template)
-  if (patch.view !== undefined) normalized.view = normalizedTextPatch(patch.view)
   return normalized
 }
 
@@ -180,15 +179,20 @@ function patchedTypeFrontmatter(
     writeOptionalCanonicalFrontmatterValue(nextFrontmatter, 'visible', patch.visible === false ? false : null)
   }
 
-  if (patch.properties !== undefined || patch.relationships !== undefined) {
-    replaceTypeSchemaFrontmatter(
-      nextFrontmatter,
-      patch.properties ?? preservedTypeSchemaProperties(nextFrontmatter),
-      patch.relationships ?? frontmatterRelationships(nextFrontmatter),
-    )
-  }
-
+  patchTypeSchemaFrontmatter(nextFrontmatter, patch)
   return nextFrontmatter
+}
+
+function patchTypeSchemaFrontmatter(
+  frontmatter: LocalVaultFrontmatter,
+  patch: MobileTypeDefinitionPatch,
+) {
+  if (patch.properties === undefined && patch.relationships === undefined) return
+  replaceTypeSchemaFrontmatter(
+    frontmatter,
+    patch.properties ?? preservedTypeSchemaProperties(frontmatter),
+    patch.relationships ?? frontmatterRelationships(frontmatter),
+  )
 }
 
 function replaceTypeSchemaFrontmatter(

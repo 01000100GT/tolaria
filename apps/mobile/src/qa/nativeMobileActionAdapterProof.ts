@@ -100,15 +100,18 @@ function proofHasShape(value: unknown): value is NativeMobileActionAdapterProof 
   if (!value || typeof value !== 'object') return false
 
   const candidate = value as Record<keyof NativeMobileActionAdapterProof, unknown>
-  return typeof candidate.clipboardDeepLinkRoundTrip === 'boolean'
-    && typeof candidate.clipboardFilePathRoundTrip === 'boolean'
-    && typeof candidate.deepLinkBuilt === 'boolean'
-    && typeof candidate.filePathBuilt === 'boolean'
-    && typeof candidate.folderRevealOpened === 'boolean'
-    && typeof candidate.noteOpenOpened === 'boolean'
-    && typeof candidate.noteRevealOpened === 'boolean'
-    && typeof candidate.pdfExported === 'boolean'
-    && typeof candidate.pdfHtmlRendered === 'boolean'
+  const flags = [
+    candidate.clipboardDeepLinkRoundTrip,
+    candidate.clipboardFilePathRoundTrip,
+    candidate.deepLinkBuilt,
+    candidate.filePathBuilt,
+    candidate.folderRevealOpened,
+    candidate.noteOpenOpened,
+    candidate.noteRevealOpened,
+    candidate.pdfExported,
+    candidate.pdfHtmlRendered,
+  ]
+  return flags.every((flag) => typeof flag === 'boolean')
     && typeof candidate.selectedNoteId === 'string'
 }
 

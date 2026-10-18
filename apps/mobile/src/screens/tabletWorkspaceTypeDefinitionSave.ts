@@ -1,4 +1,5 @@
 import type { MobileTypeDefinitions } from '../workspace/mobileWorkspaceModel'
+import { pluralizeType } from '../../../../src/shared/typeLabels'
 import { mobileToneFromValue } from '../workspace/mobileWorkspaceMetadata'
 import {
   normalizedDisplayProperties,
@@ -27,6 +28,7 @@ type TypeDefinitionSaveForm = Pick<
 >
 type CreateTypeDefinitionEdit = Extract<MobileWorkspaceEdit, { type: 'createTypeDefinition' }>
 type UpdateTypeDefinitionEdit = Extract<MobileWorkspaceEdit, { type: 'updateTypeDefinition' }>
+type RenameTypeDefinitionEdit = Extract<MobileWorkspaceEdit, { type: 'renameTypeDefinition' }>
 
 export function createTypeDefinitionEdit(typeName: string): CreateTypeDefinitionEdit | null {
   const trimmedTypeName = typeName.trim()
@@ -42,20 +44,19 @@ export function typeDefinitionSaveEdit(
   if (!typeName || !nextTypeName) return null
   if (!canRenameMobileTypeDefinition(typeDefinitions, typeName, nextTypeName)) return null
 
+  const rename: RenameTypeDefinitionEdit = { nextTypeName, type: 'renameTypeDefinition', typeName }
   const patch = {
-    color: normalizedColor(form.typeTone),
-    label: typeRenamePatchLabel(form),
-    icon: normalizedIcon(form.typeIcon),
+    ...typeAppearancePatch(form),
+    label: typeRenamePatchLabel(form, rename),
     listPropertiesDisplay: normalizedDisplayProperties(form.typeDisplayProperties),
     ...typeDefinitionSchemaPatch(form.typeSchemaProperties, form.typeSchemaRelationships),
     sort: form.typeSort,
     template: form.typeTemplate,
-    tone: mobileToneFromValue(form.typeTone, 'gray'),
     visible: form.typeVisible ? null : false,
   }
-  const edits: MobileWorkspaceEdit[] = renamedTypeName(typeName, nextTypeName)
+  const edits: MobileWorkspaceEdit[] = renamedTypeName(rename)
     ? [
-      { nextTypeName, type: 'renameTypeDefinition', typeName },
+      rename,
       { patch, type: 'updateTypeDefinition', typeName: nextTypeName },
     ]
     : [{ patch, type: 'updateTypeDefinition', typeName }]
@@ -78,35 +79,28 @@ export function toggleTypeVisibilityEdit(
   }
 }
 
-function typeRenamePatchLabel(form: TypeDefinitionSaveForm): string | null {
-  if (renamedTypeName(form.typeName, form.typeRenameName) && isDefaultTypeSectionLabel(form.typeName, form.typeSectionLabel)) {
+function typeRenamePatchLabel(form: TypeDefinitionSaveForm, rename: RenameTypeDefinitionEdit): string | null {
+  if (renamedTypeName(rename) && isDefaultTypeSectionLabel(form)) {
     return null
   }
 
   return form.typeSectionLabel
 }
 
-function renamedTypeName(typeName: string, nextTypeName: string): boolean {
+function renamedTypeName({ typeName, nextTypeName }: RenameTypeDefinitionEdit): boolean {
   return normalizedLabel(typeName) !== normalizedLabel(nextTypeName)
 }
 
-function isDefaultTypeSectionLabel(typeName: string, label: string): boolean {
-  return normalizedLabel(label) === normalizedLabel(pluralizedTypeLabel(typeName))
+function isDefaultTypeSectionLabel(form: TypeDefinitionSaveForm): boolean {
+  return normalizedLabel(form.typeSectionLabel) === normalizedLabel(pluralizeType(form.typeName.trim()))
 }
 
-function pluralizedTypeLabel(typeName: string): string {
-  const cleanType = typeName.trim()
-  if (cleanType.endsWith('s')) return cleanType
-  if (cleanType.endsWith('y')) return `${cleanType.slice(0, -1)}ies`
-  return `${cleanType}s`
-}
-
-function normalizedIcon(icon: string) {
-  return icon.trim() || null
-}
-
-function normalizedColor(color: string) {
-  return color.trim() || null
+function typeAppearancePatch(form: TypeDefinitionSaveForm) {
+  return {
+    color: form.typeTone.trim() || null,
+    icon: form.typeIcon.trim() || null,
+    tone: mobileToneFromValue(form.typeTone, 'gray'),
+  }
 }
 
 function normalizedLabel(value: string) {

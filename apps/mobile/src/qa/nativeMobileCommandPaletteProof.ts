@@ -100,16 +100,19 @@ function proofHasShape(value: unknown): value is NativeMobileCommandPaletteProof
   if (!value || typeof value !== 'object') return false
 
   const candidate = value as Record<keyof NativeMobileCommandPaletteProof, unknown>
-  return typeof candidate.commandPaletteCommandEnabled === 'boolean'
-    && typeof candidate.createNoteCommandEnabled === 'boolean'
+  const flags = [
+    candidate.commandPaletteCommandEnabled,
+    candidate.createNoteCommandEnabled,
+    candidate.findInVaultCommandEnabled,
+    candidate.quickOpenCommandEnabled,
+    candidate.reloadCommandEnabled,
+    candidate.togglePropertiesCommandEnabled,
+    candidate.typeListCommandsAvailable,
+    candidate.typedNoteCommandsAvailable,
+  ]
+  return flags.every((flag) => typeof flag === 'boolean')
     && typeof candidate.enabledCommands === 'number'
-    && typeof candidate.findInVaultCommandEnabled === 'boolean'
-    && typeof candidate.quickOpenCommandEnabled === 'boolean'
-    && typeof candidate.reloadCommandEnabled === 'boolean'
-    && typeof candidate.togglePropertiesCommandEnabled === 'boolean'
     && typeof candidate.totalCommands === 'number'
-    && typeof candidate.typeListCommandsAvailable === 'boolean'
-    && typeof candidate.typedNoteCommandsAvailable === 'boolean'
 }
 
 function proofFailure(
