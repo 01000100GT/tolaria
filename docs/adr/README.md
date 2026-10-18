@@ -255,3 +255,4 @@ proposed → active → superseded
 | [0237](0237-mobile-completed-conflict-backup-retention.md) | Completed mobile conflict-backup retention | active |
 | [0238](0238-mobile-fresh-input-validated-snapshot-cache.md) | Fresh-input-validated mobile snapshot cache | active |
 | [0239](0239-mobile-known-remote-fetch-negotiation.md) | Negotiate mobile fetches from the known remote tip | active |
+| [0240](0240-mobile-bounded-git-filesystem-sessions.md) | Bounded mobile Git filesystem sessions | active |

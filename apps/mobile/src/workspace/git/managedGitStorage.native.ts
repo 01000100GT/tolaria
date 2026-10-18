@@ -2,7 +2,7 @@ import { Directory, Paths } from 'expo-file-system'
 import { randomUUID } from 'expo-crypto'
 import type { HttpClient } from 'isomorphic-git'
 import type { NativeWorkspaceSelection } from '../nativeWorkspacePicker'
-import { createExpoGitFileSystem } from './expoGitFileSystem'
+import { gitFileSystemSession } from './gitFileSystemSessions'
 import { gitVirtualRoot } from './gitFileSystemPaths'
 import { githubRepositoryUrl } from './githubRepositoryUrl'
 import { isManagedVaultId, type ManagedGitVault, type ManagedGitVaultCatalog } from './managedGitVaults'
@@ -70,7 +70,7 @@ export async function managedGitSelection(vault: ManagedGitVault): Promise<Nativ
 
 export function managedGitConnection(vault: ManagedGitVault) {
   const rootUri = managedDirectory(vault).uri
-  return { fs: createExpoGitFileSystem(rootUri), dir: gitVirtualRoot, operationKey: rootUri }
+  return { fs: gitFileSystemSession(rootUri), dir: gitVirtualRoot, operationKey: rootUri }
 }
 
 function managedDirectory(vault: ManagedGitVault) {

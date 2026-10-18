@@ -126,6 +126,11 @@ changed path and deletion before committing. Object IDs, stat-cache decisions,
 line-ending conversion and ignored-path handling
 still belong to isomorphic-git. This avoids a whole-vault parallel stat fan-out
 and does not refresh the index just because unchanged timestamps drifted.
+`gitFileSystemSessions.ts` retains an adapter for only the most recently used root
+URI. Its bounded 16,384-entry caches hold only URI/File/Directory handles, not
+bytes, metadata, Git state or credentials. Operation caches remain independent;
+every filesystem check and read stays fresh (ADR 0240). Native Git probes use the
+same getter as managed vault connections.
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 `fetchTrackedGitBranch.ts` uses the last-known origin tracking ref for ordinary

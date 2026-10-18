@@ -3,7 +3,7 @@ import { requireOptionalNativeModule } from 'expo'
 import { nativeGitHttp } from '../workspace/git/nativeGitHttp'
 import git, { type GitProgressEvent, type HttpClient } from 'isomorphic-git'
 import { cloneGitVault, syncGitVault } from '../workspace/git/gitRemote'
-import { createExpoGitFileSystem } from '../workspace/git/expoGitFileSystem'
+import { gitFileSystemSession } from '../workspace/git/gitFileSystemSessions'
 import { gitVirtualRoot } from '../workspace/git/gitFileSystemPaths'
 import { assertNativeWorkspaceWriteErrors } from './nativeWorkspaceWriteErrors'
 import { nativeVaultReadBenchmark } from './nativeVaultReadBenchmark'
@@ -63,7 +63,7 @@ async function roundTrip(root: Directory, endpoint: string, enter: (phase: strin
       return nativeGitHttp.request({ ...request, url: `${endpoint}${url.pathname}${url.search}` })
     },
   }
-  const connection = (directory: Directory) => ({ fs: createExpoGitFileSystem(directory.uri), dir: gitVirtualRoot, http })
+  const connection = (directory: Directory) => ({ fs: gitFileSystemSession(directory.uri), dir: gitVirtualRoot, http })
   const repositoryUrl = 'https://github.com/team/vault'
   const started = Date.now()
   enter('clone.first')

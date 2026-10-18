@@ -20,6 +20,7 @@ type GitEntryInfo = {
   creationTime?: number
 }
 type ReadEntryInfo = (uri: FileUri) => GitEntryInfo
+const cachedHandleLimit = 16_384
 declare function require(name: 'expo-file-system'): FileSystemModule
 declare function require(name: 'expo-file-system/legacy'): { readDirectoryAsync: (uri: string) => Promise<string[]> }
 
@@ -117,7 +118,7 @@ function cachedHandle<T>(create: (path: string) => T) {
     const cached = entries.get(path)
     if (cached !== undefined) return cached
     const entry = create(path)
-    if (entries.size >= 8192) entries.clear()
+    if (entries.size >= cachedHandleLimit) entries.clear()
     entries.set(path, entry)
     return entry
   }
