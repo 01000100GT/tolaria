@@ -13,6 +13,7 @@ final class MobilePersistenceIsolationTests: XCTestCase {
     let app = launchProbe("phoneState=editor&editorMode=wysiwyg&wysiwygPersistenceProbe=1&wysiwygMutationProbe=1")
     let editor = app.webViews.textViews.firstMatch
     XCTAssertTrue(editor.waitForExistence(timeout: 30))
+    XCTAssertGreaterThan(editor.frame.width, 200, "Persistence QA requires a readable editor surface")
     editor.tap()
     XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8))
     XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "workspace-load-failure").firstMatch.exists)
@@ -27,7 +28,15 @@ final class MobilePersistenceIsolationTests: XCTestCase {
     app.launchArguments = ["--tolaria-mobile-search", search]
     app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
     app.launch()
+    orientTablet(app)
     return app
+  }
+
+  private func orientTablet(_ app: XCUIApplication) {
+    guard min(app.frame.width, app.frame.height) >= 700 else { return }
+    XCUIDevice.shared.orientation = .landscapeLeft
+    expectation(for: NSPredicate { _, _ in app.frame.width > app.frame.height }, evaluatedWith: nil)
+    waitForExpectations(timeout: 10)
   }
 
   private func captureScreen() {
