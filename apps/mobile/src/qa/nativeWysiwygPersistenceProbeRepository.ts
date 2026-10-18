@@ -1,4 +1,4 @@
-import type { Directory, Paths } from 'expo-file-system'
+import type { Directory, File, Paths } from 'expo-file-system'
 import { logNativeQaProof } from './nativeQaSink'
 import { expoWorkspaceFileSystem } from '../workspace/expoWorkspaceFileSystem'
 import type { MobileWorkspaceWrite } from '../workspace/mobileWorkspaceEditing'
@@ -16,6 +16,7 @@ import {
 
 type ExpoFileSystemModule = {
   Directory: typeof Directory
+  File: typeof File
   Paths: typeof Paths
 }
 
@@ -57,8 +58,10 @@ export function nativeWysiwygPersistenceProbeRequest(
   return {
     ...request,
     source: 'native',
+    vaultAlias: null,
     vaultLabel: nativeWysiwygPersistenceProbeVaultLabel,
-    vaultRootUri: persistenceProbeRootUri() ?? request?.vaultRootUri ?? null,
+    vaultRootUri: persistenceProbeRootUri(),
+    workspaceIndex: undefined,
   }
 }
 
@@ -66,11 +69,12 @@ function seedNativeWysiwygPersistenceProbeVault(request: ReadOnlyWorkspaceReques
   const rootUri = request.vaultRootUri
   if (!rootUri) return
 
-  expoWorkspaceFileSystem.writeTextFile(
-    rootUri,
-    nativeWysiwygPersistenceProbeNotePath,
-    nativeWysiwygMutationProbeInitialContent(persistenceProbeSeedNote),
-  )
+  const { Directory, File } = require('expo-file-system')
+  new Directory(rootUri).create({ idempotent: true, intermediates: true })
+  const file = new File(rootUri, ...nativeWysiwygPersistenceProbeNotePath.split('/'))
+  file.parentDirectory.create({ idempotent: true, intermediates: true })
+  if (!file.exists) file.create({ intermediates: true })
+  file.write(nativeWysiwygMutationProbeInitialContent(persistenceProbeSeedNote), { encoding: 'utf8' })
 }
 
 function logPersistenceProofForProbeWrites(

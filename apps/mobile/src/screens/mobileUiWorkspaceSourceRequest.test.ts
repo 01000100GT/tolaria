@@ -52,7 +52,7 @@ it.each([
   const request = { source: 'host' as const, vaultRootUri: 'file:///fallback', vaultLabel: 'Ordinary' }
   const result = mobileRepositoryRequestForProbes(request, probes)
   expect(result.source).toBe('native')
-  expect(result.vaultRootUri).toBe('file:///fallback')
+  expect(result.vaultRootUri).toBeNull()
   expect(result.vaultLabel).not.toBe('Ordinary')
   expect(mobileRepositoryForProbes(probes)).not.toBe(readOnlyWorkspaceRepository)
   expect(request.source).toBe('host')

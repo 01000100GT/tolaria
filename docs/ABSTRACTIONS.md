@@ -782,6 +782,18 @@ not a parallel repository checklist. See [mobile development](GETTING-STARTED.md
 for setup and native QA. Browser screenshots are a fast parity check, never a
 substitute for native interaction, layout and persistence checks.
 
+The native workspace persistence probe keeps its disposable-vault orchestration
+in `nativeWorkspacePersistenceProbeRepository.ts`. Its scenario content, seed
+writes, edit plans, and independent read-back assertions live in the sibling
+`nativeWorkspacePersistenceScenario`, `Seeds`, `Edits`, and `Readback` modules.
+The proof compares saved-view filter values structurally without relying on YAML
+object-key insertion order; array order, nested conditions, and value types remain
+part of the contract. Both workspace and WYSIWYG persistence probes decline to
+run when their disposable native root cannot be resolved; neither falls back to
+the currently selected user vault.
+Disposable rich-editor fixtures are seeded synchronously before the synchronous
+snapshot read; subsequent editor saves still use the durable repository path.
+
 ### Vault Git Capability
 
 Git is a per-vault capability, not a prerequisite for the document model. A vault can be:
