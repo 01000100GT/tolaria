@@ -1,6 +1,19 @@
 import XCTest
 
 final class PhoneReadinessTests: XCTestCase {
+  override func tearDown() {
+    if testRun?.hasSucceeded == false {
+      let image = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+      image.name = "phone-readiness-failure"
+      image.lifetime = .keepAlways
+      add(image)
+      let tree = XCTAttachment(string: XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev").debugDescription)
+      tree.lifetime = .keepAlways
+      add(tree)
+    }
+    super.tearDown()
+  }
+
   func testPropertiesReturnsToTheSameSourceEditor() {
     let app = launch("wysiwyg")
     element(app, "editor-source-action").tap()

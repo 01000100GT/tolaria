@@ -59,6 +59,7 @@ export function phoneWorkspaceDragCommitOffset(
 }
 
 export function phoneWorkspaceSidebarDrawerWidth(rootWidth: number): number {
+  'worklet'
   return Math.min(
     phoneWorkspaceSidebarDrawerMaxWidth,
     Math.round(rootWidth * phoneWorkspaceSidebarDrawerWidthRatio),

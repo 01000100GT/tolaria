@@ -4,7 +4,6 @@ import type { MobileColors } from '../ui/theme/mobilePalette'
 
 const fixedStyles = StyleSheet.create({
   drawerPanel: { flex: 1, borderRightWidth: StyleSheet.hairlineWidth },
-  drawerPreview: { bottom: 0, position: 'absolute', top: 0 },
   drawerRoot: { flex: 1, overflow: 'hidden' },
   root: { flex: 1, overflow: 'hidden' },
   leadingActions: { alignItems: 'center', flexDirection: 'row' },

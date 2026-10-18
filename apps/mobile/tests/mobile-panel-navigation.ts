@@ -24,7 +24,7 @@ export async function dragPanel(page: Page, start: { x: number; y: number }, end
 }
 
 export async function openPhoneSidebar(page: Page) {
-  if (await page.getByTestId('phone-sidebar-screen').isVisible()) return
+  if (await phonePanelIsOpen(page, 'phone-sidebar-screen')) return
   await swipePanel(page, 'right')
   await expect(page.getByTestId('phone-sidebar-screen')).toBeInViewport({ ratio: 1 })
 }
@@ -41,10 +41,15 @@ export async function openPhoneProperties(page: Page) {
 }
 
 export async function phoneBack(page: Page) {
-  const fromProperties = await page.getByTestId('phone-properties-screen').isVisible()
+  const fromProperties = await phonePanelIsOpen(page, 'phone-properties-screen')
   await swipePanel(page, 'right')
   const destination = fromProperties ? 'phone-editor-screen' : 'phone-note-list-screen'
   await expect(page.getByTestId(destination)).toBeInViewport({ ratio: 1 })
+}
+
+async function phonePanelIsOpen(page: Page, testID: string) {
+  const bounds = await page.getByTestId(testID).boundingBox()
+  return Boolean(bounds && Math.abs(bounds.x) < 1)
 }
 
 export async function toggleTabletProperties(page: Page) {

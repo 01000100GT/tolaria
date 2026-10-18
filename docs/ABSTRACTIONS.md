@@ -742,14 +742,18 @@ reconciliation use the separate editor/write barriers described above.
 The tablet workspace controller owns temporary interaction state: selected sidebar scope, selected note, search query, action-sheet form values, and an editable snapshot derived by `mobileWorkspaceEditing.ts`. `TabletWorkspace` and `PhoneWorkspace` should share that controller/repository boundary; phone-specific work should adapt navigation and chrome, not fork business logic. The repository boundary owns persistence. Visual components must continue to receive callbacks and snapshots rather than importing Expo or filesystem APIs directly.
 
 `PhoneWorkspaceLayout` composes the phone shell; `PhoneWorkspaceScreens` and
-`PhoneWorkspaceEditorScreen` render its retained and transient panels. Shared
+`PhoneWorkspaceEditorScreen` render its retained panels. Shared
 chrome, styles, and editor options remain separate from navigation callbacks.
 The standalone phone inspector uses the editor's literal filename identity in
 its existing single header; tablet Properties chrome remains unchanged.
-`usePhoneDragPreview` owns continuous drag and settlement. A successful native
-settlement resets the attached animated value before navigation, and marks that
-route as already animated. `PhoneWorkspaceTransition` animates only a new route,
-not a cleared handoff or a resize. Interrupted settlement never navigates.
+`usePhonePanelRail` owns one native gesture and the absolute offset of the real
+panels. `phoneNativePanGesture` recognizes intent and settles with Reanimated;
+an epoch rejects interrupted completion callbacks. `phonePanelRail` owns pure
+geometry, bounds and snap selection. `PhoneWorkspaceTransition` clips the rail
+without creating preview copies or replaying a route entrance after settlement.
+`usePhoneViewportWidth` subtracts the app's outer horizontal safe areas exactly
+once; gesture coordinates are local to that usable viewport. Lightweight panes
+are prepared eagerly, while the single editor is retained after its first visit.
 Native panel-drag tests verify the destination bounds alongside lifecycle tests
 for cancellation and duplicate-animation prevention.
 Mobile editor and list toolbars omit redundant pane toggles and editor back

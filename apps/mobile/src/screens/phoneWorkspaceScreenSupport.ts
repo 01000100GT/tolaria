@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, type Dispatch, type SetStateAction } from 'react'
 import { useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { MobileLayoutProbe } from '../qa/mobileLayoutProbe'
@@ -8,7 +8,7 @@ import type { MobileTableOfContentsTarget } from '../workspace/mobileTableOfCont
 import { phonePanelDragSurface } from './phonePanelDragSurface'
 import type { PhoneWorkspaceState } from './phoneWorkspaceTransitions'
 import type { PhoneWorkspaceEditorOptions } from './phoneWorkspaceEditorOptions'
-import type { usePhoneDragPreview } from './usePhoneDragPreview'
+import type { usePhonePanelRail } from './usePhonePanelRail'
 import type { useTabletWorkspaceController } from './useTabletWorkspaceController'
 
 export type PhoneTableOfContentsTargetRequest = MobileTableOfContentsTarget & { requestId: number }
@@ -22,7 +22,32 @@ export function usePhonePanelDragSurface(state: PhoneWorkspaceState) {
 }
 
 export type PhoneWorkspaceController = ReturnType<typeof useTabletWorkspaceController>
-export type PhoneSwipePreview = ReturnType<typeof usePhoneDragPreview>
+export type PhonePanelRail = ReturnType<typeof usePhonePanelRail>
+
+type NavigationOptions = {
+  controller: PhoneWorkspaceController
+  setPhoneState: (state: PhoneWorkspaceState) => void
+  setSourceModeRequest: Dispatch<SetStateAction<number>>
+}
+
+export function usePhoneWorkspaceNavigation({ controller, setPhoneState, setSourceModeRequest }: NavigationOptions) {
+  const openList = useCallback(() => setPhoneState('list'), [setPhoneState])
+  const openSidebar = useCallback(() => setPhoneState('sidebar'), [setPhoneState])
+  const openProperties = useCallback(() => setPhoneState('properties'), [setPhoneState])
+  const openEditor = useCallback((noteId?: string) => {
+    if (noteId) controller.onSelectNote(noteId)
+    setPhoneState('editor')
+  }, [controller, setPhoneState])
+  const openSourceEditor = useCallback(() => {
+    setSourceModeRequest(current => current + 1)
+    setPhoneState('editor')
+  }, [setPhoneState, setSourceModeRequest])
+  const openNeighborhoodList = useCallback((noteId: string) => {
+    controller.onEnterNeighborhood(noteId)
+    setPhoneState('list')
+  }, [controller, setPhoneState])
+  return { openEditor, openList, openNeighborhoodList, openProperties, openSidebar, openSourceEditor }
+}
 
 export type PhoneWorkspaceStateViewProps = {
   controller: PhoneWorkspaceController
@@ -35,18 +60,8 @@ export type PhoneWorkspaceStateViewProps = {
   openSidebar: () => void
   phoneLayoutProbe: MobileLayoutProbe
   phoneState: PhoneWorkspaceState
-  phoneSwipePreview: PhoneSwipePreview
   onRegisterEditorCommands?: RegisterMobileEditorCommands
   sourceModeRequest: number
   suggestionNotes: MobileNote[]
   tableOfContentsTarget: PhoneTableOfContentsTargetRequest | null
-}
-
-export function phoneSwipePreviewHandlers(phoneSwipePreview: PhoneSwipePreview) {
-  return phoneSwipePreview.enabled
-    ? {
-      onSwipeEnd: phoneSwipePreview.onSwipeEnd,
-      onSwipeProgress: phoneSwipePreview.onSwipeProgress,
-    }
-    : {}
 }

@@ -28,10 +28,9 @@ final class MobileSidebarSettingsTests: XCTestCase {
     let phone = element(app, "phone-sidebar-screen")
     try XCTSkipUnless(phone.waitForExistence(timeout: 10), "Phone-only drawer geometry")
     let sidebar = element(app, "workspace-sidebar-panel")
-    let preview = app.descendants(matching: .any).matching(identifier: "note-list-panel")
-      .allElementsBoundByIndex.first { $0.frame.minX > app.frame.minX + 1 }
-    XCTAssertNotNil(preview)
-    XCTAssertEqual(sidebar.frame.maxX, try XCTUnwrap(preview).frame.minX, accuracy: 1)
+    let list = element(app, "phone-list-slot")
+    XCTAssertTrue(list.exists)
+    XCTAssertEqual(sidebar.frame.maxX, list.frame.minX, accuracy: 1)
     XCTAssertGreaterThan(app.frame.maxX - sidebar.frame.maxX, 40)
     attachScreenshot()
   }

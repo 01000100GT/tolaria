@@ -12,7 +12,7 @@ final class TabletNoteSwipeTests: XCTestCase {
     let row = element(app, "note-row-workflow-orchestration")
     XCTAssertTrue(row.waitForExistence(timeout: 30))
     let before = row.frame
-    drag(row, from: 0.75, to: 0.40)
+    drag(row, from: 0.82, to: 0.25)
     let archive = element(app, "note-swipe-archive-workflow-orchestration")
     XCTAssertTrue(archive.waitForExistence(timeout: 5))
     XCTAssertTrue(archive.isHittable)
@@ -31,7 +31,7 @@ final class TabletNoteSwipeTests: XCTestCase {
     XCTAssertTrue(row.waitForExistence(timeout: 30))
     let favorite = element(app, "editor-favorite-action")
     let initialLabel = favorite.label
-    drag(row, from: 0.75, to: 0.40)
+    drag(row, from: 0.82, to: 0.25)
     assertTrailingActionOrder(app)
     element(app, "note-swipe-favorite-workflow-orchestration").tap()
     waitUntil { favorite.label != initialLabel }

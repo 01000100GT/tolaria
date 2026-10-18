@@ -272,10 +272,15 @@ separately from clone/push/pull duration; neither measure represents native fram
 rate or a physical-device performance budget.
 
 Phone layout uses `useMobileDeviceLayout` instead of an orientation-sensitive
-window-width breakpoint. `PhoneScreenLayer` retains the visited editor and list
-while excluding inactive surfaces from input and accessibility; transition
-animation does not remount them. See ADR-0224. Native phone acceptance covers
-mode preservation, keyboard clearance and orientation, alongside iPad checks.
+window-width breakpoint. Its actual panels occupy fixed slots on one retained
+rail; `usePhonePanelRail` drives that rail through RNGH and Reanimated on the UI
+thread. Incoming panes are not duplicate previews, and settling does not reset
+the offset or start a second entrance animation. `usePhoneViewportWidth` accounts
+for the outer safe area once, so landscape panes and edge gestures use the real
+content viewport. Inactive content is excluded from input and accessibility;
+the editor is created on its first visit and retained thereafter. See ADR-0224
+and ADR-0244. Native acceptance covers cancellation, draft/focus continuity,
+scroll position, rotation, note-row actions and corresponding iPad behavior.
 
 The mobile app lives in `apps/mobile` as a separate Expo React Native workspace package. It is intentionally not a port of the desktop React DOM component tree. Desktop components, CSS variables, and panel semantics are treated as the reference contract, while mobile uses native primitives and fixture-driven screens. During the mobile UI foundation phase, the app is pinned to Expo SDK 54 so physical iPad review can run through Expo Go while the native development-build toolchain remains optional.
 

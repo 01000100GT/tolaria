@@ -15,22 +15,19 @@ import { PhoneWorkspaceTransition } from './PhoneWorkspaceTransition'
 import { WorkspaceActionSheetHost } from './TabletWorkspace'
 import type { PhoneWorkspaceState } from './phoneWorkspaceTransitions'
 import type { PhoneWorkspaceEditorOptions } from './phoneWorkspaceEditorOptions'
-import type { PhoneWorkspaceController, PhoneSwipePreview, PhoneTableOfContentsTargetRequest } from './phoneWorkspaceScreenSupport'
+import type { PhoneWorkspaceController, PhonePanelRail, PhoneTableOfContentsTargetRequest } from './phoneWorkspaceScreenSupport'
 
 type PhoneWorkspaceRootProps = {
   commandPaletteElement: ReactNode
   controller: PhoneWorkspaceController
   createRelationshipTargetAndOpenEditor: () => void
-  dragPreview: PhoneSwipePreview
+  panelRail: PhonePanelRail
   editorCommandRegistry: ReturnType<typeof useMobileEditorCommandRegistry>
   navigation: PhoneWorkspaceNavigation
   openCommandPalette: () => void
   options: PhoneWorkspaceEditorOptions
   phoneLayoutProbe: MobileLayoutProbe
   phoneState: PhoneWorkspaceState
-  gestureHandoffState: PhoneWorkspaceState | null
-  previousPhoneState: PhoneWorkspaceState
-  preview: ReactNode
   selectTableOfContentsTarget: (target: MobileTableOfContentsTarget) => void
   sourceModeRequest: number
   suggestionNotes: MobileNote[]
@@ -57,12 +54,8 @@ export function PhoneWorkspaceRoot(props: PhoneWorkspaceRootProps) {
 function PhoneWorkspaceContent(props: PhoneWorkspaceRootProps) {
   return (
     <PhoneWorkspaceTransition
-      dragX={props.dragPreview.dragX}
-      gestureHandoffActive={props.gestureHandoffState === props.phoneState || props.dragPreview.handoffState === props.phoneState}
-      preview={props.preview}
-      previousState={props.previousPhoneState}
-      state={props.phoneState}
-      swipeHandlers={props.dragPreview.enabled ? undefined : props.transitionSwipeHandlers}
+      panelRail={props.panelRail}
+      swipeHandlers={props.panelRail.enabled ? undefined : props.transitionSwipeHandlers}
     >
       <PhoneWorkspaceScreens
         controller={props.controller}
@@ -75,7 +68,6 @@ function PhoneWorkspaceContent(props: PhoneWorkspaceRootProps) {
         openSidebar={props.navigation.openSidebar}
         phoneLayoutProbe={props.phoneLayoutProbe}
         phoneState={props.phoneState}
-        phoneSwipePreview={props.dragPreview}
         onRegisterEditorCommands={props.editorCommandRegistry.register}
         sourceModeRequest={props.sourceModeRequest}
         suggestionNotes={props.suggestionNotes}
