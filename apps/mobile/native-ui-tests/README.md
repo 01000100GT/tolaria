@@ -9,6 +9,14 @@ These XCUITest checks drive the **standalone iOS app**, not Safari, Expo web,
 or synthetic JavaScript gesture callbacks. They can run without operating the
 Mac's Simulator window. They do not unlock the Mac or change its permissions.
 
+`MobileAccessibilityAuditTests` runs Apple's native accessibility audit on the
+list, sidebar, editor and inspector (iOS 17+). Every reported issue remains a test
+failure; attached diagnostics retain the affected native element. Its relationship
+test requires separate 44-point open/remove targets and taps near the remove
+button's corner to check that only that value is removed. It uses in-memory
+fixtures, not saved user vaults. A skipped audit on an older runtime is not a pass,
+and automated audits do not replace physical VoiceOver or keyboard acceptance.
+
 Prerequisites: Xcode, a booted landscape iPad simulator, the current-source
 `com.tolaria.mobile.dev` development app installed, Metro on port 8081, and Ruby's
 `xcodeproj` gem (already installed alongside CocoaPods on the development host).

@@ -71,22 +71,23 @@ function createRelationshipStyles(metrics: MobileMetrics) {
   const { property: desktopPropertyParity, space: mobileSpace, relationship: desktopRelationshipParity } = metrics
   return StyleSheet.create({
     remove: {
-      minHeight: desktopRelationshipParity.removeIconSize,
-      minWidth: desktopRelationshipParity.removeIconSize,
+      minHeight: 44,
+      minWidth: 44,
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: mobileRadius.pill,
     },
     row: {
-      minHeight: desktopPropertyParity.rowMinHeight,
+      minHeight: Math.max(44, desktopPropertyParity.rowMinHeight),
       alignItems: 'center',
       flexDirection: 'row',
       borderRadius: desktopRelationshipParity.rowRadius,
       paddingHorizontal: desktopRelationshipParity.rowPaddingHorizontal,
-      paddingVertical: desktopRelationshipParity.rowPaddingVertical,
+      paddingVertical: 0,
       width: '100%',
     },
     openTarget: {
+      minHeight: 44,
       minWidth: 0,
       flex: 1,
       alignItems: 'center',
