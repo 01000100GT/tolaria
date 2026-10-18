@@ -131,6 +131,12 @@ URI. Its bounded 16,384-entry caches hold only URI/File/Directory handles, not
 bytes, metadata, Git state or credentials. Operation caches remain independent;
 every filesystem check and read stays fresh (ADR 0240). Native Git probes use the
 same getter as managed vault connections.
+The supported isomorphic-git version must propagate filesystem permission/I/O
+errors rather than treating unreadable paths as missing. `assertGitReadFailureSafety`
+checks that failed directory walks cannot checkpoint deletions, object-read errors
+retain their identity, and corrupt-object diagnostics remain distinct from absent
+objects. The same real-filesystem proof runs in Node and the disposable native
+Git probe; HEAD, index bytes, and frontmatter/content must remain unchanged.
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 `fetchTrackedGitBranch.ts` uses the last-known origin tracking ref for ordinary

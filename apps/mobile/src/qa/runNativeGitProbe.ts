@@ -8,6 +8,7 @@ import { gitVirtualRoot } from '../workspace/git/gitFileSystemPaths'
 import { assertNativeWorkspaceWriteErrors } from './nativeWorkspaceWriteErrors'
 import { nativeVaultReadBenchmark } from './nativeVaultReadBenchmark'
 import { assertNativeGitRecovery } from './nativeGitRecoveryProbe'
+import { assertGitReadFailureSafety } from './assertGitReadFailureSafety'
 import { measureEventLoopDelay } from './measureEventLoopDelay'
 import { postNativeQaEvent, setNativeQaSinkUrl } from './nativeQaSink'
 
@@ -24,12 +25,15 @@ export async function runNativeGitProbe(endpoint: string) {
     await assertNativeWorkspaceWriteErrors(root)
     const nativeDigestVerified = await verifyNativeDigest()
     const nativeFiles = await nativeFileAccessProof()
+    const readSafety = new Directory(root, 'read-safety')
+    readSafety.create()
+    const readErrorsVerified = await assertGitReadFailureSafety({ fs: gitFileSystemSession(readSafety.uri), dir: gitVirtualRoot })
     const checkoutRecovery = await assertNativeGitRecovery(root)
     const { result: proof, eventLoop, phases } = await measureEventLoopDelay(enter => roundTrip(root, endpoint, enter))
     const elapsedMs = Date.now() - started
     const fixtureVault = nativeFiles
       ? await measureEventLoopDelay(() => nativeVaultReadBenchmark(new Directory(root, 'second').uri)) : null
-    publishProof(endpoint, { ...proof, eventLoop, phases, nativeFiles, nativeDigestVerified, checkoutRecovery, fixtureVault, elapsedMs })
+    publishProof(endpoint, { ...proof, eventLoop, phases, nativeFiles, nativeDigestVerified, readErrorsVerified, checkoutRecovery, fixtureVault, elapsedMs })
   } catch (error) {
     publishProof(endpoint, { error: error instanceof Error ? error.message : 'unknown', stack: error instanceof Error ? error.stack : null, passed: false })
   } finally {
