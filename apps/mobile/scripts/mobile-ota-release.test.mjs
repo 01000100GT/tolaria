@@ -1,0 +1,123 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { readFileSync } from 'node:fs'
+import { parse } from 'yaml'
+import { publishMobileUpdate } from './publish-mobile-update.mjs'
+
+function environment(overrides = {}) {
+  return { CIRCLE_BRANCH: 'main', TOLARIA_OTA_CHANNEL: 'alpha', TOLARIA_OTA_BASE_REF: 'HEAD~1',
+    TOLARIA_OTA_RUNTIME: 'a'.repeat(40), TOLARIA_IOS_BUILD_NUMBER: '42', EXPO_TOKEN: 'test-only',
+    SENTRY_AUTH_TOKEN: 'test-only', SENTRY_ORG: 'test-org', SENTRY_PROJECT: 'test-project', ...overrides }
+}
+
+function executor(files, runtime = 'a'.repeat(40)) {
+  const calls = []
+  return {
+    calls,
+    execute(command, args, options) {
+      calls.push({ command, args, options })
+      if (args[0] === 'rev-parse') return 'b'.repeat(40)
+      if (args[0] === 'diff') return files.join('\0')
+      if (args.includes('runtimeversion:resolve')) return JSON.stringify({ runtimeVersion: runtime })
+      return ''
+    },
+  }
+}
+
+test('desktop-only changes never export, upload or publish a mobile update', () => {
+  const run = executor(['src/components/NoteItem.tsx', 'src-tauri/src/lib.rs', 'docs/ARCHITECTURE.md'])
+  assert.equal(publishMobileUpdate(environment(), run.execute).published, false)
+  assert(run.calls.every(call => call.command === 'git'))
+})
+
+for (const file of ['apps/mobile/src/App.tsx', 'src/shared/typeLabels.ts', 'src/lib/locales/en.json', 'pnpm-lock.yaml']) {
+  test(`publishes mobile/shared change ${file} only after map upload`, () => {
+    const run = executor([file])
+    const result = publishMobileUpdate(environment(), run.execute)
+    assert.equal(result.published, true)
+    const upload = run.calls.findIndex(call => call.args.includes('sentry-cli'))
+    const publish = run.calls.findIndex(call => call.args.includes('update'))
+    assert(upload > 0 && publish > upload)
+    assert(run.calls[upload].args.includes('--strict'))
+    assert(run.calls[upload].args.includes('--wait-for'))
+    assert(run.calls[upload].args.includes('hbc'))
+    assert(run.calls[publish].args.includes('alpha'))
+    assert(run.calls.every(call => !call.args.includes('test-only')))
+    assert.equal(run.calls[publish].options.env.TOLARIA_BUILD_PROFILE, 'testflight')
+    assert.equal(run.calls[publish].options.env.EXPO_PUBLIC_DISTRIBUTION, 'testflight')
+  })
+}
+
+test('native incompatibility prevents export and every upload', () => {
+  const run = executor(['apps/mobile/src/App.tsx'], 'c'.repeat(40))
+  assert.throws(() => publishMobileUpdate(environment(), run.execute), /native runtime/)
+  assert.equal(run.calls.some(call => call.args.includes('export') || call.args.includes('upload') || call.args.includes('update')), false)
+})
+
+test('source-map failure prevents publishing', () => {
+  const run = executor(['apps/mobile/src/App.tsx'])
+  const execute = (command, args, options) => {
+    if (args.includes('sentry-cli')) throw new Error('controlled source-map failure')
+    return run.execute(command, args, options)
+  }
+  assert.throws(() => publishMobileUpdate(environment(), execute), /source-map failure/)
+  assert.equal(run.calls.some(call => call.args.includes('update')), false)
+})
+
+for (const key of ['EXPO_TOKEN', 'SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
+  test(`requires private publishing credential ${key}`, () => {
+    const run = executor(['apps/mobile/src/App.tsx'])
+    assert.throws(() => publishMobileUpdate(environment({ [key]: '' }), run.execute), error => error instanceof Error && error.message.includes(key))
+    assert.equal(run.calls.some(call => call.args.includes('export')), false)
+  })
+}
+
+test('a feature branch cannot publish to alpha or stable', () => {
+  const run = executor(['apps/mobile/src/App.tsx'])
+  assert.throws(() => publishMobileUpdate(environment({ CIRCLE_BRANCH: 'mobile-ui-foundation' }), run.execute), /main/)
+})
+
+for (const overrides of [
+  { TOLARIA_OTA_CHANNEL: 'unknown' }, { TOLARIA_OTA_CHANNEL: undefined },
+  { TOLARIA_OTA_RUNTIME: 'not-a-native-fingerprint' }, { TOLARIA_OTA_RUNTIME: undefined },
+  { TOLARIA_IOS_BUILD_NUMBER: '0' }, { TOLARIA_IOS_BUILD_NUMBER: undefined },
+]) {
+  test(`rejects invalid publishing target ${JSON.stringify(overrides)}`, () => {
+    const run = executor(['apps/mobile/src/App.tsx'])
+    assert.throws(() => publishMobileUpdate(environment(overrides), run.execute))
+    assert.equal(run.calls.length, 0)
+  })
+}
+
+test('the real command runner safely skips an unchanged source commit', () => {
+  assert.equal(publishMobileUpdate(environment({ TOLARIA_OTA_BASE_REF: 'HEAD' })).published, false)
+})
+
+test('validation is isolated and stable has store attribution', () => {
+  for (const channel of ['stable', 'ota-validation']) {
+    const run = executor(['apps/mobile/src/App.tsx'])
+    const result = publishMobileUpdate(environment({ TOLARIA_OTA_CHANNEL: channel }), run.execute)
+    assert.equal(result.channel, channel)
+    const call = run.calls.at(-1)
+    assert(call.args.includes(channel))
+    assert.equal(call.options.env.EXPO_PUBLIC_DISTRIBUTION, channel === 'stable' ? 'store' : 'internal')
+  }
+})
+
+test('mobile publishing is opt-in and never starts desktop release workflows', () => {
+  const config = parse(readFileSync(new URL('../../../.circleci/config.yml', import.meta.url), 'utf8'))
+  assert.equal(config.parameters['publish-mobile-ota'].default, false)
+  const flag = '<< pipeline.parameters.publish-mobile-ota >>'
+  assert.equal(config.workflows['mobile-ota'].when, flag)
+  for (const workflow of ['validation', 'alpha-release', 'stable-release']) {
+    assert.equal(config.workflows[workflow].unless, flag)
+  }
+  const jobs = config.workflows['mobile-ota'].jobs
+  const approval = jobs.find(job => job['approve-mobile-ota'])['approve-mobile-ota']
+  assert.equal(approval.type, 'approval')
+  assert(approval.requires.includes('frontend-quality'))
+  assert(approval.requires.includes('rust-quality'))
+  assert(approval.requires.includes('playwright-smoke'))
+  assert(approval.requires.includes('mobile-ota-quality'))
+  assert.deepEqual(jobs.find(job => job['mobile-ota-publish'])['mobile-ota-publish'].requires, ['approve-mobile-ota'])
+})
