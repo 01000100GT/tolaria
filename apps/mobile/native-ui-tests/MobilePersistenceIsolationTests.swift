@@ -23,7 +23,7 @@ final class MobilePersistenceIsolationTests: XCTestCase {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = .portrait
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    let search = "?source=fixture&\(parameters)&qaRun=native-persistence-isolation"
+    let search = "?source=fixture&tabletPanels=all&\(parameters)&qaRun=native-persistence-isolation"
     app.launchArguments = ["--tolaria-mobile-search", search]
     app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
     app.launch()
