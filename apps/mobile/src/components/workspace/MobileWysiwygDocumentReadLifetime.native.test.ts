@@ -17,17 +17,17 @@ function references() {
   return {
     acceptsEditorChangesRef: { current: true },
     contentRef: { current: '# Saved content' },
-    documentReads: { extensions: [], requests },
-    editorReadyTimerRef: { current: null },
+    documentReads: { extensions: [], requests, isReady: () => true },
     editorRef: { current: null },
     firstEditorSerializationRef: { current: false },
     hasAcceptedEditorChangeRef: { current: true },
-    initialContentRetryTimerRefs: { current: [] },
+    initialContentSyncRef: { current: null },
     inlineAutocompleteTimerRef: { current: null },
     markdownBlockProofReadyRef: { current: false },
     markdownBlockRenderProofRef: { current: false },
     saveTimerRef: { current: null },
     tableCommandMutationProofReadyRef: { current: false },
+    webViewLoadedRef: { current: false },
   }
 }
 

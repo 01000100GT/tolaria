@@ -4,8 +4,8 @@ import { mobileNoteEditableContent } from '../../workspace/mobileDocumentContent
 import type { MobileEditorBlock, MobileNote } from '../../workspace/mobileWorkspaceModel'
 import { injectMobileEditorAppearance, useEditorAppearance } from './useEditorAppearance'
 import { WorkspaceSyncEditorsContext } from '../../workspace/workspaceSyncEditors'
-import { scheduleCreatedEditorFocus } from '../../workspace/mobileEditorFocus'
 import type { createMobileEditorDocumentBridge } from './MobileWysiwygDocumentReads.native'
+import { beginNativeInitialContentSync, scheduleNativeCreatedNoteFocus, type NativeInitialContentSync } from './nativeInitialContentSync'
 
 type TimerHandle = ReturnType<typeof setTimeout>
 
@@ -13,16 +13,16 @@ export type NativeTentapEditorRefs = {
   documentReads: ReturnType<typeof createMobileEditorDocumentBridge>
   acceptsEditorChangesRef: MutableRefObject<boolean>
   contentRef: MutableRefObject<string>
-  editorReadyTimerRef: MutableRefObject<TimerHandle | null>
   editorRef: MutableRefObject<EditorBridge | null>
   firstEditorSerializationRef: MutableRefObject<boolean>
   hasAcceptedEditorChangeRef: MutableRefObject<boolean>
-  initialContentRetryTimerRefs: MutableRefObject<TimerHandle[]>
+  initialContentSyncRef: MutableRefObject<NativeInitialContentSync | null>
   inlineAutocompleteTimerRef: MutableRefObject<TimerHandle | null>
   markdownBlockProofReadyRef: MutableRefObject<boolean>
   markdownBlockRenderProofRef: MutableRefObject<boolean>
   saveTimerRef: MutableRefObject<TimerHandle | null>
   tableCommandMutationProofReadyRef: MutableRefObject<boolean>
+  webViewLoadedRef: MutableRefObject<boolean>
 }
 
 type ContentSettableEditorBridge = EditorBridge & {
@@ -32,9 +32,6 @@ type ContentSettableEditorBridge = EditorBridge & {
 type SilentContentSettableEditorBridge = EditorBridge & {
   setContentSilently: (content: string) => void
 }
-
-const nativeInitialContentRetryDelaysMs = [80, 240, 520, 1_100] as const
-const nativeInitialContentReadyDelayMs = 1_250
 
 export function useEditorCssInjection({
   compact,
@@ -47,13 +44,14 @@ export function useEditorCssInjection({
   noteWidth: MobileNote['noteWidth']
   refs: NativeTentapEditorRefs
 }) {
-  const { editorRef } = refs
+  const { editorRef, webViewLoadedRef } = refs
   const css = useEditorAppearance({ compact, noteWidth, editorRef })
 
   return useCallback(() => {
+    webViewLoadedRef.current = true
     injectMobileEditorAppearance(editorRef.current, css)
-    syncNativeInitialEditorContent({ initialContent, readyDelayMs: nativeInitialContentReadyDelayMs, refs })
-  }, [css, editorRef, initialContent, refs])
+    syncNativeInitialEditorContent(initialContent, refs)
+  }, [css, editorRef, initialContent, refs, webViewLoadedRef])
 }
 
 export function useEditorBridgeRef(editorRef: MutableRefObject<EditorBridge | null>, editor: EditorBridge) {
@@ -110,26 +108,27 @@ export function useSyncInitialEditorContent({
   }, [initialContent, noteId, refs])
   useEffect(() => {
     if (!editors) return
-    return scheduleCreatedEditorFocus({
+    return scheduleNativeCreatedNoteFocus({
       requests: editors.focus,
       noteId,
-      isReady: () => !editors.isBlocked() && nativeInitialContentReady(refs),
+      isBlocked: () => editors.isBlocked(),
+      wasInteracted: () => refs.acceptsEditorChangesRef.current,
+      isReady: () => nativeInitialContentReady(refs),
       focus: () => { activateNativeEditorChanges(refs); refs.editorRef.current?.focus('start') },
     })
   }, [editors, noteId, refs])
 }
 
-function nativeInitialContentReady(refs: NativeTentapEditorRefs) {
-  return refs.editorRef.current?.getEditorState().isReady === true
-    && refs.editorReadyTimerRef.current !== null
-    && refs.initialContentRetryTimerRefs.current.length === 0
+export function nativeInitialContentReady(refs: NativeTentapEditorRefs) {
+  return refs.webViewLoadedRef.current && refs.documentReads.isReady()
+    && refs.initialContentSyncRef.current?.isReady() === true
 }
 
 export function useFlushOnUnmount(refs: NativeTentapEditorRefs, flushEditorDocument: () => void) {
   useEffect(() => {
     refs.documentReads.requests.activate()
     return () => {
-      clearNativeInitialEditorContentTimers(refs)
+      cancelNativeInitialContentSync(refs)
       clearTimer(refs.inlineAutocompleteTimerRef.current)
       clearTimer(refs.saveTimerRef.current)
       if (refs.hasAcceptedEditorChangeRef.current) flushEditorDocument()
@@ -142,53 +141,20 @@ export function isContentSettableEditorBridge(editor: EditorBridge | null): edit
   return typeof (editor as Partial<ContentSettableEditorBridge> | null)?.setContent === 'function'
 }
 
-function syncNativeInitialEditorContent({
-  initialContent,
-  readyDelayMs,
-  refs,
-}: {
-  initialContent: string
-  readyDelayMs: number
-  refs: NativeTentapEditorRefs
-}) {
-  if (refs.hasAcceptedEditorChangeRef.current) return
-
-  clearNativeInitialEditorContentTimers(refs)
+function syncNativeInitialEditorContent(initialContent: string, refs: NativeTentapEditorRefs) {
+  if (!canSyncInitialContent(refs)) return
+  cancelNativeInitialContentSync(refs)
   refs.acceptsEditorChangesRef.current = false
-  setNativeInitialEditorContent(initialContent, refs)
-  refs.initialContentRetryTimerRefs.current.push(...scheduleInitialContentRetries({
-    initialContent,
-    setContent: (content) => setNativeInitialEditorContent(content, refs),
-    shouldRetry: () => !refs.hasAcceptedEditorChangeRef.current,
-  }))
-  refs.editorReadyTimerRef.current = setTimeout(() => finishInitialContentSync(refs), readyDelayMs)
-}
-
-export function scheduleInitialContentRetries({
-  initialContent,
-  setContent,
-  shouldRetry,
-}: {
-  initialContent: string
-  setContent: (content: string) => void
-  shouldRetry: () => boolean
-}): TimerHandle[] {
-  return nativeInitialContentRetryDelaysMs.map((delayMs) => setTimeout(() => {
-    if (shouldRetry()) setContent(initialContent)
-  }, delayMs))
-}
-
-function finishInitialContentSync(refs: NativeTentapEditorRefs) {
-  const editor = refs.editorRef.current
-  if (!isSilentContentSettableEditorBridge(editor)) {
-    refs.editorReadyTimerRef.current = setTimeout(() => finishInitialContentSync(refs), 250)
-    return
-  }
-  clearNativeInitialContentRetryTimers(refs)
-}
-
-function setNativeInitialEditorContent(initialContent: string, refs: NativeTentapEditorRefs) {
-  setNativeEditorContentSilently(refs.editorRef.current, initialContent)
+  refs.initialContentSyncRef.current = beginNativeInitialContentSync({
+    content: initialContent,
+    isReady: refs.documentReads.isReady,
+    editor: () => {
+      const editor = refs.editorRef.current
+      return isSilentContentSettableEditorBridge(editor) ? editor : null
+    },
+    shouldSync: () => canSyncInitialContent(refs),
+    onError: () => { console.warn('[mobile-editor] Initial content acknowledgement failed') },
+  })
 }
 
 export function setNativeEditorContentSilently(editor: EditorBridge | null, content: string): boolean {
@@ -201,15 +167,13 @@ export function activateNativeEditorChanges(refs: NativeTentapEditorRefs) {
   refs.acceptsEditorChangesRef.current = true
 }
 
-function clearNativeInitialEditorContentTimers(refs: NativeTentapEditorRefs) {
-  clearTimer(refs.editorReadyTimerRef.current)
-  refs.editorReadyTimerRef.current = null
-  clearNativeInitialContentRetryTimers(refs)
+function canSyncInitialContent(refs: NativeTentapEditorRefs) {
+  return !refs.acceptsEditorChangesRef.current && !refs.hasAcceptedEditorChangeRef.current
 }
 
-function clearNativeInitialContentRetryTimers(refs: NativeTentapEditorRefs) {
-  for (const timer of refs.initialContentRetryTimerRefs.current) clearTimeout(timer)
-  refs.initialContentRetryTimerRefs.current = []
+function cancelNativeInitialContentSync(refs: NativeTentapEditorRefs) {
+  refs.initialContentSyncRef.current?.cancel()
+  refs.initialContentSyncRef.current = null
 }
 
 function clearTimer(timer: TimerHandle | null) {
@@ -217,6 +181,9 @@ function clearTimer(timer: TimerHandle | null) {
 }
 
 function resetEditorChangeGate(_noteId: string, refs: NativeTentapEditorRefs) {
+  cancelNativeInitialContentSync(refs)
+  refs.documentReads.requests.activate()
+  refs.webViewLoadedRef.current = false
   refs.acceptsEditorChangesRef.current = false
   refs.firstEditorSerializationRef.current = true
   refs.hasAcceptedEditorChangeRef.current = false
@@ -243,7 +210,7 @@ function syncInitialEditorContent({
 
   clearTimer(refs.saveTimerRef.current)
   refs.firstEditorSerializationRef.current = true
-  syncNativeInitialEditorContent({ initialContent, readyDelayMs: nativeInitialContentReadyDelayMs, refs })
+  syncNativeInitialEditorContent(initialContent, refs)
   syncedContentRef.current = { content: initialContent, noteId }
 }
 
@@ -254,8 +221,8 @@ function shouldSyncInitialContent(
   syncedContent: { content: string; noteId: string } | null,
 ) {
   if (!isContentSettableEditorBridge(refs.editorRef.current)) return false
-  if (syncedContent?.noteId === noteId && syncedContent.content === initialContent) return false
-  return !refs.hasAcceptedEditorChangeRef.current
+  if (syncedContent?.noteId === noteId && syncedContent.content === initialContent && refs.initialContentSyncRef.current) return false
+  return canSyncInitialContent(refs)
 }
 
 function isSilentContentSettableEditorBridge(

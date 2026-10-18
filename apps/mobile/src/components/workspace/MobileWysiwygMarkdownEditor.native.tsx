@@ -58,6 +58,7 @@ import { useNativeWysiwygMathEditProbe } from './MobileWysiwygMathEditProbe.nati
 import { useNativeWysiwygMutationProbe } from './MobileWysiwygMutationProbe.native'
 import { MobileWysiwygContentBridge } from './MobileWysiwygContentBridge'
 import { createMobileEditorDocumentBridge, isJsonReadableEditorBridge } from './MobileWysiwygDocumentReads.native'
+import type { NativeInitialContentSync } from './nativeInitialContentSync'
 import { MobileWysiwygOutlineBridge } from './MobileWysiwygOutlineBridge'
 import { MobileWysiwygSlashBridge } from './MobileWysiwygSlashBridge'
 import { MobileWysiwygSlashMenu } from './MobileWysiwygSlashMenu.native'
@@ -132,6 +133,7 @@ type NativeTentapEditorBridgeOptions = Omit<MobileWysiwygMarkdownEditorProps, 'n
   initialDocumentContent: string
   onInlineAutocomplete: NativeWysiwygInlineAutocompleteHandler
 }
+type NativeTentapEditorRuntime = ReturnType<typeof useNativeTentapEditorRuntime>
 type NativeTentapEditorSurfaceProps = {
   vaultRootUri?: string | null
   previewMarkdown: string
@@ -554,26 +556,49 @@ function initialNativeEditorContent(
 }
 
 function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
+  const runtime = useNativeTentapEditorRuntime(options)
+  const { refs, flushEditorDocument, initialContent, injectEditorCss, scheduleEditorChange } = runtime
+  const insertions = useNativeWysiwygInsertions(runtime)
+  const editor = useEditorBridge({
+    // The native viewport shrinks above the keyboard; do not inset the document twice.
+    avoidIosKeyboard: false,
+    bridgeExtensions: refs.documentReads.extensions,
+    customSource: mobileWysiwygTentapEditorHtml,
+    initialContent,
+    onChange: scheduleEditorChange,
+  })
+  useNativeTentapEditorLifecycle(options, runtime, editor)
+  useNativeWysiwygAutocompleteProbe({
+    detectAutocomplete: detectNativeWysiwygInlineAutocomplete,
+    enabled: options.wysiwygAutocompleteProbe === true,
+    refs,
+  })
+  useMobileWysiwygOutlineNavigation({
+    documentTitle: options.note.title,
+    onProof: options.onTableOfContentsScrollProof,
+    refs,
+    target: options.tableOfContentsTarget,
+  })
+  useNativeWysiwygTextProbes(options, runtime)
+  useNativeWysiwygBlockProbes(options, runtime)
+  useFlushOnUnmount(refs, flushEditorDocument)
+  return {
+    ...insertions,
+    activateEditorChanges: () => activateNativeEditorChanges(refs),
+    editor,
+    flushEditorDocument,
+    injectEditorCss,
+  }
+}
+
+function useNativeTentapEditorRuntime(options: NativeTentapEditorBridgeOptions) {
   const {
-    blocks,
-    bullets,
     compact,
     initialDocumentContent,
     note,
     onInlineAutocomplete,
-    onTableOfContentsScrollProof,
     onUpdateContent,
-    tableOfContentsTarget,
     vaultRootUri = null,
-    wysiwygAutocompleteProbe = false,
-    wysiwygExternalLinkProbe = false,
-    wysiwygFormatCommandProbe = false,
-    wysiwygInputTransformProbe = false,
-    wysiwygMarkdownBlockProbe = false,
-    wysiwygMathEditProbe = false,
-    wysiwygTableCommandMutationProbe = false,
-    wysiwygWikilinkInsertProbe = false,
-    wysiwygMutationProbe = false,
   } = options
   const initialBody = mobileDocumentBody(initialDocumentContent)
   const initialBodyHasContent = initialBody.trim().length > 0
@@ -584,16 +609,16 @@ function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
   const refs = useNativeTentapEditorRefs(initialDocumentContent)
 
   const flushEditorDocument = useFlushEditorDocument({
-    externalLinkProbeEnabled: wysiwygExternalLinkProbe,
+    externalLinkProbeEnabled: options.wysiwygExternalLinkProbe === true,
     initialBodyHasContent,
-    markdownBlockProbeEnabled: wysiwygMarkdownBlockProbe,
-    mutationProbeEnabled: wysiwygMutationProbe,
+    markdownBlockProbeEnabled: options.wysiwygMarkdownBlockProbe === true,
+    mutationProbeEnabled: options.wysiwygMutationProbe === true,
     noteId: note.id,
     onUpdateContent,
     refs,
-    tableCommandMutationProbeEnabled: wysiwygTableCommandMutationProbe,
+    tableCommandMutationProbeEnabled: options.wysiwygTableCommandMutationProbe === true,
     vaultRootUri,
-    wikilinkInsertProbeEnabled: wysiwygWikilinkInsertProbe,
+    wikilinkInsertProbeEnabled: options.wysiwygWikilinkInsertProbe === true,
   })
   const scheduleEditorChange = useScheduleEditorChange(refs, flushEditorDocument, onInlineAutocomplete)
   const injectEditorCss = useEditorCssInjection({
@@ -602,6 +627,10 @@ function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
     noteWidth: note.noteWidth,
     refs,
   })
+  return { refs, initialContent, flushEditorDocument, scheduleEditorChange, injectEditorCss }
+}
+
+function useNativeWysiwygInsertions({ refs, flushEditorDocument }: NativeTentapEditorRuntime) {
   const insertWikilink = useNativeWysiwygInserter({
     flushEditorDocument,
     insertIntoEditor: insertWikilinkIntoNativeEditor,
@@ -626,117 +655,97 @@ function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
     refs,
     warning: '[mobile-editor] Failed to insert native WYSIWYG plain text:',
   })
+  return { insertWikilink, insertAttachment, insertMarkdownBlock, insertPlainText }
+}
 
-  const editor = useEditorBridge({
-    // The native viewport shrinks above the keyboard; do not inset the document twice.
-    avoidIosKeyboard: false,
-    bridgeExtensions: refs.documentReads.extensions,
-    customSource: mobileWysiwygTentapEditorHtml,
-    initialContent,
-    onChange: scheduleEditorChange,
-  })
-
+function useNativeTentapEditorLifecycle(
+  options: NativeTentapEditorBridgeOptions, { refs, initialContent }: NativeTentapEditorRuntime, editor: EditorBridge,
+) {
+  const { blocks, bullets, note } = options
   useEditorBridgeRef(refs.editorRef, editor)
   useEditableContentRef({ blocks, bullets, note, refs })
   useResetEditorChangeGate({ noteId: note.id, refs })
   useSyncInitialEditorContent({ initialContent, noteId: note.id, refs })
-  useNativeWysiwygAutocompleteProbe({
-    detectAutocomplete: detectNativeWysiwygInlineAutocomplete,
-    enabled: wysiwygAutocompleteProbe,
-    refs,
-  })
-  useMobileWysiwygOutlineNavigation({
-    documentTitle: note.title,
-    onProof: onTableOfContentsScrollProof,
-    refs,
-    target: tableOfContentsTarget,
-  })
+}
+
+function useNativeWysiwygTextProbes(options: NativeTentapEditorBridgeOptions, { refs, flushEditorDocument }: NativeTentapEditorRuntime) {
   useNativeWysiwygExternalLinkProbe({
-    enabled: wysiwygExternalLinkProbe,
+    enabled: options.wysiwygExternalLinkProbe === true,
     flushEditorDocument,
     refs,
   })
   useNativeWysiwygInputTransformProbe({
-    enabled: wysiwygInputTransformProbe,
+    enabled: options.wysiwygInputTransformProbe === true,
     refs,
   })
   useNativeWysiwygFormatCommandProbe({
-    enabled: wysiwygFormatCommandProbe,
+    enabled: options.wysiwygFormatCommandProbe === true,
     refs,
   })
   useNativeWysiwygMathEditProbe({
-    enabled: wysiwygMathEditProbe,
+    enabled: options.wysiwygMathEditProbe === true,
     refs,
-    vaultRootUri,
+    vaultRootUri: options.vaultRootUri,
   })
+}
+
+function useNativeWysiwygBlockProbes(options: NativeTentapEditorBridgeOptions, { refs, flushEditorDocument }: NativeTentapEditorRuntime) {
   useNativeWysiwygDeferredInsertionProbe({
-    enabled: wysiwygMarkdownBlockProbe,
+    enabled: options.wysiwygMarkdownBlockProbe === true,
     flushEditorDocument,
     insertIntoEditor: (candidateEditor) => insertNativeWysiwygMarkdownBlockProbe(candidateEditor, refs),
     refs,
     warning: '[mobile-editor] Failed to run native WYSIWYG markdown block probe:',
   })
   useNativeWysiwygDeferredInsertionProbe({
-    enabled: wysiwygWikilinkInsertProbe,
+    enabled: options.wysiwygWikilinkInsertProbe === true,
     flushEditorDocument,
     insertIntoEditor: insertNativeWysiwygWikilinkProbe,
     refs,
     warning: '[mobile-editor] Failed to run native WYSIWYG wikilink insert probe:',
   })
   useNativeWysiwygTableCommandMutationProbe({
-    enabled: wysiwygTableCommandMutationProbe,
+    enabled: options.wysiwygTableCommandMutationProbe === true,
     flushEditorDocument,
     refs,
   })
   useNativeWysiwygMutationProbe({
-    enabled: wysiwygMutationProbe,
+    enabled: options.wysiwygMutationProbe === true,
     flushEditorDocument,
     refs,
-    vaultRootUri,
+    vaultRootUri: options.vaultRootUri,
   })
-  useFlushOnUnmount(refs, flushEditorDocument)
-
-  return {
-    activateEditorChanges: () => activateNativeEditorChanges(refs),
-    editor,
-    flushEditorDocument,
-    injectEditorCss,
-    insertAttachment,
-    insertMarkdownBlock,
-    insertPlainText,
-    insertWikilink,
-  }
 }
 
 function useNativeTentapEditorRefs(initialDocumentContent: string): NativeTentapEditorRefs {
   const acceptsEditorChangesRef = useRef(false)
   const contentRef = useRef(initialDocumentContent)
-  const editorReadyTimerRef = useRef<TimerHandle | null>(null)
   const editorRef = useRef<EditorBridge | null>(null)
   const firstEditorSerializationRef = useRef(true)
   const hasAcceptedEditorChangeRef = useRef(false)
-  const initialContentRetryTimerRefs = useRef<TimerHandle[]>([])
+  const initialContentSyncRef = useRef<NativeInitialContentSync | null>(null)
   const inlineAutocompleteTimerRef = useRef<TimerHandle | null>(null)
   const markdownBlockProofReadyRef = useRef(false)
   const markdownBlockRenderProofRef = useRef(false)
   const saveTimerRef = useRef<TimerHandle | null>(null)
   const tableCommandMutationProofReadyRef = useRef(false)
+  const webViewLoadedRef = useRef(false)
 
   return useMemo(
     () => ({
       documentReads: createMobileEditorDocumentBridge(mobileTenTapBridgeExtensions),
       acceptsEditorChangesRef,
       contentRef,
-      editorReadyTimerRef,
       editorRef,
       firstEditorSerializationRef,
       hasAcceptedEditorChangeRef,
-      initialContentRetryTimerRefs,
+      initialContentSyncRef,
       inlineAutocompleteTimerRef,
       markdownBlockProofReadyRef,
       markdownBlockRenderProofRef,
       saveTimerRef,
       tableCommandMutationProofReadyRef,
+      webViewLoadedRef,
     }),
     [],
   )

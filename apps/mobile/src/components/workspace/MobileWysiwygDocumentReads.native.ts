@@ -9,6 +9,7 @@ export function isJsonReadableEditorBridge(editor: EditorBridge | null): editor 
 /** Override only native read callbacks; the bundled CoreBridge wire format is unchanged. */
 export function createMobileEditorDocumentBridge(extensions: typeof TenTapStartKit) {
   const requests = createMobileEditorDocumentRequests()
+  let ready = false
   const extendCore = CoreBridge.extendEditorInstance
   if (!extendCore) throw new Error('editorCoreBridgeUnavailable')
   const bridge = new BridgeExtension({
@@ -20,10 +21,12 @@ export function createMobileEditorDocumentBridge(extensions: typeof TenTapStartK
       getHTML: () => requests.readHTML(message => sendCoreRead(args[0], message)),
       getText: () => requests.readText(message => sendCoreRead(args[0], message)),
     }),
-    onEditorMessage: (message, editor) => requests.receive(message)
-      || (CoreBridge.onEditorMessage?.(message, editor) ?? false),
+    onEditorMessage: (message, editor) => {
+      if (message.type === CoreEditorActionType.EditorReady) ready = true
+      return requests.receive(message) || (CoreBridge.onEditorMessage?.(message, editor) ?? false)
+    },
   })
-  return { extensions: [...extensions, bridge], requests }
+  return { extensions: [...extensions, bridge], requests, isReady: () => ready }
 }
 
 function sendCoreRead(send: SendCoreMessage, { type, payload }: MobileEditorDocumentReadMessage) {

@@ -25,8 +25,14 @@ final class MobileCreatedNoteFocusTests: XCTestCase {
     app.launch()
     let create = element(app, "note-list-create-action")
     XCTAssertTrue(create.waitForExistence(timeout: 30))
+    let began = ProcessInfo.processInfo.systemUptime
     create.tap()
     XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8))
+    let elapsed = Int((ProcessInfo.processInfo.systemUptime - began) * 1000)
+    let timing = XCTAttachment(string: "{\"createToKeyboardMs\":\(elapsed)}")
+    timing.name = "create-to-keyboard"
+    timing.lifetime = .keepAlways
+    add(timing)
     app.typeText("New title\nBody written without tapping the editor.")
     let lostKeyboard = XCTNSPredicateExpectation(
       predicate: NSPredicate { _, _ in !app.keyboards.firstMatch.exists }, object: nil)
