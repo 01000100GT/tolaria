@@ -15,7 +15,7 @@ export function MobileSidebarSettings({ onOpenCommandPalette }: { onOpenCommandP
   const colors = useMobileColors()
   const insets = useSafeAreaInsets()
   const buttonStyle = [styles.button, { backgroundColor: colors.control }]
-  return <View style={[styles.footer, { paddingBottom: Math.max(8, insets.bottom) }]} testID="sidebar-settings">
+  return <View pointerEvents="box-none" style={[styles.footer, { paddingBottom: Math.max(8, insets.bottom) }]} testID="sidebar-settings">
     <SidebarSyncPill autoGit={preferences.settings.autoGit} />
     {onOpenCommandPalette && <Button accessibilityLabel={mobileText('menu.view.commandPalette')} size="icon" variant="secondary" style={buttonStyle}
       className="h-12 w-12 rounded-[24px] sm:h-12 sm:w-12"

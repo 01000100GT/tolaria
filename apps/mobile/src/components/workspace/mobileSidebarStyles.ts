@@ -25,6 +25,7 @@ function createPanelStyles(colors: MobileColors, metrics: MobileMetrics) {
   return StyleSheet.create({
     content: { padding: 0 },
     scroll: { flex: 1 },
+    floatingControls: { position: 'absolute', bottom: 0, left: 0, right: 0 },
     groupSection: { paddingHorizontal: sidebar.sectionHorizontalPadding },
     panel: {
       alignSelf: 'stretch', width: panel.sidebarWidth, height: '100%',
@@ -62,6 +63,7 @@ function createSectionTitleStyles(colors: MobileColors, metrics: MobileMetrics) 
       fontWeight: sidebar.sectionTitleFontWeight, letterSpacing: sidebar.sectionTitleLetterSpacing,
     },
     sectionTitleRow: { alignItems: 'center', flexDirection: 'row', gap: space.xs },
+    sectionTitleToggle: { flex: 1, minWidth: 0, alignSelf: 'stretch', alignItems: 'center', flexDirection: 'row', gap: space.xs },
     sectionTitleRowStacked: { flexWrap: 'wrap' },
     sectionTitleActions: { alignItems: 'center', flexDirection: 'row', gap: space.xs },
     sectionTitleActionsStacked: { width: '100%', justifyContent: 'flex-end' },

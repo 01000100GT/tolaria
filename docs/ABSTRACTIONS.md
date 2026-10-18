@@ -447,8 +447,13 @@ The formatting strip uses Gesture Handler's native
 scroll view to keep horizontal tool scrolling from moving panels. Phone navigation
 uses the editor toolbar's leading/trailing slots, not a second title bar. The
 workspace has no permanent bottom status bar. `MobileSidebarSettings` anchors
-Settings and the command palette below the scrollable sidebar and above the home
-indicator, using circular secondary controls. The vault-title chevron reuses the
+Settings and the command palette above the home indicator, using circular secondary
+controls. Their transparent, non-intercepting overlay floats over the sidebar;
+the scroll content reserves its measured height so the last row can clear every
+control without an opaque footer strip. Section-label buttons toggle Views,
+Favorites, Types and Folders independently of their sibling add/visibility actions;
+collapsing chrome does not change the active note or selected section.
+The vault-title chevron reuses the
 existing vault manager through `MobileVaultControlsContext`; it does not bypass
 the manager's save/switch barrier. Type rows retain their individual counts, but
 the Types section heading has no aggregate count. The existing

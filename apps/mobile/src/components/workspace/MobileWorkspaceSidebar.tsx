@@ -1,13 +1,14 @@
 import type { MobileMetrics } from '../../ui/mobileMetrics'
 import { useMobileStyles } from '../../ui/theme/useMobileTheme'
-import { useContext, type ReactNode } from 'react'
+import { useCallback, useContext, useState, type ReactNode } from 'react'
 import {
   CaretDown,
+  CaretRight,
   FileText,
   Eye,
   Plus,
 } from 'phosphor-react-native'
-import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native'
+import { Pressable, ScrollView, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native'
 import { Text } from '../ui/text'
 import { mobileCopy, mobileText } from '../../i18n/mobileText'
 import { MobileLayoutProbeReadout } from '../../qa/MobileLayoutProbeReadout'
@@ -86,15 +87,20 @@ type SidebarItemProps = {
 export function MobileWorkspaceSidebar(props: MobileWorkspaceSidebarProps) {
   const { styles } = useMobileStyles(createThemeStyles)
   const layoutProbe = useMobileLayoutProbe(props.layoutProbe ?? false)
+  const [controlsHeight, setControlsHeight] = useState(0)
+  const measureControls = useCallback((event: LayoutChangeEvent) => setControlsHeight(event.nativeEvent.layout.height), [])
   return (
     <MobilePanel {...layoutProbe.probe('sidebar.panel')} style={[styles.panel, props.fullWidth && styles.fullWidth]} testID="workspace-sidebar-panel">
       <SidebarToolbar title={props.title} />
-      <ScrollView {...layoutProbe.probe('sidebar.scroll')} style={styles.scroll} contentContainerStyle={styles.content}>
+      <ScrollView {...layoutProbe.probe('sidebar.scroll')} testID="sidebar-scroll" style={styles.scroll}
+        contentContainerStyle={[styles.content, { paddingBottom: controlsHeight }]} scrollIndicatorInsets={{ bottom: controlsHeight }}>
         {props.sections.map((section) => (
           <SidebarSection {...props} key={section.id} layoutProbe={layoutProbe.probe} section={section} />
         ))}
       </ScrollView>
-      <MobileSidebarSettings onOpenCommandPalette={props.onOpenCommandPalette} />
+      <View pointerEvents="box-none" style={styles.floatingControls} onLayout={measureControls} testID="sidebar-floating-controls">
+        <MobileSidebarSettings onOpenCommandPalette={props.onOpenCommandPalette} />
+      </View>
       {props.layoutProbe ? <MobileLayoutProbeReadout metrics={layoutProbe.metrics} testID="sidebar-layout-metrics" /> : null}
     </MobilePanel>
   )
@@ -129,15 +135,16 @@ type SidebarSectionProps = Omit<MobileWorkspaceSidebarProps, 'layoutProbe'> & {
 function SidebarSection(props: SidebarSectionProps) {
   const { styles } = useMobileStyles(createThemeStyles)
   const { layoutProbe, section } = props
+  const [expanded, setExpanded] = useState(true)
   return (
     <View
       {...probeProps(layoutProbe, `sidebar.section.${section.id}.container`)}
       style={[styles.section, section.id === 'primary' ? styles.primarySection : styles.groupSection]}
       testID={`sidebar-section-${section.id}`}
     >
-      <SidebarSectionTitle {...props} />
-      <SidebarSectionItems {...props} />
-      {section.folders ? (
+      <SidebarSectionTitle {...props} expanded={expanded} onToggle={() => setExpanded(value => !value)} />
+      {expanded && <SidebarSectionItems {...props} />}
+      {expanded && section.folders ? (
         <FolderTree
           activeFolderId={props.activeFolderId}
           folders={section.folders}
@@ -150,25 +157,23 @@ function SidebarSection(props: SidebarSectionProps) {
   )
 }
 
-function SidebarSectionTitle({
-  layoutProbe,
-  onCreateFolder,
-  onCreateType,
-  onCreateView,
-  onOpenTypeVisibility,
-  section,
-}: {
+function SidebarSectionTitle(props: {
+  expanded: boolean
   layoutProbe: MobileLayoutProbe
   onCreateFolder?: () => void
   onCreateType?: () => void
   onCreateView?: () => void
   onOpenTypeVisibility?: () => void
+  onToggle: () => void
   section: MobileSidebarSection
 }) {
+  const { expanded, layoutProbe, onCreateFolder, onCreateType, onCreateView, onOpenTypeVisibility, onToggle, section } = props
   if (!section.label) return null
 
   return (
     <SectionTitle
+      expanded={expanded}
+      onToggle={onToggle}
       count={section.id === 'types' ? undefined : section.count}
       label={sidebarSectionLabel(section.id, section.label)}
       layoutProbe={layoutProbe}
@@ -379,12 +384,14 @@ function SidebarItem(props: SidebarItemProps) {
 }
 
 type SectionTitleProps = {
+  expanded: boolean
   count?: string
   createAccessibilityLabel?: string
   label: SidebarDisplayLabel
   layoutProbe?: MobileLayoutProbe
   onCreate?: () => void
   onVisibility?: () => void
+  onToggle: () => void
   sectionId: SidebarSectionId
   visibilityAccessibilityLabel?: string
 }
@@ -402,14 +409,18 @@ function SectionTitle(props: SectionTitleProps) {
       style={[styles.sectionTitleRow, themeStyles.nativeSectionTitleRowStyle, count ? styles.sectionTitleRowWithCount : styles.sectionTitleRowRegular, fontScale > 1.3 && styles.sectionTitleRowStacked]}
       testID={`sidebar-section-title-${sectionId}`}
     >
-      <CaretDown color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />
-      <Text
-        {...probeProps(layoutProbe, `${metricId}.label`)}
-        style={[styles.sectionTitle, themeStyles.nativeSectionTitleTextStyle]}
-        testID={`sidebar-section-title-text-${sectionId}`}
-      >
-        {label}
-      </Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: props.expanded }}
+        onPress={props.onToggle} style={styles.sectionTitleToggle} testID={`sidebar-section-toggle-${sectionId}`}>
+        {props.expanded ? <CaretDown color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />
+          : <CaretRight color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />}
+        <Text
+          {...probeProps(layoutProbe, `${metricId}.label`)}
+          style={[styles.sectionTitle, themeStyles.nativeSectionTitleTextStyle]}
+          testID={`sidebar-section-title-text-${sectionId}`}
+        >
+          {label}
+        </Text>
+      </Pressable>
       <SectionTitleActions {...props} />
     </View>
   )
