@@ -33,14 +33,16 @@ type MobileEditorFileIdentityProps = {
 
 export function MobileEditorFileIdentity(props: MobileEditorFileIdentityProps) {
   const analytics = useMobileAnalytics()
-  const [editing, setEditing] = useState(false)
-  const close = () => setEditing(false)
+  const [renameState, setRenameState] = useState({ noteId: props.note.id, editing: false })
+  if (renameState.noteId !== props.note.id) setRenameState({ noteId: props.note.id, editing: false })
+  const editing = renameState.noteId === props.note.id && renameState.editing
+  const close = () => setRenameState({ noteId: props.note.id, editing: false })
   useMobileModalDismiss(close, editing)
   const filename = noteFilename(noteWritePath(props.note))
   const rename = isMobileMarkdownActionNote(props.note) ? props.rename : undefined
   const begin = () => {
     rename?.onChange(filename)
-    setEditing(true)
+    setRenameState({ noteId: props.note.id, editing: true })
     analytics.capture({ name: 'mobile_editor_tool_opened', tool: 'filename' })
   }
   if (editing && rename) return <FilenameForm note={props.note} rename={rename} onClose={close} />

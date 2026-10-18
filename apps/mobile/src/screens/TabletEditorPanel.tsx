@@ -260,7 +260,7 @@ function EditorToolbar(props: EditorToolbarProps) {
   return (
     <MobileToolbar testID="editor-toolbar">
       {props.leading}
-      <MobileEditorFileIdentity key={props.note.id} note={props.note} rename={props.renameFilename} typeDefinitions={props.typeDefinitions}>
+      <MobileEditorFileIdentity note={props.note} rename={props.renameFilename} typeDefinitions={props.typeDefinitions}>
         {chipLabel ? <MobileChip label={chipLabel} tone="gray" /> : null}
         <MobileToolbarSpacer />
         <EditorToolbarActions {...props} />

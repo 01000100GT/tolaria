@@ -14,6 +14,7 @@ final class MobileStarterVaultTests: XCTestCase {
     let guide = element(app, "note-row-get-familiar-with-tolaria.md")
     reveal(guide, in: app)
     guide.tap()
+    waitForEditor(app, filename: "get-familiar-with-tolaria.md")
     element(app, "editor-source-action").tap()
     let source = element(app, "editor-markdown-input")
     XCTAssertTrue(source.waitForExistence(timeout: 10))
@@ -32,7 +33,9 @@ final class MobileStarterVaultTests: XCTestCase {
     let saved = app.descendants(matching: .any).matching(NSPredicate(
       format: "identifier BEGINSWITH %@", "note-row-untitled-note-")).firstMatch
     reveal(saved, in: app)
+    let filename = String(saved.identifier.dropFirst("note-row-".count))
     saved.tap()
+    waitForEditor(app, filename: filename)
     element(app, "editor-source-action").tap()
     XCTAssertTrue(source.waitForExistence(timeout: 10))
     XCTAssertTrue((source.value as? String ?? "").contains("# Starter persistence QA"))
@@ -44,9 +47,21 @@ final class MobileStarterVaultTests: XCTestCase {
     let command = element(app, "mobile-command-palette-command-go-all-notes")
     XCTAssertTrue(command.waitForExistence(timeout: 30))
     command.tap()
+    MobilePanelNavigation.wait { !self.element(app, "mobile-command-palette").exists }
     expectation(for: NSPredicate(format: "label == %@", "All Notes"),
       evaluatedWith: element(app, "note-list-toolbar-title"))
     waitForExpectations(timeout: 10)
+  }
+
+  private func waitForEditor(_ app: XCUIApplication, filename: String) {
+    MobilePanelNavigation.wait { self.element(app, "editor-toolbar-title").label == filename }
+    let stage = element(app, "phone-transition-stage")
+    if stage.exists {
+      let editor = element(app, "editor-panel")
+      MobilePanelNavigation.wait {
+        abs(editor.frame.minX - stage.frame.minX) < 1 && abs(editor.frame.width - stage.frame.width) < 1
+      }
+    }
   }
 
   private func reveal(_ row: XCUIElement, in app: XCUIApplication) {
