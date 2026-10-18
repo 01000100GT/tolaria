@@ -117,8 +117,15 @@ not loaded concurrently by the library's default walker iteration.
 When every tracked byte hash and mode also matches HEAD, checkpoint/require-clean
 reuse that verified-clean result instead of repeating the working-tree status
 scan. Deletions, staged differences, additions and unsupported cases retain the
-library status path. This result is not cached across operations or the HTTP wait;
+library-backed status walk. This result is not cached across operations or the HTTP wait;
 both editor/save barriers and the pre-checkout dirty-tree guard remain intact.
+`gitWorkingTreeChanges.ts` keeps that integration guard and changed-checkpoint
+status reads read-only and serial via the public HEAD/WORKDIR/STAGE walkers.
+The integration guard stops at the first dirty path; checkpoints collect every
+changed path and deletion before committing. Object IDs, stat-cache decisions,
+line-ending conversion and ignored-path handling
+still belong to isomorphic-git. This avoids a whole-vault parallel stat fan-out
+and does not refresh the index just because unchanged timestamps drifted.
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 Recovery and push use fully-qualified branch refs, including when older working

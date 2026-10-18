@@ -3,6 +3,7 @@ import git, { type FsClient } from 'isomorphic-git'
 import { checkoutGitFastForward, recoverGitCheckout } from './gitCheckoutRecovery'
 import { mergeGitHeads } from './gitMerge'
 import { stageVerifiedGitChanges } from './gitSelectiveStaging'
+import { hasGitWorkingTreeChanges, readGitWorkingTreeChanges } from './gitWorkingTreeChanges'
 
 export type GitAuthor = { name: string; email: string }
 export type GitRelationship = 'equal' | 'ahead' | 'behind' | 'diverged'
@@ -22,14 +23,10 @@ export function createGitVault(options: GitVaultContext) {
   }
 }
 
-async function changes(context: GitVaultContext) {
-  return (await git.statusMatrix(context)).filter(([, head, worktree, stage]) => head !== worktree || head !== stage)
-}
-
 async function refreshedChanges(context: GitVaultContext) {
   await recoverGitCheckout(context)
   const clean = await stageVerifiedGitChanges(context)
-  return clean ? [] : changes(context)
+  return clean ? [] : readGitWorkingTreeChanges(context)
 }
 
 async function requireClean(context: GitVaultContext) {
@@ -40,8 +37,8 @@ async function requireClean(context: GitVaultContext) {
 async function checkpoint(context: GitVaultContext, author: GitAuthor, message = 'Update vault from Tolaria mobile') {
   if (!message.trim()) throw new Error('emptyCommitMessage')
   const changed = await refreshedChanges(context)
-  for (const [filepath, , worktree] of changed) {
-    if (worktree === 0) await git.remove({ ...context, filepath })
+  for (const { filepath, deleted } of changed) {
+    if (deleted) await git.remove({ ...context, filepath })
   }
   const oid = changed.length
     ? await git.commit({ ...context, author, message: message.trim() })
@@ -59,7 +56,7 @@ async function relationship(context: GitVaultContext, remoteOid: string): Promis
 
 async function integrate(context: GitVaultContext, remoteOid: string, author?: GitAuthor) {
   await recoverGitCheckout(context)
-  if ((await changes(context)).length) throw new Error('dirtyWorkingCopy')
+  if (await hasGitWorkingTreeChanges(context)) throw new Error('dirtyWorkingCopy')
   const state = await relationship(context, remoteOid)
   if (state === 'diverged') return integrateDivergence(context, remoteOid, author)
   if (state !== 'behind') return state
