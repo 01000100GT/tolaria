@@ -2,6 +2,8 @@
 /* global console, process, setTimeout, URL */
 
 import { mkdir } from 'node:fs/promises'
+import { copyFileSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { assertNativeQaOpenUrl } from '../src/qa/nativeQaUrls.ts'
@@ -162,7 +164,14 @@ function captureSimulatorWindow(deviceName, outputPath) {
 }
 
 function captureSimulatorFramebuffer(device, outputPath) {
-  run('xcrun', ['simctl', 'io', device, 'screenshot', outputPath])
+  const staging = mkdtempSync(join(tmpdir(), 'tolaria-simulator-capture-'))
+  try {
+    const image = join(staging, 'screen.png')
+    run('xcrun', ['simctl', 'io', device, 'screenshot', image])
+    copyFileSync(image, outputPath)
+  } finally {
+    rmSync(staging, { recursive: true, force: true })
+  }
 }
 
 function normalizeFramebufferOrientation(outputPath, orientation) {
@@ -267,13 +276,9 @@ function terminateExpoGo(device) {
 }
 
 function appendQueryParam(url, key, value) {
-  const encodedKey = encodeURIComponent(key)
-  const encodedValue = encodeURIComponent(value)
-  const existing = new RegExp(`([?&])${encodedKey}=[^&]*`, 'u')
-  if (existing.test(url)) return url.replace(existing, `$1${encodedKey}=${encodedValue}`)
-
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}${encodedKey}=${encodedValue}`
+  const parsed = new URL(url)
+  parsed.searchParams.set(key, value)
+  return parsed.toString()
 }
 
 function captureSelectedDevice(options, deviceName) {
