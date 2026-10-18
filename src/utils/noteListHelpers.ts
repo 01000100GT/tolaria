@@ -152,8 +152,8 @@ export function extractSortableProperties(entries: VaultEntry[]): string[] {
 
 function makePropertyComparator(key: string, flip: number): (a: VaultEntry, b: VaultEntry) => number {
   return (a, b) => {
-    const va = Reflect.get(a.properties, key) ?? null
-    const vb = Reflect.get(b.properties, key) ?? null
+    const va = Reflect.get(a.properties, key)
+    const vb = Reflect.get(b.properties, key)
     if (va == null && vb == null) return 0
     if (va == null) return 1
     if (vb == null) return -1
@@ -163,14 +163,19 @@ function makePropertyComparator(key: string, flip: number): (a: VaultEntry, b: V
 
 function makeBuiltinComparator(option: string, flip: number): (a: VaultEntry, b: VaultEntry) => number {
   if (option === 'title') return (a, b) => flip * stringField(a.title).localeCompare(stringField(b.title))
-  if (option === 'created') return (a, b) => flip * ((a.createdAt ?? a.modifiedAt ?? 0) - (b.createdAt ?? b.modifiedAt ?? 0))
-  if (option === 'status') return (a, b) => {
-    const sa = statusSortRank(a.status)
-    const sb = statusSortRank(b.status)
-    if (sa !== sb) return flip * (sa - sb)
-    return (getDisplayDate(b) ?? 0) - (getDisplayDate(a) ?? 0)
-  }
+  if (option === 'created') return (a, b) => flip * (creationTimestamp(a) - creationTimestamp(b))
+  if (option === 'status') return (a, b) => compareEntryStatuses(a, b, flip)
   return (a, b) => flip * ((getDisplayDate(a) ?? 0) - (getDisplayDate(b) ?? 0))
+}
+
+function creationTimestamp(entry: VaultEntry) {
+  return entry.createdAt ?? entry.modifiedAt ?? 0
+}
+
+function compareEntryStatuses(a: VaultEntry, b: VaultEntry, flip: number) {
+  const left = statusSortRank(a.status), right = statusSortRank(b.status)
+  if (left !== right) return flip * (left - right)
+  return (getDisplayDate(b) ?? 0) - (getDisplayDate(a) ?? 0)
 }
 
 export function getSortComparator(option: SortOption, direction?: SortDirection): (a: VaultEntry, b: VaultEntry) => number {
