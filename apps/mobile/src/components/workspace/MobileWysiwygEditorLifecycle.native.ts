@@ -5,10 +5,12 @@ import type { MobileEditorBlock, MobileNote } from '../../workspace/mobileWorksp
 import { injectMobileEditorAppearance, useEditorAppearance } from './useEditorAppearance'
 import { WorkspaceSyncEditorsContext } from '../../workspace/workspaceSyncEditors'
 import { scheduleCreatedEditorFocus } from '../../workspace/mobileEditorFocus'
+import type { createMobileEditorDocumentBridge } from './MobileWysiwygDocumentReads.native'
 
 type TimerHandle = ReturnType<typeof setTimeout>
 
 export type NativeTentapEditorRefs = {
+  documentReads: ReturnType<typeof createMobileEditorDocumentBridge>
   acceptsEditorChangesRef: MutableRefObject<boolean>
   contentRef: MutableRefObject<string>
   editorReadyTimerRef: MutableRefObject<TimerHandle | null>
@@ -124,15 +126,16 @@ function nativeInitialContentReady(refs: NativeTentapEditorRefs) {
 }
 
 export function useFlushOnUnmount(refs: NativeTentapEditorRefs, flushEditorDocument: () => void) {
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    refs.documentReads.requests.activate()
+    return () => {
       clearNativeInitialEditorContentTimers(refs)
       clearTimer(refs.inlineAutocompleteTimerRef.current)
       clearTimer(refs.saveTimerRef.current)
       if (refs.hasAcceptedEditorChangeRef.current) flushEditorDocument()
-    },
-    [flushEditorDocument, refs],
-  )
+      refs.documentReads.requests.retire()
+    }
+  }, [flushEditorDocument, refs])
 }
 
 export function isContentSettableEditorBridge(editor: EditorBridge | null): editor is ContentSettableEditorBridge {

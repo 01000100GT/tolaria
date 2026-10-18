@@ -57,6 +57,7 @@ import { MobileMathInlineBridge } from './MobileWysiwygMathBridge'
 import { useNativeWysiwygMathEditProbe } from './MobileWysiwygMathEditProbe.native'
 import { useNativeWysiwygMutationProbe } from './MobileWysiwygMutationProbe.native'
 import { MobileWysiwygContentBridge } from './MobileWysiwygContentBridge'
+import { createMobileEditorDocumentBridge, isJsonReadableEditorBridge } from './MobileWysiwygDocumentReads.native'
 import { MobileWysiwygOutlineBridge } from './MobileWysiwygOutlineBridge'
 import { MobileWysiwygSlashBridge } from './MobileWysiwygSlashBridge'
 import { MobileWysiwygSlashMenu } from './MobileWysiwygSlashMenu.native'
@@ -108,10 +109,6 @@ type MobileWysiwygMarkdownEditorProps = {
   wysiwygTableCommandMutationProbe?: boolean
   wysiwygWikilinkInsertProbe?: boolean
   wysiwygMutationProbe?: boolean
-}
-
-type JsonReadableEditorBridge = EditorBridge & {
-  getJSON: () => Promise<unknown>
 }
 
 type EditorStateReadableBridge = EditorBridge & {
@@ -633,7 +630,7 @@ function useNativeTentapEditorBridge(options: NativeTentapEditorBridgeOptions) {
   const editor = useEditorBridge({
     // The native viewport shrinks above the keyboard; do not inset the document twice.
     avoidIosKeyboard: false,
-    bridgeExtensions: mobileTenTapBridgeExtensions,
+    bridgeExtensions: refs.documentReads.extensions,
     customSource: mobileWysiwygTentapEditorHtml,
     initialContent,
     onChange: scheduleEditorChange,
@@ -727,6 +724,7 @@ function useNativeTentapEditorRefs(initialDocumentContent: string): NativeTentap
 
   return useMemo(
     () => ({
+      documentReads: createMobileEditorDocumentBridge(mobileTenTapBridgeExtensions),
       acceptsEditorChangesRef,
       contentRef,
       editorReadyTimerRef,
@@ -886,9 +884,8 @@ function nativeWysiwygEditorSelection(editor: EditorBridge): NativeWysiwygSelect
   }
 }
 
-function nativeWysiwygEditorState(editor: EditorBridge | null): NativeWysiwygEditorState | null {
-  return isEditorStateReadableBridge(editor) ? editor.getEditorState() : null
-}
+const nativeWysiwygEditorState = (editor: EditorBridge | null): NativeWysiwygEditorState | null =>
+  isEditorStateReadableBridge(editor) ? editor.getEditorState() : null
 
 function applyNativeWysiwygExternalLink(
   editor: EditorBridge,
@@ -1087,10 +1084,6 @@ async function detectNativeWysiwygInlineAutocomplete(
     json: await editor.getJSON(),
     selection: nativeWysiwygEditorSelection(editor),
   })
-}
-
-function isJsonReadableEditorBridge(editor: EditorBridge | null): editor is JsonReadableEditorBridge {
-  return typeof (editor as Partial<JsonReadableEditorBridge> | null)?.getJSON === 'function'
 }
 
 function isEditorStateReadableBridge(editor: EditorBridge | null): editor is EditorStateReadableBridge {

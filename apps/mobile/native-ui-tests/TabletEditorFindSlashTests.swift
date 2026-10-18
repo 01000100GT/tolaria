@@ -3,7 +3,7 @@ import XCTest
 final class TabletEditorFindSlashTests: XCTestCase {
   func testInlineFindNavigationReplacementAndLayout() {
     continueAfterFailure = false
-    let app = launchFixture()
+    let app = launchFixture("editor")
     openFind(app)
     let field = element(app, "workspace-find-input")
     XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -31,7 +31,7 @@ final class TabletEditorFindSlashTests: XCTestCase {
 
   func testSlashCommandTouchSelection() {
     continueAfterFailure = false
-    let app = launchFixture()
+    let app = launchFixture("list")
     element(app, "note-list-create-action").tap()
     let editor = app.webViews.textViews.firstMatch
     XCTAssertTrue(editor.waitForExistence(timeout: 10))
@@ -51,12 +51,13 @@ final class TabletEditorFindSlashTests: XCTestCase {
     XCTAssertFalse((source.value as? String ?? "").contains("/heading"))
   }
 
-  private func launchFixture() -> XCUIApplication {
+  private func launchFixture(_ phoneState: String) -> XCUIApplication {
     XCUIDevice.shared.orientation = .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&qaRun=find-slash"]
+    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&phoneState=\(phoneState)&editorMode=wysiwyg&qaRun=find-slash"]
     app.launch()
-    XCTAssertTrue(element(app, "editor-more-action").waitForExistence(timeout: 60))
+    let ready = phoneState == "list" ? "note-list-create-action" : "editor-more-action"
+    XCTAssertTrue(element(app, ready).waitForExistence(timeout: 60))
     return app
   }
 
