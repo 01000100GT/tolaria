@@ -20,7 +20,7 @@ final class PhoneNoteSwipeTests: XCTestCase {
     verifyArchivedNote(app)
   }
 
-  func testFullSwipeTogglesFavoriteThenArchivesWithoutDeleting() {
+  func testTrailingFavoriteThenFullSwipeArchivePreservesNote() {
     let app = launchFixture()
     let row = element(app, "note-row-workflow-orchestration")
     XCTAssertTrue(row.waitForExistence(timeout: 30))
@@ -30,7 +30,11 @@ final class PhoneNoteSwipeTests: XCTestCase {
     let initialLabel = favorite.label
     MobilePanelNavigation.back(app)
     XCTAssertTrue(row.waitForExistence(timeout: 5))
-    drag(row, from: 0.08, to: 0.92)
+    drag(row, from: 0.75, to: 0.40)
+    let swipeFavorite = element(app, "note-swipe-favorite-workflow-orchestration")
+    XCTAssertTrue(swipeFavorite.waitForExistence(timeout: 5))
+    XCTAssertTrue(swipeFavorite.isHittable)
+    swipeFavorite.tap()
     row.tap()
     waitUntil { favorite.exists && favorite.label != initialLabel }
     MobilePanelNavigation.back(app)
@@ -54,7 +58,10 @@ final class PhoneNoteSwipeTests: XCTestCase {
 
   private func launchFixture() -> XCUIApplication {
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    app.launchArguments = ["--tolaria-mobile-search", "?source=fixture&editorMode=wysiwyg&qaRun=phone-row-swipe"]
+    let search = "?source=fixture&phoneState=list&editorMode=wysiwyg&qaRun=phone-row-swipe"
+    app.launchArguments = ["--tolaria-mobile-search", search]
+    app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
+    addTeardownBlock { app.terminate() }
     app.launch()
     return app
   }

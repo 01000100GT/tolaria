@@ -49,6 +49,10 @@ final class MobileSidebarSectionsTests: XCTestCase {
     attachScreen("last-folder-clears-floating-controls")
     XCUIDevice.shared.orientation = UIDevice.current.userInterfaceIdiom == .pad ? .portrait : .landscapeLeft
     let header = element(app, "note-list-toolbar")
+    if !header.exists {
+      let sidebar = element(app, "workspace-sidebar-panel")
+      MobilePanelNavigation.drag(sidebar, fromX: 0.8, dx: -sidebar.frame.width * 0.8)
+    }
     XCTAssertTrue(header.waitForExistence(timeout: 5))
     let start = header.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5))
     start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 280, dy: 0)),
