@@ -135,6 +135,40 @@ describe('mobile neighborhood', () => {
     expect(filtered.groups).toHaveLength(1)
     expect(filtered.groups[0].notes.map((item) => item.id)).toEqual(['keep'])
   })
+
+  it('resolves a large direct neighborhood with a bounded number of note identity reads', () => {
+    let identityReads = 0
+    const targets = Array.from({ length: 6_000 }, (_, index) => Object.freeze({
+      ...note({ modifiedAt: index }),
+      get id() { identityReads += 1; return `target-${index}` },
+    }))
+    const source = note({
+      id: 'source',
+      relationships: [relationship('Related to', targets.map((target) => ({ id: target.id, title: target.title })))],
+    })
+    const pool = [source, ...targets]
+    Object.freeze(pool)
+    identityReads = 0
+
+    const neighborhood = buildMobileNeighborhood(source, pool)
+
+    // Count actual input work instead of using a machine-dependent duration limit.
+    expect(identityReads).toBeLessThanOrEqual(targets.length * 8)
+    expect(neighborhood.groups).toHaveLength(1)
+    expect(neighborhood.groups[0].notes).toEqual([...targets].reverse())
+    expect(pool[0]).toBe(source)
+    expect(pool[1]).toBe(targets[0])
+  })
+
+  it('keeps the first matching note when duplicate IDs occur in the input pool', () => {
+    const first = note({ id: 'target', title: 'First' })
+    const later = note({ id: 'target', title: 'Later' })
+    const source = note({ id: 'source', relationships: [relationship('Related to', [{ id: 'target', title: 'Target' }])] })
+
+    const neighborhood = buildMobileNeighborhood(source, [source, first, later])
+
+    expect(neighborhood.groups[0].notes).toEqual([first])
+  })
 })
 
 function relationship(

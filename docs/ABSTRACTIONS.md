@@ -424,6 +424,9 @@ from the current note pool. Its selection input contains only reference-matching
 fields (identity, title, type, path, aliases and workspace alias), so display-only
 note copies do not restart a whole-vault calculation. Selection and pool changes
 still invalidate it; navigation and unmount cancel pending publication.
+Direct neighborhood navigation builds one local first-match note-ID index for
+its outgoing relationships instead of scanning the whole pool for each target.
+It does not retain an index between snapshots or change matching/order semantics.
 
 `mobilePreparedEdits.ts` prepares metadata-only note actions before mutation,
 including deletions whose Undo needs the original bytes. Bulk actions read all

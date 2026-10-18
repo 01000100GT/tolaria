@@ -86,12 +86,16 @@ function instanceGroups(source: MobileReferenceSource, notes: MobileNote[]): Mob
 }
 
 function directRelationshipGroups(source: MobileNote, notes: MobileNote[]): MobileNeighborhoodGroup[] {
-  return [...source.relationships]
+  const relationships = source.relationships
     .filter((relationship) => relationshipKey(relationship).toLowerCase() !== 'type')
+  if (relationships.length === 0) return []
+  const notesById = indexNotesById(notes)
+
+  return relationships
     .sort((left, right) => relationshipKey(left).localeCompare(relationshipKey(right)))
     .map((relationship) => relationshipGroup(
       relationshipLabel(relationship),
-      relationship.values.flatMap((value) => noteById(notes, value.id)),
+      relationship.values.flatMap((value) => noteById(notesById, value.id)),
       'direct',
       source.id,
     ))
@@ -240,9 +244,18 @@ function wikilinkTarget(value: string) {
   return parseMobileWikilink(value)?.target ?? value
 }
 
-function noteById(notes: MobileNote[], noteId: string | undefined) {
+function indexNotesById(notes: MobileNote[]) {
+  const index = new Map<string, MobileNote>()
+  for (const note of notes) {
+    const id = note.id
+    if (!index.has(id)) index.set(id, note)
+  }
+  return index
+}
+
+function noteById(notes: ReadonlyMap<string, MobileNote>, noteId: string | undefined) {
   if (!noteId) return []
-  const note = notes.find((candidate) => candidate.id === noteId)
+  const note = notes.get(noteId)
   return note ? [note] : []
 }
 
