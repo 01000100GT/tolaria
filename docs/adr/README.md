@@ -252,3 +252,4 @@ proposed → active → superseded
 | [0204](0204-recoverable-ios-entry-mutations.md) | Recoverable standalone iOS moves and deletions | active |
 | [0235](0235-mobile-bounded-editor-document-reads.md) | Bounded native editor document reads | active |
 | [0236](0236-cooperative-mobile-workspace-preparation.md) | Cooperative mobile workspace preparation | active |
+| [0237](0237-mobile-completed-conflict-backup-retention.md) | Completed mobile conflict-backup retention | active |

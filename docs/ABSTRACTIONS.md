@@ -306,6 +306,13 @@ the shared lifecycle scheduler for foreground write-back, refresh, explicit
 retries and a bounded departure flush. iCloud delivery remains provider-owned.
 The status reports provider persistence, not cross-device delivery (ADR 0217).
 
+`LinkedConflictPublication` marks successfully completed private resolution
+backups before retiring their journal. Best-effort cleanup retains the latest
+three and all completions within seven days. Pending, superseded, unmarked,
+malformed and symlinked data is never pruned; a corrupt active journal blocks
+cleanup. This does not delete vault/provider content or establish a total backup
+quota (ADR 0237).
+
 Asynchronous repository note reads join the existing per-root operation queue
 before calling synchronous native recovery. Opening a note therefore waits for
 that vault's active save/Git work without entering a blocking native lock from

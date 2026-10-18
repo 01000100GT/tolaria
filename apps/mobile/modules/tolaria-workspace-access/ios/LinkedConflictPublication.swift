@@ -47,7 +47,63 @@ struct LinkedConflictPublication {
     return record.merged
   }
 
-  func finish() throws { try FileManager.default.removeItem(at: journal) }
+  func finish(now: Date = Date()) throws {
+    let record = try JSONDecoder().decode(LinkedConflictJournal.self, from: Data(contentsOf: journal))
+    guard UUID(uuidString: record.identifier) != nil else { throw LinkedWorkspaceError.invalidState }
+    let directory = try workspaceFileURL(root: safeBackupRoot(), path: record.identifier)
+    let marker = try workspaceFileURL(root: directory, path: "completed.json")
+    let completed = CompletedLinkedConflict(version: 1, identifier: record.identifier, completedAt: now)
+    // Cleanup is optional; a failed marker write must not fail an already saved resolution.
+    try? JSONEncoder().encode(completed).write(to: marker, options: .atomic)
+    try FileManager.default.removeItem(at: journal)
+    try? pruneCompletedBackups(now: now)
+  }
+
+  @discardableResult
+  func pruneCompletedBackups(now: Date = Date()) throws -> Int {
+    workspaceMutationLock.lock()
+    defer { workspaceMutationLock.unlock() }
+    let active = try pendingIdentifier()
+    let root = try safeBackupRoot()
+    guard FileManager.default.fileExists(atPath: root.path) else { return 0 }
+    let completed = try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)
+      .compactMap { try? completedBackup($0, now: now) }
+      .sorted {
+        if $0.record.completedAt != $1.record.completedAt { return $0.record.completedAt > $1.record.completedAt }
+        return $0.record.identifier > $1.record.identifier
+      }
+    var removed = 0
+    for backup in completed.dropFirst(3) {
+      guard backup.record.identifier != active, now.timeIntervalSince(backup.record.completedAt) > 7 * 86_400 else { continue }
+      guard (try? requireNoBackupSymlinks(backup.directory)) != nil else { continue }
+      try FileManager.default.removeItem(at: backup.directory)
+      removed += 1
+    }
+    return removed
+  }
+
+  private func safeBackupRoot() throws -> URL {
+    try workspaceFileURL(root: stateFile.deletingLastPathComponent(), path: backups.lastPathComponent)
+  }
+
+  private func pendingIdentifier() throws -> String? {
+    guard pending else { return nil }
+    let record = try JSONDecoder().decode(LinkedConflictJournal.self, from: Data(contentsOf: journal))
+    guard UUID(uuidString: record.identifier) != nil else { throw LinkedWorkspaceError.invalidState }
+    return record.identifier
+  }
+
+  private func completedBackup(_ directory: URL, now: Date) throws -> CompletedLinkedConflictBackup {
+    guard UUID(uuidString: directory.lastPathComponent) != nil else { throw LinkedWorkspaceError.invalidState }
+    let checked = try workspaceFileURL(root: safeBackupRoot(), path: directory.lastPathComponent)
+    let marker = try workspaceFileURL(root: checked, path: "completed.json")
+    let record = try JSONDecoder().decode(CompletedLinkedConflict.self, from: Data(contentsOf: marker))
+    guard record.version == 1, record.identifier == directory.lastPathComponent,
+      record.completedAt.timeIntervalSince1970.isFinite, record.completedAt <= now,
+      Set(try FileManager.default.contentsOfDirectory(atPath: checked.path)) == ["local", "remote", "merged", "completed.json"]
+    else { throw LinkedWorkspaceError.invalidState }
+    return CompletedLinkedConflictBackup(directory: checked, record: record)
+  }
 
   func supersede() throws {
     guard pending else { return }
@@ -67,4 +123,25 @@ struct LinkedConflictPublication {
       guard current[path] == before[path] || current[path] == after[path] else { throw LinkedWorkspaceError.conflict }
     }
   }
+}
+
+private struct CompletedLinkedConflict: Codable {
+  let version: Int
+  let identifier: String
+  let completedAt: Date
+}
+
+private struct CompletedLinkedConflictBackup {
+  let directory: URL
+  let record: CompletedLinkedConflict
+}
+
+private func requireNoBackupSymlinks(_ root: URL) throws {
+  var enumerationError: Error?
+  guard let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isSymbolicLinkKey],
+    errorHandler: { _, error in enumerationError = error; return false }) else { throw LinkedWorkspaceError.invalidState }
+  for case let url as URL in enumerator where try url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
+    throw WorkspaceFileError.symbolicLink
+  }
+  if let enumerationError { throw enumerationError }
 }
