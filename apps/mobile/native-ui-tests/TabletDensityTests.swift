@@ -15,6 +15,7 @@ final class TabletDensityTests: XCTestCase {
     let originalTitle = title.label
     assertSidebar(app, rowHeight: 38.4)
     assertMeasuredInsets(app, scale: 1.2)
+    assertSectionLabelCoordinates(app)
     assertNoDensitySetting(app)
     XCTAssertEqual(title.label, originalTitle)
     record("tablet-fixed-120-density")
@@ -37,6 +38,7 @@ final class TabletDensityTests: XCTestCase {
     XCTAssertTrue(element(app, "sidebar-item-inbox").waitForExistence(timeout: 30))
     assertSidebar(app, rowHeight: 38.4)
     assertMeasuredInsets(app, scale: 1.2)
+    assertSectionLabelCoordinates(app)
     assertNoDensitySetting(app)
     record("phone-fixed-120-density")
   }
@@ -86,6 +88,17 @@ final class TabletDensityTests: XCTestCase {
     XCTAssertEqual(folder.height, 30 * scale, accuracy: 0.6)
     XCTAssertEqual(folderContent.minX, 12 * scale, accuracy: 0.6)
     XCTAssertEqual(folderContent.minY, 6 * scale, accuracy: 0.6)
+  }
+
+  private func assertSectionLabelCoordinates(_ app: XCUIApplication) {
+    let sidebar = NativeDensityMetrics(readout: element(app, "sidebar-layout-metrics").label)
+    for section in ["favorites", "views", "types", "folders"] {
+      let prefix = "sidebar.section.\(section)"
+      let row = sidebar.frame("\(prefix).row")
+      let toggle = sidebar.frame("\(prefix).toggle")
+      let label = sidebar.frame("\(prefix).label")
+      XCTAssertEqual(toggle.minY + label.midY, row.height / 2, accuracy: 1)
+    }
   }
 
   private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {

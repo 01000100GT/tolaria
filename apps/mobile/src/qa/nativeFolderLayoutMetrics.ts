@@ -184,6 +184,8 @@ function assertStackedMetricPair({
       expected: 0,
       id: currentId,
       message: 'metric starts after the previous metric',
+      // Independently rounded native edges differ by at most half a canonical point.
+      roundingTolerance: 0.5,
     }),
   ]
 }

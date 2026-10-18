@@ -800,6 +800,11 @@ item/section, folder, note-list, phone-shell and WYSIWYG layout modules.
 `nativeLayoutMetricCore.ts` owns log parsing, failure formatting, tolerance and
 shared exact-stacking checks. The entry point preserves the existing contracts
 and assertion order so simulator-log consumers keep the same numerical evidence.
+Sidebar validation accepts an explicit 120% density projection while preserving
+other panels' physical widths. Header labels resolve through the measured toggle
+parent; native checks fail closed if that parent measurement is missing. Folder
+stacking alone allows a half-point canonical discrepancy for native edge rounding,
+while retaining the measured delta in failures and rejecting larger overlaps.
 
 ### Vault Git Capability
 

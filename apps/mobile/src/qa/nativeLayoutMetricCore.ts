@@ -106,9 +106,9 @@ export function expectClose(expectation: LayoutExpectation): NativeLayoutAsserti
   return [{ actual, expected, id, message }]
 }
 
-export function expectAtLeast(expectation: LayoutExpectation): NativeLayoutAssertionFailure[] {
+export function expectAtLeast(expectation: LayoutExpectation & { roundingTolerance?: number }): NativeLayoutAssertionFailure[] {
   const { actual, expected, id, message } = expectation
-  if (actual !== null && actual >= expected) return []
+  if (actual !== null && actual >= expected - (expectation.roundingTolerance ?? 0)) return []
 
   return [{ actual, expected, id, message }]
 }

@@ -36,8 +36,8 @@ export function assertSidebarSectionLayouts(metrics: NativeLayoutMetricMap): Nat
   ]
 }
 
-export function assertSectionTitleLayouts(metrics: NativeLayoutMetricMap): NativeLayoutAssertionFailure[] {
-  return sectionTitleMetricSpecsForMetrics(metrics).flatMap((spec) => assertSectionTitleLayout({ ...spec, metrics }))
+export function assertSectionTitleLayouts(metrics: NativeLayoutMetricMap, requireToggleMetric = false): NativeLayoutAssertionFailure[] {
+  return sectionTitleMetricSpecsForMetrics(metrics).flatMap((spec) => assertSectionTitleLayout({ ...spec, metrics, requireToggleMetric }))
 }
 
 function sectionTitleMetricSpecsForMetrics(metrics: NativeLayoutMetricMap): SectionTitleMetricSpec[] {
@@ -106,15 +106,18 @@ function assertStackedSections(metrics: NativeLayoutMetricMap, ids: string[]): N
 function assertSectionTitleLayout({
   firstContentMetricId,
   metrics,
+  requireToggleMetric,
   sectionId,
 }: {
   firstContentMetricId?: string
   metrics: NativeLayoutMetricMap
+  requireToggleMetric: boolean
   sectionId: string
 }): NativeLayoutAssertionFailure[] {
   const id = `sidebar.section.${sectionId}`
   const titleRow = metrics[`${id}.row`]
-  const titleLabel = metrics[`${id}.label`]
+  const titleLabel = sectionTitleLabelInRow(metrics, id)
+  const toggle = metrics[`${id}.toggle`]
   const firstContent = firstContentMetricId ? metrics[firstContentMetricId] : undefined
 
   return [
@@ -128,10 +131,23 @@ function assertSectionTitleLayout({
       message: 'section title label is captured before checking native text alignment',
       metric: titleLabel,
     }),
+    ...(requireToggleMetric ? expectMetric({
+      id: `${id}.toggle`,
+      message: 'section title toggle is captured before resolving native label coordinates',
+      metric: toggle,
+    }) : []),
     ...assertSectionTitleFrameLayout(id, titleRow),
     ...assertSectionTitleLabelLayout(id, titleRow, titleLabel),
     ...assertSectionFirstContentLayout({ firstContent, firstContentMetricId, titleRow }),
   ]
+}
+
+function sectionTitleLabelInRow(metrics: NativeLayoutMetricMap, id: string): NativeLayoutMetric | undefined {
+  const label = metrics[`${id}.label`]
+  const toggle = metrics[`${id}.toggle`]
+  if (!label || !toggle) return label
+
+  return { ...label, x: label.x + toggle.x, y: label.y + toggle.y }
 }
 
 function assertSectionTitleFrameLayout(

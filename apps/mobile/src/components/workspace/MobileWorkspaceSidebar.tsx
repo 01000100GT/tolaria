@@ -410,6 +410,7 @@ function SectionTitle(props: SectionTitleProps) {
       testID={`sidebar-section-title-${sectionId}`}
     >
       <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: props.expanded }}
+        {...probeProps(layoutProbe, `${metricId}.toggle`)}
         onPress={props.onToggle} style={styles.sectionTitleToggle} testID={`sidebar-section-toggle-${sectionId}`}>
         {props.expanded ? <CaretDown color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />
           : <CaretRight color={mobileColors.textMuted} size={themeStyles.metrics.size(11)} />}

@@ -28,6 +28,7 @@ import {
   assertNativePropertiesLayoutMetrics,
   nativePropertiesMetricContract,
 } from './nativePropertiesLayoutMetrics.ts'
+import { projectNativeSidebarMetrics } from './nativeSidebarLayoutProjection.ts'
 
 export { nativePropertiesMetricContract } from './nativePropertiesLayoutMetrics.ts'
 export { type NativeLayoutMetric, type NativeLayoutMetricMap, type NativeLayoutAssertionFailure, parseNativeLayoutMetrics, latestNativeLayoutMetrics, formatNativeLayoutAssertionFailures } from './nativeLayoutMetricCore.ts'
@@ -36,11 +37,15 @@ export { nativeNoteListMetricContract } from './nativeNoteListLayoutMetrics.ts'
 export { type NativePhoneLayoutState, nativePhoneShellMetricContract } from './nativePhoneShellLayoutMetrics.ts'
 export { nativeWysiwygEditorMetricContract, assertNativeWysiwygEditorLayoutMetrics } from './nativeWysiwygLayoutMetrics.ts'
 
-export function assertNativeSidebarLayoutMetrics(metrics: NativeLayoutMetricMap): NativeLayoutAssertionFailure[] {
+export function assertNativeSidebarLayoutMetrics(
+  nativeMetrics: NativeLayoutMetricMap,
+  density: 1 | 1.2 = 1,
+): NativeLayoutAssertionFailure[] {
+  const metrics = projectNativeSidebarMetrics(nativeMetrics, density)
   return [
     ...assertSidebarSectionLayouts(metrics),
     ...assertSidebarItemLayouts(metrics),
-    ...assertSectionTitleLayouts(metrics),
+    ...assertSectionTitleLayouts(metrics, density !== 1),
     ...assertFolderTreeLayout(metrics),
     ...assertFolderLayouts(metrics),
     ...assertCountPillLayouts(metrics),
