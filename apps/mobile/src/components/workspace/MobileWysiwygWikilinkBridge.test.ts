@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { tiptapJsonToMobileMarkdown, type TiptapJsonNode } from '../../workspace/mobileDocumentContent'
+import type { NativeWysiwygMarkdownBlockAction } from './MobileWysiwygFormatCommands'
 import {
   nativeWysiwygDocumentWithInsertedWikilink,
   nativeWysiwygDocumentWithInsertedAttachment,
@@ -99,12 +100,7 @@ describe('native WYSIWYG wikilink bridge', () => {
     ['mermaid', 'Intro\n\n```mermaid\nflowchart TD\n    edit["Switch to the raw editor to edit"]\n```\n\nTail'],
     ['table', 'Intro\n\n| Column | Value |\n| --- | --- |\n| Item | Detail |\n\nTail'],
   ] as const)('inserts native WYSIWYG %s as durable desktop markdown', (action, expectedMarkdown) => {
-    const nextDocument = nativeWysiwygDocumentWithInsertedMarkdownBlock({
-      json: documentNode(paragraphNode('Intro'), paragraphNode('Tail')),
-      payload: { action },
-      selection: { from: 3, to: 3 },
-    })
-
+    const nextDocument = insertedMarkdownBlock(action)
     expect(tiptapJsonToMobileMarkdown(nextDocument)).toBe(expectedMarkdown)
   })
 
@@ -122,22 +118,12 @@ describe('native WYSIWYG wikilink bridge', () => {
     action,
     expectedNode,
   ) => {
-    const nextDocument = nativeWysiwygDocumentWithInsertedMarkdownBlock({
-      json: documentNode(paragraphNode('Intro'), paragraphNode('Tail')),
-      payload: { action },
-      selection: { from: 3, to: 3 },
-    })
-
+    const nextDocument = insertedMarkdownBlock(action)
     expect(nextDocument?.content?.[1]).toMatchObject(expectedNode)
   })
 
   it('inserts native WYSIWYG tables as structured TenTap nodes before markdown serialization', () => {
-    const nextDocument = nativeWysiwygDocumentWithInsertedMarkdownBlock({
-      json: documentNode(paragraphNode('Intro'), paragraphNode('Tail')),
-      payload: { action: 'table' },
-      selection: { from: 3, to: 3 },
-    })
-
+    const nextDocument = insertedMarkdownBlock('table')
     expect(nextDocument?.content?.[1]).toMatchObject({
       content: [
         {
@@ -160,12 +146,7 @@ describe('native WYSIWYG wikilink bridge', () => {
   })
 
   it('inserts native WYSIWYG whiteboards as desktop durable tldraw markdown', () => {
-    const nextDocument = nativeWysiwygDocumentWithInsertedMarkdownBlock({
-      json: documentNode(paragraphNode('Intro'), paragraphNode('Tail')),
-      payload: { action: 'whiteboard' },
-      selection: { from: 3, to: 3 },
-    })
-
+    const nextDocument = insertedMarkdownBlock('whiteboard')
     expect(tiptapJsonToMobileMarkdown(nextDocument)).toMatch(
       /^Intro\n\n```tldraw id="[^"]+" height="520"\n\{\}\n```\n\nTail$/u,
     )
@@ -182,26 +163,18 @@ describe('native WYSIWYG wikilink bridge', () => {
     })).toBe('Read [[Tolaria/Mobile UI|Mobile UI]] today.')
   })
 
-  it('replaces selected native editor text with the wikilink', () => {
+  it.each([
+    ['replaces selected native editor text with the wikilink', 'Read this note.', 'Read [[AI Ops Guide]] note.'],
+    ['does not add a rich-editor separator before punctuation', 'Read this.', 'Read [[AI Ops Guide]].'],
+  ])('%s', (_name, text, expected) => {
     expect(insertedWikilinkMarkdown({
       payload: {
         label: 'AI Ops Guide',
         target: 'AI Ops Guide',
       },
       selection: { from: 6, to: 10 },
-      text: 'Read this note.',
-    })).toBe('Read [[AI Ops Guide]] note.')
-  })
-
-  it('does not add a rich-editor separator before punctuation', () => {
-    expect(insertedWikilinkMarkdown({
-      payload: {
-        label: 'AI Ops Guide',
-        target: 'AI Ops Guide',
-      },
-      selection: { from: 6, to: 10 },
-      text: 'Read this.',
-    })).toBe('Read [[AI Ops Guide]].')
+      text,
+    })).toBe(expected)
   })
 
   it('replaces selected native editor text with unformatted clipboard text', () => {
@@ -318,6 +291,14 @@ describe('native WYSIWYG wikilink bridge', () => {
     })).toBe(expectedMarkdown)
   })
 })
+
+function insertedMarkdownBlock(action: NativeWysiwygMarkdownBlockAction) {
+  return nativeWysiwygDocumentWithInsertedMarkdownBlock({
+    json: documentNode(paragraphNode('Intro'), paragraphNode('Tail')),
+    payload: { action },
+    selection: { from: 3, to: 3 },
+  })
+}
 
 function expectAutocomplete(
   text: string,

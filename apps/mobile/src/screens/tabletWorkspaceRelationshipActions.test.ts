@@ -47,30 +47,30 @@ describe('tablet workspace relationship actions', () => {
     })
   })
 
-  it('creates relationship targets from the selected source note with trimmed key and title', () => {
-    const selectedNote = workspaceScenarios.default.notes[0]!
+  it.each([
+    [
+      'creates relationship targets from the selected source note with trimmed key and title',
+      {
+        relationshipName: ' related_to ',
+        relationshipNoteRef: ' [[Projects/New Project]] ',
+        relationshipNoteTitle: '  New Project  ',
+      },
+      { targetRef: '[[Projects/New Project]]' },
+    ],
+    [
+      'omits relationship target refs when no target note was selected',
+      {
+        relationshipName: 'related_to',
+        relationshipNoteRef: '',
+        relationshipNoteTitle: 'New Project',
+      },
+      {},
+    ],
+  ] as const)('%s', (_name, form, expectedRef) => {
+    const selectedNote = sourceNoteFixture()
 
-    expect(createRelationshipTargetEditFromForm({
-      relationshipName: ' related_to ',
-      relationshipNoteRef: ' [[Projects/New Project]] ',
-      relationshipNoteTitle: '  New Project  ',
-    }, selectedNote)).toEqual({
-      key: 'related_to',
-      sourceNoteId: selectedNote.id,
-      targetRef: '[[Projects/New Project]]',
-      targetTitle: 'New Project',
-      type: 'createRelationshipTarget',
-    })
-  })
-
-  it('omits relationship target refs when no target note was selected', () => {
-    const selectedNote = workspaceScenarios.default.notes[0]!
-
-    expect(createRelationshipTargetEditFromForm({
-      relationshipName: 'related_to',
-      relationshipNoteRef: '',
-      relationshipNoteTitle: 'New Project',
-    }, selectedNote)).toEqual({
+    expect(createRelationshipTargetEditFromForm(form, selectedNote)).toStrictEqual({
+      ...expectedRef,
       key: 'related_to',
       sourceNoteId: selectedNote.id,
       targetTitle: 'New Project',
@@ -79,7 +79,7 @@ describe('tablet workspace relationship actions', () => {
   })
 
   it('rejects relationship target creation without a source note, key, or target title', () => {
-    const selectedNote = workspaceScenarios.default.notes[0]!
+    const selectedNote = sourceNoteFixture()
 
     expect(createRelationshipTargetEditFromForm({
       relationshipName: 'related_to',
@@ -110,3 +110,9 @@ describe('tablet workspace relationship actions', () => {
     expect(removeRelationshipEdit('workflow-orchestration', 'belongs_to', '')).toBeNull()
   })
 })
+
+function sourceNoteFixture() {
+  const note = workspaceScenarios.default.notes.find(({ id }) => id === 'workflow-orchestration')
+  if (!note) throw new Error('Expected the workflow source-note fixture')
+  return note
+}
