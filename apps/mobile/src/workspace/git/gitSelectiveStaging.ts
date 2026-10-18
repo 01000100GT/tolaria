@@ -6,49 +6,55 @@ type Scan = {
   context: GitVaultContext
   files: string[]
   fallback: boolean
+  clean: boolean
   read: (filepath: string) => Promise<Uint8Array>
 }
-type Entry = { filepath: string; worktree: WalkerEntry | null; stage: WalkerEntry | null }
+type Entry = { filepath: string; worktree: WalkerEntry | null; stage: WalkerEntry | null; head: WalkerEntry | null }
 
-/** Verify actual bytes; timestamps alone cannot exclude a rapid equal-length edit. */
+/** Fresh-byte verification; true only when working tree, index and HEAD all match. */
 export async function stageVerifiedGitChanges(context: GitVaultContext) {
-  const files = await changedPaths(context)
-  if (!files) {
+  const scan = await changedPaths(context)
+  if (!scan) {
     await git.add({ ...context, filepath: '.', parallel: false })
-    return
+    return false
   }
   // Arrays passed to git.add run concurrently even with parallel:false.
-  for (const filepath of files) await git.add({ ...context, filepath, parallel: false })
+  for (const filepath of scan.files) await git.add({ ...context, filepath, parallel: false })
+  return scan.clean
 }
 
-async function changedPaths(context: GitVaultContext): Promise<string[] | null> {
+async function changedPaths(context: GitVaultContext): Promise<Scan | null> {
   if (!('promises' in context.fs)) return null
   const autocrlf = await git.getConfig({ ...context, path: 'core.autocrlf' })
   if (autocrlf && autocrlf !== 'false') return null
   const fs = context.fs.promises
-  const scan: Scan = { context, files: [], fallback: false, read: async (filepath) => fs.readFile(`${context.dir}/${filepath}`) }
+  const scan: Scan = { context, files: [], fallback: false, clean: true, read: async (filepath) => fs.readFile(`${context.dir}/${filepath}`) }
   await git.walk({
     ...context,
-    trees: [git.WORKDIR({ refresh: false }), git.STAGE()],
+    trees: [git.WORKDIR({ refresh: false }), git.STAGE(), git.TREE({ ref: 'HEAD' })],
     iterate: serially(scan),
     map: mapEntry.bind(null, scan),
   })
-  return scan.fallback ? null : scan.files
+  return scan.fallback ? null : scan
 }
 
 function mapEntry(scan: Scan, filepath: string, entries: (WalkerEntry | null)[]) {
-  return inspectEntry(scan, { filepath, worktree: entries[0], stage: entries[1] })
+  return inspectEntry(scan, { filepath, worktree: entries[0], stage: entries[1], head: entries[2] })
 }
 
 async function inspectEntry(scan: Scan, entry: Entry) {
-  const { filepath, worktree, stage } = entry
-  if (scan.fallback || !worktree) return null
+  const { filepath, worktree, stage, head } = entry
+  if (scan.fallback) return null
+  if (!worktree) { scan.clean = false; return null }
+  // Preserve library handling of a staged removal that still exists on disk.
+  if (head && !stage) { scan.fallback = true; return null }
   if (await ignoredUntrackedEntry(scan.context, entry)) return null
   if (await worktree.type() === 'tree') {
     scan.fallback = await incompatibleDirectory(stage)
     return
   }
   recordChange(scan, filepath, await blobDiffers(scan, entry))
+  scan.clean &&= await matchesHead(head, stage)
 }
 
 async function ignoredUntrackedEntry(context: GitVaultContext, { filepath, stage }: Entry) {
@@ -61,7 +67,13 @@ async function incompatibleDirectory(stage: WalkerEntry | null) {
 
 function recordChange(scan: Scan, filepath: string, changed: boolean | null) {
   if (changed) scan.files.push(filepath)
+  if (changed !== false) scan.clean = false
   scan.fallback = changed === null || scan.files.length > smallBatchLimit
+}
+
+async function matchesHead(head: WalkerEntry | null, stage: WalkerEntry | null) {
+  if (!head || !stage || await head.type() !== 'blob') return false
+  return await head.oid() === await stage.oid() && await head.mode() === await stage.mode()
 }
 
 async function blobDiffers(scan: Scan, { filepath, worktree, stage }: Entry) {

@@ -28,8 +28,8 @@ async function changes(context: GitVaultContext) {
 
 async function refreshedChanges(context: GitVaultContext) {
   await recoverGitCheckout(context)
-  await stageVerifiedGitChanges(context)
-  return changes(context)
+  const clean = await stageVerifiedGitChanges(context)
+  return clean ? [] : changes(context)
 }
 
 async function requireClean(context: GitVaultContext) {

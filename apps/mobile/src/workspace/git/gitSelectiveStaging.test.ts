@@ -52,6 +52,50 @@ it('inspects unchanged working-tree metadata only once before staging', async ()
   expect(inspections).toBe(1)
 })
 
+it('checkpoints a verified-clean tree without a second working-tree metadata scan', async () => {
+  const context = await packedRepository()
+  let inspections = 0
+  const measuredFs = { promises: { ...fs.promises, lstat: async (path: fs.PathLike) => {
+    if (String(path) === join(context.dir, 'note.md')) inspections++
+    return fs.promises.lstat(path)
+  } } }
+  const vault = createGitVault({ ...context, fs: measuredFs })
+  expect((await vault.checkpoint(author)).changedFiles).toBe(0)
+  expect(inspections).toBe(1)
+  inspections = 0
+  expect((await vault.requireClean()).changedFiles).toBe(0)
+  expect(inspections).toBe(1)
+})
+
+it('only reports a verified-clean tree when working bytes, index and HEAD all match', async () => {
+  const context = await packedRepository()
+  expect(await stageVerifiedGitChanges(context)).toBe(true)
+  await writeFile(join(context.dir, 'note.md'), '# Already staged but not committed\n')
+  await git.add({ ...context, filepath: 'note.md' })
+  expect(await stageVerifiedGitChanges(context)).toBe(false)
+  expect((await createGitVault(context).checkpoint(author)).changedFiles).toBe(1)
+  expect(await stageVerifiedGitChanges(context)).toBe(true)
+})
+
+it('does not report deleted tracked files or untracked additions as clean', async () => {
+  const context = await packedRepository()
+  await rm(join(context.dir, 'note.md'))
+  expect(await stageVerifiedGitChanges(context)).toBe(false)
+  expect((await createGitVault(context).checkpoint(author)).changedFiles).toBe(1)
+  await writeFile(join(context.dir, 'new.md'), '# Added\n')
+  expect(await stageVerifiedGitChanges(context)).toBe(false)
+})
+
+it('keeps ignored untracked directories out of verified-clean status', async () => {
+  const context = await packedRepository()
+  await mkdir(join(context.dir, '.git/info'), { recursive: true })
+  await writeFile(join(context.dir, '.git/info/exclude'), 'ignored/\n')
+  await mkdir(join(context.dir, 'ignored'))
+  await writeFile(join(context.dir, 'ignored/private.bin'), new Uint8Array([255, 0]))
+  expect(await stageVerifiedGitChanges(context)).toBe(true)
+  expect((await createGitVault(context).checkpoint(author)).changedFiles).toBe(0)
+})
+
 it('reads tracked blob bodies serially, not all files at once', async () => {
   const context = await packedRepository()
   let pending = 0
