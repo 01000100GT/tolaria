@@ -44,6 +44,9 @@ import type {
   MobileWorkspaceSnapshot,
 } from './mobileWorkspaceModel'
 import { relationshipKindForKey } from '../../../../src/utils/relationshipKeys'
+import { absoluteDate, noteListSubtitle, relativeDate } from './localVaultPresentation'
+import { localVaultFileKind, parseNonMarkdownVaultEntry } from './localVaultFileKinds'
+export { mobileFileKindForPath } from './localVaultFileKinds'
 
 type AbsoluteVaultPath = string
 type LocalVaultLabel = string
@@ -59,6 +62,7 @@ type WikilinkTarget = string
 export type LocalVaultFile = {
   absolutePath: AbsoluteVaultPath
   content: string
+  contentDigest?: string
   createdAt: TimestampMs | null
   fileKind?: MobileFileKind
   modifiedAt: TimestampMs | null
@@ -76,7 +80,7 @@ export type LocalVaultSnapshotOptions = {
   vaultPath: VaultRootPath
 }
 
-type LocalVaultEntry = {
+export type LocalVaultEntry = {
   archived: boolean
   aliases: string[]
   body: string
@@ -110,88 +114,8 @@ type MobileNoteDetailLevel = 'editable' | 'summary'
 type SnapshotFrontmatterValues = Map<string, unknown>
 
 const DEFAULT_MAX_NOTES = 80
-const absoluteDateFormatter = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' })
-const absoluteDateCache = new Map<string, string>()
 const snapshotFrontmatterValueCache = new WeakMap<LocalVaultFrontmatter, SnapshotFrontmatterValues>()
 const snapshotFrontmatterLookupKeyCache = new Map<string, string>()
-const textFileExtensions = new Set([
-  'bash',
-  'bat',
-  'c',
-  'cfg',
-  'clj',
-  'cmd',
-  'conf',
-  'cpp',
-  'css',
-  'csv',
-  'dockerfile',
-  'editorconfig',
-  'el',
-  'env',
-  'erl',
-  'ex',
-  'exs',
-  'fish',
-  'gitignore',
-  'go',
-  'graphql',
-  'h',
-  'hcl',
-  'hpp',
-  'hs',
-  'htm',
-  'html',
-  'ini',
-  'java',
-  'jl',
-  'js',
-  'json',
-  'jsx',
-  'kt',
-  'less',
-  'lisp',
-  'lua',
-  'makefile',
-  'mdx',
-  'ml',
-  'nix',
-  'properties',
-  'ps1',
-  'py',
-  'r',
-  'rb',
-  'rs',
-  'scss',
-  'sh',
-  'sql',
-  'svelte',
-  'swift',
-  'tf',
-  'toml',
-  'ts',
-  'tsx',
-  'txt',
-  'vim',
-  'vue',
-  'xml',
-  'yaml',
-  'yml',
-  'zig',
-  'zsh',
-])
-const extensionlessTextFilenames = new Set([
-  '.editorconfig',
-  '.env',
-  '.gitattributes',
-  '.gitignore',
-  'brewfile',
-  'dockerfile',
-  'gemfile',
-  'makefile',
-  'procfile',
-  'rakefile',
-])
 
 export function buildLocalVaultWorkspaceSnapshot(options: LocalVaultSnapshotOptions): MobileWorkspaceSnapshot {
   const work = localVaultWorkspaceSnapshotSteps(options)
@@ -343,39 +267,6 @@ function parseMarkdownVaultEntry(file: LocalVaultFile, fileKind: MobileFileKind)
   }
 }
 
-function parseNonMarkdownVaultEntry(file: LocalVaultFile, fileKind: MobileFileKind): LocalVaultEntry {
-  const filename = file.relativePath.split('/').at(-1) ?? file.relativePath
-  const title = nonMarkdownTitle(file, filename)
-
-  return {
-    archived: false,
-    aliases: [],
-    body: fileKind === 'text' ? file.content : '',
-    createdAt: file.createdAt,
-    favorite: false,
-    favoriteIndex: null,
-    fileKind,
-    filename,
-    id: file.relativePath,
-    icon: null,
-    links: 0,
-    modifiedAt: file.modifiedAt,
-    noteWidth: null,
-    organized: false,
-    outgoingLinks: [],
-    path: file.relativePath,
-    properties: [],
-    rawContent: file.content,
-    relationships: {},
-    status: '',
-    tags: [],
-    title,
-    type: 'File',
-    typeDefinition: {},
-    typeDefinitionTone: 'gray',
-    typeTone: 'gray',
-  }
-}
 
 function typeDefinitionFromFrontmatter(frontmatter: LocalVaultFrontmatter): MobileTypeDefinition {
   return {
@@ -472,53 +363,7 @@ function parseViewFile(file: LocalVaultFile, index: number): MobileSavedView | n
   return parseMobileSavedViewFile(file, index)
 }
 
-function localVaultFileKind(file: LocalVaultFile): MobileFileKind {
-  return file.fileKind ?? mobileFileKindForPath(file.relativePath)
-}
 
-export function mobileFileKindForPath(path: RelativeVaultPath): MobileFileKind {
-  const filename = path.split('/').at(-1)?.toLowerCase() ?? path.toLowerCase()
-  const dotIndex = filename.lastIndexOf('.')
-  if (dotIndex <= 0 || dotIndex === filename.length - 1) {
-    return extensionlessTextFilenames.has(filename) ? 'text' : 'binary'
-  }
-
-  const extension = filename.slice(dotIndex + 1)
-  if (extension === 'md' || extension === 'markdown') return 'markdown'
-  if (textFileExtensions.has(extension)) return 'text'
-  return 'binary'
-}
-
-function nonMarkdownTitle(file: LocalVaultFile, filename: string): NoteTitle {
-  return yamlName(file) ?? filename
-}
-
-function yamlName(file: LocalVaultFile): NoteTitle | null {
-  const extension = file.relativePath.split('.').at(-1)?.toLowerCase()
-  if (extension !== 'yml' && extension !== 'yaml') return null
-
-  const match = file.content.match(/^name:\s*(.+?)\s*$/m)
-  if (!match) return null
-
-  return unquoteYamlScalar(match[1])
-}
-
-function unquoteYamlScalar(value: string): string {
-  const trimmed = value.trim()
-  if (isQuotedYamlScalar(trimmed)) {
-    return trimmed.slice(1, -1)
-  }
-
-  return trimmed
-}
-
-function isQuotedYamlScalar(value: string): boolean {
-  return isWrappedBy(value, '"') || isWrappedBy(value, "'")
-}
-
-function isWrappedBy(value: string, quote: string): boolean {
-  return value.startsWith(quote) && value.endsWith(quote)
-}
 
 function isMobileSavedView(view: MobileSavedView | null): view is MobileSavedView {
   return view !== null
@@ -578,10 +423,6 @@ function compareByModifiedDate(left: LocalVaultEntry, right: LocalVaultEntry): n
   return (right.modifiedAt ?? 0) - (left.modifiedAt ?? 0)
 }
 
-function noteListSubtitle(visibleCount: number, totalCount: number): string {
-  if (visibleCount === totalCount) return totalCount.toLocaleString()
-  return `${visibleCount.toLocaleString()} / ${totalCount.toLocaleString()}`
-}
 
 function mobileRelationships(
   relationships: Record<RelationshipLabel, WikilinkTarget[]>,
@@ -682,7 +523,7 @@ function toneFromDesktopColor(color: string | null, type: NoteTypeName): MobileT
   const normalized = color?.trim().toLowerCase()
   if (isMobileTone(normalized)) return normalized
 
-  const fallback = typeToneFallbacks[type]
+  const fallback = typeToneFallbacks.get(type)
   return fallback ?? 'gray'
 }
 
@@ -696,41 +537,11 @@ function isMobileTone(value: string | null | undefined): value is MobileTone {
     || value === 'yellow'
 }
 
-const typeToneFallbacks: Record<string, MobileTone> = {
-  Event: 'yellow',
-  Experiment: 'red',
-  Person: 'yellow',
-  Procedure: 'purple',
-  Project: 'red',
-  Responsibility: 'purple',
-  Topic: 'green',
-  Type: 'blue',
-}
+const typeToneFallbacks = new Map<string, MobileTone>([
+  ['Event', 'yellow'], ['Experiment', 'red'], ['Person', 'yellow'], ['Procedure', 'purple'],
+  ['Project', 'red'], ['Responsibility', 'purple'], ['Topic', 'green'], ['Type', 'blue'],
+])
 
-function relativeDate(timestamp: TimestampMs | null): string {
-  if (!timestamp) return '-'
-
-  const elapsedMinutes = Math.max(0, Math.round((Date.now() - timestamp) / 60_000))
-  if (elapsedMinutes < 60) return `${elapsedMinutes}m ago`
-
-  const elapsedHours = Math.round(elapsedMinutes / 60)
-  if (elapsedHours < 48) return `${elapsedHours}h ago`
-
-  const elapsedDays = Math.round(elapsedHours / 24)
-  return `${elapsedDays}d ago`
-}
-
-function absoluteDate(timestamp: TimestampMs | null): string {
-  if (!timestamp) return '-'
-  const date = new Date(timestamp)
-  const cacheKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
-  const cached = absoluteDateCache.get(cacheKey)
-  if (cached) return cached
-
-  const formatted = absoluteDateFormatter.format(date)
-  absoluteDateCache.set(cacheKey, formatted)
-  return formatted
-}
 
 function humanizeRelationshipKey(label: RelationshipLabel): string {
   return label

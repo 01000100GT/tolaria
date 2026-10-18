@@ -6,23 +6,31 @@ import { noteListFilterCountsForSelection, notesForSidebarSelection } from '../s
 
 /** Read-only timing on an explicit disposable fixture; reports no note data. */
 export async function nativeVaultReadBenchmark(vaultRootUri: string) {
+  const first = await measureSnapshot(vaultRootUri)
+  if (!first) return null
+  const repeated = await measureSnapshot(vaultRootUri)
+  if (!repeated) throw new Error('nativeBenchmarkIndexUnavailable')
+  return { fileCount: first.fileCount, noteCount: first.snapshot.allNotes?.length ?? first.snapshot.notes.length,
+    ...first.timings, repeatedLoad: repeated.timings, interactions: measureReadOnlyInteractions(first.snapshot) }
+}
+
+async function measureSnapshot(vaultRootUri: string) {
   const started = performance.now()
   const workspace = await preloadNativeWorkspace({ vaultAlias: null, vaultLabel: 'Native QA', vaultRootUri })
   if (!workspace?.index) return null
   const readFinished = performance.now()
+  let cacheHit = false
   const snapshot = await buildCooperativeWorkspaceSnapshot({
     files: workspace.index.files,
     folderPaths: workspace.index.directories,
     vaultLabel: workspace.vaultLabel,
     vaultPath: workspace.vaultRootUri,
-  })
+  }, undefined, { onCache: hit => { cacheHit = hit } })
   const snapshotMs = Math.round(performance.now() - readFinished)
   return {
     fileCount: workspace.index.files.length,
-    noteCount: snapshot.allNotes?.length ?? snapshot.notes.length,
-    nativeReadMs: Math.round(readFinished - started),
-    snapshotMs,
-    interactions: measureReadOnlyInteractions(snapshot),
+    snapshot,
+    timings: { cacheHit, nativeReadMs: Math.round(readFinished - started), snapshotMs },
   }
 }
 

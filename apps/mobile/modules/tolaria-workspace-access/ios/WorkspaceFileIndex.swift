@@ -12,7 +12,8 @@ struct WorkspaceFileIndex {
   func json() throws -> String {
     let index = try read()
     let data = try JSONSerialization.data(withJSONObject: index)
-    return String(decoding: data, as: UTF8.self)
+    guard let json = String(bytes: data, encoding: .utf8) else { throw CocoaError(.fileReadInapplicableStringEncoding) }
+    return json
   }
 
   func read() throws -> [String: Any] {
@@ -52,6 +53,8 @@ struct WorkspaceFileIndex {
     return [
       "absolutePath": publishedRoot.appendingPathComponent(path).absoluteString,
       "content": content,
+      // Fingerprint the exact text sent to JavaScript, not stat metadata or binary asset bytes.
+      "contentDigest": textRecoveryDigest(Data(content.utf8)),
       "createdAt": milliseconds(values.creationDate),
       "modifiedAt": milliseconds(values.contentModificationDate),
       "relativePath": path,

@@ -23,11 +23,13 @@ beforeEach(() => {
 
 it('measures the explicit fixture with the real native preload and snapshot path', async () => {
   const result = await nativeVaultReadBenchmark(uri)
-  expect(native.read).toHaveBeenCalledExactlyOnceWith(uri)
+  expect(native.read).toHaveBeenCalledTimes(2)
+  expect(native.read.mock.calls.every(([root]) => root === uri)).toBe(true)
   expect(native.restore).not.toHaveBeenCalled()
   expect(result).toMatchObject({ fileCount: 1, noteCount: 1, interactions: { matchedCount: 1 } })
   expect(result?.nativeReadMs).toBeGreaterThanOrEqual(0)
   expect(result?.snapshotMs).toBeGreaterThanOrEqual(0)
+  expect(result?.repeatedLoad).toMatchObject({ cacheHit: false, nativeReadMs: expect.any(Number), snapshotMs: expect.any(Number) })
   expect(JSON.stringify(result)).not.toContain('Private fixture body')
   expect(JSON.stringify(result)).not.toContain(uri)
 })

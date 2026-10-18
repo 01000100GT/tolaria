@@ -1,8 +1,17 @@
 import { localVaultWorkspaceSnapshotSteps, type LocalVaultSnapshotOptions } from './localVaultSnapshot'
 import { createGitTaskRunner } from './git/gitTaskRunner'
+import { openWorkspaceSnapshotCache, type SnapshotCacheStorage } from './workspaceSnapshotCache'
+import { workspaceSnapshotStorage } from './workspaceSnapshotStorage'
+
+type SnapshotPreparation = { storage?: SnapshotCacheStorage | null; onCache?: (hit: boolean) => void }
 
 /** Reuse the existing task budget without changing the synchronous parser's results. */
-export async function buildCooperativeWorkspaceSnapshot(options: LocalVaultSnapshotOptions, signal?: AbortSignal) {
+export async function buildCooperativeWorkspaceSnapshot(options: LocalVaultSnapshotOptions, signal?: AbortSignal, preparation: SnapshotPreparation = {}) {
+  requireActiveSnapshotLoad(signal)
+  const cache = await openWorkspaceSnapshotCache(options, preparation.storage === undefined ? workspaceSnapshotStorage : preparation.storage)
+  requireActiveSnapshotLoad(signal)
+  preparation.onCache?.(cache.snapshot !== null)
+  if (cache.snapshot) return cache.snapshot
   const work = localVaultWorkspaceSnapshotSteps(options)
   const { run } = createGitTaskRunner()
   for (;;) {
@@ -10,7 +19,12 @@ export async function buildCooperativeWorkspaceSnapshot(options: LocalVaultSnaps
       requireActiveSnapshotLoad(signal)
       return work.next()
     })
-    if (step.done) return step.value
+    if (step.done) {
+      requireActiveSnapshotLoad(signal)
+      await cache.save(step.value)
+      requireActiveSnapshotLoad(signal)
+      return step.value
+    }
   }
 }
 

@@ -36,23 +36,23 @@ type TypeCount = {
 
 type TypeSectionEntry = [type: string, value: TypeCount]
 
-const typeIcons: Record<string, MobileSidebarIcon> = {
-  area: 'palette',
-  book: 'book',
-  evergreen: 'leaf',
-  goal: 'target',
-  journal: 'book-bookmark',
-  month: 'calendar',
-  movie: 'ticket',
-  person: 'users',
-  procedure: 'stack',
-  project: 'folder',
-  quarter: 'calendar-blank',
-  resource: 'books',
-  responsibility: 'gear',
-  sheet: 'calculator',
-  year: 'lighthouse',
-}
+const typeIcons = new Map<string, MobileSidebarIcon>([
+  ['area', 'palette'],
+  ['book', 'book'],
+  ['evergreen', 'leaf'],
+  ['goal', 'target'],
+  ['journal', 'book-bookmark'],
+  ['month', 'calendar'],
+  ['movie', 'ticket'],
+  ['person', 'users'],
+  ['procedure', 'stack'],
+  ['project', 'folder'],
+  ['quarter', 'calendar-blank'],
+  ['resource', 'books'],
+  ['responsibility', 'gear'],
+  ['sheet', 'calculator'],
+  ['year', 'lighthouse'],
+])
 
 export function buildMobileSidebarSections({
   allNotesFileVisibility = DEFAULT_MOBILE_ALL_NOTES_FILE_VISIBILITY,
@@ -158,7 +158,7 @@ function typesSection(
 
       return {
         count: countText(value.count),
-        icon: mobileSidebarIconFromValue(definition?.icon, typeIcons[normalizedType] ?? 'file'),
+        icon: mobileSidebarIconFromValue(definition?.icon, typeIcons.get(normalizedType) ?? 'file'),
         id: previousTypeItemId(previousItems, type) ?? `type-${slugifySidebarId(type)}`,
         label: typeSectionLabel(type, definition),
         tone: value.tone,
@@ -178,11 +178,7 @@ function foldersSection(notes: MobileNote[], folderPaths: string[] = []): Mobile
 }
 
 function orderedTypeCounts(notes: MobileNote[], typeDefinitions: MobileTypeDefinitions) {
-  const counts = new Map<string, TypeCount>()
-  for (const note of notes) {
-    const current = counts.get(note.type) ?? { count: 0, tone: note.typeTone }
-    counts.set(note.type, { ...current, count: current.count + 1 })
-  }
+  const counts = countNoteTypes(notes)
   for (const [type, definition] of Object.entries(typeDefinitions)) {
     if (!isVisibleTypeDefinition(definition)) continue
     counts.set(type, counts.get(type) ?? { count: 0, tone: definition.tone ?? 'gray' })
@@ -191,6 +187,15 @@ function orderedTypeCounts(notes: MobileNote[], typeDefinitions: MobileTypeDefin
   return [...counts.entries()]
     .filter(([type]) => isVisibleTypeDefinition(typeDefinitions[type]))
     .sort((left, right) => compareTypeSectionEntries(left, right, typeDefinitions))
+}
+
+function countNoteTypes(notes: MobileNote[]) {
+  const counts = new Map<string, TypeCount>()
+  for (const note of notes) {
+    const current = counts.get(note.type) ?? { count: 0, tone: note.typeTone }
+    counts.set(note.type, { ...current, count: current.count + 1 })
+  }
+  return counts
 }
 
 function previousTypeItemId(items: MobileSidebarItem[], type: string): string | null {
