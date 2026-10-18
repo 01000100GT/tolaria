@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { chmod, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import git from 'isomorphic-git'
 import { afterEach, expect, it } from 'vitest'
 import { createGitVault } from './gitVault'
@@ -39,6 +39,35 @@ it('does not inflate packed, unchanged blobs into loose objects during a checkpo
   expect(looseObjectCount(context)).toBe(0)
   expect((await createGitVault(context).checkpoint(author)).changedFiles).toBe(0)
   expect(looseObjectCount(context)).toBe(0)
+})
+
+it('inspects unchanged working-tree metadata only once before staging', async () => {
+  const context = await packedRepository()
+  let inspections = 0
+  const measuredFs = { promises: { ...fs.promises, lstat: async (path: fs.PathLike) => {
+    if (String(path) === join(context.dir, 'note.md')) inspections++
+    return fs.promises.lstat(path)
+  } } }
+  await stageVerifiedGitChanges({ ...context, fs: measuredFs })
+  expect(inspections).toBe(1)
+})
+
+it('reads tracked blob bodies serially, not all files at once', async () => {
+  const context = await packedRepository()
+  let pending = 0
+  let peak = 0
+  const measuredFs = { promises: { ...fs.promises, readFile: async (path: fs.PathLike, options?: Parameters<typeof readFile>[1]) => {
+    const filepath = relative(context.dir, String(path))
+    if (!['note.md', 'unchanged.md'].includes(filepath)) return fs.promises.readFile(path, options)
+    pending++
+    peak = Math.max(peak, pending)
+    try {
+      await new Promise<void>((resolve) => setImmediate(resolve))
+      return await fs.promises.readFile(path, options)
+    } finally { pending-- }
+  } } }
+  await stageVerifiedGitChanges({ ...context, fs: measuredFs })
+  expect(peak).toBe(1)
 })
 
 it('stages an edit and binary addition without rewriting unrelated packed blobs', async () => {
@@ -90,6 +119,33 @@ it('commits all additions when a change exceeds the small-batch staging limit', 
   for (let index = 0; index < 20; index++) await writeFile(join(context.dir, `${index}.md`), `# Added ${index}\n`)
   expect((await createGitVault(context).checkpoint(author)).changedFiles).toBe(20)
   expect(await git.listFiles(context)).toHaveLength(22)
+})
+
+it('falls back to library staging when a tracked file becomes a directory', async () => {
+  const context = await packedRepository()
+  const path = join(context.dir, 'note.md')
+  await rm(path)
+  await mkdir(path)
+  await writeFile(join(path, 'child.md'), '# Child\n')
+  const result = await createGitVault(context).checkpoint(author)
+  const child = await git.readBlob({ ...context, oid: result.oid, filepath: 'note.md/child.md' })
+  expect(Buffer.from(child.blob).toString()).toBe('# Child\n')
+  expect(await git.listFiles(context)).toEqual(['note.md/child.md', 'unchanged.md'])
+})
+
+it('falls back to library staging when a tracked directory becomes a file', async () => {
+  const context = await packedRepository()
+  const folder = join(context.dir, 'folder')
+  await mkdir(folder)
+  await writeFile(join(folder, 'child.md'), '# Child\n')
+  await git.add({ ...context, filepath: '.' })
+  await git.commit({ ...context, author, message: 'Directory fixture' })
+  await rm(folder, { recursive: true })
+  await writeFile(folder, '# File in place of directory\n')
+  const result = await createGitVault(context).checkpoint(author)
+  const file = await git.readBlob({ ...context, oid: result.oid, filepath: 'folder' })
+  expect(Buffer.from(file.blob).toString()).toBe('# File in place of directory\n')
+  expect(await git.listFiles(context)).toEqual(['folder', 'note.md', 'unchanged.md'])
 })
 
 it('uses library staging for tracked symlinks instead of reading their targets', async () => {

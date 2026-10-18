@@ -110,6 +110,10 @@ remote history is never rewritten (ADR 0229).
 before individually staging a small batch. Unchanged packed objects stay packed;
 timestamps alone never exclude an edit. Unsupported adapters, conversion, file
 kinds and larger batches retain recursive serial library staging (ADR 0234).
+Its single public working-tree/index walk visits children serially, reusing the
+walker's metadata rather than inspecting each path twice. Fresh byte reads stay
+on the filesystem adapter so read errors propagate and large-file buffers are
+not loaded concurrently by the library's default walker iteration.
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
 Recovery and push use fully-qualified branch refs, including when older working
