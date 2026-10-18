@@ -794,6 +794,13 @@ the currently selected user vault.
 Disposable rich-editor fixtures are seeded synchronously before the synchronous
 snapshot read; subsequent editor saves still use the durable repository path.
 
+`nativeLayoutMetrics.ts` is the host-side numeric QA entry point, not a mobile
+runtime dependency. Its surface-specific validators live in the sibling sidebar
+item/section, folder, note-list, phone-shell and WYSIWYG layout modules.
+`nativeLayoutMetricCore.ts` owns log parsing, failure formatting, tolerance and
+shared exact-stacking checks. The entry point preserves the existing contracts
+and assertion order so simulator-log consumers keep the same numerical evidence.
+
 ### Vault Git Capability
 
 Git is a per-vault capability, not a prerequisite for the document model. A vault can be:
