@@ -56,8 +56,9 @@ async function probe() {
       void receive(request, response, resolve, reject).catch(reject)
       return true
     })
-    const url = `tolaria:///?source=fixture&gitProbe=${encodeURIComponent(server.url)}&backgroundSyncProbe=1`
-    execFileSync('xcrun', ['simctl', 'openurl', device, url])
+    const url = `tolaria:///?source=fixture&gitProbe=${encodeURIComponent(server.url)}&backgroundSyncProbe=1&qaRun=native-background`
+    execFileSync('xcrun', ['simctl', 'launch', '--terminate-running-process', device, 'com.tolaria.mobile.dev',
+      '--tolaria-mobile-search', new URL(url).search])
     const result = await proof
     const saved = runGit(['--git-dir', remote, 'show', 'main:background.md'])
     const draftPreserved = saved === '---\ncustom: preserved\n---\n# Background draft'
