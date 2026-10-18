@@ -257,3 +257,4 @@ proposed → active → superseded
 | [0239](0239-mobile-known-remote-fetch-negotiation.md) | Negotiate mobile fetches from the known remote tip | active |
 | [0240](0240-mobile-bounded-git-filesystem-sessions.md) | Bounded mobile Git filesystem sessions | active |
 | [0241](0241-mobile-source-free-snapshot-previews.md) | Source-free mobile snapshot previews | active |
+| [0242](0242-mobile-startup-presentation-boundary.md) | Mobile startup presentation boundary | active |

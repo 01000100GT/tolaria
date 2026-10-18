@@ -17,10 +17,15 @@ export async function readWorkspaceSnapshotPreview(identity: WorkspaceSnapshotId
   if (!storage || signal?.aborted) return null
   try {
     const key = await storage.digest(identity.vaultPath)
+    requireActivePreview(signal)
     const record = await readWorkspaceSnapshotEnvelope(storage, key, identity)
-    if (!record || signal?.aborted) return null
-    return previewMetadata(record.snapshot)
+    requireActivePreview(signal)
+    return record ? previewMetadata(record.snapshot) : null
   } catch { return null }
+}
+
+function requireActivePreview(signal?: AbortSignal) {
+  if (signal?.aborted) throw new Error('workspaceLoadCancelled')
 }
 
 function previewMetadata(snapshot: MobileWorkspaceSnapshot): WorkspaceSnapshotPreview {

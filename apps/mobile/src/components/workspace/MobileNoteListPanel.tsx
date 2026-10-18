@@ -39,6 +39,8 @@ type MobileNoteListPanelProps = {
   emptyVault?: boolean
   fullWidth?: boolean
   leading?: ReactNode
+  toolbarTrailing?: ReactNode
+  showCreateAction?: boolean
   layoutProbe?: boolean
   neighborhood?: MobileNeighborhood | null
   noteListFilter?: MobileNoteListFilter
@@ -69,6 +71,8 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
     emptyVault = false,
     fullWidth = false,
     leading,
+    toolbarTrailing,
+    showCreateAction = true,
     layoutProbe: layoutProbeEnabled = false,
     neighborhood = null,
     noteListFilter = 'open',
@@ -103,9 +107,9 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
           <MobileToolbarTitle testID="note-list-toolbar-title" title={title} />
         </View>
         <MobileToolbarSpacer />
-        <MobileIconButton accessibilityLabel={mobileCopy.searchNotes} testID={mobileNoteListToolbarChrome.actionTestIds[0]} onPress={onOpenSearch}>
+        {toolbarTrailing ?? <MobileIconButton accessibilityLabel={mobileCopy.searchNotes} testID={mobileNoteListToolbarChrome.actionTestIds[0]} onPress={onOpenSearch}>
           <MagnifyingGlass color={mobileColors.textMuted} size={desktopToolbarActionParity.iconSize} />
-        </MobileIconButton>
+        </MobileIconButton>}
       </MobileToolbar>
       {searchQuery ? <SearchPill searchQuery={searchQuery} /> : null}
       <View style={styles.listBody}>
@@ -125,7 +129,7 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
           selectedNoteId={selectedNoteId}
           typeDefinitions={typeDefinitions}
         />
-        <MobileCreateNoteButton visible={bulkSelection.selectedNotes.length === 0} onPress={onOpenCreateNote} />
+        <MobileCreateNoteButton visible={showCreateAction && bulkSelection.selectedNotes.length === 0} onPress={onOpenCreateNote} />
       </View>
       <BulkSelectionBar bulkActions={bulkActions} bulkSelection={bulkSelection} />
       {noteListFilterVisible && onNoteListFilterChange ? (
@@ -140,7 +144,8 @@ export function MobileNoteListPanel(props: MobileNoteListPanelProps) {
   )
 }
 
-function noteListRowActions({ bulkActions, onToggleNoteFavorite }: MobileNoteListPanelProps): MobileNoteRowActions | undefined {
+function noteListRowActions(props: MobileNoteListPanelProps): MobileNoteRowActions | undefined {
+  const { bulkActions, onToggleNoteFavorite } = props
   if (!bulkActions || !onToggleNoteFavorite) return undefined
   return { ...bulkActions, onToggleFavorite: onToggleNoteFavorite }
 }

@@ -8,6 +8,7 @@ import { useMobileVaults } from './git/useMobileVaults'
 import { WorkspaceLoadBoundary } from './WorkspaceLoadBoundary'
 import { MobileSettingsSheet } from '../settings/MobileSettingsSheet'
 import { MobileVaultNotice } from '../components/vaults/MobileVaultNotice'
+import { MobileWorkspaceStartup } from '../components/workspace/MobileWorkspaceStartup'
 
 export function MobileVaultProvider({ children }: { children: ReactNode }) {
   const manager = useMobileVaults()
@@ -28,7 +29,10 @@ export function MobileVaultProvider({ children }: { children: ReactNode }) {
     <NativeWorkspaceContext.Provider value={workspace}>
       <MobileVaultControlsContext.Provider value={controls}>
         <WorkspaceLoadBoundary key={revision} fallback={<MobileWorkspaceLoadFailure onManage={open} />}>
-          {restoreError ? <MobileWorkspaceLoadFailure onManage={open} onRetry={manager.catalog.retry} reason={restoreError} /> : children}
+          {restoreError ? <MobileWorkspaceLoadFailure onManage={open} onRetry={manager.catalog.retry} reason={restoreError} /> :
+            <MobileWorkspaceStartup preview={manager.catalog.preview} pending={restorePending} hasActiveWorkspace={Boolean(active.selection)}>
+              {children}
+            </MobileWorkspaceStartup>}
         </WorkspaceLoadBoundary>
         <MobileVaultManager manager={manager} />
         <MobileSettingsSheet manager={manager} />

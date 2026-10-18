@@ -2,7 +2,7 @@ import { useMobileStyles } from './theme/useMobileTheme'
 import type { MobileColors } from './theme/mobilePalette'
 import type { ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export function MobilePanelSafeArea({ children, sidebar = false, divider = 'right' }: {
   children: ReactNode
@@ -11,10 +11,10 @@ export function MobilePanelSafeArea({ children, sidebar = false, divider = 'righ
 }) {
   const { styles } = useMobileStyles(createThemeStyles)
   const { top } = useSafeAreaInsets()
-  return <SafeAreaView edges={['top']} style={[styles.panel, sidebar && styles.sidebar]}>
+  return <View style={[styles.panel, sidebar && styles.sidebar, { paddingTop: top }]}>
     {divider !== 'none' && <View pointerEvents="none" style={[styles.divider, { height: top }, divider === 'left' ? styles.left : styles.right]} />}
     {children}
-  </SafeAreaView>
+  </View>
 }
 
 function createThemeStyles(mobileColors: MobileColors) {

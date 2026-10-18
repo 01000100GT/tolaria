@@ -8,6 +8,13 @@ export type MobileParityInventoryEntry = {
 
 export const mobileParityInventory = [
   {
+    assertions: ['MobileWorkspaceStartup and startup lifecycle tests: inert cached panels never replace an active editor', 'MobileStartupVaultTests: fresh-source editing after native startup; panel inset metrics and startup video audit'],
+    contracts: ['desktopPanelParity', 'desktopSidebarParity', 'desktopNoteItemParity'],
+    desktopSource: 'Existing workspace sidebar and note-list components; native cached loading presentation has no editor or mutation authority',
+    mobileFile: 'src/components/workspace/MobileWorkspaceStartup.tsx',
+    surface: 'Initial cached workspace presentation (platform adaptation)',
+  },
+  {
     assertions: ['MobileFilePreviewTests: contained image rotation, multipage local PDF and source-preserving spreadsheet fallback'],
     contracts: ['desktopPanelParity', 'desktopEditorParity'],
     desktopSource: 'FilePreview and desktop sheet display routing; native image zoom and iOS WebKit PDF rendering',

@@ -5,44 +5,58 @@ import type { ManagedLocalVault } from './managedLocalVaults'
 import type { ManagedGitVault, ManagedGitVaultCatalog } from './managedGitVaults'
 import type { NativeWorkspaceSelection } from '../nativeWorkspacePicker'
 import { prepareNativeWorkspace } from '../prepareNativeWorkspace'
+import { readNativeWorkspaceStartupPreview } from '../nativeWorkspaceStartupPreview'
+import type { WorkspaceSnapshotPreview } from '../workspaceSnapshotPreview'
 
 export type ActiveVault = { selection: NativeWorkspaceSelection | null; git: ManagedGitVault | null }
 
+type CatalogState = {
+  vaults: ManagedGitVault[]; localVaults: ManagedLocalVault[]; restored: ActiveVault | null
+  preview: WorkspaceSnapshotPreview | null; pending: boolean; error: 'catalog' | 'selection' | null
+}
+type UpdateCatalog = (update: (previous: CatalogState) => CatalogState) => void
+
 export function useManagedVaultCatalog() {
-  const [vaults, setVaults] = useState<ManagedGitVault[]>([])
-  const [localVaults, setLocalVaults] = useState<ManagedLocalVault[]>([])
-  const [restored, setRestored] = useState<ActiveVault | null>(null)
-  const [pending, setPending] = useState(true)
-  const [error, setError] = useState<'catalog' | 'selection' | null>(null)
+  const [state, setState] = useState<CatalogState>({ vaults: [], localVaults: [], restored: null, preview: null, pending: true, error: null })
   const [attempt, setAttempt] = useState(0)
-  useEffect(() => {
-    let active = true
-    const cancellation = new AbortController()
-    let stage: 'catalog' | 'selection' = 'catalog'
-    void initializeLocalVaultCatalog().then(async (catalog) => {
-      if (!active) return
-      setVaults(catalog.vaults)
-      setLocalVaults(catalog.localVaults ?? [])
-      stage = 'selection'
-      const restored = await restoreCatalogSelection(catalog)
-      const selection = await prepareNativeWorkspace(restored.selection, cancellation.signal)
-      if (active) setRestored({ ...restored, selection })
-    }).catch(() => { if (active) setError(stage) })
-      .finally(() => { if (active) setPending(false) })
-    return () => { active = false; cancellation.abort() }
-  }, [attempt])
+  useEffect(() => restoreCatalogState(setState), [attempt])
   const reload = useCallback(async () => {
     const catalog = await readManagedGitCatalog()
-    setVaults(catalog.vaults)
-    setLocalVaults(catalog.localVaults ?? [])
-    setError(previous => previous === 'catalog' ? null : previous)
+    setState(previous => ({ ...previous, ...catalogLists(catalog),
+      error: previous.error === 'catalog' ? null : previous.error }))
   }, [])
   const retry = useCallback(() => {
-    setPending(true)
-    setError(null)
+    setState(previous => ({ ...previous, pending: true, error: null, preview: null }))
     setAttempt(value => value + 1)
   }, [])
-  return { vaults, localVaults, restored, pending, error, reload, retry }
+  return { ...state, reload, retry }
+}
+
+function restoreCatalogState(update: UpdateCatalog) {
+  let active = true
+  const cancellation = new AbortController()
+  let stage: 'catalog' | 'selection' = 'catalog'
+  void initializeLocalVaultCatalog().then(async catalog => {
+    if (!active) return
+    update(previous => ({ ...previous, ...catalogLists(catalog) }))
+    stage = 'selection'
+    const restored = await restoreCatalogSelection(catalog)
+    if (!active) return
+    const preview = await readNativeWorkspaceStartupPreview(restored.selection, cancellation.signal).catch(() => null)
+    if (!active) return
+    update(previous => ({ ...previous, preview }))
+    const selection = await prepareNativeWorkspace(restored.selection, cancellation.signal)
+    if (active) update(previous => ({ ...previous, restored: { ...restored, selection }, preview: null }))
+  }).then(() => finishCatalogRestoration(active, update), () => finishCatalogRestoration(active, update, stage))
+  return () => { active = false; cancellation.abort() }
+}
+
+function finishCatalogRestoration(active: boolean, update: UpdateCatalog, error: CatalogState['error'] = null) {
+  if (active) update(previous => ({ ...previous, preview: null, pending: false, error }))
+}
+
+function catalogLists(catalog: ManagedGitVaultCatalog) {
+  return { vaults: catalog.vaults, localVaults: catalog.localVaults ?? [] }
 }
 
 async function restoreCatalogSelection(catalog: ManagedGitVaultCatalog): Promise<ActiveVault> {
