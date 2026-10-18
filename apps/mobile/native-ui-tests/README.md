@@ -55,6 +55,14 @@ required: generate the project with `create-project.rb` and run `xcodebuild test
 against the installed bundle. Retain the `.xcresult`, and identify the tested
 source/bundle in the batch evidence. Do not count a browser capture as this test.
 
+`MobileInspectorContextTests` repeats inspector navigation and a single note-row
+tap across three cold launches. It does not retry a missed tap or swipe. For
+diagnosis, set `TEST_RUNNER_TOLARIA_QA_GESTURE_TRACE_URL` to an existing loopback
+collector before `xcodebuild test`; the test opts into the layout probe and emits
+numeric phone gesture recognition/settlement snapshots. No note content is sent.
+Run acceptance again without that environment variable: diagnostic success alone
+does not establish ordinary native input reliability.
+
 The generated test runner supports iPad and iPhone. `PhoneNoteSwipeTests` checks
 that row drags reveal Favorite/Delete/Archive without opening the sidebar, that
 full swipes toggle Favorite or archive without deleting, and that the archived

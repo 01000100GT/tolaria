@@ -26,14 +26,14 @@ const native = vi.hoisted(() => {
     onEnd(callback: NonNullable<Callbacks['end']>) { callbacks.end = callback; return this }
     onFinalize(callback: NonNullable<Callbacks['finalize']>) { callbacks.finalize = callback; return this }
   }
-  return { callbacks, pan: new Pan(), cancel: vi.fn(),
+  return { callbacks, pan: new Pan(), cancel: vi.fn(), dispatch: vi.fn(),
     timings: [] as Array<{ target: number; duration: number; complete: (finished: boolean) => void }> }
 })
 vi.mock('react-native-gesture-handler', () => ({ Gesture: { Pan: () => native.pan } }))
 vi.mock('react-native-reanimated', () => ({
   makeMutable: <T,>(value: T) => ({ value }),
   cancelAnimation: native.cancel,
-  runOnJS: (callback: unknown) => callback,
+  runOnJS: (callback: unknown) => { native.dispatch(callback); return callback },
   withTiming: (target: number, config: { duration: number }, complete: (finished: boolean) => void) => {
     native.timings.push({ target, duration: config.duration, complete })
     return target
@@ -114,6 +114,36 @@ it('uses reduced-motion timing and only notifies after settling', () => {
   expect(options.onSettle).not.toHaveBeenCalled()
   native.timings[0].complete(true)
   expect(options.onSettle).toHaveBeenCalledExactlyOnceWith('sidebar', 1)
+})
+
+it('records native recognition and settlement snapshots only when diagnostics are requested', () => {
+  const options = prepare()
+  const trace = vi.fn()
+  createPhonePanGesture({ ...options, onTrace: trace })
+  begin(options.manager, 100, 130)
+  native.callbacks.update?.(movement(350))
+  native.callbacks.end?.(movement(350))
+  native.callbacks.finalize?.(movement(350), true)
+  native.timings[0].complete(true)
+
+  expect(trace.mock.calls.map(([event]) => event.phase)).toEqual([
+    'down', 'intent', 'start', 'end', 'settle', 'finalize', 'settled',
+  ])
+  expect(trace.mock.calls[0][0]).toMatchObject({ x: 100, y: 100, offset: -304, width: 390, mode: 'wait' })
+  expect(trace.mock.calls[1][0]).toMatchObject({ mode: 'move', translationX: 30, translationY: 0 })
+  expect(trace.mock.calls[4][0]).toMatchObject({ target: 'sidebar', epoch: 1 })
+  expect(trace.mock.calls[6][0]).toMatchObject({ success: true, offset: 0, ticket: 1 })
+})
+
+it('adds no diagnostic JS dispatch to ordinary gestures', () => {
+  const options = prepare()
+  begin(options.manager, 100, 130)
+  native.callbacks.update?.(movement(350))
+  native.callbacks.end?.(movement(350))
+  native.callbacks.finalize?.(movement(350), true)
+  expect(native.dispatch).not.toHaveBeenCalled()
+  native.timings[0].complete(true)
+  expect(native.dispatch).toHaveBeenCalledExactlyOnceWith(options.onSettle)
 })
 
 function prepare() {

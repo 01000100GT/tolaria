@@ -11,6 +11,10 @@ final class MobileInspectorContextTests: XCTestCase {
   }
 
   func testInspectorIdentifiesTheSelectedFileWithoutAddingAnotherHeader() {
+    for _ in 0..<3 { verifyNoteChangeFromInspector() }
+  }
+
+  private func verifyNoteChangeFromInspector() {
     let app = launch()
     let first = openInspector(app)
     if phone {
@@ -21,9 +25,12 @@ final class MobileInspectorContextTests: XCTestCase {
     XCTAssertTrue(other.waitForExistence(timeout: 5))
     other.tap()
     let changed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-      self.element(app, "editor-toolbar-title").label != first
+      let title = self.element(app, "editor-toolbar-title")
+      return title.exists && title.label != first
     }, object: nil)
-    wait(for: [changed], timeout: 10)
+    let result = XCTWaiter.wait(for: [changed], timeout: 10)
+    if result != .completed { capture("note-selection-did-not-open-editor") }
+    XCTAssertEqual(result, .completed, "One tap must select the note and open the editor")
     let second = openInspector(app)
     XCTAssertNotEqual(first, second)
     capture("inspector-context-after-note-change")
@@ -45,7 +52,9 @@ final class MobileInspectorContextTests: XCTestCase {
     continueAfterFailure = false
     XCUIDevice.shared.orientation = phone ? .portrait : .landscapeLeft
     let app = XCUIApplication(bundleIdentifier: "com.tolaria.mobile.dev")
-    let search = "?source=fixture&phoneState=editor&tabletPanels=all&forceDesktopPanels=1&qaRun=inspector-context"
+    let diagnostics = ProcessInfo.processInfo.environment["TOLARIA_QA_GESTURE_TRACE_URL"]
+      .map { "&layoutProbe=1&metricSink=\($0)" } ?? ""
+    let search = "?source=fixture&phoneState=editor&tabletPanels=all&forceDesktopPanels=1&qaRun=inspector-context" + diagnostics
     app.launchArguments = ["--tolaria-mobile-search", search]
     app.launchEnvironment["TOLARIA_MOBILE_SEARCH"] = search
     app.launch()

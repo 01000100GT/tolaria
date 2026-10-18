@@ -86,7 +86,7 @@ function PhoneWorkspaceChrome(props: PhoneWorkspaceChromeProps) {
   )
   const [sourceModeRequest, setSourceModeRequest] = useState(0)
   const width = usePhoneViewportWidth()
-  const panelRail = usePhonePanelRail(phoneState, width, setPhoneState)
+  const panelRail = usePhonePanelRail(phoneState, width, setPhoneState, options.layoutProbe)
   const editorCommandRegistry = useMobileEditorCommandRegistry()
   const tableOfContents = usePhoneTableOfContentsTarget(setPhoneState)
   const phoneLayoutProbe = useMobileLayoutProbe(options.layoutProbe)

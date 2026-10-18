@@ -775,6 +775,10 @@ panels. `phoneNativePanGesture` recognizes intent and settles with Reanimated;
 an epoch rejects interrupted completion callbacks. `phonePanelRail` owns pure
 geometry, bounds and snap selection. `PhoneWorkspaceTransition` clips the rail
 without creating preview copies or replaying a route entrance after settlement.
+The native detector has exclusive gesture ownership: the legacy JavaScript
+PanResponder is attached only for the web fallback, never to the native stage.
+Opt-in layout probes can record recognition, numeric offsets and settlement
+epochs through the existing loopback QA sink; ordinary gestures emit no trace.
 `usePhoneViewportWidth` subtracts the app's outer horizontal safe areas exactly
 once; gesture coordinates are local to that usable viewport. Lightweight panes
 are prepared eagerly, while the single editor is retained after its first visit.
