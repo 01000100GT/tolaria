@@ -5,6 +5,7 @@ import { withSavedWorkspace } from './workspaceWriteQueue'
 import { createGitTaskRunner } from './gitTaskRunner'
 import { requireActiveSync } from '../syncCancellation'
 import { ensureGitMergeHistory } from './gitHistory'
+import { fetchTrackedGitBranch } from './fetchTrackedGitBranch'
 
 export type GitSyncPhase = 'checkpoint' | 'fetch' | 'checkout' | 'push'
 export type GitLocalAccess = <T>(operation: () => Promise<{ value: T; workspaceChanged: boolean }>) => Promise<T>
@@ -77,7 +78,7 @@ async function syncHeads(options: GitRemoteOptions, connection: GitConnection, a
 
 async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConnection, author: GitAuthor) {
   emitPhase(options, 'fetch')
-  await git.fetch({ ...connection, singleBranch: true, tags: false })
+  await fetchTrackedGitBranch(connection)
   const remoteHead = () => git.resolveRef({ ...connection, ref: `refs/remotes/origin/${connection.ref}` })
   const remoteOid = await ensureGitMergeHistory(connection, await remoteHead(), async boundaries => {
     for (const oid of boundaries) {

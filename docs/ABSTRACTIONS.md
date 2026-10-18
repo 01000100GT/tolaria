@@ -128,6 +128,12 @@ still belong to isomorphic-git. This avoids a whole-vault parallel stat fan-out
 and does not refresh the index just because unchanged timestamps drifted.
 Local Git contexts whitelist filesystem, directory and cache options so a
 transport's short branch ref cannot redirect a checkpoint away from HEAD.
+`fetchTrackedGitBranch.ts` uses the last-known origin tracking ref for ordinary
+same-name branch negotiation, with an explicit remote branch. An unpublished
+local checkpoint therefore does not cause the server to resend unchanged objects.
+Nonstandard remotes/upstreams retain the library's default selection. Fetch stays
+single-branch and does not alter the explicit shallow-history deepening path
+(ADR 0239).
 Recovery and push use fully-qualified branch refs, including when older working
 copies contain a stray pseudo-ref that shadows the branch's short name.
 `gitMerge.ts` builds conflict-free merge objects without changing
