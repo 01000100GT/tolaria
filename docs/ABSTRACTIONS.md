@@ -215,6 +215,10 @@ renders; a new vault selection revision still invalidates that snapshot.
 the catalog, serialized with working-copy operations. The bridge validates the
 managed root and completes interrupted writes before indexing under the native
 mutation lock. It does not add a persistent cache or bypass a real disk refresh.
+The native Git QA probe benchmarks this same preload and pure snapshot path on
+its owned disposable working copy, never a saved user vault. It reports native
+index/bridge time, snapshot construction, throwaway interaction timings and
+JavaScript scheduling delay separately from the Git round-trip measurements.
 `savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
 and remounts from disk; a pre-barrier failure instead resumes the existing draft.

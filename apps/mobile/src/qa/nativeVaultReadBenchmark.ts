@@ -1,20 +1,20 @@
-import { restoreNativeWorkspace } from '../workspace/nativeWorkspaceAccess'
+import { preloadNativeWorkspace } from '../workspace/preloadNativeWorkspace'
 import { buildLocalVaultWorkspaceSnapshot } from '../workspace/localVaultSnapshot'
 import { applyMobileWorkspaceEditWithWrites } from '../workspace/mobileWorkspaceEditing'
 import type { MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
 import { noteListFilterCountsForSelection, notesForSidebarSelection } from '../screens/tabletWorkspaceNavigation'
 
-/** Read-only timing on the already imported app-local copy; reports no note data. */
-export async function nativeVaultReadBenchmark() {
+/** Read-only timing on an explicit disposable fixture; reports no note data. */
+export async function nativeVaultReadBenchmark(vaultRootUri: string) {
   const started = performance.now()
-  const workspace = await restoreNativeWorkspace()
+  const workspace = await preloadNativeWorkspace({ vaultAlias: null, vaultLabel: 'Native QA', vaultRootUri })
   if (!workspace?.index) return null
   const readFinished = performance.now()
   const snapshot = buildLocalVaultWorkspaceSnapshot({
     files: workspace.index.files,
     folderPaths: workspace.index.directories,
-    vaultLabel: workspace.label,
-    vaultPath: workspace.uri,
+    vaultLabel: workspace.vaultLabel,
+    vaultPath: workspace.vaultRootUri,
   })
   const snapshotMs = Math.round(performance.now() - readFinished)
   return {

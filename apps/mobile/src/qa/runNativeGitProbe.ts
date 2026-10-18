@@ -27,8 +27,9 @@ export async function runNativeGitProbe(endpoint: string) {
     const checkoutRecovery = await assertNativeGitRecovery(root)
     const { result: proof, eventLoop } = await measureEventLoopDelay(() => roundTrip(root, endpoint))
     const elapsedMs = Date.now() - started
-    const restoredVault = nativeFiles ? await nativeVaultReadBenchmark() : null
-    publishProof(endpoint, { ...proof, eventLoop, nativeFiles, nativeDigestVerified, checkoutRecovery, restoredVault, elapsedMs })
+    const fixtureVault = nativeFiles
+      ? await measureEventLoopDelay(() => nativeVaultReadBenchmark(new Directory(root, 'second').uri)) : null
+    publishProof(endpoint, { ...proof, eventLoop, nativeFiles, nativeDigestVerified, checkoutRecovery, fixtureVault, elapsedMs })
   } catch (error) {
     publishProof(endpoint, { error: error instanceof Error ? error.message : 'unknown', stack: error instanceof Error ? error.stack : null, passed: false })
   } finally {
