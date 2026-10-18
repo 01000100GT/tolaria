@@ -178,6 +178,14 @@ entry points acquire one loopback TCP port before creating fixtures or touching
 the simulator, reject overlapping runs, and release it in `finally`. Connections
 receive no data; process exit also releases the OS-owned lease. Other native QA
 entry points must still be scheduled sequentially; this is not an app data lock.
+`measureEventLoopDelay.ts` retains aggregate JavaScript timer-delay measurements
+and optionally accepts named phase transitions. `eventLoopSampler.ts` closes a
+phase synchronously before the next begins, so a blocked terminal segment is not
+misattributed to the following phase. Repeated phases remain separate and late
+callbacks are ignored after completion. The native Git proof records library
+clone progress phases and sync checkpoint/fetch/checkout/push boundaries using
+fixed diagnostic labels, never note content or paths. These samples measure
+JavaScript scheduling delay, not native animation frame rate.
 `nativeMetroProofLog.ts` is a host-only, bounded reader for development-build
 proofs that React Native sends to Metro instead of iOS system logs. The workspace
 persistence command accepts `--metro-log` and captures its byte boundary before

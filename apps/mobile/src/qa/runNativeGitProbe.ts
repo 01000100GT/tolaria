@@ -1,7 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system'
 import { requireOptionalNativeModule } from 'expo'
 import { nativeGitHttp } from '../workspace/git/nativeGitHttp'
-import git, { type HttpClient } from 'isomorphic-git'
+import git, { type GitProgressEvent, type HttpClient } from 'isomorphic-git'
 import { cloneGitVault, syncGitVault } from '../workspace/git/gitRemote'
 import { createExpoGitFileSystem } from '../workspace/git/expoGitFileSystem'
 import { gitVirtualRoot } from '../workspace/git/gitFileSystemPaths'
@@ -25,11 +25,11 @@ export async function runNativeGitProbe(endpoint: string) {
     const nativeDigestVerified = await verifyNativeDigest()
     const nativeFiles = await nativeFileAccessProof()
     const checkoutRecovery = await assertNativeGitRecovery(root)
-    const { result: proof, eventLoop } = await measureEventLoopDelay(() => roundTrip(root, endpoint))
+    const { result: proof, eventLoop, phases } = await measureEventLoopDelay(enter => roundTrip(root, endpoint, enter))
     const elapsedMs = Date.now() - started
     const fixtureVault = nativeFiles
       ? await measureEventLoopDelay(() => nativeVaultReadBenchmark(new Directory(root, 'second').uri)) : null
-    publishProof(endpoint, { ...proof, eventLoop, nativeFiles, nativeDigestVerified, checkoutRecovery, fixtureVault, elapsedMs })
+    publishProof(endpoint, { ...proof, eventLoop, phases, nativeFiles, nativeDigestVerified, checkoutRecovery, fixtureVault, elapsedMs })
   } catch (error) {
     publishProof(endpoint, { error: error instanceof Error ? error.message : 'unknown', stack: error instanceof Error ? error.stack : null, passed: false })
   } finally {
@@ -52,7 +52,7 @@ async function nativeFileAccessProof() {
   return checks
 }
 
-async function roundTrip(root: Directory, endpoint: string) {
+async function roundTrip(root: Directory, endpoint: string, enter: (phase: string) => void) {
   const first = new Directory(root, 'first')
   const second = new Directory(root, 'second')
   first.create()
@@ -66,10 +66,13 @@ async function roundTrip(root: Directory, endpoint: string) {
   const connection = (directory: Directory) => ({ fs: createExpoGitFileSystem(directory.uri), dir: gitVirtualRoot, http })
   const repositoryUrl = 'https://github.com/team/vault'
   const started = Date.now()
-  await cloneGitVault(connection(first), repositoryUrl)
+  enter('clone.first')
+  await cloneGitVault({ ...connection(first), onProgress: progressPhases('clone.first', enter) }, repositoryUrl)
   const firstCloned = Date.now()
-  await cloneGitVault(connection(second), repositoryUrl)
+  enter('clone.second')
+  await cloneGitVault({ ...connection(second), onProgress: progressPhases('clone.second', enter) }, repositoryUrl)
   const secondCloned = Date.now()
+  enter('fixture.edit')
   const content = '---\ncustom: preserved\ntags: [native]\n---\n# Native Git round trip\n'
   new File(first, 'note.md').write(content)
   const attachment = new Uint8Array([0, 255, 1, 128, 10, 0, 250])
@@ -77,13 +80,17 @@ async function roundTrip(root: Directory, endpoint: string) {
   new File(first, 'attachments', 'bytes.bin').write(attachment)
   new File(first, 'deleted.md').delete()
   const author = { name: 'Native QA', email: 'qa@example.invalid' }
-  const pushed = await syncGitVault(connection(first), author)
+  const sync = (directory: Directory, name: string) => syncGitVault({
+    ...connection(directory), onPhase: phase => enter(`${name}.${phase}`),
+  }, author)
+  const pushed = await sync(first, 'push')
   const firstSynced = Date.now()
-  const pulled = await syncGitVault(connection(second), author)
+  const pulled = await sync(second, 'pull')
   const secondSynced = Date.now()
-  const unchanged = await syncGitVault(connection(second), author)
+  const unchanged = await sync(second, 'unchanged')
   const unchangedSynced = Date.now()
   const unchangedSync = unchanged.kind === 'synced' && unchanged.changedFiles === 0 && !unchanged.workspaceChanged
+  enter('verify')
   const preserved = await verifyRoundTrip(second, content, attachment)
   const passed = preserved.binaryPreserved && preserved.deletionPreserved && preserved.contentPreserved
     && pushed.kind === 'synced' && pulled.kind === 'synced' && unchangedSync
@@ -95,6 +102,15 @@ async function roundTrip(root: Directory, endpoint: string) {
     unchangedSyncMs: unchangedSynced - secondSynced,
   }
   return { passed, ...preserved, unchangedSync, pushed: pushed.kind, pulled: pulled.kind, timings }
+}
+
+function progressPhases(group: string, enter: (phase: string) => void) {
+  let previous: string | undefined
+  return ({ phase }: GitProgressEvent) => {
+    if (phase === previous) return
+    previous = phase
+    enter(`${group}.${phase}`)
+  }
 }
 
 async function verifyRoundTrip(second: Directory, content: string, attachment: Uint8Array) {

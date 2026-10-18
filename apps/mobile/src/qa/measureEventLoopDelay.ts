@@ -1,29 +1,22 @@
-const sampleIntervalMs = 16
-const longDelayMs = 50
+import { createEventLoopSampler, createPhaseSampler, sampleIntervalMs } from './eventLoopSampler'
 
 /** Measures JavaScript scheduling delay, not native animation frame rate. */
-export async function measureEventLoopDelay<T>(operation: () => Promise<T>) {
+export async function measureEventLoopDelay<T>(operation: (enterPhase: (phase: string) => void) => Promise<T>) {
   const started = performance.now()
-  let previous = started
-  let sampleCount = 0
-  let longDelayCount = 0
-  let maxDelayMs = 0
-  const sample = (now: number) => {
-    const delay = Math.max(0, now - previous - sampleIntervalMs)
-    previous = now
-    sampleCount += 1
-    if (delay >= longDelayMs) longDelayCount += 1
-    maxDelayMs = Math.max(maxDelayMs, delay)
-  }
-  const timer = setInterval(() => sample(performance.now()), sampleIntervalMs)
+  const aggregate = createEventLoopSampler(started)
+  const phaseSampler = createPhaseSampler()
+  const timer = setInterval(() => {
+    const now = performance.now()
+    aggregate.sample(now)
+    phaseSampler.sample(now)
+  }, sampleIntervalMs)
   try {
-    const result = await operation()
+    const result = await operation(phaseSampler.enter)
     const finished = performance.now()
-    if (finished - previous >= sampleIntervalMs) sample(finished)
-    return { result, eventLoop: {
-      elapsedMs: Math.round(finished - started), sampleCount, longDelayCount, maxDelayMs: Math.ceil(maxDelayMs),
-    } }
+    const phases = phaseSampler.finish(finished)
+    return { result, eventLoop: aggregate.finish(finished), ...(phases.length ? { phases } : {}) }
   } finally {
     clearInterval(timer)
+    phaseSampler.finish(performance.now())
   }
 }
