@@ -1,5 +1,6 @@
 import { preloadNativeWorkspace } from '../workspace/preloadNativeWorkspace'
 import { buildCooperativeWorkspaceSnapshot } from '../workspace/cooperativeWorkspaceSnapshot'
+import { readWorkspaceSnapshotPreview, type WorkspaceSnapshotPreview } from '../workspace/workspaceSnapshotPreview'
 import { applyMobileWorkspaceEditWithWrites } from '../workspace/mobileWorkspaceEditing'
 import type { MobileWorkspaceSnapshot } from '../workspace/mobileWorkspaceModel'
 import { noteListFilterCountsForSelection, notesForSidebarSelection } from '../screens/tabletWorkspaceNavigation'
@@ -16,6 +17,10 @@ export async function nativeVaultReadBenchmark(vaultRootUri: string) {
 
 async function measureSnapshot(vaultRootUri: string) {
   const started = performance.now()
+  const preview = await readWorkspaceSnapshotPreview({ vaultPath: vaultRootUri, vaultLabel: 'Native QA' })
+  const previewFinished = performance.now()
+  if (preview && !sourceFreePreview(preview)) throw new Error('nativeBenchmarkEditablePreview')
+  const readStarted = performance.now()
   const workspace = await preloadNativeWorkspace({ vaultAlias: null, vaultLabel: 'Native QA', vaultRootUri })
   if (!workspace?.index) return null
   const readFinished = performance.now()
@@ -30,8 +35,18 @@ async function measureSnapshot(vaultRootUri: string) {
   return {
     fileCount: workspace.index.files.length,
     snapshot,
-    timings: { cacheHit, nativeReadMs: Math.round(readFinished - started), snapshotMs },
+    timings: { previewHit: preview !== null, previewMs: Math.round(previewFinished - started),
+      previewNoteCount: preview?.allNotes.length ?? 0, previewSourceFree: true,
+      cacheHit, nativeReadMs: Math.round(readFinished - readStarted), snapshotMs },
   }
+}
+
+function sourceFreePreview(preview: WorkspaceSnapshotPreview) {
+  if (['sync', 'editorBlocks', 'editorBullets', 'input'].some(key => key in preview)) return false
+  const sourceKeys = ['rawContent', 'editorBlocks', 'editorBullets']
+  const notes = preview.notes.concat(preview.allNotes)
+  return notes.every(note => sourceKeys.every(key => !(key in note)))
+    && Object.values(preview.typeDefinitions).every(type => !('rawContent' in type) && !('template' in type))
 }
 
 function measureReadOnlyInteractions(snapshot: MobileWorkspaceSnapshot) {

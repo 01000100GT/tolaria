@@ -126,7 +126,7 @@ it.each(['malformed', 'checksum', 'version', 'shape'])('treats %s cache corrupti
   const record = JSON.parse(value)
   if (corruption === 'checksum') record.payload = record.payload.replace('keep', 'lost')
   if (corruption === 'version') record.version = -1
-  if (corruption === 'shape') { record.payload = '[]'; record.checksum = hash(record.payload) }
+  if (corruption === 'shape') { record.payload = '[]'; record.checksum = hash(JSON.stringify([record.version, record.identity, record.input, record.payload])) }
   disk.files.set(key, corruption === 'malformed' ? '{broken' : JSON.stringify(record))
   const hit = vi.fn()
   const next = await buildCooperativeWorkspaceSnapshot(input, undefined, { storage: disk, onCache: hit })
@@ -149,7 +149,7 @@ it.each(['note', 'type'])('independently checks cached editable %s text against 
   if (target === 'note') snapshot.notes[0].rawContent = '# Stale editor source'
   else snapshot.typeDefinitions.Essay.rawContent = '# Stale type source'
   record.payload = JSON.stringify(snapshot)
-  record.checksum = hash(record.payload)
+  record.checksum = hash(JSON.stringify([record.version, record.identity, record.input, record.payload]))
   disk.files.set(key, JSON.stringify(record))
   const hit = vi.fn()
   const next = await buildCooperativeWorkspaceSnapshot(input, undefined, { storage: disk, onCache: hit })
