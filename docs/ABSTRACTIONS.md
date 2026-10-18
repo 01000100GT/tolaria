@@ -705,7 +705,11 @@ Workspace surfaces now sit one level above those primitives:
 Mobile UI copy should reuse the localization catalog in `src/lib/locales/en.json` whenever the desktop concept already exists. New mobile-specific copy must be added to that catalog and translated through the normal Lara workflow.
 
 `useMobileModalDismiss` registers a visible sheet's existing Cancel/Close callback
-with `mobileModalDismissal`. The last opened dialog owns Escape until cleanup;
+with `mobileModalDismissal`. Android hardware Back uses the same topmost dismissal
+stack while a sheet is visible; its listener is removed with the last sheet and
+does not intercept normal activity navigation when no sheet is open. Native
+`Modal` surfaces retain their `onRequestClose` path. The last opened dialog owns
+Escape until cleanup;
 rerenders update the callback without changing ownership. A single native/browser
 subscription and event deduplication prevent one Escape from closing two dialogs.
 Native modal eligibility is separate from palette arrow navigation, preserving
