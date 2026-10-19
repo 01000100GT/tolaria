@@ -2,8 +2,7 @@ import { mergeAttributes, Node, type AnyExtension } from '@tiptap/core'
 import {
   mobileDisplayMathSource,
   mobileInlineMathSource,
-  renderMobileDisplayMathHtml,
-  renderMobileInlineMathHtml,
+  renderMobileMathIntoElement,
 } from './MobileWysiwygMathHtml'
 
 const MATH_BLOCK_TYPE = 'mathBlock'
@@ -41,11 +40,11 @@ type PendingMathRenderProof = {
 }
 type MathNodeDefinition = {
   className: string
+  displayMode: boolean
   group: 'block' | 'inline'
   inline: boolean
   name: typeof MATH_BLOCK_TYPE | typeof MATH_INLINE_TYPE
   parseTags: string[]
-  renderHtml: (latex: string) => string
   source: (latex: string) => string
   tagName: 'div' | 'span'
 }
@@ -76,6 +75,7 @@ type MobileMathBridgeOptions = {
 
 const mathRenderProofs = new Map<string, PendingMathRenderProof>()
 const mathRenderProofTimeoutMs = 1000
+let mathRenderProofSequence = 0
 const mathBridgeCss = `
   .math {
     color: inherit;
@@ -114,6 +114,7 @@ const mathBridgeCss = `
 
 const inlineMathDefinition = {
   className: 'math math--inline',
+  displayMode: false,
   group: 'inline',
   inline: true,
   name: MATH_INLINE_TYPE,
@@ -121,13 +122,13 @@ const inlineMathDefinition = {
     'span[data-type="mathInline"]',
     'span.math--inline[data-latex]',
   ],
-  renderHtml: renderMobileInlineMathHtml,
   source: mobileInlineMathSource,
   tagName: 'span',
 } as const satisfies MathNodeDefinition
 
 const blockMathDefinition = {
   className: 'math math--display',
+  displayMode: true,
   group: 'block',
   inline: false,
   name: MATH_BLOCK_TYPE,
@@ -135,7 +136,6 @@ const blockMathDefinition = {
     'div[data-type="mathBlock"]',
     'div.math--display[data-latex]',
   ],
-  renderHtml: renderMobileDisplayMathHtml,
   source: mobileDisplayMathSource,
   tagName: 'div',
 } as const satisfies MathNodeDefinition
@@ -236,7 +236,7 @@ function mathElement(
 ): HTMLElement {
   const element = document.createElement(definition.tagName)
   applyHtmlAttributes(element, attributes)
-  element.innerHTML = definition.renderHtml(latex)
+  renderMobileMathIntoElement(latex, element, definition.displayMode)
   return element
 }
 
@@ -312,7 +312,7 @@ function requestMathRenderProof(
   sendBridgeMessage: (message: MathBridgeMessage) => void,
   kind: MathRenderKind,
 ): Promise<boolean> {
-  const messageId = Math.random().toString(36).substring(2)
+  const messageId = String(++mathRenderProofSequence)
 
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
