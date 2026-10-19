@@ -36,7 +36,7 @@ export function mobileWorkspacePathHistoryEntry(
   if (!isPathHistoryEdit(sourceEdit)) return null
   if (sourceEdit.type === 'moveNoteToFolder') return movedNoteHistoryEntry(previousSnapshot, nextSnapshot, sourceEdit)
   if (sourceEdit.type === 'renameNoteFile') return renamedNoteHistoryEntry(previousSnapshot, nextSnapshot, sourceEdit)
-  return renamedFolderHistoryEntry(previousSnapshot, nextSnapshot, sourceEdit)
+  return renamedFolderHistoryEntry(nextSnapshot, sourceEdit)
 }
 
 function titlePropertyPathHistoryEntry(
@@ -128,7 +128,6 @@ function renamedNoteContentHistoryEntry(
 }
 
 function renamedFolderHistoryEntry(
-  previousSnapshot: MobileWorkspaceSnapshot,
   nextSnapshot: MobileWorkspaceSnapshot,
   sourceEdit: Extract<PathHistoryEdit, { type: 'renameFolder' }>,
 ): MobileWorkspaceHistoryEntry | null {

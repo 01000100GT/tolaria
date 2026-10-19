@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarios } from '../fixtures/workspaceFixtures'
 import type { MobileNote } from '../workspace/mobileWorkspaceModel'
 import {
@@ -13,7 +14,7 @@ import {
 
 describe('tablet workspace editor edit actions', () => {
   it('builds selected-note state edits with desktop frontmatter semantics', () => {
-    const note = workspaceScenarios.default.notes[0]!
+    const note = requiredFixture(workspaceScenarios.default.notes[0])
 
     expect(deleteSelectedNoteEdit(note)).toEqual({
       noteId: note.id,
@@ -45,7 +46,7 @@ describe('tablet workspace editor edit actions', () => {
 
   it('builds default and selected note-width edits through desktop properties', () => {
     const note = {
-      ...workspaceScenarios.default.notes[0]!,
+      ...requiredFixture(workspaceScenarios.default.notes[0]),
       noteWidth: 'wide',
     } satisfies MobileNote
 
@@ -62,7 +63,7 @@ describe('tablet workspace editor edit actions', () => {
   })
 
   it('routes editor content saves to markdown or text-file desktop writes', () => {
-    const markdownNote = workspaceScenarios.default.notes[0]!
+    const markdownNote = requiredFixture(workspaceScenarios.default.notes[0])
     const textFile = {
       ...markdownNote,
       fileKind: 'text' as const,

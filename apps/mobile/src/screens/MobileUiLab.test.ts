@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import {
   mobileSnapshotWithRequestedSelectedNote,
@@ -32,7 +33,7 @@ describe('requestedActionSheetQaTarget', () => {
 describe('mobileSnapshotWithRequestedSelectedNote', () => {
   it('selects a requested note that exists in the visible snapshot', () => {
     const snapshot = workspaceScenarioForId('default')
-    const noteId = snapshot.notes[1]!.id
+    const noteId = requiredFixture(snapshot.notes[1]).id
 
     expect(mobileSnapshotWithRequestedSelectedNote(snapshot, noteId).selectedNoteId).toBe(noteId)
   })
@@ -40,7 +41,7 @@ describe('mobileSnapshotWithRequestedSelectedNote', () => {
   it('selects a requested note that only exists in allNotes', () => {
     const snapshot = workspaceScenarioForId('default')
     const hiddenNote = {
-      ...snapshot.notes[0]!,
+      ...requiredFixture(snapshot.notes[0]),
       id: 'hidden-relationship-note.md',
       title: 'Hidden relationship note',
     }

@@ -1,4 +1,5 @@
 import { webcrypto } from 'node:crypto'
+import { requiredFixture } from '../../fixtures/requiredFixture'
 import { describe, expect, it, vi } from 'vitest'
 import { createGitDigest, installGitDigest, type GitCryptoHost } from './gitDigest'
 
@@ -23,7 +24,7 @@ describe('native Git digest boundary', () => {
     const host: GitCryptoHost = {}
     installGitDigest(host, createGitDigest((algorithm, bytes) => webcrypto.subtle.digest(algorithm, bytes)))
     const result = await host.crypto?.subtle?.digest?.('SHA-1', new Uint8Array())
-    expect(Buffer.from(result!).toString('hex')).toBe('da39a3ee5e6b4b0d3255bfef95601890afd80709')
+    expect(Buffer.from(requiredFixture(result)).toString('hex')).toBe('da39a3ee5e6b4b0d3255bfef95601890afd80709')
   })
 
   it('preserves byte offsets and supplies a plain Uint8Array for native conversion', async () => {

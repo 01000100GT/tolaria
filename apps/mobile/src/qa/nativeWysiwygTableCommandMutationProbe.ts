@@ -230,7 +230,7 @@ function hasProbeTableAlignment(markdown: MarkdownContent): boolean {
 
 function tableHasCommandMutation(table: string[][]): boolean {
   const [header, , ...bodyRows] = table
-  if (!header || !header.includes('Column') || !header.includes('Value')) return false
+  if (!header?.includes('Column') || !header.includes('Value')) return false
   if (header.length < 3 || bodyRows.length < 2) return false
 
   return bodyRows.some((row) => row.length >= 3 && row.includes('Item') && row.includes('Detail'))
@@ -259,23 +259,29 @@ function markdownTables(markdown: MarkdownContent): string[][][] {
   let index = 0
 
   while (index < lines.length) {
-    const current = lines[index] ?? ''
-    const next = lines[index + 1] ?? ''
-    if (!isMarkdownTableRow(current) || !isMarkdownTableDivider(next)) {
-      index += 1
-      continue
-    }
-
-    const table: string[][] = [markdownTableCells(current), markdownTableCells(next)]
-    index += 2
-    while (index < lines.length && isMarkdownTableRow(lines[index] ?? '')) {
-      table.push(markdownTableCells(lines[index] ?? ''))
-      index += 1
-    }
-    tables.push(table)
+    const parsed = markdownTableAt(lines, index)
+    if (parsed) tables.push(parsed.table)
+    index = parsed?.nextIndex ?? index + 1
   }
 
   return tables
+}
+
+function markdownTableAt(lines: string[], index: number): { table: string[][]; nextIndex: number } | null {
+  const current = markdownTableLine(lines, index)
+  const next = markdownTableLine(lines, index + 1)
+  if (!isMarkdownTableRow(current) || !isMarkdownTableDivider(next)) return null
+  const table = [markdownTableCells(current), markdownTableCells(next)]
+  let nextIndex = index + 2
+  while (nextIndex < lines.length && isMarkdownTableRow(markdownTableLine(lines, nextIndex))) {
+    table.push(markdownTableCells(markdownTableLine(lines, nextIndex)))
+    nextIndex += 1
+  }
+  return { table, nextIndex }
+}
+
+function markdownTableLine(lines: string[], index: number): string {
+  return lines[index] ?? ''
 }
 
 function isMarkdownTableRow(line: string): boolean {

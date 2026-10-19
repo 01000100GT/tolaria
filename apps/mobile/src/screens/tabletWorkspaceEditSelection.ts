@@ -2,11 +2,11 @@ import type {
   MobileSavedView,
   MobileWorkspaceSnapshot,
 } from '../workspace/mobileWorkspaceModel'
-import {
+import type {
   applyMobileWorkspaceEditWithWrites,
-  type MobileWorkspaceEdit,
-  type MobileWorkspaceEditResult,
-  type MobileWorkspaceWrite,
+  MobileWorkspaceEdit,
+  MobileWorkspaceEditResult,
+  MobileWorkspaceWrite,
 } from '../workspace/mobileWorkspaceEditing'
 import {
   mobileFolderName,

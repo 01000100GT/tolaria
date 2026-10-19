@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarios } from '../fixtures/workspaceFixtures'
 import {
   changeNoteTypeEditFromForm,
@@ -46,7 +47,7 @@ describe('tablet workspace note retarget actions', () => {
   })
 
   it('renames the selected note file to the desktop title slug', () => {
-    const selectedNote = workspaceScenarios.default.notes[0]!
+    const selectedNote = requiredFixture(workspaceScenarios.default.notes[0])
 
     expect(renameNoteFileToTitleEdit(selectedNote)).toEqual({
       filenameStem: 'workflow-orchestration-essay',
@@ -61,7 +62,7 @@ describe('tablet workspace note retarget actions', () => {
 
   it('renames blank titles to the desktop untitled filename fallback', () => {
     const selectedNote = {
-      ...workspaceScenarios.default.notes[0]!,
+      ...requiredFixture(workspaceScenarios.default.notes[0]),
       title: '   ',
     }
 

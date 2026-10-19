@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarios } from '../fixtures/workspaceFixtures'
 import type { MobileViewFilterGroup } from '../workspace/mobileWorkspaceModel'
 import {
@@ -56,7 +57,7 @@ describe('tablet workspace view definition save', () => {
 
     expect(edit).toEqual({
       definition: {
-        ...views[0]!.definition,
+        ...requiredFixture(views[0]).definition,
         color: 'green',
         filters,
         icon: 'tag',
@@ -68,8 +69,9 @@ describe('tablet workspace view definition save', () => {
       viewId: 'view-active-procedures',
     })
     expect(edit?.definition.filters).not.toBe(filters)
-    if ('all' in edit!.definition.filters && 'all' in filters) {
-      const editedTagFilter = edit!.definition.filters.all[1]
+    const savedEdit = requiredFixture(edit)
+    if ('all' in savedEdit.definition.filters && 'all' in filters) {
+      const editedTagFilter = savedEdit.definition.filters.all[1]
       const originalTagFilter = filters.all[1]
       if (!('value' in editedTagFilter) || !('value' in originalTagFilter)) {
         throw new Error('Expected condition filters')
