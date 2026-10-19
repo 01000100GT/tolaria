@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import appCommandManifest from '../../../../src/shared/appCommandManifest.json'
 import { workspaceScenarios } from '../fixtures/workspaceFixtures'
 import {
@@ -472,7 +473,7 @@ describe('mobile command palette', () => {
   it('falls back to snapshot content when no editor save command is registered', () => {
     const handlers = commandHandlers({ onSaveActiveEditor: undefined })
     const command = enabledCommand(handlers, appCommandManifest.commands.fileSave.id)
-    const selectedNote = handlers.selectedNote!
+    const selectedNote = requiredFixture(handlers.selectedNote)
 
     command.execute()
 
@@ -494,7 +495,7 @@ describe('mobile command palette', () => {
 function enabledCommand(handlers: MobileCommandPaletteHandlers, id: string) {
   const command = buildMobileCommandPaletteCommands(handlers).find((candidate) => candidate.id === id)
   expect(command?.enabled).toBe(true)
-  return command!
+  return requiredFixture(command)
 }
 
 function commandHandlers(
@@ -502,10 +503,22 @@ function commandHandlers(
 ): MobileCommandPaletteHandlers {
   const selectedNote = workspaceScenarios.default.notes[0] ?? null
   const handlers: MobileCommandPaletteHandlers = {
+    ...workspaceCommandHandlers(),
+    ...editorCommandHandlers(),
     canRedoWorkspaceEdit: true,
     canUndoWorkspaceEdit: true,
     canGoBack: true,
     canGoForward: true,
+    noteListFilter: 'open',
+    noteListFilterVisible: false,
+    selectedNote,
+    snapshot: workspaceScenarios.default,
+  }
+  return Object.assign(handlers, overrides)
+}
+
+function workspaceCommandHandlers() {
+  return {
     onCopyDeepLink: vi.fn(),
     onCopyFilePath: vi.fn(),
     onCopySelectedFolderPath: vi.fn(),
@@ -535,6 +548,11 @@ function commandHandlers(
     onOpenTableOfContents: vi.fn(),
     onOpenTypeActions: vi.fn(),
     onOpenViewActions: vi.fn(),
+  }
+}
+
+function editorCommandHandlers() {
+  return {
     onMoveSelectedViewDown: vi.fn(),
     onMoveSelectedViewUp: vi.fn(),
     onNoteListFilterChange: vi.fn(),
@@ -559,17 +577,12 @@ function commandHandlers(
     onViewAll: vi.fn(),
     onViewEditorList: vi.fn(),
     onViewEditorOnly: vi.fn(),
-    noteListFilter: 'open',
-    noteListFilterVisible: false,
-    selectedNote,
-    snapshot: workspaceScenarios.default,
   }
-  return Object.assign(handlers, overrides)
 }
 
 function selectedFile(overrides: Partial<MobileNote>): MobileNote {
   return {
-    ...workspaceScenarios.default.notes[0]!,
+    ...requiredFixture(workspaceScenarios.default.notes[0]),
     ...overrides,
   }
 }

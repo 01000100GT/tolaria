@@ -7,7 +7,7 @@ export const MOBILE_CLIPBOARD_WRITES_GLOBAL_KEY = '__TOLARIA_MOBILE_CLIPBOARD_WR
 type MobileClipboardText = string
 
 export type MobileClipboardReader = () => Promise<MobileClipboardText>
-export type MobileClipboardWriteResult = boolean | void
+export type MobileClipboardWriteResult = boolean | undefined
 export type MobileClipboardWriter = (text: MobileClipboardText) => Promise<MobileClipboardWriteResult>
 
 export async function readMobileClipboardText(

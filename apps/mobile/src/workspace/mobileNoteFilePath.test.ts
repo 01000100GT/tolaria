@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import { buildMobileFilePathForNote, buildMobileFilePathForRelativePath } from './mobileNoteFilePath'
 
 describe('mobile note file paths', () => {
   it('copies native vault URIs with encoded path segments', () => {
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     expect(buildMobileFilePathForNote({
       note,
@@ -16,7 +17,7 @@ describe('mobile note file paths', () => {
   })
 
   it('falls back to portable paths when no native vault root is available', () => {
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     expect(buildMobileFilePathForNote({ note, vaultRootUri: null })).toEqual({
       ok: true,
@@ -27,7 +28,7 @@ describe('mobile note file paths', () => {
   it('rejects missing notes and unsafe paths', () => {
     expect(buildMobileFilePathForNote({ note: null })).toEqual({ error: 'missing_note', ok: false })
     expect(buildMobileFilePathForNote({
-      note: { ...workspaceScenarioForId('default').notes[0]!, id: '../secret.md', path: '' },
+      note: { ...requiredFixture(workspaceScenarioForId('default').notes[0]), id: '../secret.md', path: '' },
     })).toEqual({ error: 'unsafe_path', ok: false })
   })
 

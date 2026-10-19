@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarios } from '../fixtures/workspaceFixtures'
 import type { MobileNote } from './mobileWorkspaceModel'
 import {
@@ -37,7 +38,7 @@ describe('mobile note action mode', () => {
 
 function selectedNote(overrides: Partial<MobileNote>): MobileNote {
   return {
-    ...workspaceScenarios.default.notes[0]!,
+    ...requiredFixture(workspaceScenarios.default.notes[0]),
     ...overrides,
   }
 }

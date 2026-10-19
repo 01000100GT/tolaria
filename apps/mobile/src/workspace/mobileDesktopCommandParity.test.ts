@@ -35,16 +35,16 @@ const noteBuilderCommandsCoveredByManifest = new Set([
 ])
 
 const templateIdExpansions = new Map<string, string[]>([
-  ['`filter-${filter}`', ['filter-archived', 'filter-open']],
-  ['`list-${commandSlug(item.typeName ?? item.label)}`', ['list-{type}']],
-  ['`list-${commandSlug(typeName)}`', ['list-{type}']],
-  ['`list-${slug}`', ['list-{type}']],
-  ['`new-${commandSlug(typeName)}`', ['new-{type}']],
-  ['`move-view-${directionKeyword}`', ['move-view-down', 'move-view-up']],
-  ['`new-${slug}`', ['new-{type}']],
-  ['`set-default-note-width-${mode}`', ['set-default-note-width-normal', 'set-default-note-width-wide']],
-  ['`set-note-width-${mode}`', ['set-note-width-normal', 'set-note-width-wide']],
-  ['`turn-current-block-into-${target.key}`', ['turn-current-block-into-{type}']],
+  [`\`filter-\${filter}\``, ['filter-archived', 'filter-open']],
+  [`\`list-\${commandSlug(item.typeName ?? item.label)}\``, ['list-{type}']],
+  [`\`list-\${commandSlug(typeName)}\``, ['list-{type}']],
+  [`\`list-\${slug}\``, ['list-{type}']],
+  [`\`new-\${commandSlug(typeName)}\``, ['new-{type}']],
+  [`\`move-view-\${directionKeyword}\``, ['move-view-down', 'move-view-up']],
+  [`\`new-\${slug}\``, ['new-{type}']],
+  [`\`set-default-note-width-\${mode}\``, ['set-default-note-width-normal', 'set-default-note-width-wide']],
+  [`\`set-note-width-\${mode}\``, ['set-note-width-normal', 'set-note-width-wide']],
+  [`\`turn-current-block-into-\${target.key}\``, ['turn-current-block-into-{type}']],
 ])
 
 describe('mobile desktop command parity', () => {

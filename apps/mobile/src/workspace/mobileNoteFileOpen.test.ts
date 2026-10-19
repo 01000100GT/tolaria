@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import {
   MOBILE_FILE_OPEN_ATTEMPTS_GLOBAL_KEY,
@@ -15,7 +16,7 @@ describe('mobile note file open', () => {
 
   it('opens a selected file through the native opener', async () => {
     const opener: MobileFileOpener = vi.fn().mockResolvedValue({ opened: true, shared: true })
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     await expect(openMobileNoteFile({
       note,
@@ -44,7 +45,7 @@ describe('mobile note file open', () => {
 
   it('records browser attempts without calling the native opener', async () => {
     const opener: MobileFileOpener = vi.fn()
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     await expect(withBrowserRuntime(() => openMobileNoteFile({
       note,
@@ -74,7 +75,7 @@ describe('mobile note file open', () => {
       reason: 'missingNote',
     })
     await expect(openMobileNoteFile({
-      note: { ...workspaceScenarioForId('default').notes[0]!, id: '../secret.md', path: '' },
+      note: { ...requiredFixture(workspaceScenarioForId('default').notes[0]), id: '../secret.md', path: '' },
       opener,
     })).resolves.toEqual({
       ok: false,
