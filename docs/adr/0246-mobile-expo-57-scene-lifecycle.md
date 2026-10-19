@@ -4,14 +4,14 @@ Platform: mobile
 
 ## Status
 
-Accepted. Supersedes ADR-0176's temporary Expo SDK 54 preview pin.
+Accepted. Supersedes ADR-0250's temporary Expo SDK 54 preview pin.
 
 ## Context
 
 The current Xcode 27 build aborts before JavaScript starts on iOS and iPadOS 27
 because the SDK 54 app uses the application lifecycle instead of UIScene. This
 was reproduced with the ordinary Release binary on both disposable simulators.
-The Expo Go 54 compatibility constraint that motivated ADR-0176 no longer
+The Expo Go 54 compatibility constraint that motivated ADR-0250 no longer
 defines the distribution target.
 
 ## Decision

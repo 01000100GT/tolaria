@@ -1,4 +1,4 @@
-import { mobileText } from '../../i18n/mobileText'
+import type { mobileText } from '../../i18n/mobileText'
 import type { MobilePropertyValueKind } from '../../workspace/mobilePropertyValues'
 
 type MobilePropertyValueKindOption = {

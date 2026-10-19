@@ -1,4 +1,4 @@
-# ADR-0186: Mobile Inline Math MathML Rendering
+# ADR-0260: Mobile Inline Math MathML Rendering
 
 ## Status
 
@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-ADR-0185 added a Tolaria-owned `mathInline` TenTap node for Expo mobile editing. That closed the structural editor and Markdown persistence contract, but the native editor still displayed inline math as `$latex$` source text. Desktop Tolaria renders inline math through KaTeX, and mobile should copy that behavior as far as Expo Go and TenTap allow.
+ADR-0259 added a Tolaria-owned `mathInline` TenTap node for Expo mobile editing. That closed the structural editor and Markdown persistence contract, but the native editor still displayed inline math as `$latex$` source text. Desktop Tolaria renders inline math through KaTeX, and mobile should copy that behavior as far as Expo Go and TenTap allow.
 
 TenTap bridge extensions can provide Tiptap schema nodes and CSS, but the current bridge path does not expose a React node view. Returning raw KaTeX HTML from Tiptap `renderHTML` would be treated as text unless we create DOM manually or convert the output to a ProseMirror DOM spec. Pulling the full KaTeX stylesheet into the native WebView would also add a fragile CSS packaging path.
 

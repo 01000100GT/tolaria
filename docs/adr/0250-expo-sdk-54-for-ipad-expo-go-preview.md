@@ -1,4 +1,4 @@
-# ADR-0176: Expo SDK 54 for iPad Expo Go Preview
+# ADR-0250: Expo SDK 54 for iPad Expo Go Preview
 
 ## Status
 

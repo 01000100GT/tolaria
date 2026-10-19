@@ -1,4 +1,4 @@
-# ADR-0178: Expo Clipboard for Mobile Deep-Link Copy
+# ADR-0252: Expo Clipboard for Mobile Deep-Link Copy
 
 ## Status
 

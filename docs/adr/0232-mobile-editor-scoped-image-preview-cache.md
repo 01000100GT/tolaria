@@ -46,6 +46,6 @@ The copies consume transient cache space and are not authoritative data. Tests
 must cover missing files, path rejection, pending-copy cleanup, native rendering,
 portable serialization, and keyboard focus through autosave on phone and tablet.
 
-This decision extends ADR 0181's native editor integration and follows ADR 0024's
+This decision extends ADR 0255's native editor integration and follows ADR 0024's
 separation of generated caches from user vaults. It does not introduce a network
 server, a new dependency, or a new attachment storage format.

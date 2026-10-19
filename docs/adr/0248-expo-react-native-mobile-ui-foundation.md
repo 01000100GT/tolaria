@@ -1,4 +1,4 @@
-# ADR-0174: Expo React Native Mobile UI Foundation
+# ADR-0248: Expo React Native Mobile UI Foundation
 
 ## Status
 

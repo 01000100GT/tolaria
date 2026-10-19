@@ -1,4 +1,4 @@
-# ADR-0188: Mobile TenTap Table Node
+# ADR-0262: Mobile TenTap Table Node
 
 ## Status
 

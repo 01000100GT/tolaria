@@ -1,4 +1,4 @@
-# ADR-0187: Mobile TenTap Code Block Node
+# ADR-0261: Mobile TenTap Code Block Node
 
 ## Status
 

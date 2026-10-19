@@ -2,11 +2,11 @@
 
 ## Status
 
-Accepted; supersedes the implicit sandbox-root decision in ADR-0177.
+Accepted; supersedes the implicit sandbox-root decision in ADR-0251.
 
 ## Context
 
-ADR-0177 introduced the Expo FileSystem repository and defaulted native launches to
+ADR-0251 introduced the Expo FileSystem repository and defaulted native launches to
 an app-private `Tolaria Vault` directory. That directory is not a user-selected
 Tolaria vault, but its stale test files made a fresh install appear synced and
 writable. Expo FileSystem also documents that an iOS directory selected through

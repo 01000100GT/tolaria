@@ -1,4 +1,4 @@
-# ADR-0185: Mobile TenTap Inline Math Node
+# ADR-0259: Mobile TenTap Inline Math Node
 
 ## Status
 

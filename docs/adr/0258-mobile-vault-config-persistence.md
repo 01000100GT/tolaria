@@ -1,4 +1,4 @@
-# ADR-0184: Mobile Vault-Scoped Config Persistence
+# ADR-0258: Mobile Vault-Scoped Config Persistence
 
 ## Status
 

@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-ADR-0188 registered native TenTap/Tiptap table nodes for mobile, but kept explicitly aligned Markdown tables source-backed because unannotated table cells would lose desktop divider alignment on save.
+ADR-0262 registered native TenTap/Tiptap table nodes for mobile, but kept explicitly aligned Markdown tables source-backed because unannotated table cells would lose desktop divider alignment on save.
 
 The mobile editor now needs more of the desktop table surface to be real WYSIWYG behavior. Alignment is a durable Markdown property, not visual-only chrome: `:---`, `:---:`, and `---:` must survive hydration, native editing, row/column commands, and serialization.
 
