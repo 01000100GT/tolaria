@@ -10,7 +10,7 @@ describe('workspace load recovery', () => {
     const container = document.createElement('div')
     const onCaughtError = vi.fn()
     const root = createRoot(container, { onCaughtError })
-    const fallback = createElement('button', null, 'Manage vaults')
+    const fallback = createElement('button', { type: 'button' }, 'Manage vaults')
     function BrokenWorkspace(): never { throw new Error('unreadable vault') }
     try {
       flushSync(() => root.render(createElement(WorkspaceLoadBoundary, {

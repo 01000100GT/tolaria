@@ -44,13 +44,13 @@ export function usePreparedWorkspaceEdits({ applyEdit, repository, repositoryReq
       const result = await queue.apply(edit, () => latestApply.current(edit, options))
       if (prepared.current !== queue) return null
       if (!alive.current || generation !== syncEditors?.generation()) return null
-      if (!isMobileNoteHydration(edit) && alive.current) setFailed(null)
+      if (!isMobileNoteHydration(edit)) setFailed(null)
       return result
     } catch {
       if (alive.current) setFailed({ edit, options })
       return null
     }
-  }, [generation, prepared, syncEditors])
+  }, [generation, syncEditors])
   const retry = useCallback(() => {
     if (failed) void apply(failed.edit, failed.options)
   }, [apply, failed])
