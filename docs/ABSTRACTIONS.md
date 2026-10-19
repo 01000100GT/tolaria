@@ -115,8 +115,10 @@ only action and kind, never vault names, paths, URLs, or content. See ADR 0216.
 
 `apps/mobile/src/workspace/git/` separates the embedded Git engine, GitHub
 authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
-checkpoints and commit-graph classification. `gitRemote.ts` performs serialized
-clone and sync. New clones retain the complete current tree at depth one;
+checkpoints and commit-graph classification. `githubClientId.ts` resolves the
+public Tolaria OAuth client ID with an optional trimmed build-time override, so
+clean release and OTA builds do not depend on a developer's local dotenv file.
+`gitRemote.ts` performs serialized clone and sync. New clones retain the complete current tree at depth one;
 `gitHistory.ts` retrieves older shallow-boundary ancestors only when a merge
 lacks a common base. Existing full clones are unchanged. Unavailable history,
 cancellation, and unchanged boundaries fail before working-copy publication;

@@ -2,8 +2,9 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { beginGitHubSignIn, finishGitHubSignIn, listGitHubRepositories, refreshGitHubSession } from './githubAuth'
 import { clearGitHubSession, readGitHubSession, saveGitHubSession } from './githubSessionStore'
 import { createGitHubAccountState } from './githubAccountState'
+import { resolveGitHubClientId } from './githubClientId'
 
-const clientId = process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID ?? ''
+const clientId = resolveGitHubClientId(process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID)
 
 export function useGitHubAccount() {
   const [account] = useState(() => createGitHubAccountState({
