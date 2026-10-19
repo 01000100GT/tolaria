@@ -3,13 +3,13 @@ import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 
 export function useEditorModeSwitch(noteId: string | undefined, changeMode: () => void) {
   const editors = useContext(WorkspaceSyncEditorsContext)
-  const generation = useRef(0)
+  const generation = useRef<symbol | null>(null)
   const busy = useRef(false)
   const [failed, setFailed] = useState(false)
   useLayoutEffect(() => {
-    generation.current += 1
+    generation.current = Symbol(noteId)
     setFailed(false)
-    return () => { generation.current += 1 }
+    return () => { generation.current = null }
   }, [noteId])
 
   const toggle = useCallback(() => {
@@ -20,10 +20,10 @@ export function useEditorModeSwitch(noteId: string | undefined, changeMode: () =
       try {
         const resume = await editors?.prepare()
         try {
-          if (requested === generation.current) { changeMode(); setFailed(false) }
+          if (requested !== null && requested === generation.current) { changeMode(); setFailed(false) }
         } finally { resume?.() }
       } catch {
-        if (requested === generation.current) setFailed(true)
+        if (requested !== null && requested === generation.current) setFailed(true)
       } finally { busy.current = false }
     })()
   }, [changeMode, editors])

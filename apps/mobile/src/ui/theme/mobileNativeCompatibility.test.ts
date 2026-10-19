@@ -13,7 +13,7 @@ let root: Root | null = null
 
 function mountTheme() {
   root = createRoot(document.createElement('div'))
-  flushSync(() => root?.render(createElement(MobileThemeProvider, { children: 'content' })))
+  flushSync(() => root?.render(createElement(MobileThemeProvider, null, 'content')))
 }
 
 function unmountTheme() {
