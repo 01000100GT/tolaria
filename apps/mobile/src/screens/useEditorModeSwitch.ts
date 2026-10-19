@@ -3,13 +3,13 @@ import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 
 export function useEditorModeSwitch(noteId: string | undefined, changeMode: () => void) {
   const editors = useContext(WorkspaceSyncEditorsContext)
-  const generation = useRef<symbol | null>(null)
+  const generation = useRef(Symbol(noteId))
   const busy = useRef(false)
-  const [failed, setFailed] = useState(false)
+  const [status, setStatus] = useState({ noteId, failed: false })
+  if (status.noteId !== noteId) setStatus({ noteId, failed: false })
   useLayoutEffect(() => {
     generation.current = Symbol(noteId)
-    setFailed(false)
-    return () => { generation.current = null }
+    return () => { generation.current = Symbol() }
   }, [noteId])
 
   const toggle = useCallback(() => {
@@ -20,12 +20,12 @@ export function useEditorModeSwitch(noteId: string | undefined, changeMode: () =
       try {
         const resume = await editors?.prepare()
         try {
-          if (requested !== null && requested === generation.current) { changeMode(); setFailed(false) }
+          if (requested === generation.current) { changeMode(); setStatus({ noteId, failed: false }) }
         } finally { resume?.() }
       } catch {
-        if (requested !== null && requested === generation.current) setFailed(true)
+        if (requested === generation.current) setStatus({ noteId, failed: true })
       } finally { busy.current = false }
     })()
-  }, [changeMode, editors])
-  return { toggle, failed }
+  }, [changeMode, editors, noteId])
+  return { toggle, failed: status.noteId === noteId && status.failed }
 }
