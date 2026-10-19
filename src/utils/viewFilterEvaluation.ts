@@ -65,8 +65,8 @@ function evaluateNode(node: FilterNode, entry: ViewFilterEntry): boolean {
   return evaluateCondition(node as FilterCondition, entry)
 }
 
-function findCaseInsensitiveKey(record: Record<FieldKey, unknown>, lower: FieldKey): FieldKey | undefined {
-  return Object.keys(record).find((key) => key.toLowerCase() === lower)
+function findCaseInsensitiveEntry<Value>(record: Record<FieldKey, Value>, lower: FieldKey): [FieldKey, Value] | undefined {
+  return Object.entries(record).find(([key]) => key !== '' && key.toLowerCase() === lower)
 }
 
 function scalarField(value: FieldScalar): ResolvedField {
@@ -83,13 +83,15 @@ function propertyField(value: ViewFilterPropertyValue): ResolvedField {
 }
 
 function resolveRelationshipField(entry: ViewFilterEntry, lower: FieldKey): ResolvedField | null {
-  const relationshipKey = findCaseInsensitiveKey(entry.relationships, lower)
-  return relationshipKey ? arrayField(entry.relationships[relationshipKey] ?? [], 'relationship') : null
+  const relationship = findCaseInsensitiveEntry(entry.relationships, lower)
+  if (!relationship) return null
+  return arrayField(relationship[1] ?? [], 'relationship')
 }
 
 function resolvePropertyField(entry: ViewFilterEntry, lower: FieldKey): ResolvedField | null {
-  const propertyKey = findCaseInsensitiveKey(entry.properties, lower)
-  return propertyKey ? propertyField(entry.properties[propertyKey] ?? null) : null
+  const property = findCaseInsensitiveEntry(entry.properties, lower)
+  if (!property) return null
+  return propertyField(property[1] ?? null)
 }
 
 function resolveField(entry: ViewFilterEntry, field: FieldKey): ResolvedField {
@@ -123,17 +125,15 @@ function usesRegex(condition: FilterCondition): boolean {
 }
 
 function evaluateEmptyCondition(op: FilterCondition['op'], resolved: ResolvedField): boolean | null {
-  if (op === 'is_empty') {
-    if (resolved.kind === 'array') return resolved.values.length === 0
-    const value = resolved.value
-    return value == null || value === '' || value === false
-  }
-  if (op === 'is_not_empty') {
-    if (resolved.kind === 'array') return resolved.values.length > 0
-    const value = resolved.value
-    return value != null && value !== '' && value !== false
-  }
+  if (op === 'is_empty') return isEmptyField(resolved)
+  if (op === 'is_not_empty') return !isEmptyField(resolved)
   return null
+}
+
+function isEmptyField(resolved: ResolvedField): boolean {
+  if (resolved.kind === 'array') return resolved.values.length === 0
+  const value = resolved.value
+  return value == null || value === '' || value === false
 }
 
 function textMatchResult(op: FilterCondition['op'], matched: boolean): boolean {

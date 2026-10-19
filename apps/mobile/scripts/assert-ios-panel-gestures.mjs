@@ -243,8 +243,8 @@ async function waitForAnimation() {
 
 function assertPanels(device, { hidden = [], visible = [] }) {
   const ui = describeUi(device)
-  visible.forEach((testId) => findElement(ui, testId))
-  hidden.forEach((testId) => assertElementAbsent(ui, testId))
+  visible.forEach((testId) => { findElement(ui, testId) })
+  hidden.forEach((testId) => { assertElementAbsent(ui, testId) })
 }
 
 async function main() {
