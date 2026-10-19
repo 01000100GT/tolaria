@@ -118,6 +118,9 @@ authentication, and Expo filesystem adapter from the editor. `gitVault.ts` owns
 checkpoints and commit-graph classification. `githubClientId.ts` resolves the
 public Tolaria OAuth client ID with an optional trimmed build-time override, so
 clean release and OTA builds do not depend on a developer's local dotenv file.
+`apps/mobile/fingerprint.config.js` normalizes only release channel routing and
+Expo version metadata for native compatibility hashing (ADR 0263). Embedded
+channels remain unchanged, and all other native configuration stays hashed.
 `gitRemote.ts` performs serialized clone and sync. New clones retain the complete current tree at depth one;
 `gitHistory.ts` retrieves older shallow-boundary ancestors only when a merge
 lacks a common base. Existing full clones are unchanged. Unavailable history,
