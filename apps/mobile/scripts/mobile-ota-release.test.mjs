@@ -7,7 +7,9 @@ import { publishMobileUpdate } from './publish-mobile-update.mjs'
 function environment(overrides = {}) {
   return { CIRCLE_BRANCH: 'main', TOLARIA_OTA_CHANNEL: 'alpha', TOLARIA_OTA_BASE_REF: 'HEAD~1',
     TOLARIA_OTA_RUNTIME: 'a'.repeat(40), TOLARIA_IOS_BUILD_NUMBER: '42', EXPO_TOKEN: 'test-only',
-    SENTRY_AUTH_TOKEN: 'test-only', SENTRY_ORG: 'test-org', SENTRY_PROJECT: 'test-project', ...overrides }
+    SENTRY_AUTH_TOKEN: 'test-only', SENTRY_ORG: 'test-org', SENTRY_PROJECT: 'test-project',
+    EXPO_PUBLIC_SENTRY_DSN: 'https://public@example.ingest.sentry.io/1',
+    EXPO_PUBLIC_POSTHOG_KEY: 'phc_test-only', EXPO_PUBLIC_POSTHOG_HOST: 'https://us.i.posthog.com', ...overrides }
 }
 
 function executor(files, runtime = 'a'.repeat(40)) {
@@ -19,6 +21,8 @@ function executor(files, runtime = 'a'.repeat(40)) {
       if (args[0] === 'rev-parse') return 'b'.repeat(40)
       if (args[0] === 'diff') return files.join('\0')
       if (args.includes('runtimeversion:resolve')) return JSON.stringify({ runtimeVersion: runtime })
+      if (args[0] === 'update') return JSON.stringify([{ runtimeVersion: runtime, branch: options.channel,
+        platform: 'ios', gitCommitHash: 'b'.repeat(40), group: 'cc862536-09bf-4dca-a6f5-a704699489c8' }])
       return ''
     },
   }
@@ -46,6 +50,7 @@ for (const file of ['apps/mobile/src/App.tsx', 'src/shared/typeLabels.ts', 'src/
     assert(run.calls.every(call => !call.args.includes('test-only')))
     assert.equal(run.calls[publish].options.env.TOLARIA_BUILD_PROFILE, 'testflight')
     assert.equal(run.calls[publish].options.env.EXPO_PUBLIC_DISTRIBUTION, 'testflight')
+    assert(run.calls.every(call => call.options.env.EXPO_NO_DOTENV === '1'))
   })
 }
 
@@ -65,11 +70,27 @@ test('source-map failure prevents publishing', () => {
   assert.equal(run.calls.some(call => call.args.includes('update')), false)
 })
 
-for (const key of ['EXPO_TOKEN', 'SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
+for (const key of ['EXPO_TOKEN', 'SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT',
+  'EXPO_PUBLIC_SENTRY_DSN', 'EXPO_PUBLIC_POSTHOG_KEY', 'EXPO_PUBLIC_POSTHOG_HOST']) {
   test(`requires private publishing credential ${key}`, () => {
     const run = executor(['apps/mobile/src/App.tsx'])
     assert.throws(() => publishMobileUpdate(environment({ [key]: '' }), run.execute), error => error instanceof Error && error.message.includes(key))
     assert.equal(run.calls.some(call => call.args.includes('export')), false)
+  })
+}
+
+for (const receipt of ['', '{}', '[]',
+  JSON.stringify([{ platform: 'ios', runtimeVersion: 'wrong', branch: 'alpha', gitCommitHash: 'b'.repeat(40) }]),
+  JSON.stringify([{ platform: 'ios', runtimeVersion: 'a'.repeat(40), branch: 'stable', gitCommitHash: 'b'.repeat(40) }]),
+  JSON.stringify([{ platform: 'android', runtimeVersion: 'a'.repeat(40), branch: 'alpha', gitCommitHash: 'b'.repeat(40) }]),
+  JSON.stringify([{ platform: 'ios', runtimeVersion: 'a'.repeat(40), branch: 'alpha', gitCommitHash: 'c'.repeat(40) }]),
+]) {
+  test(`does not report success for a mismatched or malformed publishing receipt ${receipt}`, () => {
+    const run = executor(['apps/mobile/src/App.tsx'])
+    assert.throws(() => publishMobileUpdate(environment(), (command, args, options) => {
+      const result = run.execute(command, args, options)
+      return args[0] === 'update' ? receipt : result
+    }))
   })
 }
 

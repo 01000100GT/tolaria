@@ -30,17 +30,18 @@ export function publishMobileUpdate(environment, execute = executeCommand) {
     '--org', environment.SENTRY_ORG, '--project', environment.SENTRY_PROJECT,
     '--strict', '--validate', '--wait-for', '120', '--debug-id-reference', '--ext', 'hbc', '--ext', 'map',
     path.join(output, '_expo/static/js/ios')], options)
-  execute(environment.TOLARIA_EAS_CLI || 'eas', ['update', '--channel', options.channel,
+  const receipt = execute(environment.TOLARIA_EAS_CLI || 'eas', ['update', '--channel', options.channel,
     '--environment', profiles[options.channel].environment, '--platform', 'ios',
     '--input-dir', output, '--skip-bundler', '--message', `Tolaria mobile ${sha}`, '--non-interactive', '--json'],
   { ...options, cwd: mobileRoot })
+  validatePublication(receipt, { channel: options.channel, runtime, sha })
   return { published: true, channel: options.channel, runtime, sha }
 }
 
 function publishingOptions(environment) {
   const channel = releaseChannel(environment)
   return { cwd: repoRoot, channel, base: environment.TOLARIA_OTA_BASE_REF || 'HEAD~1', env: {
-    ...environment, TOLARIA_BUILD_PROFILE: profiles[channel].profile, TOLARIA_UPDATE_CHANNEL: channel,
+    ...environment, EXPO_NO_DOTENV: '1', TOLARIA_BUILD_PROFILE: profiles[channel].profile, TOLARIA_UPDATE_CHANNEL: channel,
     EXPO_PUBLIC_DISTRIBUTION: profiles[channel].distribution, EXPO_PUBLIC_RELEASE_CHANNEL: profiles[channel].release,
   } }
 }
@@ -64,9 +65,21 @@ function mobileRuntimePath(file) {
 }
 
 function requireCredentials(environment) {
-  for (const key of ['EXPO_TOKEN', 'SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']) {
+  for (const key of ['EXPO_TOKEN', 'SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT',
+    'EXPO_PUBLIC_SENTRY_DSN', 'EXPO_PUBLIC_POSTHOG_KEY', 'EXPO_PUBLIC_POSTHOG_HOST']) {
     assert(environment[key]?.trim(), `${key} is required for OTA publishing`)
   }
+}
+
+function validatePublication(receipt, expected) {
+  const updates = JSON.parse(receipt)
+  assert(Array.isArray(updates), 'Invalid EAS publishing receipt')
+  assert.equal(updates.length, 1, 'Expected exactly one iOS update')
+  const update = updates[0]
+  assert.equal(update.platform, 'ios', 'Published platform differs from accepted target')
+  assert.equal(update.branch, expected.channel, 'Published branch differs from accepted channel')
+  assert.equal(update.runtimeVersion, expected.runtime, 'Published runtime differs from accepted native binary')
+  assert.equal(update.gitCommitHash, expected.sha, 'Published source commit differs from exported source')
 }
 
 function executeCommand(command, args, options) {
