@@ -26,6 +26,9 @@ function replacementAfterRemoval(
 		(entry) => previous.available.has(entry.path) && !available.has(entry.path),
 	);
 	if (removedIndex < 0) return;
+	// A replacement path belongs to creation/rename selection, not deletion.
+	if (options.entries.some((entry) => !previous.available.has(entry.path)))
+		return;
 
 	const visible = new Map(options.visible.map((entry) => [entry.path, entry]));
 	const candidates = [

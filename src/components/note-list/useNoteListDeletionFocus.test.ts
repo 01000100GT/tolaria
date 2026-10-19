@@ -77,6 +77,14 @@ describe("note list focus after deletion", () => {
 		expect(hook.openNote).not.toHaveBeenCalled();
 	});
 
+	it("leaves selection to the rename flow when a path is replaced", () => {
+		const hook = setup();
+		const renamed = makeIndexedEntry(4, { title: notes[0].title });
+		const entries = [renamed, ...notes.slice(1)];
+		hook.rerender({ ...hook.initialProps, entries, visible: entries });
+		expect(hook.openNote).not.toHaveBeenCalled();
+	});
+
 	it("restores keyboard focus after opening the replacement", async () => {
 		const hook = setup();
 		hook.rerender({
