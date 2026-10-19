@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import {
   mobileQuickOpenMoveIndex,
@@ -21,7 +22,7 @@ describe('mobile quick open', () => {
 
   it('excludes archived notes and caps empty-query results', () => {
     const notes = Array.from({ length: mobileQuickOpenResultLimit + 3 }, (_, index) => ({
-      ...workspaceScenarioForId('default').notes[0]!,
+      ...requiredFixture(workspaceScenarioForId('default').notes[0]),
       archived: index === 1,
       id: `note-${index}`,
       title: `Note ${index}`,
@@ -45,7 +46,7 @@ describe('mobile quick open', () => {
 
   it('matches desktop quick-open alias and filename forms', () => {
     const note = {
-      ...workspaceScenarioForId('default').notes[0]!,
+      ...requiredFixture(workspaceScenarioForId('default').notes[0]),
       aliases: ['Weekly Review'],
       id: 'cafe-notes',
       path: 'journal/cafe-notes.md',
@@ -114,7 +115,7 @@ describe('mobile quick open', () => {
 
 function note(overrides: Partial<MobileNote>): MobileNote {
   return {
-    ...workspaceScenarioForId('default').notes[0]!,
+    ...requiredFixture(workspaceScenarioForId('default').notes[0]),
     aliases: [],
     archived: false,
     relationships: [],

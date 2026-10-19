@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import {
   MOBILE_FILE_REVEAL_ATTEMPTS_GLOBAL_KEY,
@@ -16,7 +17,7 @@ describe('mobile note file reveal', () => {
 
   it('reveals a selected note through the native revealer', async () => {
     const revealer: MobileFileRevealer = vi.fn().mockResolvedValue({ opened: true, shared: true })
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     await expect(revealMobileNoteFile({
       note,
@@ -45,7 +46,7 @@ describe('mobile note file reveal', () => {
 
   it('records browser attempts without calling the native revealer', async () => {
     const revealer: MobileFileRevealer = vi.fn()
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
 
     await expect(withBrowserRuntime(() => revealMobileNoteFile({
       note,
@@ -116,7 +117,7 @@ describe('mobile note file reveal', () => {
       reason: 'missingNote',
     })
     await expect(revealMobileNoteFile({
-      note: { ...workspaceScenarioForId('default').notes[0]!, id: '../secret.md', path: '' },
+      note: { ...requiredFixture(workspaceScenarioForId('default').notes[0]), id: '../secret.md', path: '' },
       revealer,
     })).resolves.toEqual({
       ok: false,

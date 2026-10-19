@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import { applyMobileWorkspaceEditWithWrites } from './mobileWorkspaceEditing'
 import type {
@@ -80,7 +81,7 @@ function schemaReferenceSnapshot(
   } = {},
 ): MobileWorkspaceSnapshot {
   const base = workspaceScenarioForId('default')
-  const remote = remoteTeamNote(base.notes[1]!, options.workspaceAlias ?? 'team')
+  const remote = remoteTeamNote(requiredFixture(base.notes[1]), options.workspaceAlias ?? 'team')
 
   return {
     ...base,

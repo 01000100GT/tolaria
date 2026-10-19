@@ -13,6 +13,8 @@ export type MobileTableOfContentsTarget = Pick<MobileTableOfContentsItem, 'id' |
 
 type HeadingTitle = string
 type MarkdownLine = string
+type MobileTocStack = [MobileTableOfContentsItem, ...MobileTableOfContentsItem[]]
+const markdownHeadingPattern = /^(#{1,3})\s+(.+?)\s*#*\s*$/u
 
 type MobileTocHeading = {
   level: MobileTableOfContentsLevel
@@ -82,7 +84,7 @@ export function buildMobileTableOfContents({
     level: 1,
     title,
   }
-  const stack: MobileTableOfContentsItem[] = [root]
+  const stack: MobileTocStack = [root]
   let visibleHeadingIndex = 0
 
   headings.forEach((heading, index) => {
@@ -109,7 +111,7 @@ function mobileTocHeadings(note: Pick<MobileNote, 'editorBlocks' | 'editorBullet
 }
 
 function markdownHeading(line: MarkdownLine): MobileTocHeading | null {
-  const match = line.match(/^(#{1,3})\s+(.+?)\s*#*\s*$/u)
+  const match = line.match(markdownHeadingPattern)
   if (!match) return null
 
   const title = stripInlineMarkdown(match[2] ?? '')
@@ -138,7 +140,7 @@ function shouldSkipDuplicateTitleHeading({
 }
 
 function appendMobileTocHeading(
-  stack: MobileTableOfContentsItem[],
+  stack: MobileTocStack,
   item: MobileTableOfContentsItem,
 ) {
   const parent = nearestMobileTocParent(stack, item.level)
@@ -148,14 +150,14 @@ function appendMobileTocHeading(
 }
 
 function nearestMobileTocParent(
-  stack: MobileTableOfContentsItem[],
+  stack: MobileTocStack,
   level: MobileTableOfContentsLevel,
 ) {
   for (let index = stack.length - 1; index >= 0; index -= 1) {
     const item = stack[index]
     if (item && item.level < level) return item
   }
-  return stack[0]!
+  return stack[0]
 }
 
 function sameHeadingTitle(left: HeadingTitle, right: HeadingTitle) {

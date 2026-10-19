@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import { applyMobileWorkspaceEdit, applyMobileWorkspaceEditWithWrites } from './mobileWorkspaceEditing'
 import {
@@ -40,7 +41,7 @@ describe('resolveMobileNoteWidth', () => {
   })
 
   it('resolves note objects without mutating the source note', () => {
-    const note = workspaceScenarioForId('default').notes[0]!
+    const note = requiredFixture(workspaceScenarioForId('default').notes[0])
     const resolved = mobileNoteWithResolvedWidth(note, 'wide')
 
     expect(note.noteWidth).toBeUndefined()

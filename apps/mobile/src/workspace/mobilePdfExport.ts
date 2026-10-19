@@ -30,7 +30,7 @@ export type MobilePdfExportResult =
   }
 
 export type MobilePdfExporter = (payload: MobilePdfExportPayload) => Promise<MobilePdfExporterResult>
-export type MobilePdfExporterResult = string | null | void | {
+export type MobilePdfExporterResult = string | null | undefined | {
   shared?: boolean
   uri?: string | null
 }

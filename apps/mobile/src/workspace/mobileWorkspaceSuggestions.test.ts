@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { requiredFixture } from '../fixtures/requiredFixture'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import { applyMobileWorkspaceEdit } from './mobileWorkspaceEditing'
 import {
@@ -37,7 +38,7 @@ describe('mobile workspace suggestions', () => {
   it('does not suggest the desktop icon property when the selected note already has one', () => {
     const scenario = workspaceScenarioForId('default')
     const selectedNote = {
-      ...scenario.notes.find((note) => note.id === 'workflow-orchestration')!,
+      ...requiredFixture(scenario.notes.find((note) => note.id === 'workflow-orchestration')),
       icon: 'star',
     }
 
@@ -154,7 +155,7 @@ describe('mobile workspace suggestions', () => {
   it('suggests relationship targets by desktop note identity fields', () => {
     const notes = [
       {
-        ...workspaceScenarioForId('default').notes[0]!,
+        ...requiredFixture(workspaceScenarioForId('default').notes[0]),
         aliases: ['Weekly Review'],
         id: 'journal/cafe-notes.md',
         path: 'journal/cafe-notes.md',
@@ -163,7 +164,7 @@ describe('mobile workspace suggestions', () => {
         type: 'Journal',
       },
       {
-        ...workspaceScenarioForId('default').notes[1]!,
+        ...requiredFixture(workspaceScenarioForId('default').notes[1]),
         archived: true,
         aliases: ['Archived Weekly'],
         id: 'archive/weekly.md',
@@ -183,7 +184,7 @@ describe('mobile workspace suggestions', () => {
   })
 
   it('ranks relationship targets by desktop note identity tiers', () => {
-    const base = workspaceScenarioForId('default').notes[0]!
+    const base = requiredFixture(workspaceScenarioForId('default').notes[0])
     const notes = [
       { ...base, aliases: ['Refactoring'], id: 'ideas', path: 'ideas.md', title: 'Refactoring Ideas' },
       { ...base, aliases: [], id: 'manual', path: 'manual.md', title: 'Refactoring Manual' },
@@ -239,7 +240,7 @@ describe('mobile workspace suggestions', () => {
   it('suggests explicit empty folder paths when moving notes', () => {
     const notes = workspaceScenarioForId('default').notes
     const selectedNote = {
-      ...notes[0]!,
+      ...requiredFixture(notes[0]),
       path: 'Writing/Essays/current.md',
     }
 

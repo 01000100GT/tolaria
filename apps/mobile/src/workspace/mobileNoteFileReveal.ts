@@ -10,7 +10,7 @@ export type MobileFileRevealResult =
   | { ok: false; reason: 'missingNote' | 'missingPath' | 'unsafePath' }
 
 export type MobileFileRevealer = (path: string) => Promise<MobileFileRevealerResult>
-export type MobileFileRevealerResult = boolean | void | {
+export type MobileFileRevealerResult = boolean | undefined | {
   opened?: boolean
   shared?: boolean
 }
