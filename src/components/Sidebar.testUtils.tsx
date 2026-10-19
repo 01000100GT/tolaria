@@ -3,6 +3,25 @@ import type { ComponentProps } from "react";
 import type { SidebarSelection, VaultEntry } from "../types";
 import { Sidebar } from "./Sidebar";
 
+const displayDefaults: Pick<
+	VaultEntry,
+	| "view"
+	| "visible"
+	| "organized"
+	| "favorite"
+	| "favoriteIndex"
+	| "listPropertiesDisplay"
+	| "hasH1"
+> = {
+	view: null,
+	visible: true,
+	organized: false,
+	favorite: false,
+	favoriteIndex: null,
+	listPropertiesDisplay: [],
+	hasH1: true,
+};
+
 export const mockEntries: VaultEntry[] = [
 	{
 		path: "/vault/project/build-app.md",
@@ -13,8 +32,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: "Active",
-		owner: "Luca",
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -40,8 +58,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: "Active",
-		owner: "Luca",
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -67,8 +84,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: "Active",
-		owner: "Luca",
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -94,8 +110,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: "Active",
-		owner: "Luca",
-		cadence: "Weekly",
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -121,8 +136,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: null,
-		owner: null,
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -148,8 +162,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: null,
-		owner: null,
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -175,8 +188,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: null,
-		owner: null,
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -202,8 +214,7 @@ export const mockEntries: VaultEntry[] = [
 		belongsTo: [],
 		relatedTo: [],
 		status: null,
-		owner: null,
-		cadence: null,
+
 		archived: false,
 		modifiedAt: 1700000000,
 		createdAt: null,
@@ -220,7 +231,7 @@ export const mockEntries: VaultEntry[] = [
 		outgoingLinks: [],
 		properties: {},
 	},
-];
+].map((entry) => ({ ...displayDefaults, ...entry }));
 
 export const defaultSelection: SidebarSelection = {
 	kind: "filter",
