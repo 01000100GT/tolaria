@@ -6,11 +6,11 @@ type RelationshipKeyCarrier = {
   label?: string | null
 }
 
-const RELATIONSHIP_KEYS_BY_KIND: Partial<Record<RelationshipKind, string>> = {
-  belongsTo: 'belongs_to',
-  has: 'has',
-  relatedTo: 'related_to',
-}
+const RELATIONSHIP_KEYS_BY_KIND = new Map<RelationshipKind, string>([
+  ['belongsTo', 'belongs_to'],
+  ['has', 'has'],
+  ['relatedTo', 'related_to'],
+])
 
 export function normalizeRelationshipKey(key: string): string {
   return key.trim().toLowerCase().replace(/[-\s]+/gu, '_')
@@ -29,7 +29,7 @@ export function isRelationshipKey(key: string): boolean {
 }
 
 export function relationshipKeyForKind(kind: RelationshipKind | null | undefined): string | null {
-  return kind ? RELATIONSHIP_KEYS_BY_KIND[kind] ?? null : null
+  return kind ? RELATIONSHIP_KEYS_BY_KIND.get(kind) ?? null : null
 }
 
 export function relationshipFrontmatterKey(
