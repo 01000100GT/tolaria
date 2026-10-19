@@ -18,7 +18,7 @@ type CodeBlockLanguageEditor = ReturnType<typeof useCreateBlockNote>;
 type CodeBlockLanguageTarget = {
 	blockId: string;
 	editable: boolean;
-	host: HTMLElement;
+	containerElement: HTMLElement;
 	language: string;
 };
 
@@ -35,14 +35,16 @@ function languageControlTarget(
 	editor: CodeBlockLanguageEditor,
 	blockId: string,
 	nativeControl: LanguageSelectControl,
-): CodeBlockLanguageTarget {
+): CodeBlockLanguageTarget | null {
+	const containerElement = nativeControl.parentElement;
+	if (!containerElement) return null;
 	return {
 		blockId,
 		editable:
 			editor.isEditable &&
 			nativeControl.closest(".bn-editor")?.getAttribute("contenteditable") !==
 				"false",
-		host: nativeControl.parentElement as HTMLElement,
+		containerElement,
 		language: nativeControl.value || "text",
 	};
 }
@@ -78,10 +80,11 @@ function sameTargets(
 	return (
 		current.length === next.length &&
 		current.every((target, index) => {
-			const candidate = next[index];
+			const candidate = next.at(index);
+			if (!candidate) return false;
 			return (
 				target.blockId === candidate.blockId &&
-				target.host === candidate.host &&
+				target.containerElement === candidate.containerElement &&
 				target.language === candidate.language &&
 				target.editable === candidate.editable
 			);
@@ -198,7 +201,7 @@ export function CodeBlockLanguageControls({
 					language={target.language}
 				/>
 			</div>,
-			target.host,
+			target.containerElement,
 			target.blockId,
 		),
 	);

@@ -63,15 +63,14 @@ describe("CodeBlockLanguageControls", () => {
 			second.editorElement.querySelector('[data-slot="select-trigger"]'),
 		).toBeNull();
 
-		const replacement = first.nativeControl.parentElement?.cloneNode(
-			true,
-		) as HTMLElement;
+		const replacementElement = document.createElement("div");
+		replacementElement.append(first.nativeControl.cloneNode(true));
 		await act(async () =>
-			first.nativeControl.parentElement?.replaceWith(replacement),
+			first.nativeControl.parentElement?.replaceWith(replacementElement),
 		);
 		await waitFor(() =>
 			expect(
-				replacement.querySelector('[data-slot="select-trigger"]'),
+				replacementElement.querySelector('[data-slot="select-trigger"]'),
 			).not.toBeNull(),
 		);
 
