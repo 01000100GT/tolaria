@@ -1,3 +1,5 @@
+import { escapeHtml, escapeAttribute } from './mobileHtmlEncoding'
+import { linkifyInlineMarkdown } from './mobileMarkdownLinkHtml'
 import { parseLocalVaultDocument } from './localVaultFrontmatter'
 import {
   isMobileDisplayMathStart,
@@ -40,6 +42,7 @@ type HtmlSnippet = string
 type LinkLabel = string
 type MarkdownLine = string
 type MarkdownLines = MarkdownLine[]
+type MarkdownLineMatcher = (line: MarkdownLine) => boolean
 type CodeFenceSourceMode = 'indented' | 'root'
 type NoteTitleText = string
 type PlainText = string
@@ -54,9 +57,9 @@ type ReadListSourceLinesResult = {
   nextIndex: number
 }
 type ReadParagraphResult = { lines: MarkdownLines; nextIndex: number }
+type ReadSourceLinesResult = { lines: MarkdownLines; nextIndex: number }
 type ReadQuoteResult = { paragraphs: MarkdownLines[]; nextIndex: number }
 type UrlText = string
-type WikilinkTarget = string
 type MarkdownNormalizer = (markdown: MarkdownBody) => MarkdownBody
 type TiptapMarkdownOptions = {
   vaultRootUri?: string | null
@@ -403,32 +406,13 @@ function quoteParagraphHtml(lines: MarkdownLines): HtmlSnippet {
 }
 
 function readIndentedListSourceBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
-  if (!isIndentedListSourceLine(lines[startIndex] ?? '')) return null
-
-  const sourceLines: string[] = []
-  let index = startIndex
-  while (index < lines.length && isIndentedListSourceLine(lines[index] ?? '')) {
-    sourceLines.push(lines[index] ?? '')
-    index += 1
-  }
-
-  return {
-    html: `<p>${sourceLines.map(escapeHtml).join('<br>')}</p>`,
-    nextIndex: index,
-  }
+  const source = readMatchingSourceLines(lines, startIndex, isIndentedListSourceLine)
+  return source ? sourceLinesParagraphBlock(source.lines, source.nextIndex) : null
 }
 
 function readIndentedTextSourceBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
-  if (!isIndentedTextSourceLine(lines[startIndex] ?? '')) return null
-
-  const sourceLines: string[] = []
-  let index = startIndex
-  while (index < lines.length && isIndentedTextSourceLine(lines[index] ?? '')) {
-    sourceLines.push(lines[index] ?? '')
-    index += 1
-  }
-
-  return sourceLinesParagraphBlock(sourceLines, index)
+  const source = readMatchingSourceLines(lines, startIndex, isIndentedTextSourceLine)
+  return source ? sourceLinesParagraphBlock(source.lines, source.nextIndex) : null
 }
 
 function readListHardBreakSourceBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
@@ -448,22 +432,24 @@ function readListSourceLines(lines: MarkdownLines, startIndex: number): ReadList
   if (!first) return null
 
   const baseIndent = leadingWhitespaceLength(firstLine)
-  const sourceLines: string[] = []
-  let hasContinuation = false
-  let hasHardBreak = false
-  let index = startIndex
-
-  while (index < lines.length) {
-    const sourceLine = readListSourceLine(lines[index] ?? '', baseIndent)
-    if (!sourceLine) break
-
-    hasContinuation ||= sourceLine.hasContinuation
-    hasHardBreak ||= sourceLine.hasHardBreak
-    sourceLines.push(sourceLine.line)
-    index += 1
+  const source: ReadListSourceLinesResult = {
+    baseIndent, hasContinuation: false, hasHardBreak: false, lines: [], nextIndex: startIndex,
   }
 
-  return { baseIndent, hasContinuation, hasHardBreak, lines: sourceLines, nextIndex: index }
+  while (source.nextIndex < lines.length) {
+    const sourceLine = readListSourceLine(lines[source.nextIndex] ?? '', baseIndent)
+    if (!sourceLine) break
+    appendSourceLine(source, sourceLine)
+  }
+
+  return source
+}
+
+function appendSourceLine(source: ReadListSourceLinesResult, line: NonNullable<ReturnType<typeof readListSourceLine>>): void {
+  source.hasContinuation ||= line.hasContinuation
+  source.hasHardBreak ||= line.hasHardBreak
+  source.lines.push(line.line)
+  source.nextIndex += 1
 }
 
 function readListSourceLine(
@@ -479,16 +465,8 @@ function readListSourceLine(
 }
 
 function readOrderedParenListSourceBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
-  if (!isOrderedParenListSourceLine(lines[startIndex] ?? '')) return null
-
-  const sourceLines: string[] = []
-  let index = startIndex
-  while (index < lines.length && isOrderedParenListSourceLine(lines[index] ?? '')) {
-    sourceLines.push(lines[index] ?? '')
-    index += 1
-  }
-
-  return sourceLinesParagraphBlock(sourceLines, index)
+  const source = readMatchingSourceLines(lines, startIndex, isOrderedParenListSourceLine)
+  return source ? sourceLinesParagraphBlock(source.lines, source.nextIndex) : null
 }
 
 function readIrregularOrderedDotListSourceBlock(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult | null {
@@ -501,13 +479,23 @@ function readIrregularOrderedDotListSourceBlock(lines: MarkdownLines, startIndex
 function readOrderedDotListSourceLines(
   lines: MarkdownLines,
   startIndex: number,
-): { lines: MarkdownLines; nextIndex: number } | null {
-  if (orderedDotListSourceLineNumber(lines[startIndex] ?? '') === null) return null
+): ReadSourceLinesResult | null {
+  return readMatchingSourceLines(lines, startIndex, (line) => orderedDotListSourceLineNumber(line) !== null)
+}
+
+function readMatchingSourceLines(
+  lines: MarkdownLines,
+  startIndex: number,
+  matches: MarkdownLineMatcher,
+): ReadSourceLinesResult | null {
+  if (!matches(lines[startIndex] ?? '')) return null
 
   const sourceLines: string[] = []
   let index = startIndex
-  while (index < lines.length && orderedDotListSourceLineNumber(lines[index] ?? '') !== null) {
-    sourceLines.push(lines[index] ?? '')
+  while (index < lines.length) {
+    const line = lines[index] ?? ''
+    if (!matches(line)) break
+    sourceLines.push(line)
     index += 1
   }
 
@@ -528,18 +516,8 @@ function readList(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult
   const items: MobileMarkdownListItem[] = []
   let index = startIndex
   const kind: ListKind = first.kind
-  const depth = first.depth
 
-  while (index < lines.length) {
-    const line = lines[index] ?? ''
-    const current = listLine(line)
-    if (current) {
-      if (current.depth < depth || (current.depth === depth && current.kind !== kind)) break
-      items.push(current)
-      index += 1
-      continue
-    }
-    if (!appendListContinuation(items, line)) break
+  while (index < lines.length && appendNextListLine(items, lines[index] ?? '', first)) {
     index += 1
   }
 
@@ -547,6 +525,18 @@ function readList(lines: MarkdownLines, startIndex: number): ReadHtmlBlockResult
     html: mobileMarkdownListHtml(kind, items, inlineMarkdownToHtml),
     nextIndex: index,
   }
+}
+
+function appendNextListLine(items: MobileMarkdownListItem[], line: MarkdownLine, first: MobileMarkdownListItem): boolean {
+  const current = listLine(line)
+  if (!current) return appendListContinuation(items, line)
+  if (endsCurrentList(current, first)) return false
+  items.push(current)
+  return true
+}
+
+function endsCurrentList(current: MobileMarkdownListItem, first: MobileMarkdownListItem): boolean {
+  return current.depth < first.depth || (current.depth === first.depth && current.kind !== first.kind)
 }
 
 function appendListContinuation(items: MobileMarkdownListItem[], line: MarkdownLine): boolean {
@@ -829,163 +819,6 @@ function inlineMathHtml(latex: PlainText): HtmlSnippet {
   return `<span class="math math--inline" data-latex="${escapedLatex}" data-type="mathInline">$${escapeHtml(latex)}$</span>`
 }
 
-function linkifyInlineMarkdown(markdown: MarkdownLine): string {
-  return linkifyMarkdownLinks(markdown
-    .replace(/\[\[([^\]|]+)\|([^\]]+)]]/g, (_match, target: WikilinkTarget, display: LinkLabel) => (
-      wikilinkHtml(target, display)
-    ))
-    .replace(/\[\[([^\]]+)]]/g, (_match, target: WikilinkTarget) => wikilinkHtml(target, target)))
-    .replace(/&lt;((?:https?|mailto):(?:(?!&gt;)\S)+)&gt;/g, (_match, href: UrlText) => (
-      externalAutolinkHtml(href, href)
-    ))
-    .replace(/&lt;([A-Za-z0-9.!#$%&*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})&gt;/g, (
-      _match,
-      email: LinkLabel,
-    ) => emailAutolinkHtml(email))
-}
-
-function linkifyMarkdownLinks(markdown: MarkdownLine): string {
-  let html = ''
-  let cursor = 0
-
-  while (cursor < markdown.length) {
-    const link = nextMarkdownLink(markdown, cursor)
-    if (!link) return `${html}${markdown.slice(cursor)}`
-
-    html += markdown.slice(cursor, link.start)
-    html += `<a href="${escapeAttribute(markdownLinkHref(link.href))}">${link.label}</a>`
-    cursor = link.end
-  }
-
-  return html
-}
-
-function nextMarkdownLink(
-  markdown: MarkdownLine,
-  startIndex: number,
-): { end: number; href: UrlText; label: LinkLabel; start: number } | null {
-  let searchIndex = startIndex
-
-  while (searchIndex < markdown.length) {
-    const labelStart = markdown.indexOf('[', searchIndex)
-    if (labelStart === -1) return null
-    const label = readMarkdownLinkLabel(markdown, labelStart)
-    if (!label) return null
-    const destinationStart = label.end + 2
-    if (markdown[label.end + 1] !== '(') {
-      searchIndex = label.end + 1
-      continue
-    }
-
-    const destination = readMarkdownLinkDestination(markdown, destinationStart)
-    if (destination) {
-      return {
-        end: destination.end + 1,
-        href: destination.href,
-        label: label.value,
-        start: labelStart,
-      }
-    }
-    searchIndex = destinationStart
-  }
-
-  return null
-}
-
-function readMarkdownLinkLabel(
-  markdown: MarkdownLine,
-  startIndex: number,
-): { end: number; value: LinkLabel } | null {
-  let bracketDepth = 0
-  let index = startIndex + 1
-
-  while (index < markdown.length) {
-    const char = markdown[index] ?? ''
-    if (isClosingMarkdownLinkLabel(char, bracketDepth)) {
-      return { end: index, value: markdown.slice(startIndex + 1, index) }
-    }
-    bracketDepth = nextMarkdownLinkLabelDepth(bracketDepth, char)
-    index += 1
-  }
-
-  return null
-}
-
-function isClosingMarkdownLinkLabel(char: PlainText, bracketDepth: number): boolean {
-  return char === ']' && bracketDepth === 0
-}
-
-function nextMarkdownLinkLabelDepth(bracketDepth: number, char: PlainText): number {
-  if (char === '[') return bracketDepth + 1
-  if (char === ']') return Math.max(0, bracketDepth - 1)
-  return bracketDepth
-}
-
-function readMarkdownLinkDestination(
-  markdown: MarkdownLine,
-  startIndex: number,
-): { end: number; href: UrlText } | null {
-  return markdown.startsWith('&lt;', startIndex)
-    ? readAngledMarkdownLinkDestination(markdown, startIndex)
-    : readBareMarkdownLinkDestination(markdown, startIndex)
-}
-
-function readAngledMarkdownLinkDestination(
-  markdown: MarkdownLine,
-  startIndex: number,
-): { end: number; href: UrlText } | null {
-  const closeIndex = markdown.indexOf('&gt;', startIndex + 4)
-  if (closeIndex === -1 || markdown[closeIndex + 4] !== ')') return null
-
-  return {
-    end: closeIndex + 4,
-    href: markdown.slice(startIndex, closeIndex + 4),
-  }
-}
-
-function readBareMarkdownLinkDestination(
-  markdown: MarkdownLine,
-  startIndex: number,
-): { end: number; href: UrlText } | null {
-  let depth = 0
-  let index = startIndex
-
-  while (index < markdown.length) {
-    const char = markdown[index] ?? ''
-    if (/\s/u.test(char)) return null
-    if (char === '(') depth += 1
-    if (char === ')') {
-      if (depth === 0) break
-      depth -= 1
-    }
-    index += 1
-  }
-
-  return index > startIndex && markdown[index] === ')'
-    ? { end: index, href: markdown.slice(startIndex, index) }
-    : null
-}
-
-function markdownLinkHref(href: UrlText): UrlText {
-  const destination = unescapeHtml(href).trim()
-  return destination.startsWith('<') && destination.endsWith('>')
-    ? destination.slice(1, -1)
-    : destination
-}
-
-function wikilinkHtml(target: WikilinkTarget, display: LinkLabel): string {
-  const href = `${WIKILINK_HREF_PREFIX}${encodeURIComponent(unescapeHtml(target))}`
-  return `<a href="${href}">${display}</a>`
-}
-
-function externalAutolinkHtml(href: UrlText, display: LinkLabel): string {
-  return `<a href="${escapeAttribute(unescapeHtml(href))}">${display}</a>`
-}
-
-function emailAutolinkHtml(email: LinkLabel): string {
-  return `<a href="mailto:${escapeAttribute(unescapeHtml(email))}">${email}</a>`
-}
-
 function serializeBlockChildren(nodes: TiptapJsonNode[], options: TiptapMarkdownOptions): MarkdownBody {
   return nodes
     .map((node) => serializeBlockNode(node, options))
@@ -1072,15 +905,11 @@ function normalizeCodeFenceSourceMarkdown(markdown: MarkdownBody): MarkdownBody 
 
 function isCodeFenceSourceParagraph(lines: MarkdownLines, mode: CodeFenceSourceMode): boolean {
   const firstLine = lines[0] ?? ''
-  if (mode === 'indented' && !hasLeadingWhitespace(firstLine)) return false
-  if (mode === 'root' && hasLeadingWhitespace(firstLine)) return false
+  if (hasLeadingWhitespace(firstLine) !== (mode === 'indented')) return false
 
   const opening = readMobileMarkdownCodeFence(firstLine)
-  return Boolean(
-    opening
-    && lines.length > 1
-    && isMobileMarkdownCodeFenceClose(lines[lines.length - 1] ?? '', opening)
-  )
+  if (!opening || lines.length < 2) return false
+  return isMobileMarkdownCodeFenceClose(lines[lines.length - 1] ?? '', opening)
 }
 
 function normalizeIndentedCodeFenceSourceMarkdown(markdown: MarkdownBody): MarkdownBody {
@@ -1277,13 +1106,18 @@ function applyMarks(text: PlainText, marks: TiptapJsonMark[], options: TiptapMar
 }
 
 function applyMark(text: PlainText, mark: TiptapJsonMark, options: TiptapMarkdownOptions): string {
-  if (mark.type === 'code') return `\`${text.replace(/`/g, '\\`')}\``
+  if (mark.type === 'code') return inlineCodeSource(text)
   if (mark.type === 'bold') return `**${text}**`
   if (mark.type === 'italic') return `*${text}*`
   if (mark.type === 'strike') return `~~${text}~~`
   if (mark.type === 'highlight') return `==${text}==`
   if (mark.type === 'link') return linkMarkdown(text, mark.attrs, options)
   return text
+}
+
+function inlineCodeSource(text: PlainText): string {
+  const escaped = text.replaceAll('`', '\\`')
+  return `\`${escaped}\``
 }
 
 function linkMarkdown(
@@ -1368,28 +1202,6 @@ function isTiptapJsonNode(value: unknown): value is TiptapJsonNode {
   if (!value || typeof value !== 'object') return false
   const candidate = value as TiptapJsonNode
   return typeof candidate.type === 'string' || Array.isArray(candidate.content)
-}
-
-function escapeHtml(value: PlainText): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-function unescapeHtml(value: PlainText): string {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&gt;/g, '>')
-    .replace(/&lt;/g, '<')
-    .replace(/&amp;/g, '&')
-}
-
-function escapeAttribute(value: UrlText): string {
-  return escapeHtml(value)
 }
 
 function codeSpanToken(index: number): string {
