@@ -821,6 +821,11 @@ not a parallel repository checklist. See [mobile development](GETTING-STARTED.md
 for setup and native QA. Browser screenshots are a fast parity check, never a
 substitute for native interaction, layout and persistence checks.
 
+Mobile host tests use `fixtures/requiredFixture.ts` to require a present fixture
+value without a TypeScript non-null assertion. It rejects only null/undefined,
+preserving valid falsy values and object identity; it is not a mobile runtime
+dependency.
+
 The native workspace persistence probe keeps its disposable-vault orchestration
 in `nativeWorkspacePersistenceProbeRepository.ts`. Its scenario content, seed
 writes, edit plans, and independent read-back assertions live in the sibling

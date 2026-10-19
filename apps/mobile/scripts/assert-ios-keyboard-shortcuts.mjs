@@ -146,7 +146,7 @@ async function waitForNativeShortcutBridge(device, qaRun, waitMs) {
   const deadline = Date.now() + Math.max(waitMs, 9000)
   while (Date.now() < deadline) {
     const logs = collectSimulatorLogs(device, { last: defaultLogWindow })
-    if (logs.includes(`\"qaRun\":\"${qaRun}\"`)) return
+    if (logs.includes(`"qaRun":"${qaRun}"`)) return
     await sleep(250)
   }
   throw new Error('Native keyboard shortcut bridge did not become ready before HID delivery')

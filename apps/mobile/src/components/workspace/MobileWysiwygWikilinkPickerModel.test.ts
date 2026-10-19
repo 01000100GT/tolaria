@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict'
 import { describe, expect, it } from 'vitest'
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
 import {
@@ -33,7 +34,8 @@ describe('native WYSIWYG wikilink picker model', () => {
 
   it('uses the shared desktop emoji catalog and ranking for native : autocomplete', () => {
     const suggestions = mobileWysiwygEmojiPickerSuggestions('rocket')
-    const firstSuggestion = suggestions[0]!
+    const firstSuggestion = suggestions[0]
+    assert(firstSuggestion)
 
     expect(firstSuggestion).toMatchObject({
       emoji: '🚀',

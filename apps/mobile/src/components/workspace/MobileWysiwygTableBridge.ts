@@ -67,7 +67,7 @@ type MobileTableBridgeEditorInstance = {
 type ProseMirrorNodeLike = {
   child: (index: number) => ProseMirrorNodeLike
   childCount: number
-  descendants: (callback: (node: ProseMirrorNodeLike, position: number) => boolean | void) => void
+  descendants: (callback: (node: ProseMirrorNodeLike, position: number) => boolean | undefined) => void
   nodeSize: number
   type: { name: string }
 }

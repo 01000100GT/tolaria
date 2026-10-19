@@ -11,7 +11,7 @@ describe('TenTap iOS WebView patch', () => {
   it('returns a supported value from runtime JavaScript injections', () => {
     const richTextPatch = filePatch('src/RichText/RichText.tsx')
 
-    expect(richTextPatch).toContain("if(doc) doc.style.paddingBottom = '${height}px';")
+    expect(richTextPatch).toContain(`if(doc) doc.style.paddingBottom = '\${height}px';`)
     expect(richTextPatch).toContain('+          true;')
   })
 
@@ -19,7 +19,7 @@ describe('TenTap iOS WebView patch', () => {
     const utilitiesPatch = filePatch('src/RichText/utils.ts')
 
     expect(utilitiesPatch).toContain('styleElement.innerHTML = cssContent;\n+    true;')
-    expect(utilitiesPatch).toContain('window.platform = "${Platform.OS}";\n+    true;')
+    expect(utilitiesPatch).toContain(`window.platform = "\${Platform.OS}";\n+    true;`)
   })
 
   it('does not reload a bundled custom editor after its first iOS load', () => {

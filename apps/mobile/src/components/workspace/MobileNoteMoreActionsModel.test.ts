@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict'
 import { describe, expect, it } from 'vitest'
 import { workspaceScenarios } from '../../fixtures/workspaceFixtures'
 import type { MobileNote } from '../../workspace/mobileWorkspaceModel'
@@ -9,7 +10,8 @@ import {
 
 describe('mobile note more actions model', () => {
   it('keeps visible editor actions aligned with text-like command availability', () => {
-    const markdownNote = workspaceScenarios.default.notes[0]!
+    const markdownNote = workspaceScenarios.default.notes[0]
+    assert(markdownNote)
     const textFile = selectedFile({ fileKind: 'text' })
     const binaryFile = selectedFile({ fileKind: 'binary' })
 
@@ -28,8 +30,10 @@ describe('mobile note more actions model', () => {
 })
 
 function selectedFile(overrides: Partial<MobileNote>): MobileNote {
+  const base = workspaceScenarios.default.notes[0]
+  assert(base)
   return {
-    ...workspaceScenarios.default.notes[0]!,
+    ...base,
     ...overrides,
   }
 }
