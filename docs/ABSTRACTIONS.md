@@ -696,7 +696,8 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileWysiwygTentapEditorHtml.ts` | Generated custom TenTap WebView HTML used by the native WYSIWYG editor |
 | `build-wysiwyg-editor-html.mjs` | Builds TenTap from its shipped web source against the installed dependency graph; the in-memory build exposes provenance metadata without rewriting generated HTML during imports/tests |
 | `updates.config.js` | SDK-native OTA launch configuration, explicit channel/profile matching and EAS project identity; validation uses a separate application container |
-| `publish-mobile-update.mjs` | Opt-in CircleCI iOS OTA publisher; skips desktop-only paths, checks the accepted native runtime/build/channel, and waits for strict Sentry source-map processing before EAS publication. SDK 57 publishing explicitly selects the EAS `preview` environment for alpha/validation and `production` for stable |
+| `publish-mobile-update.mjs` | Main CI automatically publishes compatible alpha iOS OTA after quality gates; desktop-only pushes skip native-target and credential checks. Uses the push base revision, accepted native runtime/build, and strict Sentry source-map processing. SDK 57 publishing explicitly selects the EAS environment |
+| `promote-mobile-update.mjs` | Explicit, approval-gated stable promotion of a selected alpha update group; validates the stable native runtime and republishes the original iOS artifact without bundling again or moving alpha/stable branch pointers (ADR 0247) |
 | `mobileUpdateMetadata.ts` | Projects update UUID, native fingerprint, channel and launch source into consent-governed build metadata without copying manifests or recovery messages |
 | `nativeWysiwyg*Probe.ts` | Native Expo simulator proof models for mobile editor behavior that must be verified outside React Native Web |
 | `TabletWorkspace` | Tablet shell that owns selected-note state, panel layout, action-sheet forms, and editable snapshot state |

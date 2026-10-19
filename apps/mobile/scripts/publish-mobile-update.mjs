@@ -16,6 +16,7 @@ export function publishMobileUpdate(environment, execute = executeCommand) {
   const base = execute('git', ['rev-parse', '--verify', '--end-of-options', `${options.base}^{commit}`], options)
   const files = execute('git', ['diff', '--name-only', '-z', base.trim(), 'HEAD', '--'], options).split('\0')
   if (!files.some(mobileRuntimePath)) return { published: false, reason: 'No mobile runtime inputs changed' }
+  validateNativeTarget(environment)
   requireCredentials(environment)
   const runtime = JSON.parse(execute('pnpm', ['exec', 'expo-updates', 'runtimeversion:resolve',
     '--platform', 'ios', '--workflow', 'managed'], { ...options, cwd: mobileRoot })).runtimeVersion
@@ -38,7 +39,6 @@ export function publishMobileUpdate(environment, execute = executeCommand) {
 
 function publishingOptions(environment) {
   const channel = releaseChannel(environment)
-  validateNativeTarget(environment)
   return { cwd: repoRoot, channel, base: environment.TOLARIA_OTA_BASE_REF || 'HEAD~1', env: {
     ...environment, TOLARIA_BUILD_PROFILE: profiles[channel].profile, TOLARIA_UPDATE_CHANNEL: channel,
     EXPO_PUBLIC_DISTRIBUTION: profiles[channel].distribution, EXPO_PUBLIC_RELEASE_CHANNEL: profiles[channel].release,

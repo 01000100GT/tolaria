@@ -259,3 +259,4 @@ proposed → active → superseded
 | [0241](0241-mobile-source-free-snapshot-previews.md) | Source-free mobile snapshot previews | active |
 | [0242](0242-mobile-startup-presentation-boundary.md) | Mobile startup presentation boundary | active |
 | [0246](0246-mobile-expo-57-scene-lifecycle.md) | Supported mobile scene lifecycle | active |
+| [0247](0247-automatic-alpha-manual-stable-mobile-ota.md) | Automatic alpha and manual stable mobile OTA | active |

@@ -26,7 +26,8 @@ function executor(files, runtime = 'a'.repeat(40)) {
 
 test('desktop-only changes never export, upload or publish a mobile update', () => {
   const run = executor(['src/components/NoteItem.tsx', 'src-tauri/src/lib.rs', 'docs/ARCHITECTURE.md'])
-  assert.equal(publishMobileUpdate(environment(), run.execute).published, false)
+  assert.equal(publishMobileUpdate(environment({ TOLARIA_OTA_RUNTIME: '', TOLARIA_IOS_BUILD_NUMBER: '',
+    EXPO_TOKEN: '', SENTRY_AUTH_TOKEN: '' }), run.execute).published, false)
   assert(run.calls.every(call => call.command === 'git'))
 })
 
@@ -85,7 +86,7 @@ for (const overrides of [
   test(`rejects invalid publishing target ${JSON.stringify(overrides)}`, () => {
     const run = executor(['apps/mobile/src/App.tsx'])
     assert.throws(() => publishMobileUpdate(environment(overrides), run.execute))
-    assert.equal(run.calls.length, 0)
+    assert.equal(run.calls.some(call => call.command !== 'git'), false)
   })
 }
 
@@ -115,7 +116,7 @@ for (const [channel, easEnvironment] of [['alpha', 'preview'], ['ota-validation'
   })
 }
 
-test('mobile publishing is opt-in and never starts desktop release workflows', () => {
+test('manual OTA pipelines never start desktop release workflows', () => {
   const config = parse(readFileSync(new URL('../../../.circleci/config.yml', import.meta.url), 'utf8'))
   assert.equal(config.parameters['publish-mobile-ota'].default, false)
   const flag = '<< pipeline.parameters.publish-mobile-ota >>'
@@ -131,4 +132,32 @@ test('mobile publishing is opt-in and never starts desktop release workflows', (
   assert(approval.requires.includes('playwright-smoke'))
   assert(approval.requires.includes('mobile-ota-quality'))
   assert.deepEqual(jobs.find(job => job['mobile-ota-publish'])['mobile-ota-publish'].requires, ['approve-mobile-ota'])
+  assert.equal(jobs.find(job => job['mobile-ota-publish'])['mobile-ota-publish'].channel,
+    '<< pipeline.parameters.mobile-ota-channel >>')
+})
+
+test('main automatically publishes alpha only after all quality gates', () => {
+  const config = parse(readFileSync(new URL('../../../.circleci/config.yml', import.meta.url), 'utf8'))
+  const jobs = config.workflows.validation.jobs
+  const publish = jobs.find(job => job['mobile-ota-publish'])['mobile-ota-publish']
+  assert.equal(publish.channel, 'alpha')
+  assert.equal(publish.filters.branches.only, 'main')
+  assert.equal(publish.filters.tags.ignore, '/.*/')
+  assert.equal(publish['serial-group'], '<< pipeline.project.slug >>/mobile-ota-alpha')
+  assert.deepEqual(publish.requires, ['frontend-quality', 'rust-quality', 'playwright-smoke',
+    'performance-regression', 'mobile-ota-quality'])
+  assert(!jobs.some(job => job['approve-mobile-ota']))
+  assert.equal(jobs.find(job => job['mobile-ota-quality'])['mobile-ota-quality'].filters.branches.only, 'main')
+})
+
+test('stable publishing requires an explicit group and never rebuilds an update', () => {
+  const config = parse(readFileSync(new URL('../../../.circleci/config.yml', import.meta.url), 'utf8'))
+  assert.equal(config.parameters['mobile-ota-group'].default, '')
+  const job = config.jobs['mobile-ota-publish']
+  const command = job.steps.flatMap(step => step.run?.command ?? []).join('\n')
+  assert(command.includes('promote-mobile-update.mjs'))
+  assert(command.includes('TOLARIA_ACCEPTED_ALPHA_RUNTIME'))
+  assert(command.includes('TOLARIA_ACCEPTED_STABLE_RUNTIME'))
+  assert(command.includes('<< pipeline.git.base_revision >>'))
+  assert.equal(job.environment.TOLARIA_OTA_GROUP, '<< pipeline.parameters.mobile-ota-group >>')
 })
