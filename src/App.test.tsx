@@ -142,7 +142,8 @@ describe("App", () => {
 					mockEntries.find((entry) => entry.path === path) ?? null,
 			);
 			const getNoteContent = vi.fn(
-				({ path }: { path: string }) => mockAllContent[path] ?? "",
+				({ path }: { path: string }) =>
+					new Map(Object.entries(mockAllContent)).get(path) ?? "",
 			);
 			mockCommandResults.list_vault = listVault;
 			mockCommandResults.reload_vault_entry = reloadVaultEntry;

@@ -96,8 +96,9 @@ describe("App.navigation", () => {
 		let favoritesSection: HTMLElement | undefined;
 		await waitFor(() => {
 			const sidebar = screen.getByText("FAVORITES");
-			const currentFavoritesSection = sidebar.closest("div")
-				?.parentElement as HTMLElement;
+			const currentFavoritesSection = sidebar.closest("div")?.parentElement;
+			if (!currentFavoritesSection)
+				throw new Error("Expected favorites section");
 			expect(
 				within(currentFavoritesSection).getByText("Alpha"),
 			).toBeInTheDocument();

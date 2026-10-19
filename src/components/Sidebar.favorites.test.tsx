@@ -35,9 +35,9 @@ describe("Sidebar.favorites", () => {
 
 			return {
 				favoriteLabel,
-				favoriteRow: favoriteRow as HTMLElement,
+				favoriteRow: favoriteRow,
 				typeLabel,
-				typeRow: typeRow as HTMLElement,
+				typeRow: typeRow,
 			};
 		}
 
@@ -49,7 +49,7 @@ describe("Sidebar.favorites", () => {
 			expect(favoriteIcon?.getAttribute("style")).toContain(
 				"var(--accent-red)",
 			);
-			return favoriteIcon as SVGElement;
+			return favoriteIcon;
 		}
 
 		function expectFavoriteRowToMatchTypeRow(
@@ -111,9 +111,7 @@ describe("Sidebar.favorites", () => {
 		it("aligns the favorites header count pill with the shared sidebar count column", () => {
 			renderSidebar({ entries: [...mockEntries, favEntry] });
 
-			const favoritesHeader = screen
-				.getByText("FAVORITES")
-				.closest("div") as HTMLElement;
+			const favoritesHeader = screen.getByText("FAVORITES").closest("div");
 			const countChip =
 				within(favoritesHeader).getByTestId("sidebar-count-chip");
 
@@ -137,9 +135,7 @@ describe("Sidebar.favorites", () => {
 			const emojiRow = screen
 				.getByText("Emoji Favorite")
 				.closest(".cursor-pointer");
-			expect(
-				within(emojiRow as HTMLElement).getByText("🚀"),
-			).toBeInTheDocument();
+			expect(within(emojiRow).getByText("🚀")).toBeInTheDocument();
 			expect(emojiRow?.querySelector("svg")).toBeNull();
 		});
 
@@ -156,7 +152,9 @@ describe("Sidebar.favorites", () => {
 				expectFavoriteRowToMatchTypeRow("Icon Favorite");
 			const typeIcon = typeRow.querySelector("svg");
 			expect(typeIcon).not.toBeNull();
-			expect(favoriteIcon.innerHTML).not.toBe(typeIcon?.innerHTML);
+			expect(favoriteIcon?.querySelector("path")?.getAttribute("d")).not.toBe(
+				typeIcon?.querySelector("path")?.getAttribute("d"),
+			);
 		});
 
 		it("falls back to a neutral icon color when the favorite type has no defined color", () => {
@@ -196,9 +194,7 @@ describe("Sidebar.favorites", () => {
 			expect(recipeIcon?.getAttribute("style")).toContain(
 				"var(--muted-foreground)",
 			);
-			expect(
-				within(recipeRow as HTMLElement).getByText("Sourdough"),
-			).toBeInTheDocument();
+			expect(within(recipeRow).getByText("Sourdough")).toBeInTheDocument();
 		});
 	});
 

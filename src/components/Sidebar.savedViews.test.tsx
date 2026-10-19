@@ -47,9 +47,8 @@ describe("Sidebar saved views", () => {
 				projectLabel.closest('[class*="cursor-pointer"]'),
 			);
 			// The count chip is a sibling span inside the NavItem
-			const projectCount = within(projectNavItem as HTMLElement).getByTestId(
-				"view-count-chip",
-			);
+			const projectCount =
+				within(projectNavItem).getByTestId("view-count-chip");
 			expect(projectCount?.textContent).toBe("1");
 
 			// 'All Topics' filters for type=Topic -> mockEntries has 2 Topics
@@ -57,9 +56,7 @@ describe("Sidebar saved views", () => {
 			const topicNavItem = requireElement(
 				topicLabel.closest('[class*="cursor-pointer"]'),
 			);
-			const topicCount = within(topicNavItem as HTMLElement).getByTestId(
-				"view-count-chip",
-			);
+			const topicCount = within(topicNavItem).getByTestId("view-count-chip");
 			expect(topicCount?.textContent).toBe("2");
 		});
 
@@ -67,9 +64,7 @@ describe("Sidebar saved views", () => {
 			renderSidebar({ views: mockViews });
 
 			const viewLabel = screen.getByText("Active Projects");
-			const navItem = viewLabel.closest(
-				'[class*="cursor-pointer"]',
-			) as HTMLElement;
+			const navItem = viewLabel.closest('[class*="cursor-pointer"]');
 			const countChip = within(navItem).getByTestId("view-count-chip");
 
 			expect(navItem).toHaveStyle({ padding: "6px 8px 6px 12px" });
@@ -86,11 +81,11 @@ describe("Sidebar saved views", () => {
 
 			const topNavItem = screen
 				.getByText("Inbox")
-				.closest('[class*="cursor-pointer"]') as HTMLElement;
+				.closest('[class*="cursor-pointer"]');
 			const topNavCount = within(topNavItem).getByTestId("sidebar-count-chip");
 			const viewItem = screen
 				.getByText("Active Projects")
-				.closest('[class*="cursor-pointer"]') as HTMLElement;
+				.closest('[class*="cursor-pointer"]');
 			const viewCount = within(viewItem).getByTestId("view-count-chip");
 
 			expect(topNavItem).toHaveStyle({ padding: "6px 8px 6px 12px" });
@@ -127,7 +122,7 @@ describe("Sidebar saved views", () => {
 
 			const navItem = screen
 				.getByText("Active Projects")
-				.closest('[class*="cursor-pointer"]') as HTMLElement;
+				.closest('[class*="cursor-pointer"]');
 			expect(navItem.querySelector("svg")).not.toBeNull();
 			expect(screen.queryByText("rocket")).not.toBeInTheDocument();
 		});
@@ -155,7 +150,7 @@ describe("Sidebar saved views", () => {
 
 			const navItem = screen
 				.getByText("Active Projects")
-				.closest('[class*="cursor-pointer"]') as HTMLElement;
+				.closest('[class*="cursor-pointer"]');
 			const icon = navItem.querySelector("svg");
 			const countChip = within(navItem).getByTestId("view-count-chip");
 
@@ -193,7 +188,7 @@ describe("Sidebar saved views", () => {
 
 			const navItem = screen
 				.getByText("Active Projects")
-				.closest('[class*="cursor-pointer"]') as HTMLElement;
+				.closest('[class*="cursor-pointer"]');
 
 			expect(navItem.className).toContain("text-primary");
 			expect(navItem.getAttribute("style")).not.toContain("--accent-");
@@ -233,7 +228,7 @@ describe("Sidebar saved views", () => {
 			});
 
 			const label = screen.getByText("Active Projects");
-			const navItem = label.closest('[class*="cursor-pointer"]') as HTMLElement;
+			const navItem = label.closest('[class*="cursor-pointer"]');
 			const countChip = within(navItem).getByTestId("view-count-chip");
 			expect(countChip).toBeTruthy();
 			expect(countChip.className).not.toContain("group-hover:opacity-0");

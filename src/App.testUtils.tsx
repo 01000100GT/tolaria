@@ -17,17 +17,17 @@ import type { Settings } from "./types";
 
 // Provide a localStorage mock that supports all methods (jsdom's may be incomplete)
 export const localStorageMock = (() => {
-	let store: Record<string, string> = {};
+	const store = new Map<string, string>();
 	return {
-		getItem: (key: string) => store[key] ?? null,
+		getItem: (key: string) => store.get(key) ?? null,
 		setItem: (key: string, value: string) => {
-			store[key] = value;
+			store.set(key, value);
 		},
 		removeItem: (key: string) => {
-			delete store[key];
+			store.delete(key);
 		},
 		clear: () => {
-			store = {};
+			store.clear();
 		},
 	};
 })();
@@ -286,7 +286,7 @@ export function configureNeighborhoodVault() {
 	mockCommandResults.list_vault = neighborhoodEntries;
 	mockCommandResults.get_all_content = neighborhoodContent;
 	mockCommandResults.get_note_content = ({ path }: { path: string }) =>
-		neighborhoodContent[path] ?? "";
+		new Map(Object.entries(neighborhoodContent)).get(path) ?? "";
 }
 
 export function configureNeighborhoodFavoritesVault() {
@@ -297,14 +297,13 @@ export function configureNeighborhoodFavoritesVault() {
 	);
 	mockCommandResults.get_all_content = neighborhoodContent;
 	mockCommandResults.get_note_content = ({ path }: { path: string }) =>
-		neighborhoodContent[path] ?? "";
+		new Map(Object.entries(neighborhoodContent)).get(path) ?? "";
 }
 
 export function getHeaderForNoteList(noteListContainer: HTMLElement) {
-	return within(noteListContainer.parentElement as HTMLElement).getByRole(
-		"heading",
-		{ level: 3 },
-	);
+	const parentElement = noteListContainer.parentElement;
+	if (!parentElement) throw new Error("Expected note list parent");
+	return within(parentElement).getByRole("heading", { level: 3 });
 }
 
 interface NoteListClick {
