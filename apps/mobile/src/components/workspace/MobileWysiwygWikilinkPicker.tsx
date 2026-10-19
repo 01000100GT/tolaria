@@ -36,16 +36,17 @@ type MobileWysiwygWikilinkPickerProps = {
   typeDefinitions: MobileTypeDefinitions | null | undefined
 }
 
-export function MobileWysiwygWikilinkPicker({
-  initialQuery = '',
-  kind = 'wikilink',
-  notes,
-  onClose,
-  onSelect,
-  onSelectEmoji,
-  sourceNote = null,
-  typeDefinitions,
-}: MobileWysiwygWikilinkPickerProps) {
+export function MobileWysiwygWikilinkPicker(props: MobileWysiwygWikilinkPickerProps) {
+  const {
+    initialQuery = '',
+    kind = 'wikilink',
+    notes,
+    onClose,
+    onSelect,
+    onSelectEmoji,
+    sourceNote = null,
+    typeDefinitions,
+  } = props
   const { styles } = useMobileStyles(createThemeStyles)
   const [query, setQuery] = useState(initialQuery)
   const suggestions = useMemo(
@@ -149,7 +150,7 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
     },
     content: {
       gap: mobileSpace.md,
@@ -165,7 +166,7 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       lineHeight: metrics.size(24),
     },
     host: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       justifyContent: 'flex-end',
       padding: mobileSpace.md,
     },

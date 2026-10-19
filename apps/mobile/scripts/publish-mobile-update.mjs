@@ -6,9 +6,9 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const mobileRoot = path.join(repoRoot, 'apps/mobile')
 const profiles = {
-  alpha: { profile: 'testflight', distribution: 'testflight', release: 'alpha' },
-  stable: { profile: 'production', distribution: 'store', release: 'stable' },
-  'ota-validation': { profile: 'ota-validation', distribution: 'internal', release: 'alpha' },
+  alpha: { profile: 'testflight', distribution: 'testflight', release: 'alpha', environment: 'preview' },
+  stable: { profile: 'production', distribution: 'store', release: 'stable', environment: 'production' },
+  'ota-validation': { profile: 'ota-validation', distribution: 'internal', release: 'alpha', environment: 'preview' },
 }
 
 export function publishMobileUpdate(environment, execute = executeCommand) {
@@ -29,7 +29,8 @@ export function publishMobileUpdate(environment, execute = executeCommand) {
     '--org', environment.SENTRY_ORG, '--project', environment.SENTRY_PROJECT,
     '--strict', '--validate', '--wait-for', '120', '--debug-id-reference', '--ext', 'hbc', '--ext', 'map',
     path.join(output, '_expo/static/js/ios')], options)
-  execute(environment.TOLARIA_EAS_CLI || 'eas', ['update', '--channel', options.channel, '--platform', 'ios',
+  execute(environment.TOLARIA_EAS_CLI || 'eas', ['update', '--channel', options.channel,
+    '--environment', profiles[options.channel].environment, '--platform', 'ios',
     '--input-dir', output, '--skip-bundler', '--message', `Tolaria mobile ${sha}`, '--non-interactive', '--json'],
   { ...options, cwd: mobileRoot })
   return { published: true, channel: options.channel, runtime, sha }

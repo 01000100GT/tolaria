@@ -6,7 +6,7 @@ import { mobileActionSheetLayoutContract, mobileWorkspaceSuggestionRowLayoutCont
 
 const fixedStyles = StyleSheet.create({
   formBody: { flexShrink: 1, minHeight: 0 },
-  overlay: { ...StyleSheet.absoluteFillObject, elevation: 1000, zIndex: 1000 },
+  overlay: { ...StyleSheet.absoluteFill, elevation: 1000, zIndex: 1000 },
   scrollArea: { flexShrink: 1, minHeight: 0 },
   suggestionPressable: { alignSelf: 'stretch', width: '100%' },
 })
@@ -25,7 +25,7 @@ export function createMobileWorkspaceSheetStyles(mobileColors: MobileColors, met
 
 function createFormStyles(colors: MobileColors, metrics: MobileMetrics) {
   return StyleSheet.create({
-    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: colors.overlay },
+    backdrop: { ...StyleSheet.absoluteFill, backgroundColor: colors.overlay },
     content: {
       alignSelf: 'stretch',
       gap: metrics.size(mobileActionSheetLayoutContract.contentGap),

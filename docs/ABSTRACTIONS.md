@@ -21,6 +21,21 @@ Escape discards the draft. Changing the selected note resets the inline form.
 The note title/body is not a filename input. Non-Markdown file names remain
 read-only because the current rename command is Markdown-specific.
 
+## Mobile Native Lifecycle
+
+`apps/mobile/app.config.js` enables Expo SDK 57's supported scene lifecycle
+through `expo-build-properties`. Prebuild emits the scene manifest and Expo
+window owner; Tolaria does not maintain a parallel scene delegate. Existing Expo
+module subscribers and the keyboard root-controller handler remain responsible
+for lifecycle-dependent work and keyboard input. SDK/native dependency changes
+require a new signed binary and accepted OTA fingerprint. Sentry's JavaScript,
+core and native dependency declarations are aligned while existing consent and
+redaction boundaries remain unchanged. See ADR 0246.
+
+Editor mode changes use `useEditorModeSwitch` and the existing workspace editor
+save barrier before unmounting either editor. Failed reads retain the current
+draft; note-selection generations invalidate stale mode requests.
+
 ## Mobile Installation Settings
 
 `apps/mobile/src/settings/` owns validated, installation-local preferences.
@@ -681,7 +696,7 @@ Workspace surfaces now sit one level above those primitives:
 | `MobileWysiwygTentapEditorHtml.ts` | Generated custom TenTap WebView HTML used by the native WYSIWYG editor |
 | `build-wysiwyg-editor-html.mjs` | Builds TenTap from its shipped web source against the installed dependency graph; the in-memory build exposes provenance metadata without rewriting generated HTML during imports/tests |
 | `updates.config.js` | SDK-native OTA launch configuration, explicit channel/profile matching and EAS project identity; validation uses a separate application container |
-| `publish-mobile-update.mjs` | Opt-in CircleCI iOS OTA publisher; skips desktop-only paths, checks the accepted native runtime/build/channel, and waits for strict Sentry source-map processing before EAS publication |
+| `publish-mobile-update.mjs` | Opt-in CircleCI iOS OTA publisher; skips desktop-only paths, checks the accepted native runtime/build/channel, and waits for strict Sentry source-map processing before EAS publication. SDK 57 publishing explicitly selects the EAS `preview` environment for alpha/validation and `production` for stable |
 | `mobileUpdateMetadata.ts` | Projects update UUID, native fingerprint, channel and launch source into consent-governed build metadata without copying manifests or recovery messages |
 | `nativeWysiwyg*Probe.ts` | Native Expo simulator proof models for mobile editor behavior that must be verified outside React Native Web |
 | `TabletWorkspace` | Tablet shell that owns selected-note state, panel layout, action-sheet forms, and editable snapshot state |

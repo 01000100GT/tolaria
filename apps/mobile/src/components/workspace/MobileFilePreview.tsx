@@ -78,5 +78,5 @@ function PreviewLoading() {
 
 const styles = StyleSheet.create({
   host: { flex: 1, minHeight: 0 },
-  loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  loading: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
 })

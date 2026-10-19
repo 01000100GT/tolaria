@@ -104,6 +104,17 @@ test('validation is isolated and stable has store attribution', () => {
   }
 })
 
+for (const [channel, easEnvironment] of [['alpha', 'preview'], ['ota-validation', 'preview'], ['stable', 'production']]) {
+  test(`publishes ${channel} with the explicit SDK 57 EAS environment`, () => {
+    const run = executor(['apps/mobile/src/App.tsx'])
+    publishMobileUpdate(environment({ TOLARIA_OTA_CHANNEL: channel }), run.execute)
+    const publish = run.calls.at(-1)
+    const index = publish.args.indexOf('--environment')
+    assert(index >= 0, 'SDK 57 requires an explicit EAS environment')
+    assert.equal(publish.args[index + 1], easEnvironment)
+  })
+}
+
 test('mobile publishing is opt-in and never starts desktop release workflows', () => {
   const config = parse(readFileSync(new URL('../../../.circleci/config.yml', import.meta.url), 'utf8'))
   assert.equal(config.parameters['publish-mobile-ota'].default, false)

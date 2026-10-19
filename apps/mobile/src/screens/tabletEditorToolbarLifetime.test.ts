@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { workspaceScenarioForId } from '../fixtures/workspaceFixtures'
 import { TabletEditorPanel } from './TabletEditorPanel'
 import type { MobileNote } from '../workspace/mobileWorkspaceModel'
+import { createWorkspaceSyncEditors, WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 
 type SurfaceProps = { children?: ReactNode; testID?: string }
 function Surface({ children, testID }: SurfaceProps) {
@@ -24,6 +25,9 @@ vi.mock('../ui/theme/useMobileTheme', async () => {
 vi.mock('phosphor-react-native', () => ({ Check: () => null, X: () => null, Code: () => null,
   DotsThree: () => null, ListBullets: () => null, Star: () => null }))
 vi.mock('../components/ui/button', () => ({ Button: Control }))
+vi.mock('../components/ui/text', () => ({ Text: ({ children, accessibilityRole }: {
+  children?: ReactNode; accessibilityRole?: string
+}) => createElement('span', { role: accessibilityRole }, children) }))
 vi.mock('../components/ui/input', () => ({ Input: ({ testID }: SurfaceProps) => createElement('input', { 'data-testid': testID }) }))
 vi.mock('../analytics/useMobileAnalytics', () => ({ useMobileAnalytics: () => ({ capture: vi.fn() }) }))
 vi.mock('../workspace/useMobileModalDismiss', () => ({ useMobileModalDismiss: () => undefined }))
@@ -82,20 +86,59 @@ it('cancels filename editing and allows a fresh edit on the same note', async ()
   expect(harness.host.querySelector('[data-testid="editor-filename-input"]')).not.toBeNull()
 })
 
+it('retains the rich editor until its last document read completes', async () => {
+  const harness = createHarness()
+  const resume = vi.fn()
+  let complete = () => {}
+  const reading = new Promise<() => void>(resolve => { complete = () => resolve(resume) })
+  const prepare = vi.fn(() => reading)
+  harness.editors.register(prepare)
+  await harness.select(0)
+  await act(async () => harness.button('editor-source-action').click())
+  expect(prepare).toHaveBeenCalledOnce()
+  expect(harness.host.querySelector('[data-source-note]')).toBeNull()
+  await act(async () => complete())
+  expect(harness.host.querySelector('[data-source-note]')).not.toBeNull()
+  expect(resume).toHaveBeenCalledOnce()
+})
+
+it('keeps the draft mounted and reports a failed document read instead of switching mode', async () => {
+  const harness = createHarness()
+  harness.editors.register(() => Promise.reject(new Error('editorNotReady')))
+  await harness.select(0)
+  await act(async () => harness.button('editor-source-action').click())
+  expect(harness.host.querySelector('[data-source-note]')).toBeNull()
+  expect(harness.host.querySelector('[role="alert"]')).not.toBeNull()
+})
+
+it('does not switch a different note when an older mode request completes', async () => {
+  const harness = createHarness()
+  const resume = vi.fn()
+  let complete = () => {}
+  harness.editors.register(() => new Promise<() => void>(resolve => { complete = () => resolve(resume) }))
+  await harness.select(0)
+  await act(async () => harness.button('editor-source-action').click())
+  await harness.select(1)
+  await act(async () => complete())
+  expect(harness.host.querySelector('[data-source-note]')).toBeNull()
+  expect(resume).toHaveBeenCalledOnce()
+})
+
 function createHarness() {
   const host = document.createElement('div')
   root = createRoot(host)
   const notes = workspaceScenarioForId('default').notes.slice(0, 2)
-  return { host, notes,
+  const editors = createWorkspaceSyncEditors()
+  return { host, notes, editors,
     button: (testID: string) => {
       const button = host.querySelector<HTMLButtonElement>(`[data-testid="${testID}"]`)
       if (!button) throw new Error(`Missing ${testID}`)
       return button
     },
     select: (index: number) => act(async () => {
-      root?.render(createElement(TabletEditorPanel, { blocks: [], bullets: [], compact: false, notes,
+      root?.render(createElement(WorkspaceSyncEditorsContext.Provider, { value: editors }, createElement(TabletEditorPanel, { blocks: [], bullets: [], compact: false, notes,
         note: notes[index], onUpdateContent: vi.fn(), onToggleFavorite: vi.fn(), onOpenMoreActions: vi.fn(), onNavigateWikilink: vi.fn(),
-        renameFilename: { value: 'renamed.md', notes, onChange: vi.fn(), onSubmit: vi.fn() } }))
+        renameFilename: { value: 'renamed.md', notes, onChange: vi.fn(), onSubmit: vi.fn() } })))
     }),
   }
 }

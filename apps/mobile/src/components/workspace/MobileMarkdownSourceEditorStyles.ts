@@ -5,8 +5,17 @@ import { mobileRadius } from '../../ui/tokens'
 import type { MobileColors } from '../../ui/theme/mobilePalette'
 
 export function createSourceEditorStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
-  const { editor: desktopEditorParity, space: mobileSpace, type: mobileType } = metrics
-  const inputStyles = StyleSheet.create({
+  return { editorStyles: {
+    ...createInputStyles(mobileColors, metrics),
+    ...createSyntaxStyles(mobileColors, metrics),
+    ...createFrontmatterStyles(mobileColors, metrics),
+    ...createSuggestionStyles(mobileColors, metrics),
+  } }
+}
+
+function createInputStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: mobileColors.editor,
@@ -16,7 +25,7 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       flex: 1,
     },
     highlightedInput: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
       borderWidth: 0,
@@ -48,25 +57,16 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       position: 'relative',
     },
   })
+}
 
-  const syntaxStyles = StyleSheet.create({
-    syntaxAttachment: {
-      color: mobileColors.orange,
-    },
-    syntaxCodeFence: {
-      color: mobileColors.syntaxCode,
-    },
-    syntaxEmphasis: {
-      color: mobileColors.textMuted,
-      fontStyle: 'italic',
-    },
-    syntaxHeading: {
-      color: mobileColors.syntaxHeading,
-      fontWeight: '700',
-    },
-    syntaxInlineCode: {
-      color: mobileColors.syntaxCode,
-    },
+function createSyntaxStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { editor: desktopEditorParity, space: mobileSpace } = metrics
+  return StyleSheet.create({
+    syntaxAttachment: { color: mobileColors.orange },
+    syntaxCodeFence: { color: mobileColors.syntaxCode },
+    syntaxEmphasis: { color: mobileColors.textMuted, fontStyle: 'italic' },
+    syntaxHeading: { color: mobileColors.syntaxHeading, fontWeight: '700' },
+    syntaxInlineCode: { color: mobileColors.syntaxCode },
     syntaxLayer: {
       position: 'absolute',
       top: 0,
@@ -75,38 +75,25 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       paddingHorizontal: mobileSpace.md,
       paddingVertical: mobileSpace.md,
     },
-    syntaxListMarker: {
-      color: mobileColors.primary,
-    },
-    syntaxMeta: {
-      color: mobileColors.syntaxMuted,
-    },
-    syntaxPropertyKey: {
-      color: mobileColors.syntaxPropertyKey,
-    },
-    syntaxQuote: {
-      color: mobileColors.textMuted,
-      fontStyle: 'italic',
-    },
-    syntaxStrong: {
-      color: mobileColors.text,
-      fontWeight: '700',
-    },
-    syntaxTable: {
-      color: mobileColors.textMuted,
-    },
+    syntaxListMarker: { color: mobileColors.primary },
+    syntaxMeta: { color: mobileColors.syntaxMuted },
+    syntaxPropertyKey: { color: mobileColors.syntaxPropertyKey },
+    syntaxQuote: { color: mobileColors.textMuted, fontStyle: 'italic' },
+    syntaxStrong: { color: mobileColors.text, fontWeight: '700' },
+    syntaxTable: { color: mobileColors.textMuted },
     syntaxText: {
       color: mobileColors.text,
       fontFamily: 'Menlo',
       fontSize: desktopEditorParity.bodyFontSize,
       lineHeight: desktopEditorParity.bodyLineHeight,
     },
-    syntaxWikilink: {
-      color: mobileColors.syntaxLink,
-    },
+    syntaxWikilink: { color: mobileColors.syntaxLink },
   })
+}
 
-  const chromeStyles = StyleSheet.create({
+function createFrontmatterStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
+  return StyleSheet.create({
     frontmatterIssue: {
       alignItems: 'center',
       backgroundColor: mobileColors.warningSoft,
@@ -128,6 +115,12 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       flex: 1,
       fontSize: mobileType.caption,
     },
+  })
+}
+
+function createSuggestionStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
+  const { space: mobileSpace, type: mobileType } = metrics
+  return StyleSheet.create({
     suggestionRow: {
       minHeight: 32,
       alignItems: 'center',
@@ -164,7 +157,4 @@ export function createSourceEditorStyles(mobileColors: MobileColors, metrics: Mo
       paddingTop: mobileSpace.xs,
     },
   })
-
-  const editorStyles = { ...inputStyles, ...syntaxStyles, ...chromeStyles }
-  return { editorStyles }
 }

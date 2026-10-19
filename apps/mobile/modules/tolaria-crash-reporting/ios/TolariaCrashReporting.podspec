@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source = { git: 'https://tolaria.local/tolaria.git' }
   s.static_framework = true
   s.dependency 'ExpoModulesCore'
-  s.dependency 'Sentry/HybridSDK', '8.56.1'
+  s.dependency 'Sentry/HybridSDK', '8.58.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'SWIFT_COMPILATION_MODE' => 'wholemodule' }
   s.source_files = '**/*.swift'
   s.resource_bundles = { 'TolariaCrashReportingPrivacy' => ['PrivacyInfo.xcprivacy'] }

@@ -127,11 +127,11 @@ function createRowStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
 function createSurfaceStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   return StyleSheet.create({
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: mobileColors.overlay,
     },
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       zIndex: 30,
     },
     paletteContainer: {

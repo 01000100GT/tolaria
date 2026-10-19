@@ -26,6 +26,20 @@ function testFlight(build = '1') {
   return configuredApp()
 }
 
+it('enables the supported scene lifecycle for native builds', () => {
+  expect(configuredApp().plugins).toContainEqual(['expo-build-properties', {
+    ios: { enableSceneSupport: true },
+  }])
+  expect(testFlight().plugins).toContainEqual(['expo-build-properties', {
+    ios: { enableSceneSupport: true },
+  }])
+})
+
+it('preserves other config plugins when enabling scene support', () => {
+  const config = { ...structuredClone(manifest.expo), plugins: ['expo-asset'] }
+  expect(configure({ config }).plugins).toContain('expo-asset')
+})
+
 it.each([undefined, 'development'])('preserves the development sandbox for profile %s', (profile) => {
   vi.stubEnv('TOLARIA_BUILD_PROFILE', profile)
   vi.stubEnv('TOLARIA_IOS_BUILD_NUMBER', '99')

@@ -16,8 +16,8 @@ export function MobileThemeProvider({ children }: { children: ReactNode }) {
   const theme = useMemo(() => ({ mode, colors: mobilePalettes[mode], metrics: mobileMetrics[settings.uiScale] }), [mode, settings.uiScale])
   useEffect(() => {
     if (Platform.OS === 'web') return
-    Appearance.setColorScheme(settings.theme === 'system' ? null : settings.theme)
-    return () => Appearance.setColorScheme(null)
+    Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme)
+    return () => Appearance.setColorScheme('unspecified')
   }, [settings.theme])
   return <MobileThemeContext.Provider value={theme}>
     <View style={[{ flex: 1, backgroundColor: theme.colors.app }, variableStyles[mode]]}>

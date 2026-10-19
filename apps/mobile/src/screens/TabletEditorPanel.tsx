@@ -28,6 +28,8 @@ import { useMobileAttachmentLinkOpener } from '../workspace/mobileAttachmentOpen
 import { useRegisteredMobileEditorCommands } from '../workspace/mobileEditorCommands'
 import { mobileNoteActionMode } from '../workspace/mobileNoteActionMode'
 import { mobileSpreadsheetNeedsFallback } from '../workspace/mobileSpreadsheetFormat'
+import { Text } from '../components/ui/text'
+import { useEditorModeSwitch } from './useEditorModeSwitch'
 import { EmptyEditorPanel, MobileFilePreviewFallback, MobileNoteReadFallback, MobileSpreadsheetFallback } from './TabletEditorPanelChrome'
 import { createEditorPanelStyles } from './TabletEditorPanelStyles'
 import type {
@@ -78,9 +80,10 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
   const importAttachment = useMobileAttachmentImporter(vaultRootUri)
   const openLink = useMobileAttachmentLinkOpener(vaultRootUri)
   const layoutProbe = useMobileLayoutProbe(layoutProbeEnabled)
-  const toggleSourceMode = useCallback(() => {
+  const changeEditingMode = useCallback(() => {
     setEditingMode((current) => (current === 'source' ? 'wysiwyg' : 'source'))
   }, [])
+  const { toggle: toggleSourceMode, failed: modeSwitchFailed } = useEditorModeSwitch(note?.id, changeEditingMode)
   useRegisteredMobileEditorCommands(onRegisterEditorCommands, {
     toggleRawEditor: note && editorFileMode(note) === 'markdown' ? toggleSourceMode : undefined,
   })
@@ -142,6 +145,7 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
         onToggleFavorite={onToggleFavorite}
         typeDefinitions={typeDefinitions}
       />
+      <EditorModeFailure failed={modeSwitchFailed} />
       <EditorPanelBody
         compact={compact}
         contentProps={contentProps}
@@ -156,6 +160,13 @@ export function TabletEditorPanel(props: TabletEditorPanelProps) {
       ) : null}
     </MobilePanel>
   )
+}
+
+function EditorModeFailure({ failed }: { failed: boolean }) {
+  const colors = useMobileColors()
+  const metrics = useMobileMetrics()
+  return failed ? <Text accessibilityRole="alert" style={{ color: colors.danger,
+    fontSize: metrics.type.body, padding: metrics.space.md }}>{mobileText('mobile.editor.readFailed')}</Text> : null
 }
 
 function EditorPanelBody({ compact, contentProps, fileMode, note, noteRead, onScroll, onScrollViewRef }: EditorPanelBodyProps) {

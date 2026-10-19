@@ -10,7 +10,8 @@ type Props = { children: ReactNode; panelRail: ReturnType<typeof usePhonePanelRa
 
 export function PhoneWorkspaceTransition({ children, panelRail, swipeHandlers }: Props) {
   const width = usePhoneViewportWidth()
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ translateX: panelRail.offset.get() }] }))
+  const { offset } = panelRail
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.get() }] }))
   const stage = <View {...swipeHandlers} className={panelRail.enabled ? undefined : '!overflow-clip'} style={styles.stage} testID="phone-transition-stage">
     <Reanimated.View style={[styles.rail, { width: phoneWorkspaceSidebarDrawerWidth(width) + 3 * width }, animatedStyle]}>
       {children}

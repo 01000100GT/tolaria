@@ -80,7 +80,7 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
   const { space: mobileSpace } = metrics
   const styles = StyleSheet.create({
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
     },
     content: {
       gap: mobileSpace.md,
@@ -92,7 +92,7 @@ function createThemeStyles(mobileColors: MobileColors, metrics: MobileMetrics) {
       gap: mobileSpace.sm,
     },
     host: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       justifyContent: 'flex-end',
       padding: mobileSpace.md,
     },

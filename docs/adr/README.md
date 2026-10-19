@@ -232,7 +232,7 @@ proposed → active → superseded
 | [0173](0173-future-calendar-version-recovery.md) | Future calendar version rejection and recovery | active |
 | [0174](0174-expo-react-native-mobile-ui-foundation.md) | Expo React Native mobile UI foundation | active |
 | [0175](0175-nativewind-react-native-reusables-mobile-primitives.md) | Nativewind and React Native Reusables for mobile primitives | active |
-| [0176](0176-expo-sdk-54-for-ipad-expo-go-preview.md) | Expo SDK 54 for iPad Expo Go preview | active |
+| [0176](0176-expo-sdk-54-for-ipad-expo-go-preview.md) | Expo SDK 54 for iPad Expo Go preview | superseded -> [0246](0246-mobile-expo-57-scene-lifecycle.md) |
 | [0177](0177-expo-file-system-mobile-vault-repository.md) | Expo FileSystem mobile vault repository | amended -> [0190](0190-explicit-session-scoped-ios-vault-selection.md) |
 | [0178](0178-expo-clipboard-mobile-deep-link-copy.md) | Expo Clipboard for mobile deep-link copy | active |
 | [0179](0179-mobile-folder-mutation-write-contract.md) | Mobile folder mutation write contract | active |
@@ -258,3 +258,4 @@ proposed → active → superseded
 | [0240](0240-mobile-bounded-git-filesystem-sessions.md) | Bounded mobile Git filesystem sessions | active |
 | [0241](0241-mobile-source-free-snapshot-previews.md) | Source-free mobile snapshot previews | active |
 | [0242](0242-mobile-startup-presentation-boundary.md) | Mobile startup presentation boundary | active |
+| [0246](0246-mobile-expo-57-scene-lifecycle.md) | Supported mobile scene lifecycle | active |
