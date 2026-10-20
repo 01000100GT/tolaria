@@ -271,3 +271,4 @@ proposed → active → superseded
 | [0246](0246-mobile-expo-57-scene-lifecycle.md) | Supported mobile scene lifecycle | active |
 | [0247](0247-automatic-alpha-manual-stable-mobile-ota.md) | Automatic alpha and manual stable mobile OTA | active |
 | [0269](0269-mobile-ota-validated-main-range.md) | Mobile OTA validated main range | active |
+| [0270](0270-expiring-exact-codacy-approval-records.md) | Expiring exact Codacy approval records | temporary; expires 2026-10-21 |
