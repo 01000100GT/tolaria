@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { resolve } from 'node:path'
 import { partitionApprovedReports } from './codacy-approved-reports.mjs'
@@ -25,7 +24,7 @@ test('an expired approval no longer applies, including at the exact expiry bound
 })
 
 test('a changed source file cannot inherit an approval', () => {
-  const read = file => Buffer.concat([readFileSync(file), Buffer.from('\nchanged source')])
+  const read = () => Buffer.from('changed source')
   assert.deepEqual(partitionApprovedReports([finding], root, { now, read }).blocking, [finding])
 })
 
