@@ -2,6 +2,16 @@ import { fileURLToPath } from 'node:url'
 
 const RUST_UNSAFE_USAGE_RULE = 'codacy.tools-configs.rust.lang.security.unsafe-usage.unsafe-usage'
 
+export function scannerOutputFailures(result, additions, repositoryRoot, tool) {
+  const failures = scannerProcessFailures(result, tool)
+  if (failures.length > 0) return failures
+  try {
+    return sarifGateFailures(JSON.parse(result.stdout), additions, repositoryRoot, tool)
+  } catch {
+    return [{ message: `${tool} report was not valid SARIF`, tool }]
+  }
+}
+
 export function isAuditedRustUnsafe(finding, additions) {
   if (finding.rule !== RUST_UNSAFE_USAGE_RULE || !finding.line) return false
   return additions.get(finding.path)?.auditedRustUnsafeLines?.has(finding.line) ?? false
@@ -33,9 +43,9 @@ function hasScannerRuns(sarif) {
 }
 
 function hasExpectedRun(sarif, expectedTool) {
-  const names = { opengrep: 'Opengrep OSS', trivy: 'Trivy' }
+  const names = new Map([['opengrep', 'Opengrep OSS'], ['trivy', 'Trivy']])
   if (sarif.runs.length !== 1) return false
-  return sarif.version === '2.1.0' && sarif.runs[0]?.tool?.driver?.name === names[expectedTool]
+  return sarif.version === '2.1.0' && sarif.runs[0]?.tool?.driver?.name === names.get(expectedTool)
 }
 
 function failuresForRun(run, additions, repositoryRoot) {

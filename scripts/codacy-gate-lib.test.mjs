@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 import { addedLinesFromDiff, biomeGateFailures, eslintGateFailures } from './codacy-gate-lib.mjs'
-import { isAuditedRustUnsafe, sarifGateFailures, scannerProcessFailures } from './codacy-sarif.mjs'
+import { isAuditedRustUnsafe, sarifGateFailures, scannerOutputFailures, scannerProcessFailures } from './codacy-sarif.mjs'
 
 test('reports findings only on added lines', () => {
   const root = '/repo'
@@ -50,12 +50,28 @@ test('fails closed when a wrapper swallows its scanner SIGTERM', () => {
   assert.equal(wrapper.status, 0)
   assert.match(wrapper.stderr, /signal: terminated/u)
   assert.equal(scannerProcessFailures(wrapper, 'trivy').length, 1)
+  assert.equal(scannerOutputFailures(wrapper, new Map(), '', 'trivy').length, 1)
   assert.equal(sarifGateFailures(JSON.parse(wrapper.stdout), new Map()).length, 1)
 })
 
 test('a success-shaped report cannot hide the scanner failure diagnostic', () => {
-  const result = { status: 0, stdout: '', stderr: 'Tool failed to run: context deadline exceeded' }
+  const stdout = JSON.stringify({ version: '2.1.0', runs: [{ tool: { driver: { name: 'Trivy' } }, results: [] }] })
+  const result = { status: 0, stdout, stderr: 'Tool failed to run: context deadline exceeded' }
   assert.equal(scannerProcessFailures(result, 'trivy').length, 1)
+  assert.equal(scannerOutputFailures(result, new Map(), '', 'trivy').length, 1)
+})
+
+test('rejects missing, truncated and malformed structured scanner output', () => {
+  for (const stdout of [undefined, '', '{"runs":', 'null', '{}', '{"runs":[]}']) {
+    assert.equal(scannerOutputFailures({ status: 0, stdout }, new Map(), '', 'trivy').length, 1)
+  }
+})
+
+test('accepts complete structured output from each expected scanner', () => {
+  for (const [tool, name] of [['trivy', 'Trivy'], ['opengrep', 'Opengrep OSS']]) {
+    const stdout = JSON.stringify({ version: '2.1.0', runs: [{ tool: { driver: { name } }, results: [] }] })
+    assert.deepEqual(scannerOutputFailures({ status: 0, stdout }, new Map(), '', tool), [])
+  }
 })
 
 test('rejects nonzero, signaled, timed-out and failed-to-spawn processes', () => {
