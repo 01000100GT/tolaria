@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 import { addedLinesFromDiff, biomeGateFailures, eslintGateFailures } from './codacy-gate-lib.mjs'
-import { isAuditedRustUnsafe, sarifGateFailures } from './codacy-sarif.mjs'
+import { isAuditedRustUnsafe, sarifGateFailures, scannerProcessFailures } from './codacy-sarif.mjs'
 
 test('reports findings only on added lines', () => {
   const root = '/repo'
@@ -31,6 +32,58 @@ test('fails closed when a scanner does not complete', () => {
   }] }, new Map())
 
   assert.equal(failures[0]?.message, 'Broken scanner did not complete successfully')
+})
+
+test('fails closed when the legacy CLI returns an empty merged report', () => {
+  assert.equal(sarifGateFailures({ version: '2.1.0', runs: [] }, new Map()).length, 1)
+})
+
+test('fails closed when a wrapper swallows its scanner SIGTERM', () => {
+  const wrapper = spawnSync(process.execPath, ['-e', `
+    const { spawnSync } = require('node:child_process')
+    const scanner = spawnSync(process.execPath, ['-e', 'process.kill(process.pid, "SIGTERM")'])
+    if (scanner.signal !== 'SIGTERM') process.exit(2)
+    console.error('Tool failed to run: failed to run Trivy: signal: terminated')
+    console.log(JSON.stringify({ version: '2.1.0', runs: [] }))
+  `], { encoding: 'utf8', timeout: 5000 })
+
+  assert.equal(wrapper.status, 0)
+  assert.match(wrapper.stderr, /signal: terminated/u)
+  assert.equal(scannerProcessFailures(wrapper, 'trivy').length, 1)
+  assert.equal(sarifGateFailures(JSON.parse(wrapper.stdout), new Map()).length, 1)
+})
+
+test('a success-shaped report cannot hide the scanner failure diagnostic', () => {
+  const result = { status: 0, stdout: '', stderr: 'Tool failed to run: context deadline exceeded' }
+  assert.equal(scannerProcessFailures(result, 'trivy').length, 1)
+})
+
+test('rejects nonzero, signaled, timed-out and failed-to-spawn processes', () => {
+  for (const result of [{ status: 1 }, { status: 0, signal: 'SIGTERM' },
+    { status: null, error: { code: 'ETIMEDOUT' } }, { status: null, error: { code: 'ENOENT' } }]) {
+    assert.equal(scannerProcessFailures(result, 'trivy').length, 1)
+  }
+  assert.deepEqual(scannerProcessFailures({ status: 0, stderr: 'INFO scanning enabled' }, 'trivy'), [])
+})
+
+test('requires the expected scanner and its complete results array', () => {
+  const run = { tool: { driver: { name: 'Trivy' } }, results: [] }
+  const report = { version: '2.1.0', runs: [run] }
+  assert.deepEqual(sarifGateFailures(report, new Map(), '', 'trivy'), [])
+  assert.equal(sarifGateFailures(report, new Map(), '', 'opengrep').length, 1)
+  assert.equal(sarifGateFailures({ ...report, runs: [run, run] }, new Map(), '', 'trivy').length, 1)
+  assert.equal(sarifGateFailures({ ...report, version: 'wrong' }, new Map(), '', 'trivy').length, 1)
+  assert.equal(sarifGateFailures({ runs: [{}] }, new Map()).length, 1)
+  for (const partial of [null, {}, { runs: null }, { runs: [null] }]) {
+    assert.equal(sarifGateFailures(partial, new Map()).length, 1)
+  }
+})
+
+test('rejects errors in successful-looking SARIF invocations', () => {
+  for (const invocation of [{}, { executionSuccessful: true, exitCode: 2 },
+    { executionSuccessful: true, toolExecutionNotifications: [{ level: 'error' }] }]) {
+    assert.equal(sarifGateFailures({ runs: [{ invocations: [invocation], results: [] }] }, new Map()).length, 1)
+  }
 })
 
 test('recognizes only explicitly audited Rust unsafe findings', () => {

@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { addedLinesFromDiff, biomeGateFailures, eslintGateFailures } from './codacy-gate-lib.mjs'
-import { sarifGateFailures } from './codacy-sarif.mjs'
+import { sarifGateFailures, scannerProcessFailures } from './codacy-sarif.mjs'
 import { partitionApprovedReports } from './codacy-approved-reports.mjs'
 
 const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
@@ -79,11 +79,20 @@ try {
       encoding: 'utf8',
       env: scannerEnvironment,
     })
-    if (result.status !== 0 || !existsSync(output)) {
-      failures.push({ message: `${tool} exited unsuccessfully`, tool })
+    const executionFailures = scannerProcessFailures(result, tool)
+    if (executionFailures.length > 0) {
+      failures.push(...executionFailures)
       continue
     }
-    failures.push(...sarifGateFailures(JSON.parse(readFileSync(output, 'utf8')), additions, root))
+    if (!existsSync(output)) {
+      failures.push({ message: `${tool} did not produce a report`, tool })
+      continue
+    }
+    try {
+      failures.push(...sarifGateFailures(JSON.parse(readFileSync(output, 'utf8')), additions, root, tool))
+    } catch {
+      failures.push({ message: `${tool} report was not valid SARIF`, tool })
+    }
   }
 } finally {
   rmSync(temporaryDirectory, { force: true, recursive: true })
