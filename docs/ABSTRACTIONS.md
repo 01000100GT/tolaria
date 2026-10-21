@@ -740,6 +740,7 @@ Workspace surfaces now sit one level above those primitives:
 | `src/utils/externalUrl.ts` | Shared dependency-free external URL normalizer used by desktop link opening and mobile WYSIWYG link editing |
 | `MobileWysiwygMathHtml.ts` | Mobile KaTeX MathML rendering helper for native TenTap inline math nodes |
 | `MobileWysiwygTentapWebEditor.tsx` | Tolaria TenTap WebView entrypoint that bundles custom mobile Tiptap extensions |
+| `MobileWysiwygLinkBridge.web.ts` | Configures the production/test TenTap link schema to preserve internal wikilink addresses through HTML hydration, while retaining external-link validation |
 | `MobileWysiwygContentBridge.ts` | Silent programmatic-content bridge that prevents initial hydration from being persisted as a user edit |
 | `MobileWysiwygTentapEditorHtml.ts` | Generated custom TenTap WebView HTML used by the native WYSIWYG editor |
 | `build-wysiwyg-editor-html.mjs` | Builds TenTap from its shipped web source against the installed dependency graph; the in-memory build exposes provenance metadata without rewriting generated HTML during imports/tests |
