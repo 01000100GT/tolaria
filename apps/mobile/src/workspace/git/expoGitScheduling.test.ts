@@ -37,6 +37,9 @@ const operations = [
   { name: 'write', run: (fs: GitFiles) => fs.writeFile('/vault/note.md', 'new') },
   { name: 'remove', run: (fs: GitFiles) => fs.unlink('/vault/note.md') },
   { name: 'mkdir', run: (fs: GitFiles) => fs.mkdir('/vault/created') },
+  { name: 'read', run: (fs: GitFiles) => fs.readFile('/vault/note.md') },
+  { name: 'readdir', run: (fs: GitFiles) => fs.readdir('/vault') },
+  { name: 'rmdir', run: (fs: GitFiles) => fs.rmdir('/vault') },
 ]
 
 it.each(operations)(
@@ -97,4 +100,27 @@ it.each([
   expect(vi.getTimerCount()).toBe(1)
   await vi.advanceTimersByTimeAsync(0)
   await stat
+})
+
+it('yields to input during 6,000 failed file existence checks', async () => {
+  const { fs, now, readInfo } = fixture()
+  let elapsed = 0
+  let completed = 0
+  now.mockImplementation(() => elapsed)
+  readInfo.mockImplementation(() => {
+    elapsed += 1
+    return { exists: false, isDirectory: false, size: 0, modificationTime: 0, creationTime: 0 }
+  })
+  const input = vi.fn(() => completed)
+  setTimeout(input, 0)
+  const reads = (async () => {
+    for (let index = 0; index < 6000; index += 1) {
+      await expect(fs.readFile('/vault/missing.md')).rejects.toMatchObject({ code: 'ENOENT' })
+      completed += 1
+    }
+  })()
+  await vi.runAllTimersAsync()
+  await reads
+  expect(input).toHaveReturnedWith(16)
+  expect(completed).toBe(6000)
 })
