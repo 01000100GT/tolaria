@@ -268,8 +268,9 @@ rejection to the descriptor-relative stat. No file state is cached.
 Expo metadata/mutation calls and awaited Git progress callbacks. Requests share
 one pending timer after a sixteen-millisecond budget; each synchronous operation
 runs immediately after rechecking that budget, including concurrent resumptions.
-Completed asynchronous native byte/directory reads renew the budget without an
-extra timer because they already return control through the native event loop.
+Native byte/directory reads share that budget rather than resetting it on promise
+completion: a chain of fast native promises does not prove that input or timers
+had a turn. Only the actual shared timer resets the budget (ADR 0274).
 This is not a new mutation queue or a latency guarantee for individual
 large operations (ADR 0209).
 Transport progress deliberately keeps a separate budget from native filesystem

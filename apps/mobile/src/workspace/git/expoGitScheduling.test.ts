@@ -86,10 +86,15 @@ it('splits a concurrent metadata burst into separate work budgets', async () => 
 it.each([
   { name: 'byte read', read: (fs: GitFiles) => fs.readFile('/vault/note.md') },
   { name: 'directory read', read: (fs: GitFiles) => fs.readdir('/vault') },
-])('does not add a redundant timer after a native $name', async ({ read }) => {
-  const { fs } = fixture()
-  await read(fs)
+])('preserves the task budget across a native $name', async ({ read }) => {
+  const { fs, now } = fixture()
+  const result = read(fs)
+  expect(vi.getTimerCount()).toBe(1)
+  await vi.advanceTimersByTimeAsync(0)
+  await result
+  now.mockReturnValue(34)
   const stat = fs.stat('/vault/note.md')
-  expect(vi.getTimerCount()).toBe(0)
+  expect(vi.getTimerCount()).toBe(1)
+  await vi.advanceTimersByTimeAsync(0)
   await stat
 })
