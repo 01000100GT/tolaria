@@ -323,7 +323,15 @@ index/bridge time, snapshot construction, throwaway interaction timings and
 JavaScript scheduling delay separately from the Git round-trip measurements.
 `savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
-and remounts from disk; a pre-barrier failure instead resumes the existing draft.
+and publishes a freshly prepared disk snapshot; a pre-barrier failure instead resumes the existing draft.
+`useWorkspaceSnapshotFrame` swaps revision-scoped snapshot/history stores after
+that publication without remounting the same-root workspace controller. Search,
+navigation and mounted list surfaces survive; editor documents alone receive a
+new revision key. Retired stores retain their own late persistence completions,
+while prepared actions and retries require both the current generation and exact
+frame identity. Ordinary parent renders do not reset drafts or history. Switching
+the actual native root still remounts the workspace. This does not authorize edits
+through a replacement barrier or make provisional cached previews writable (ADR 0275).
 A confirmed no-change folder-picker cancellation or Git result without native recovery also resumes that draft without
 re-indexing or remounting. It restores the frozen editor's callback generation;
 replacement IDs are never reused, and an older cancellation cannot undo a newer
@@ -481,7 +489,8 @@ validates a staged copy before replacing the previous managed folder. Import and
 restore failures reach the vault manager; cancellation alone returns no selection.
 Expo filesystem reads likewise propagate failures instead of synthesizing empty content.
 `WorkspaceLoadBoundary` keeps vault-management controls available after a read or
-render failure; a successful vault operation remounts the boundary from the new revision.
+render failure; a successful vault revision resets a failed boundary without
+remounting healthy workspace children.
 
 `useMobileNoteRead` handles lazy selected-note reads independently of workspace
 loading. It exposes loading/error/retry before the editor mounts, cancels stale

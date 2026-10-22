@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
+import { useCallback, useContext, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
 import { requestCreatedNoteFocus } from '../workspace/mobileEditorFocus'
 import { withDefaultNoteType } from '../workspace/mobileDefaultNoteType'
@@ -8,6 +8,7 @@ import { trackSuccessfulMobileEdit } from '../analytics/mobileSuccessfulEdit'
 import { captureMobileError } from '../analytics/mobileCrashChannel'
 import { isMobileNoteHydration, mobileEditNeedsNoteRead } from '../workspace/mobileNoteRead'
 import { usePreparedWorkspaceEdits, type WorkspaceEditOptions } from './usePreparedWorkspaceEdits'
+import { useWorkspaceSnapshotFrame } from './useWorkspaceSnapshotFrame'
 import {
   applyMobileWorkspaceEditWithWrites,
   type MobileWorkspaceEdit,
@@ -39,8 +40,8 @@ export function useWorkspaceEditPipeline({
   repositoryRequest?: ReadOnlyWorkspaceRequest
   snapshot: MobileWorkspaceSnapshot
 }) {
-  const snapshotState = useWorkspaceSnapshotState(snapshot)
-  const [workspaceHistory, setWorkspaceHistory] = useState(emptyMobileWorkspaceHistory)
+  const snapshotState = useWorkspaceSnapshotFrame(snapshot, repositoryRequest?.vaultRootUri)
+  const { workspaceHistory, setWorkspaceHistory } = snapshotState
   const applyEdit = useWorkspaceEditApplier({
     repository,
     repositoryRequest,
@@ -48,7 +49,7 @@ export function useWorkspaceEditPipeline({
     snapshotState,
   })
   const { apply: applyWorkspaceEdit, retryFailedEdit } = usePreparedWorkspaceEdits({
-    applyEdit, repository, repositoryRequest, snapshotRef: snapshotState.workspaceSnapshotRef,
+    applyEdit, repository, repositoryRequest, snapshotRef: snapshotState.workspaceSnapshotRef, generation: snapshotState.generation,
   })
   const historyControls = useWorkspaceHistoryControls({
     applyWorkspaceEdit,
@@ -59,7 +60,7 @@ export function useWorkspaceEditPipeline({
     const nextSnapshot = repository.readSnapshot(repositoryRequest)
     snapshotState.replaceWorkspaceSnapshot(nextSnapshot)
     setWorkspaceHistory(emptyMobileWorkspaceHistory)
-  }, [repository, repositoryRequest, snapshotState])
+  }, [repository, repositoryRequest, setWorkspaceHistory, snapshotState])
 
   return {
     applyWorkspaceEdit,
@@ -67,25 +68,6 @@ export function useWorkspaceEditPipeline({
     reloadWorkspaceSnapshot,
     workspaceSnapshot: snapshotState.workspaceSnapshot,
     ...historyControls,
-  }
-}
-
-function useWorkspaceSnapshotState(snapshot: MobileWorkspaceSnapshot) {
-  const [workspaceSnapshot, setWorkspaceSnapshot] = useState(snapshot)
-  const workspaceSnapshotRef = useRef(workspaceSnapshot)
-  const replaceWorkspaceSnapshot = useCallback((nextSnapshot: MobileWorkspaceSnapshot) => {
-    updateWorkspaceSnapshot(nextSnapshot, workspaceSnapshotRef, setWorkspaceSnapshot)
-  }, [])
-
-  useEffect(() => {
-    workspaceSnapshotRef.current = workspaceSnapshot
-  }, [workspaceSnapshot])
-
-  return {
-    replaceWorkspaceSnapshot,
-    setWorkspaceSnapshot,
-    workspaceSnapshot,
-    workspaceSnapshotRef,
   }
 }
 
@@ -98,11 +80,11 @@ function useWorkspaceEditApplier({
   repository: ReadOnlyWorkspaceRepository
   repositoryRequest?: ReadOnlyWorkspaceRequest
   setWorkspaceHistory: WorkspaceHistorySetter
-  snapshotState: ReturnType<typeof useWorkspaceSnapshotState>
+  snapshotState: ReturnType<typeof useWorkspaceSnapshotFrame>
 }) {
   const analytics = useMobileAnalytics()
   const syncEditors = useContext(WorkspaceSyncEditorsContext)
-  const [generation] = useState(() => syncEditors?.generation())
+  const { generation } = snapshotState
   return useCallback((edit: MobileWorkspaceEdit, options: WorkspaceEditOptions = {}) => {
     const previousSnapshot = snapshotState.workspaceSnapshotRef.current
     if (generation !== syncEditors?.generation()) return { snapshot: previousSnapshot, writes: [] }
@@ -208,15 +190,6 @@ function recordWorkspaceEditHistory({
     history,
     mobileWorkspaceHistoryEntry(previousSnapshot, resultSnapshot, edit),
   ))
-}
-
-function updateWorkspaceSnapshot(
-  snapshot: MobileWorkspaceSnapshot,
-  workspaceSnapshotRef: WorkspaceSnapshotRef,
-  setWorkspaceSnapshot: WorkspaceSnapshotSetter,
-) {
-  workspaceSnapshotRef.current = snapshot
-  setWorkspaceSnapshot(snapshot)
 }
 
 async function persistWorkspaceWrites({
