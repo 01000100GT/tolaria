@@ -6,29 +6,28 @@ interface EditorViewProps {
 }
 
 /**
- * EditorView - Simplified Tolaria editor representation
- * Clean, minimal design matching the app's editor aesthetic
+ * EditorView - High-fidelity Tolaria editor
+ * Matches real editor typography, spacing, and styling from Editor.css
  */
 export const EditorView: React.FC<EditorViewProps> = ({ content, style }) => {
   return (
     <div
       style={{
-        backgroundColor: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
-        borderRadius: '12px',
-        padding: '32px 40px',
-        minWidth: '600px',
-        maxWidth: '800px',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15)',
+        backgroundColor: 'var(--surface-app)',
+        padding: '40px 60px',
+        maxWidth: '900px',
+        width: '100%',
         ...style,
       }}
     >
       <div
         style={{
-          fontSize: '16px',
+          fontSize: '15px',
           lineHeight: '1.6',
           color: 'var(--text-primary)',
           fontFamily: 'Inter, sans-serif',
+          maxWidth: '760px',
+          margin: '0 auto',
         }}
       >
         {content}
@@ -40,20 +39,26 @@ export const EditorView: React.FC<EditorViewProps> = ({ content, style }) => {
 interface WikilinkProps {
   children: React.ReactNode;
   style?: React.CSSProperties;
+  position?: { x: number; y: number };
 }
 
 /**
- * Wikilink - Styled [[wikilink]] matching Tolaria's design
+ * Wikilink - Exact Tolaria wikilink styling from Editor.css
+ * Dotted underline, subtle background, proper spacing
  */
-export const Wikilink: React.FC<WikilinkProps> = ({ children, style }) => {
+export const Wikilink: React.FC<WikilinkProps> = ({ children, style, position }) => {
   return (
     <span
+      className="wikilink-marker"
+      data-position={position ? `${position.x},${position.y}` : undefined}
       style={{
         color: 'var(--accent-blue)',
-        backgroundColor: 'rgba(21, 93, 255, 0.12)',
-        borderRadius: '4px',
-        padding: '2px 6px',
-        fontWeight: 500,
+        textDecoration: 'underline',
+        textDecorationStyle: 'dotted',
+        textUnderlineOffset: '2px',
+        borderRadius: '2px',
+        padding: '0 1px',
+        cursor: 'pointer',
         ...style,
       }}
     >

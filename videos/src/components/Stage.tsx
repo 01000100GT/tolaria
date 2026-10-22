@@ -1,6 +1,7 @@
 import type React from 'react';
 import { AbsoluteFill } from 'remotion';
 import '../styles.css';
+import { requireBrandAssets } from '../lib/brand';
 
 interface StageProps {
   children: React.ReactNode;
@@ -9,16 +10,26 @@ interface StageProps {
 }
 
 /**
- * Stage - Provides the foundational environment for all clips
- * - Sets background color (default: near-black #09090B for dark promo style)
- * - Applies theme class for CSS variables
- * - Provides safe framing container
+ * Stage - Brand-aware foundation for all clips
+ * - Applies brand background and theme
+ * - Loads brand fonts and CSS variables when available
+ * - Safe framing with brand-compliant padding
+ * 
+ * To use real brand assets (fonts, logo, annotations):
+ * 1. Run `pnpm --dir videos brand:sync` to fetch from refactoringhq/brand
+ * 2. Brand assets will be gitignored (private repo)
+ * 3. Clips will automatically pick them up
  */
 export const Stage: React.FC<StageProps> = ({
   children,
   theme = 'dark',
   background = '#09090B',
 }) => {
+  // Log reminder about brand sync (doesn't block render)
+  React.useEffect(() => {
+    requireBrandAssets();
+  }, []);
+
   return (
     <AbsoluteFill
       className={theme}
@@ -34,7 +45,7 @@ export const Stage: React.FC<StageProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '80px',
+          padding: '60px',
         }}
       >
         {children}

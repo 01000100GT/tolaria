@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "brand:sync": "bash scripts/sync-brand.sh",
     "render": "remotion render",
     "preview": "remotion preview",
     "studio": "remotion studio"

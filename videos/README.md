@@ -1,10 +1,20 @@
 # Tolaria Promo Videos
 
-A Remotion-based video generation system for creating polished, on-brand promo clips for Tolaria.
+A Remotion-based video generation system for creating polished, on-brand promo clips for Tolaria, integrated with the Refactoring brand kit.
 
 ## Overview
 
-This package uses [Remotion](https://www.remotion.dev/) to programmatically generate motion graphics that showcase Tolaria's features. Videos reuse Tolaria's design tokens and can incorporate real React components where practical.
+This package uses [Remotion](https://www.remotion.dev/) to programmatically generate motion graphics that showcase Tolaria's features. Videos stay faithful to Tolaria's UI while using the Refactoring brand system for video overlays, titles, annotations, and styling.
+
+### Brand Kit Integration
+
+Videos use the **Refactoring brand kit** from the private `refactoringhq/brand` repo:
+
+- **Fonts:** Refactoring Sans ExtraBold (display), Inter Tight (body), Refactoring Hand (annotations with `-0.05em` letter-spacing)
+- **Colors:** Blue #155DFF (structure), Red #FC203A, Yellow #F0B100, Green #00B38B, Purple #A932FF
+- **Assets:** 154 SVG icons (arrows, emphasis circles, scribbles, faces, logo, monogram) - ink is `currentColor`
+
+**Important:** Brand assets are **private** and **not committed** to this public repo. They must be synced locally.
 
 ## Architecture
 
@@ -15,14 +25,25 @@ This package uses [Remotion](https://www.remotion.dev/) to programmatically gene
 
 ### Design Approach
 
-**Real vs Replicated Components:**
-- **Replicated:** `NoteCard`, `EditorView`, `Wikilink` - Lightweight replicas of Tolaria's UI using real design tokens and CSS variables
-- **Why:** Avoids Tauri IPC dependencies and heavy editor setup; keeps videos renderable standalone
-- **On-Brand:** All replicas use Tolaria's actual color palette, typography, spacing, and border radius from `src/index.css`
+**Two-Layer System:**
+
+1. **Tolaria UI Layer** (app authenticity)
+   - Replicated components: `NoteCard`, `EditorView`, `Wikilink`
+   - Uses Tolaria's real CSS variables, typography, spacing from `src/index.css`
+   - Stays faithful to the actual app look
+
+2. **Brand Layer** (video polish)
+   - Refactoring brand fonts, colors, assets from `refactoringhq/brand`
+   - Title/end cards use Refactoring Sans ExtraBold
+   - Annotations/captions use Refactoring Hand with hand-drawn arrows
+   - Brand colors for emphasis (red circles, yellow highlights)
+   - Logo/monogram on end cards
+
+**Why Replicated:** Avoids Tauri IPC dependencies; keeps videos renderable standalone while matching the real app.
 
 ## Quick Start
 
-### Installation
+### 1. Installation
 
 This package is isolated from the root pnpm workspace to avoid affecting the main app build.
 
@@ -31,27 +52,45 @@ cd videos
 pnpm install --ignore-workspace
 ```
 
-### Preview a Clip
+### 2. Sync Brand Assets (Required for Full Branding)
+
+Brand assets (fonts, SVGs, tokens) are private and must be synced from `refactoringhq/brand`:
+
+```bash
+cd videos
+pnpm brand:sync
+```
+
+**Prerequisites:**
+- GitHub CLI (`gh`) authenticated with access to `refactoringhq/brand`
+- Run `gh auth status` to verify
+
+**What gets synced** (into gitignored `videos/brand/`):
+- `tokens/colors.json`, `tokens/variables.css`, `tokens/theme.css`
+- `fonts/` (Refactoring Sans, Inter Tight, Refactoring Hand)
+- `assets/` (154 SVG icons, arrows, emphasis shapes, logo, monogram)
+
+If brand assets aren't synced, clips will render with fallback fonts/styles (still functional).
+
+### 3. Preview a Clip
 
 ```bash
 pnpm studio
 ```
 
-This opens the Remotion Studio where you can preview and scrub through clips.
+Opens Remotion Studio for live preview and scrubbing.
 
-### Render a Clip
+### 4. Render a Clip
 
-Since this package is isolated from the root workspace, use the local node_modules:
+Since this package is isolated, use the local Remotion CLI:
 
 ```bash
-cd videos
 ./node_modules/.bin/remotion render wikilink-fan-out output/wikilink-fan-out.mp4
 ```
 
 Or for still frames:
 
 ```bash
-cd videos
 ./node_modules/.bin/remotion still wikilink-fan-out output/frame.png --frame=240
 ```
 
@@ -158,7 +197,7 @@ This package is intentionally isolated from the main app build:
 - Separate `package.json` and `node_modules`
 - Not included in root workspace
 - Does not affect main app tests, lint, or build
-- `.gitignore` excludes `videos/node_modules/` and `videos/output/`
+- `.gitignore` excludes `videos/node_modules/`, `videos/output/`, and **`videos/brand/`** (private assets)
 
 ## Tips
 
@@ -168,3 +207,14 @@ This package is intentionally isolated from the main app build:
 - **Stagger:** 0.1-0.3s stagger creates organic feel without feeling sluggish
 - **Shadows:** Soft drop shadows separate floating elements from background
 - **Hold time:** 2-3s final hold lets viewers absorb the composition
+- **Brand overlays:** Use `BrandAnnotation` for hand-written notes, `BrandArrow` for pointing, `EmphasisCircle` for highlighting
+- **Framing:** Hero content should fill 60-70% of frame; text must be legible on phone screens
+
+## Brand Assets Security
+
+**Critical:** Brand fonts and SVG assets from `refactoringhq/brand` are **private** and must **never** be committed to the public Tolaria repo.
+
+- Brand assets sync to `videos/brand/` (gitignored)
+- Only color tokens (hex values, CSS vars) are referenced directly in code
+- Render will work without brand sync (uses fallbacks) but won't have brand fonts/annotations
+- Run `pnpm brand:sync` before rendering clips for external use

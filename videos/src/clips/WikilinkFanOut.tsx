@@ -11,34 +11,52 @@ import { easeOut } from '../lib/timing';
 import { burstOutTransform, transformToCSS } from '../lib/transitions';
 
 /**
- * WikilinkFanOut - Sample promo clip
- * Shows typing a note with wikilinks, then linked notes fan out into view
+ * WikilinkFanOut - Polished Tolaria promo clip
+ * Shows a realistic meeting note with wikilinks, then linked notes burst out
  * Duration: 8 seconds @ 60fps = 480 frames
  *
  * Timeline:
- * 0-45 (0-0.75s): Editor fades in with initial text
- * 45-90 (0.75-1.5s): First wikilink appears
- * 90-135 (1.5-2.25s): Second wikilink appears
- * 135-180 (2.25-3s): Third wikilink appears
- * 180-240 (3-4s): Editor scales down and slides left
- * 220-310 (3.67-5.17s): Notes burst out and settle (staggered)
- * 310-450 (5.17-7.5s): Hold on final composition
+ * 0-30 (0-0.5s): Editor fades in with note title
+ * 30-90 (0.5-1.5s): Note content appears line by line
+ * 90-120 (1.5-2s): First wikilink highlights
+ * 120-150 (2-2.5s): Second wikilink highlights
+ * 150-180 (2.5-3s): Third wikilink highlights
+ * 180-240 (3-4s): Editor scales down slightly and shifts left
+ * 220-340 (3.67-5.67s): Six notes burst out from wikilink positions (staggered)
+ * 340-450 (5.67-7.5s): Hold on final composition with subtle connecting lines
  * 450-480 (7.5-8s): Fade to black
  */
 export const WikilinkFanOut: React.FC = () => {
   const frame = useCurrentFrame();
 
-  // Timing gates
-  const editorFadeIn = interpolate(frame, [0, 45], [0, 1], {
+  // Editor fade in
+  const editorFadeIn = interpolate(frame, [0, 30], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  const wikilink1 = frame >= 45;
-  const wikilink2 = frame >= 90;
-  const wikilink3 = frame >= 135;
+  // Content reveals
+  const showTitle = frame >= 30;
+  const showLine1 = frame >= 45;
+  const showLine2 = frame >= 60;
+  const showLine3 = frame >= 75;
+  const showLine4 = frame >= 90;
 
-  // Editor transform (slides left & scales down)
+  // Wikilink highlights (subtle pulse)
+  const wikilink1Highlight = interpolate(frame, [90, 120], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const wikilink2Highlight = interpolate(frame, [120, 150], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const wikilink3Highlight = interpolate(frame, [150, 180], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // Editor transform (subtle scale down & shift left)
   const editorTransform = interpolate(
     frame,
     [180, 240],
@@ -50,30 +68,44 @@ export const WikilinkFanOut: React.FC = () => {
     }
   );
 
-  const editorX = -300 * editorTransform;
-  const editorScale = 1 - 0.35 * editorTransform;
+  const editorX = -180 * editorTransform;
+  const editorScale = 1 - 0.15 * editorTransform;
 
-  // Linked notes data
+  // Linked notes - realistic meeting context
   const linkedNotes = [
-    { title: 'Design System', preview: 'Core principles and patterns for building consistent UI components' },
-    { title: 'Component Architecture', preview: 'Modular approach to structuring reusable components' },
-    { title: 'Atomic Design', preview: 'Methodology for creating design systems from atoms to organisms' },
-    { title: 'Accessibility Guidelines', preview: 'WCAG compliance and inclusive design practices' },
-    { title: 'Typography Scale', preview: 'Font sizes, weights, and hierarchy system' },
-    { title: 'Color Tokens', preview: 'Semantic color system with light and dark mode support' },
+    { title: 'Sarah Chen', icon: '👤', typeColor: '#78A4FF', preview: 'Product Manager · Leads design system initiative' },
+    { title: 'Q4 Roadmap', icon: '🎯', typeColor: '#79D89D', preview: 'Mobile app launch, API v3 migration, analytics dashboard' },
+    { title: 'Design Tokens', icon: '🎨', typeColor: '#F3A15B', preview: 'Color system, typography scale, spacing guidelines' },
+    { title: 'Component Library', icon: '📦', typeColor: '#B69CFF', preview: 'Reusable UI primitives and patterns' },
+    { title: 'Accessibility Audit', icon: '♿', typeColor: '#64D1C8', preview: 'WCAG 2.1 AA compliance review and fixes' },
+    { title: 'User Research', icon: '🔍', typeColor: '#F28AC3', preview: 'Interview findings from 12 power users' },
   ];
 
-  // Burst center (where notes originate from)
-  const burstCenter = { x: 960, y: 540 };
-
-  // Grid layout for final note positions
+  // Burst positions - arranged in a tidy grid
   const notePositions = [
-    { x: 1260, y: 240, rotate: -3 },
-    { x: 1560, y: 240, rotate: 2 },
-    { x: 1260, y: 480, rotate: 1 },
-    { x: 1560, y: 480, rotate: -2 },
-    { x: 1260, y: 720, rotate: 2 },
-    { x: 1560, y: 720, rotate: -1 },
+    { x: 1160, y: 280, rotate: -2 },
+    { x: 1500, y: 280, rotate: 1 },
+    { x: 1160, y: 480, rotate: 1 },
+    { x: 1500, y: 480, rotate: -1 },
+    { x: 1160, y: 680, rotate: -1 },
+    { x: 1500, y: 680, rotate: 2 },
+  ];
+
+  // Wikilink screen positions (approximate, for burst origin)
+  const wikilinkPositions = [
+    { x: 550, y: 450 }, // Sarah
+    { x: 620, y: 490 }, // Q4 Roadmap
+    { x: 580, y: 530 }, // component library
+  ];
+
+  // Map each note to its burst origin
+  const noteBurstOrigins = [
+    wikilinkPositions[0], // Sarah -> from "Sarah Chen"
+    wikilinkPositions[1], // Q4 Roadmap -> from "Q4 Roadmap"
+    wikilinkPositions[2], // Design Tokens -> from "component library"
+    wikilinkPositions[2], // Component Library -> from "component library"
+    wikilinkPositions[0], // Accessibility -> from "Sarah Chen"
+    wikilinkPositions[1], // User Research -> from "Q4 Roadmap"
   ];
 
   // Final fade out
@@ -94,35 +126,62 @@ export const WikilinkFanOut: React.FC = () => {
             transform: `translate(-50%, -50%) translateX(${editorX}px) scale(${editorScale})`,
             opacity: editorFadeIn,
             zIndex: 10,
+            width: '900px',
           }}
         >
           <EditorView
             content={
               <>
-                <div style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px' }}>
-                  Building a Design System
-                </div>
-                <p style={{ margin: '8px 0' }}>
-                  Every great product needs a solid foundation. Let's explore the key components:
-                </p>
-                <p style={{ margin: '8px 0' }}>
-                  {wikilink1 && <Wikilink>[[Design System]]</Wikilink>}
-                  {wikilink1 && ' starts with clear principles. '}
-                  {wikilink2 && <Wikilink>[[Component Architecture]]</Wikilink>}
-                  {wikilink2 && ' ensures reusability. '}
-                  {wikilink3 && <Wikilink>[[Atomic Design]]</Wikilink>}
-                  {wikilink3 && ' brings it all together.'}
-                </p>
+                {showTitle && (
+                  <div style={{ 
+                    fontSize: '28px', 
+                    fontWeight: 600, 
+                    marginBottom: '24px',
+                    color: 'var(--text-primary)',
+                  }}>
+                    Product Sync — Dec 15
+                  </div>
+                )}
+                {showLine1 && (
+                  <p style={{ margin: '12px 0', opacity: showLine2 ? 1 : 0.7 }}>
+                    Met with <Wikilink>Sarah Chen</Wikilink> to finalize the{' '}
+                    <Wikilink>Q4 Roadmap</Wikilink>. Key priorities:
+                  </p>
+                )}
+                {showLine2 && (
+                  <ul style={{ 
+                    margin: '12px 0', 
+                    paddingLeft: '24px',
+                    opacity: showLine3 ? 1 : 0.7,
+                  }}>
+                    <li style={{ margin: '6px 0' }}>Launch mobile app (target: Jan 15)</li>
+                    <li style={{ margin: '6px 0' }}>Complete <Wikilink>component library</Wikilink> audit</li>
+                  </ul>
+                )}
+                {showLine3 && (
+                  <p style={{ margin: '12px 0', opacity: showLine4 ? 1 : 0.7 }}>
+                    Design system work continues next sprint. Sarah will coordinate with eng.
+                  </p>
+                )}
+                {showLine4 && (
+                  <p style={{ 
+                    margin: '16px 0 0', 
+                    fontSize: '13px', 
+                    color: 'var(--text-secondary)',
+                  }}>
+                    Action items → Linear
+                  </p>
+                )}
               </>
             }
           />
         </div>
 
-        {/* Burst-out notes */}
+        {/* Burst-out notes with connecting lines */}
         {frame >= 220 &&
           linkedNotes.map((note, index) => {
-            const startFrame = 220 + index * 12; // Stagger by 0.2s
-            const endFrame = startFrame + 90; // 1.5s animation
+            const startFrame = 220 + index * 18; // Stagger by 0.3s
+            const endFrame = startFrame + 120; // 2s animation
 
             const progress = interpolate(
               frame,
@@ -138,33 +197,77 @@ export const WikilinkFanOut: React.FC = () => {
               x: notePositions[index].x,
               y: notePositions[index].y,
               width: 280,
-              height: 120,
+              height: 100,
             };
 
+            const burstOrigin = noteBurstOrigins[index];
+
             const transform = burstOutTransform(
-              burstCenter,
+              burstOrigin,
               targetRect,
               progress,
               notePositions[index].rotate,
               easeOut
             );
 
+            // Connecting line (faint, appears after note settles)
+            const lineOpacity = interpolate(
+              frame,
+              [endFrame, endFrame + 30],
+              [0, 0.15],
+              {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              }
+            );
+
             return (
-              <div
-                key={index}
-                style={{
-                  position: 'absolute',
-                  left: '0',
-                  top: '0',
-                  zIndex: 5 + index,
-                  ...transformToCSS(transform),
-                }}
-              >
-                <NoteCard
-                  title={note.title}
-                  preview={note.preview}
-                  rotate={notePositions[index].rotate * progress}
-                />
+              <div key={index}>
+                {/* Connecting line from burst origin to note */}
+                {frame >= endFrame && (
+                  <svg
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none',
+                      zIndex: 4,
+                      opacity: lineOpacity,
+                    }}
+                  >
+                    <line
+                      x1={burstOrigin.x}
+                      y1={burstOrigin.y}
+                      x2={transform.x}
+                      y2={transform.y}
+                      stroke="var(--accent-blue)"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 4"
+                      opacity="0.3"
+                    />
+                  </svg>
+                )}
+
+                {/* Note card */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '0',
+                    top: '0',
+                    zIndex: 5 + index,
+                    ...transformToCSS(transform),
+                  }}
+                >
+                  <NoteCard
+                    title={note.title}
+                    preview={note.preview}
+                    icon={note.icon}
+                    typeColor={note.typeColor}
+                    rotate={notePositions[index].rotate * progress}
+                  />
+                </div>
               </div>
             );
           })}
