@@ -1,0 +1,10 @@
+node_modules
+output
+dist
+.remotion
+*.mp4
+*.mov
+*.webm
+*.gif
+*.png
+*.jpg
