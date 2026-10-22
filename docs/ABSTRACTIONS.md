@@ -284,7 +284,11 @@ same-length rapid edits that the library's coarse timestamp shortcut misses.
 This requires a content scan; the measured large-vault sync cost remains a
 release blocker, not hidden behind a misleading success/performance claim.
 `workspaceWriteQueue.ts` retains failed mutations in order and drains them before
-Git. `workspaceSyncEditors.ts` collects awaitable editor preparation operations;
+Git. Its saved-workspace callback receives whether native text-journal recovery
+replaced files. That recovery cannot be dismissed by a later unchanged or
+cancelled task: the saved-vault boundary keeps the replacement generation and
+awaits fresh editors, including when fresh indexing fails.
+`workspaceSyncEditors.ts` collects awaitable editor preparation operations;
 `editorSaveGate.ts` prevents stale TenTap replies from overwriting pulled content.
 Automatic foreground sync defers at each local write barrier while the rich
 editor is focused, including the barrier after a Git network wait. This does not
@@ -320,7 +324,7 @@ JavaScript scheduling delay separately from the Git round-trip measurements.
 `savedVaultOperation.ts`
 freezes/flushes editors, drains disk writes, invalidates old callback generations,
 and remounts from disk; a pre-barrier failure instead resumes the existing draft.
-A confirmed no-change folder-picker cancellation or Git result also resumes that draft without
+A confirmed no-change folder-picker cancellation or Git result without native recovery also resumes that draft without
 re-indexing or remounting. It restores the frozen editor's callback generation;
 replacement IDs are never reused, and an older cancellation cannot undo a newer
 replacement. Failures after import or Git starts still require the disk refresh.
