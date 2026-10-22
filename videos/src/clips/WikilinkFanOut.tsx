@@ -1,10 +1,8 @@
-import React from 'react';
+import type React from 'react';
 import {
   AbsoluteFill,
   interpolate,
-  spring,
   useCurrentFrame,
-  useVideoConfig,
 } from 'remotion';
 import { Stage } from '../components/Stage';
 import { EditorView, Wikilink } from '../components/EditorView';
@@ -29,7 +27,6 @@ import { burstOutTransform, transformToCSS } from '../lib/transitions';
  */
 export const WikilinkFanOut: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
   // Timing gates
   const editorFadeIn = interpolate(frame, [0, 45], [0, 1], {
