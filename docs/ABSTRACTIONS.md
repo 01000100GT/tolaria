@@ -332,6 +332,11 @@ while prepared actions and retries require both the current generation and exact
 frame identity. Ordinary parent renders do not reset drafts or history. Switching
 the actual native root still remounts the workspace. This does not authorize edits
 through a replacement barrier or make provisional cached previews writable (ADR 0275).
+The native Reload Vault command reselects the current managed entry silently,
+using that same save/recovery/fresh-preparation boundary instead of synchronously
+rebuilding from the consumed launch index. No selected catalog entry means no
+native reload, never a fallback filesystem scan. Fixture/host reloads retain
+their repository behavior and clear undo history after replacement.
 A confirmed no-change folder-picker cancellation or Git result without native recovery also resumes that draft without
 re-indexing or remounting. It restores the frozen editor's callback generation;
 replacement IDs are never reused, and an older cancellation cannot undo a newer

@@ -1,5 +1,6 @@
 import { useCallback, useContext, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import { WorkspaceSyncEditorsContext } from '../workspace/workspaceSyncEditors'
+import { MobileVaultPickerContext } from '../workspace/MobileVaultContext'
 import { requestCreatedNoteFocus } from '../workspace/mobileEditorFocus'
 import { withDefaultNoteType } from '../workspace/mobileDefaultNoteType'
 import { workspacePendingWritePaths } from '../workspace/mobilePendingChanges'
@@ -40,6 +41,7 @@ export function useWorkspaceEditPipeline({
   repositoryRequest?: ReadOnlyWorkspaceRequest
   snapshot: MobileWorkspaceSnapshot
 }) {
+  const vaultPicker = useContext(MobileVaultPickerContext)
   const snapshotState = useWorkspaceSnapshotFrame(snapshot, repositoryRequest?.vaultRootUri)
   const { workspaceHistory, setWorkspaceHistory } = snapshotState
   const applyEdit = useWorkspaceEditApplier({
@@ -57,10 +59,11 @@ export function useWorkspaceEditPipeline({
     workspaceHistory,
   })
   const reloadWorkspaceSnapshot = useCallback(() => {
+    if (repositoryRequest?.source === 'native') return vaultPicker?.choices.find(choice => choice.selected)?.select()
     const nextSnapshot = repository.readSnapshot(repositoryRequest)
     snapshotState.replaceWorkspaceSnapshot(nextSnapshot)
     setWorkspaceHistory(emptyMobileWorkspaceHistory)
-  }, [repository, repositoryRequest, setWorkspaceHistory, snapshotState])
+  }, [repository, repositoryRequest, setWorkspaceHistory, snapshotState, vaultPicker])
 
   return {
     applyWorkspaceEdit,
