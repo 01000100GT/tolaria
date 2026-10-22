@@ -102,10 +102,9 @@ async function fetchAndIntegrate(options: GitRemoteOptions, connection: GitConne
 
 async function checkpointLocal(options: GitRemoteOptions, context: GitVaultContext, author: GitAuthor) {
   const vault = createGitVault(context)
-  const workspaceChanged = await vault.recover()
   const checkpoint = await (options.checkpoint === false ? vault.requireClean() : vault.checkpoint(author))
   options.onCheckpoint?.(checkpoint.oid)
-  return { ...checkpoint, workspaceChanged }
+  return checkpoint
 }
 
 async function localAccess<T>(options: GitRemoteOptions, operation: () => Promise<{ value: T; workspaceChanged: boolean }>) {

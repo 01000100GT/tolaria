@@ -332,6 +332,10 @@ replacement. Failures after import or Git starts still require the disk refresh.
 as document replacement. Recovery requires fresh editors even when it advances
 HEAD to the fetched tip or credentials fail afterwards. Local commits and
 push-only/no-op syncs with no recovery preserve the mounted editor under ADR 0221.
+The shared Git checkpoint/require-clean result reports successful checkout
+recovery as `workspaceChanged`, separately from the count of newly committed
+files. Manual commits honor that same replacement flag; sync consumes it without
+replaying a second recovery check just to discover whether files changed.
 Relationship-picker exclusions resolve each existing reference once per search,
 then filter candidate IDs with a set. They must not resolve a vault-wide link
 inside the per-note candidate loop.
