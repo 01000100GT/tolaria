@@ -324,8 +324,10 @@ A confirmed no-change folder-picker cancellation or Git result also resumes that
 re-indexing or remounting. It restores the frozen editor's callback generation;
 replacement IDs are never reused, and an older cancellation cannot undo a newer
 replacement. Failures after import or Git starts still require the disk refresh.
-`gitRemote` reports whether checkout changed document files; local commits and
-push-only/no-op syncs preserve the mounted editor under ADR 0212.
+`gitRemote` reports both incoming checkout and checkpoint-time journal recovery
+as document replacement. Recovery requires fresh editors even when it advances
+HEAD to the fetched tip or credentials fail afterwards. Local commits and
+push-only/no-op syncs with no recovery preserve the mounted editor under ADR 0221.
 Relationship-picker exclusions resolve each existing reference once per search,
 then filter candidate IDs with a set. They must not resolve a vault-wide link
 inside the per-note candidate loop.
