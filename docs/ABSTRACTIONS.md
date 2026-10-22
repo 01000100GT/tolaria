@@ -887,8 +887,12 @@ provider behavior still require separate device acceptance.
 `views/*.yml` into `MobileWorkspaceSnapshot`: type-color inheritance, Type metadata
 and raw content, instance schema/defaults, relationship values, Markdown previews,
 sidebar counts, custom scalar properties, empty folders and saved View results.
-Raw content is capped to visible notes while metadata covers the full pool. Type
-metadata follows desktop-normalized frontmatter aliases for casing and spacing,
+Raw content is capped to visible notes while metadata covers the full pool.
+Relationship-target indexing yields every 32 normalized targets through the same
+snapshot iterator and cooperative task budget. This bounds both multi-note and
+alias-heavy indexing work without publishing a partial resolver or changing
+first-match precedence. Cancellation is checked before the next batch runs.
+Type metadata follows desktop-normalized frontmatter aliases for casing and spacing,
 preserving underscore-only system fields such as `_organized`. Host QA injects
 full Markdown separately through `tolaria:mobile-workspace-note-contents`, allowing
 lazy hydration when navigation opens a metadata-only note.
