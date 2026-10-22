@@ -19,7 +19,7 @@ export async function readWorkspaceSnapshotPreview(identity: WorkspaceSnapshotId
   try {
     const key = await storage.digest(identity.vaultPath)
     requireActivePreview(signal)
-    const record = await readWorkspaceSnapshotEnvelope(storage, key, identity)
+    const record = await readWorkspaceSnapshotEnvelope(storage, key, identity, signal)
     requireActivePreview(signal)
     return record ? await previewMetadata(record.snapshot, signal) : null
   } catch { return null }

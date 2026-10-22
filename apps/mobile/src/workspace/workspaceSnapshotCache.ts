@@ -36,7 +36,7 @@ function snapshotInput(options: LocalVaultSnapshotOptions, revision?: string) {
 
 async function readCachedSnapshot(storage: SnapshotCacheStorage, target: Pick<WorkspaceSnapshotEnvelopeContext, 'key' | 'input'>,
   options: LocalVaultSnapshotOptions, signal?: AbortSignal) {
-  const record = await readWorkspaceSnapshotEnvelope(storage, target.key, options)
+  const record = await readWorkspaceSnapshotEnvelope(storage, target.key, options, signal)
   if (!record || record.input !== target.input) return null
   const { snapshot } = record
   if (!validSnapshot(snapshot, options)) return null
