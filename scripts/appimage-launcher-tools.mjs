@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { error as logError, log } from 'node:console'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import {
   chmod,
   mkdir,
@@ -287,22 +287,18 @@ function assertAppImagePathsExtracted(appImage, tempDir, requiredPaths) {
 }
 
 function listExtractedLibraries(tempDir) {
-  const root = join(tempDir, 'squashfs-root/usr/lib')
-  const libraries = []
-  const visit = (directory, relative = '') => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const path = relative ? `${relative}/${entry.name}` : entry.name
-      libraries.push(path)
-      if (entry.isDirectory()) visit(join(directory, entry.name), path)
-    }
+  const result = spawnSync('find', ['squashfs-root/usr/lib', '-mindepth', '1', '-print'], {
+    cwd: tempDir,
+    encoding: 'utf8',
+  })
+  if (result.status !== 0) {
+    throw new Error(`Failed to list extracted AppImage libraries: ${result.stderr.trim()}`)
   }
 
-  try {
-    visit(root)
-    return libraries
-  } catch (error) {
-    throw new Error(`Failed to list extracted AppImage libraries: ${error.message}`)
-  }
+  return result.stdout
+    .split('\n')
+    .filter(Boolean)
+    .map((path) => path.replace(/^squashfs-root\/usr\/lib\//, ''))
 }
 
 async function validateBundledLibraries(appImage, tempDir) {
